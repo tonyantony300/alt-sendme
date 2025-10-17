@@ -10,7 +10,7 @@ function App() {
       <div className="container mx-auto p-8">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--app-bg-fg)' }}>
-            Wormhole
+            BETTER-SENDME
           </h1>
           
           {/* Tab Navigation */}

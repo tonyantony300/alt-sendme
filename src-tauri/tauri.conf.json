@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Wormhole",
+  "productName": "BETTER-SENDME",
   "version": "0.1.0",
   "identifier": "com.sendme.desktop",
   "build": {
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Wormhole",
+        "title": "BETTER-SENDME",
         "width": 1240,
         "height": 640,
         "resizable": true,
