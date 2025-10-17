@@ -60,8 +60,18 @@ pub async fn stop_sharing(
 ) -> Result<(), String> {
     tracing::info!("🛑 stop_sharing command called");
     let mut app_state = state.lock().await;
-    app_state.current_share = None;
-    tracing::info!("✅ Sharing stopped successfully");
+    
+    if let Some(mut share) = app_state.current_share.take() {
+        // Explicitly clean up the share session
+        if let Err(e) = share.stop().await {
+            tracing::error!("❌ Failed to clean up share session: {}", e);
+            return Err(e);
+        }
+        tracing::info!("✅ Sharing stopped and cleaned up successfully");
+    } else {
+        tracing::info!("ℹ️  No active share to stop");
+    }
+    
     Ok(())
 }
 

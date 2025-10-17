@@ -16,7 +16,6 @@ use iroh_blobs::{
 };
 use std::path::{Path, PathBuf};
 use tokio::select;
-use tracing::trace;
 use n0_future::StreamExt;
 
 /// Receive a file or directory using a ticket

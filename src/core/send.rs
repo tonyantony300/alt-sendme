@@ -134,10 +134,10 @@ pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<
         })
         .await?;
 
-        anyhow::Ok((router, import_result, dt, blobs_data_dir2, store, blobs))
+        anyhow::Ok((router, import_result, dt, blobs_data_dir2, store))
     };
     
-    let (router, (temp_tag, size, _collection), _dt, _blobs_data_dir, store, blobs) = select! {
+    let (router, (temp_tag, size, _collection), _dt, _blobs_data_dir, store) = select! {
         x = setup => x?,
         _ = tokio::signal::ctrl_c() => {
             anyhow::bail!("Operation cancelled");
@@ -167,18 +167,17 @@ pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<
     tracing::info!("🔄 Server is ready to accept connections...");
     tracing::info!("📡 Listening for incoming requests...");
 
-    // Return the result - CRITICAL: return router and temp_tag to keep them alive!
+    // Return the result - CRITICAL: Keep router, temp_tag, store, and progress_handle alive
     Ok(SendResult {
         ticket: ticket.to_string(),
         hash: hash.to_hex().to_string(),
         size,
         entry_type: entry_type.to_string(),
-        router,           // Keep the server running
-        temp_tag,         // Prevent data from being garbage collected
-        blobs_data_dir,   // For cleanup later
-        _progress_handle: AbortOnDropHandle::new(progress_handle), // Keep progress task alive
-        _store: store,    // Keep store alive
-        _blobs: blobs,    // Keep blobs protocol alive (it references the store!)
+        router,           // Keeps server running and protocols active
+        temp_tag,         // Prevents data GC
+        blobs_data_dir,   // For cleanup
+        _progress_handle: AbortOnDropHandle::new(progress_handle), // Keeps event channel open
+        _store: store,    // Keeps blob storage alive
     })
 }
 
@@ -325,18 +324,6 @@ pub fn canonicalized_path_to_string(
     Ok(path_str)
 }
 
-/// Simplified progress handler for library use
-async fn show_provide_progress(
-    mut _recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
-) -> anyhow::Result<()> {
-    // For library version, we don't show progress
-    // Just consume the messages to prevent blocking
-    while let Some(_item) = _recv.recv().await {
-        // Ignore progress messages in library version
-    }
-    Ok(())
-}
-
 /// Enhanced progress handler with detailed logging for debugging
 async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
@@ -385,11 +372,11 @@ async fn show_provide_progress_with_logging(
                                         tracing::info!("📊 Progress: conn {} req {} offset {}", 
                                             connection_id, request_id, m.end_offset);
                                     }
-                                    iroh_blobs::provider::events::RequestUpdate::Completed(m) => {
+                                    iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         tracing::info!("✅ Request completed: conn {} req {}", 
                                             connection_id, request_id);
                                     }
-                                    iroh_blobs::provider::events::RequestUpdate::Aborted(m) => {
+                                    iroh_blobs::provider::events::RequestUpdate::Aborted(_m) => {
                                         tracing::warn!("⚠️  Request aborted: conn {} req {}", 
                                             connection_id, request_id);
                                     }

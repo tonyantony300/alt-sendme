@@ -6,12 +6,13 @@ pub struct SendResult {
     pub hash: String,
     pub size: u64,
     pub entry_type: String, // "file" or "directory"
-    pub router: iroh::protocol::Router,  // CRITICAL: keeps the server alive
-    pub temp_tag: iroh_blobs::api::TempTag, // CRITICAL: prevents data from being GC'd
-    pub blobs_data_dir: PathBuf, // For cleanup
-    pub _progress_handle: n0_future::task::AbortOnDropHandle<anyhow::Result<()>>, // Keep progress task alive
-    pub _store: iroh_blobs::store::fs::FsStore, // Keep store alive
-    pub _blobs: iroh_blobs::BlobsProtocol, // CRITICAL: Keep blobs protocol alive!
+    
+    // CRITICAL: These fields must be kept alive for the duration of the share
+    pub router: iroh::protocol::Router,  // Keeps the server running and protocols active
+    pub temp_tag: iroh_blobs::api::TempTag, // Prevents data from being garbage collected
+    pub blobs_data_dir: PathBuf, // Path for cleanup when share stops
+    pub _progress_handle: n0_future::task::AbortOnDropHandle<anyhow::Result<()>>, // Keeps event channel open
+    pub _store: iroh_blobs::store::fs::FsStore, // Keeps the blob storage alive
 }
 
 /// Result of a receive operation
