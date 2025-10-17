@@ -9,18 +9,23 @@ pub async fn start_sharing(
     path: String,
     state: State<'_, AppStateMutex>,
 ) -> Result<String, String> {
+    tracing::info!("📤 start_sharing command called with path: {}", path);
     let path = PathBuf::from(path);
     
     // Check if already sharing
     let mut app_state = state.lock().await;
     if app_state.current_share.is_some() {
+        tracing::warn!("⚠️  Already sharing a file");
         return Err("Already sharing a file. Please stop current share first.".to_string());
     }
     
     // Validate path exists
     if !path.exists() {
+        tracing::error!("❌ Path does not exist: {}", path.display());
         return Err(format!("Path does not exist: {}", path.display()));
     }
+    
+    tracing::info!("✅ Path validation passed");
     
     // Create send options with defaults
     let options = SendOptions {
@@ -30,14 +35,21 @@ pub async fn start_sharing(
         magic_ipv6_addr: None,
     };
     
+    tracing::info!("🚀 Starting share with options: {:?}", options);
+    
     // Start sharing using the core library
     match start_share(path.clone(), options).await {
         Ok(result) => {
-            // Store the share handle
-            app_state.current_share = Some(ShareHandle::new(result.ticket.clone(), path));
-            Ok(result.ticket)
+            let ticket = result.ticket.clone();
+            tracing::info!("✅ Share started successfully, ticket: {}", &ticket[..50.min(ticket.len())]);
+            // CRITICAL: Store the entire SendResult to keep router and temp_tag alive!
+            app_state.current_share = Some(ShareHandle::new(ticket.clone(), path, result));
+            Ok(ticket)
         }
-        Err(e) => Err(format!("Failed to start sharing: {}", e)),
+        Err(e) => {
+            tracing::error!("❌ Failed to start sharing: {}", e);
+            Err(format!("Failed to start sharing: {}", e))
+        },
     }
 }
 
@@ -46,8 +58,10 @@ pub async fn start_sharing(
 pub async fn stop_sharing(
     state: State<'_, AppStateMutex>,
 ) -> Result<(), String> {
+    tracing::info!("🛑 stop_sharing command called");
     let mut app_state = state.lock().await;
     app_state.current_share = None;
+    tracing::info!("✅ Sharing stopped successfully");
     Ok(())
 }
 
@@ -56,6 +70,9 @@ pub async fn stop_sharing(
 pub async fn receive_file(
     ticket: String,
 ) -> Result<String, String> {
+    tracing::info!("📥 receive_file command called");
+    tracing::info!("🎫 Ticket: {}", &ticket[..50.min(ticket.len())]);
+    
     // Create receive options with Downloads folder as default
     let options = ReceiveOptions {
         output_dir: Some(dirs::download_dir().unwrap_or_else(|| std::env::current_dir().unwrap())),
@@ -64,10 +81,19 @@ pub async fn receive_file(
         magic_ipv6_addr: None,
     };
     
+    tracing::info!("📁 Output directory: {:?}", options.output_dir);
+    tracing::info!("🚀 Starting download...");
+    
     // Download using the core library
     match download(ticket, options).await {
-        Ok(result) => Ok(result.message),
-        Err(e) => Err(format!("Failed to receive file: {}", e)),
+        Ok(result) => {
+            tracing::info!("✅ Download completed successfully: {}", result.message);
+            Ok(result.message)
+        },
+        Err(e) => {
+            tracing::error!("❌ Failed to receive file: {}", e);
+            Err(format!("Failed to receive file: {}", e))
+        },
     }
 }
 

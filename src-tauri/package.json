@@ -1,0 +1,8 @@
+{
+  "name": "sendme-desktop-tauri",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "cd ../web-app && npm run dev",
+    "build": "cd ../web-app && npm run build"
+  }
+}

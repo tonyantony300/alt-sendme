@@ -31,22 +31,31 @@ use n0_future::StreamExt;
 
 /// Start sharing a file or directory
 pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<SendResult> {
+    tracing::info!("🚀 Starting share for path: {}", path.display());
+    
     let secret_key = get_or_create_secret()?;
+    let node_id = secret_key.public();
+    tracing::info!("🔑 Node ID: {}", node_id);
     
     // create a magicsocket endpoint
-    let relay_mode: RelayMode = options.relay_mode.into();
+    let relay_mode: RelayMode = options.relay_mode.clone().into();
+    tracing::info!("🔧 Relay mode: {:?}", options.relay_mode);
+    
     let mut builder = Endpoint::builder()
         .alpns(vec![iroh_blobs::protocol::ALPN.to_vec()])
         .secret_key(secret_key)
         .relay_mode(relay_mode.clone());
     
     if options.ticket_type == AddrInfoOptions::Id {
+        tracing::info!("🔍 Adding DNS discovery (ticket type: Id)");
         builder = builder.add_discovery(PkarrPublisher::n0_dns());
     }
     if let Some(addr) = options.magic_ipv4_addr {
+        tracing::info!("🌐 Binding to IPv4: {}", addr);
         builder = builder.bind_addr_v4(addr);
     }
     if let Some(addr) = options.magic_ipv6_addr {
+        tracing::info!("🌐 Binding to IPv6: {}", addr);
         builder = builder.bind_addr_v6(addr);
     }
 
@@ -54,6 +63,7 @@ pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<
     let suffix = rand::rng().random::<[u8; 16]>();
     let cwd = std::env::current_dir()?;
     let blobs_data_dir = cwd.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
+    tracing::info!("💾 Blob storage directory: {}", blobs_data_dir.display());
     if blobs_data_dir.exists() {
         anyhow::bail!(
             "can not share twice from the same directory: {}",
@@ -69,16 +79,24 @@ pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<
     let path2 = path.clone();
     let blobs_data_dir2 = blobs_data_dir.clone();
     let (progress_tx, progress_rx) = mpsc::channel(32);
-    let _progress = AbortOnDropHandle::new(n0_future::task::spawn(show_provide_progress(
+    let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
         progress_rx,
-    )));
+    ));
     
     let setup = async move {
         let t0 = Instant::now();
+        tracing::info!("📁 Creating blob storage directory...");
         tokio::fs::create_dir_all(&blobs_data_dir2).await?;
 
+        tracing::info!("🔌 Binding endpoint...");
         let endpoint = builder.bind().await?;
+        tracing::info!("✅ Endpoint created successfully");
+        tracing::info!("📡 Endpoint bound successfully");
+        
+        tracing::info!("💾 Loading file store...");
         let store = FsStore::load(&blobs_data_dir2).await?;
+        
+        tracing::info!("🔧 Initializing blobs protocol...");
         let blobs = BlobsProtocol::new(
             &store,
             Some(EventSender::new(
@@ -90,46 +108,77 @@ pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<
                 },
             )),
         );
+        tracing::info!("✅ Blobs protocol initialized with event logging enabled");
+        tracing::info!("📊 Store loaded successfully");
 
+        tracing::info!("📦 Importing files...");
         let import_result = import(path2, blobs.store()).await?;
         let dt = t0.elapsed();
+        tracing::info!("✅ Import complete in {:?}", dt);
 
+        tracing::info!("🌐 Starting protocol router...");
         let router = iroh::protocol::Router::builder(endpoint)
             .accept(iroh_blobs::ALPN, blobs.clone())
             .spawn();
 
         // wait for the endpoint to figure out its address before making a ticket
         let ep = router.endpoint();
+        tracing::info!("🔗 Router endpoint info:");
+        tracing::info!("   Node ID: {}", ep.node_id());
+        tracing::info!("⏳ Waiting for endpoint to come online...");
         tokio::time::timeout(Duration::from_secs(30), async move {
             if !matches!(relay_mode, RelayMode::Disabled) {
                 let _ = ep.online().await;
+                tracing::info!("✅ Endpoint is online");
             }
         })
         .await?;
 
-        anyhow::Ok((router, import_result, dt, blobs_data_dir2))
+        anyhow::Ok((router, import_result, dt, blobs_data_dir2, store, blobs))
     };
     
-    let (router, (temp_tag, size, _collection), _dt, _blobs_data_dir) = select! {
+    let (router, (temp_tag, size, _collection), _dt, _blobs_data_dir, store, blobs) = select! {
         x = setup => x?,
         _ = tokio::signal::ctrl_c() => {
             anyhow::bail!("Operation cancelled");
         }
     };
     let hash = temp_tag.hash();
+    tracing::info!("🔐 Content hash: {}", hash);
 
     // make a ticket
     let mut addr = router.endpoint().node_addr();
+    tracing::info!("📍 Node address before options:");
+    tracing::info!("  - Node ID: {}", addr.node_id);
+    tracing::info!("  - Relay URL: {:?}", addr.relay_url);
+    tracing::info!("  - Direct addresses: {:?}", addr.direct_addresses);
+    
     apply_options(&mut addr, options.ticket_type);
+    tracing::info!("📍 Node address after options (ticket type: {:?}):", options.ticket_type);
+    tracing::info!("  - Node ID: {}", addr.node_id);
+    tracing::info!("  - Relay URL: {:?}", addr.relay_url);
+    tracing::info!("  - Direct addresses: {:?}", addr.direct_addresses);
+    
     let ticket = BlobTicket::new(addr, hash, BlobFormat::HashSeq);
     let entry_type = if path.is_file() { "file" } else { "directory" };
+    
+    tracing::info!("🎫 Generated ticket: {}", ticket.to_string()[..80.min(ticket.to_string().len())].to_string());
+    tracing::info!("✅ Share started successfully! Entry type: {}, size: {} bytes", entry_type, size);
+    tracing::info!("🔄 Server is ready to accept connections...");
+    tracing::info!("📡 Listening for incoming requests...");
 
-    // Return the result instead of printing
+    // Return the result - CRITICAL: return router and temp_tag to keep them alive!
     Ok(SendResult {
         ticket: ticket.to_string(),
         hash: hash.to_hex().to_string(),
         size,
         entry_type: entry_type.to_string(),
+        router,           // Keep the server running
+        temp_tag,         // Prevent data from being garbage collected
+        blobs_data_dir,   // For cleanup later
+        _progress_handle: AbortOnDropHandle::new(progress_handle), // Keep progress task alive
+        _store: store,    // Keep store alive
+        _blobs: blobs,    // Keep blobs protocol alive (it references the store!)
     })
 }
 
@@ -285,5 +334,88 @@ async fn show_provide_progress(
     while let Some(_item) = _recv.recv().await {
         // Ignore progress messages in library version
     }
+    Ok(())
+}
+
+/// Enhanced progress handler with detailed logging for debugging
+async fn show_provide_progress_with_logging(
+    mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
+) -> anyhow::Result<()> {
+    use n0_future::FuturesUnordered;
+    
+    tracing::info!("🔍 Provider progress handler started");
+    
+    let mut tasks = FuturesUnordered::new();
+    
+    loop {
+        tokio::select! {
+            biased;
+            item = recv.recv() => {
+                let Some(item) = item else {
+                    tracing::info!("🔍 Provider channel closed, exiting handler");
+                    break;
+                };
+
+                match item {
+                    iroh_blobs::provider::events::ProviderMessage::ClientConnectedNotify(msg) => {
+                        let node_id = msg.node_id.map(|id| id.fmt_short().to_string()).unwrap_or_else(|| "?".to_string());
+                        tracing::info!("🔗 Client connected: {} (connection_id: {})", node_id, msg.connection_id);
+                    }
+                    iroh_blobs::provider::events::ProviderMessage::ConnectionClosed(msg) => {
+                        tracing::info!("❌ Connection closed: connection_id {}", msg.connection_id);
+                    }
+                    iroh_blobs::provider::events::ProviderMessage::GetRequestReceivedNotify(msg) => {
+                        let connection_id = msg.connection_id;
+                        let request_id = msg.request_id;
+                        tracing::info!("📥 Get request received: connection_id {}, request_id {}", 
+                            connection_id, request_id);
+                        
+                        // Spawn a task to monitor this request
+                        let mut rx = msg.rx;
+                        tasks.push(async move {
+                            tracing::info!("🔄 Monitoring request: connection_id {}, request_id {}", connection_id, request_id);
+                            
+                            while let Ok(Some(update)) = rx.recv().await {
+                                match update {
+                                    iroh_blobs::provider::events::RequestUpdate::Started(m) => {
+                                        tracing::info!("▶️  Request started: conn {} req {} idx {} hash {}", 
+                                            connection_id, request_id, m.index, m.hash.fmt_short());
+                                    }
+                                    iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
+                                        tracing::info!("📊 Progress: conn {} req {} offset {}", 
+                                            connection_id, request_id, m.end_offset);
+                                    }
+                                    iroh_blobs::provider::events::RequestUpdate::Completed(m) => {
+                                        tracing::info!("✅ Request completed: conn {} req {}", 
+                                            connection_id, request_id);
+                                    }
+                                    iroh_blobs::provider::events::RequestUpdate::Aborted(m) => {
+                                        tracing::warn!("⚠️  Request aborted: conn {} req {}", 
+                                            connection_id, request_id);
+                                    }
+                                }
+                            }
+                            
+                            tracing::info!("🏁 Request monitoring finished: connection_id {}, request_id {}", 
+                                connection_id, request_id);
+                        });
+                    }
+                    _ => {
+                        tracing::debug!("📊 Provider event: {:?}", item);
+                    }
+                }
+            }
+            Some(_) = tasks.next(), if !tasks.is_empty() => {
+                // Request monitoring task completed
+            }
+        }
+    }
+    
+    // Wait for all request monitoring tasks to complete
+    while tasks.next().await.is_some() {
+        tracing::info!("⏳ Waiting for remaining request tasks to complete...");
+    }
+    
+    tracing::info!("🔍 Provider progress handler finished");
     Ok(())
 }

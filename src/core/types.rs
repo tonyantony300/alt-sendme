@@ -1,12 +1,17 @@
 use std::path::PathBuf;
 
 /// Result of a send operation
-#[derive(Debug)]
 pub struct SendResult {
     pub ticket: String,
     pub hash: String,
     pub size: u64,
     pub entry_type: String, // "file" or "directory"
+    pub router: iroh::protocol::Router,  // CRITICAL: keeps the server alive
+    pub temp_tag: iroh_blobs::api::TempTag, // CRITICAL: prevents data from being GC'd
+    pub blobs_data_dir: PathBuf, // For cleanup
+    pub _progress_handle: n0_future::task::AbortOnDropHandle<anyhow::Result<()>>, // Keep progress task alive
+    pub _store: iroh_blobs::store::fs::FsStore, // Keep store alive
+    pub _blobs: iroh_blobs::BlobsProtocol, // CRITICAL: Keep blobs protocol alive!
 }
 
 /// Result of a receive operation

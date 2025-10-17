@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use sendme::SendResult;
 
 /// Application state for managing sharing sessions
 #[derive(Default)]
@@ -9,21 +10,30 @@ pub struct AppState {
 }
 
 /// Handle for an active sharing session
+/// CRITICAL: This struct holds the router and temp_tag which keeps the server alive
 pub struct ShareHandle {
     pub ticket: String,
     pub path: PathBuf,
-    // This will keep the router/endpoint alive
-    // We'll store the actual handle when we implement the commands
-    _phantom: std::marker::PhantomData<()>,
+    pub send_result: SendResult, // This keeps router and temp_tag alive!
 }
 
 impl ShareHandle {
-    pub fn new(ticket: String, path: PathBuf) -> Self {
+    pub fn new(ticket: String, path: PathBuf, send_result: SendResult) -> Self {
         Self {
             ticket,
             path,
-            _phantom: std::marker::PhantomData,
+            send_result,
         }
+    }
+}
+
+impl Drop for ShareHandle {
+    fn drop(&mut self) {
+        // Clean up the temporary blobs directory when share is stopped
+        let blobs_dir = self.send_result.blobs_data_dir.clone();
+        tokio::spawn(async move {
+            let _ = tokio::fs::remove_dir_all(&blobs_dir).await;
+        });
     }
 }
 

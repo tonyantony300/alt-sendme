@@ -9,6 +9,19 @@ use state::AppState;
 use std::sync::Arc;
 
 fn main() {
+    // Initialize tracing for better debugging
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"))
+        )
+        .with_target(true)
+        .with_thread_ids(true)
+        .with_line_number(true)
+        .init();
+    
+    tracing::info!("🚀 Starting Sendme Desktop application");
+    
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())

@@ -5683,6 +5683,8 @@ dependencies = [
  "tauri-plugin-os",
  "tauri-plugin-shell",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

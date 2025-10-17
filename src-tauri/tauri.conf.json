@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../web-app/dist",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "cd ../web-app && npm run dev",
-    "beforeBuildCommand": "cd ../web-app && npm run build"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
   },
   "app": {
     "macOSPrivateApi": true,
@@ -15,10 +15,8 @@
       {
         "label": "main",
         "title": "Sendme Desktop",
-        "width": 800,
-        "minWidth": 600,
-        "minHeight": 400,
-        "height": 600,
+        "width": 860,
+        "height": 640,
         "resizable": true,
         "fullscreen": false,
         "center": true,
@@ -48,23 +46,7 @@
       }
     }
   },
-  "plugins": {
-    "dialog": {
-      "all": true,
-      "ask": true,
-      "confirm": true,
-      "message": true,
-      "open": true,
-      "save": true
-    },
-    "opener": {
-      "all": true
-    },
-    "os": {
-      "version": "latest",
-      "resolve": true
-    }
-  },
+  "plugins": {},
   "bundle": {
     "active": true,
     "icon": [

@@ -23,6 +23,8 @@ tokio = { version = "1.0", features = ["full"] }
 anyhow = "1.0"
 dirs = "6.0"
 sendme = { path = "../" }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
 default = ["custom-protocol"]
