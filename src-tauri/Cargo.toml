@@ -1,0 +1,29 @@
+[package]
+name = "sendme-desktop"
+version = "0.1.0"
+description = "Desktop version of sendme - P2P file sharing with NAT hole punching"
+authors = ["Sendme Team"]
+license = "Apache-2.0 OR MIT"
+edition = "2021"
+rust-version = "1.81"
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0", features = ["protocol-asset", "macos-private-api"] }
+tauri-plugin-dialog = "2.0"
+tauri-plugin-opener = "2.0"
+tauri-plugin-os = "2.0"
+tauri-plugin-http = "2.0"
+tauri-plugin-shell = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+dirs = "6.0"
+sendme = { path = "../" }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

@@ -13,6 +13,14 @@ readme = "README.md"
 # Sadly this also needs to be updated in .github/workflows/ci.yml
 rust-version = "1.81"
 
+[lib]
+name = "sendme"
+crate-type = ["lib", "staticlib"]
+
+[[bin]]
+name = "sendme"
+path = "src/main.rs"
+
 [dependencies]
 anyhow = "1.0.75"
 clap = { version = "4.4.10", features = ["derive"] }
@@ -36,6 +44,7 @@ walkdir = "2.4.0"
 data-encoding = "2.6.0"
 n0-future = "0.1.2"
 hex = "0.4.3"
+dirs = "6.0.0"
 crossterm = { version = "0.29.0", features = [
   "event-stream",
   "osc52",

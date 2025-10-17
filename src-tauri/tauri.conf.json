@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Sendme Desktop",
+  "version": "0.1.0",
+  "identifier": "com.sendme.desktop",
+  "build": {
+    "frontendDist": "../web-app/dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "cd ../web-app && npm run dev",
+    "beforeBuildCommand": "cd ../web-app && npm run build"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Sendme Desktop",
+        "width": 800,
+        "minWidth": 600,
+        "minHeight": 400,
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "capabilities": [
+        "default",
+        "sendme:default"
+      ],
+      "csp": {
+        "default-src": "'self' customprotocol: asset: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
+        "connect-src": "ipc: http://ipc.localhost http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* https: http:",
+        "font-src": "'self' asset: http://asset.localhost blob: data: https:",
+        "img-src": "'self' asset: http://asset.localhost blob: data: https:",
+        "style-src": "'unsafe-inline' 'self'",
+        "script-src": "'self' asset: http://asset.localhost"
+      },
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "requireLiteralLeadingDot": false,
+          "allow": ["**/*"]
+        }
+      }
+    }
+  },
+  "plugins": {
+    "dialog": {
+      "all": true,
+      "ask": true,
+      "confirm": true,
+      "message": true,
+      "open": true,
+      "save": true
+    },
+    "opener": {
+      "all": true
+    },
+    "os": {
+      "version": "latest",
+      "resolve": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
