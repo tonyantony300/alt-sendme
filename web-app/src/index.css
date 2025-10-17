@@ -2,11 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Typography scale based on --font-size-base */
+  --text-xs: calc(var(--font-size-base) * 0.75); /* ~12px */
+  --text-sm: calc(var(--font-size-base) * 0.875); /* ~14px */
+  --text-base: var(--font-size-base); /* ~16px */
+  --text-lg: calc(var(--font-size-base) * 1.125); /* ~18px */
+  --text-xl: calc(var(--font-size-base) * 1.25); /* ~20px */
+  --text-2xl: calc(var(--font-size-base) * 1.5); /* ~24px */
+  --text-3xl: calc(var(--font-size-base) * 1.875); /* ~30px */
+  --text-4xl: calc(var(--font-size-base) * 2.25); /* ~36px */
+  --text-5xl: calc(var(--font-size-base) * 3); /* ~48px */
+  --text-6xl: calc(var(--font-size-base) * 3.75); /* ~60px */
+  --text-7xl: calc(var(--font-size-base) * 4.5); /* ~72px */
+  --text-8xl: calc(var(--font-size-base) * 6); /* ~96px */
+  --text-9xl: calc(var(--font-size-base) * 8); /* ~128px */
+}
+
+:root {
+  /* Design tokens from web-app-reference */
+  --radius: 0.625rem; /* 10px */
+  --font-size-base: 15px;
+  
+  /* Dark theme colors */
+  --app-bg: rgb(25, 25, 25);
+  --app-main-view: rgb(25, 25, 25);
+  --app-primary: rgb(219, 88, 44);
+  --app-accent: rgb(45, 120, 220);
+  --app-destructive: rgb(144, 60, 60);
+  
+  /* Text colors */
+  --app-bg-fg: rgb(255, 255, 255);
+  --app-main-view-fg: rgb(255, 255, 255);
+  --app-primary-fg: rgb(255, 255, 255);
+  --app-accent-fg: rgb(255, 255, 255);
+  --app-destructive-fg: rgb(255, 255, 255);
+}
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--app-bg);
+    color: var(--app-bg-fg);
+    min-height: 100vh;
+  }
+  
+  svg {
+    stroke-width: 1.5;
+  }
+  
+  a {
+    color: var(--app-accent);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

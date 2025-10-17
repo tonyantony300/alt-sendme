@@ -1,10 +1,34 @@
 import { useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog'
 import { Download } from 'lucide-react'
 
 export function Receiver() {
   const [ticket, setTicket] = useState('')
   const [isReceiving, setIsReceiving] = useState(false)
+  const [alertDialog, setAlertDialog] = useState<{
+    isOpen: boolean
+    title: string
+    description: string
+    type: 'success' | 'error' | 'info'
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    type: 'info'
+  })
+
+  const showAlert = (title: string, description: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setAlertDialog({ isOpen: true, title, description, type })
+  }
 
   const handleReceive = async () => {
     if (!ticket.trim()) return
@@ -12,70 +36,61 @@ export function Receiver() {
     try {
       setIsReceiving(true)
       const result = await invoke<string>('receive_file', { ticket: ticket.trim() })
-      alert('File received successfully!\n\n' + result)
+      showAlert('Success!', `File received successfully!\n\n${result}`, 'success')
       setTicket('')
     } catch (error) {
       console.error('Failed to receive file:', error)
-      alert('Failed to receive file: ' + error)
+      showAlert('Receive Failed', `Failed to receive file: ${error}`, 'error')
     } finally {
       setIsReceiving(false)
     }
   }
 
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText()
-      setTicket(text)
-    } catch (error) {
-      console.error('Failed to read clipboard:', error)
-      alert('Failed to read from clipboard: ' + error)
-    }
-  }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Receive Files</h2>
-        <p className="text-sm text-gray-600">
-          Download files shared by others using their ticket
-        </p>
-      </div>
-
+    <div className="p-6 space-y-6" style={{ color: 'var(--app-main-view-fg)' }}>
+      
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
             Paste the ticket here:
           </label>
           <textarea
             value={ticket}
             onChange={(e) => setTicket(e.target.value)}
             placeholder="sendme receive [ticket]..."
-            className="w-full p-3 border border-gray-300 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full p-3 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-offset-2"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'var(--app-main-view-fg)',
+            }}
             rows={4}
           />
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={handlePaste}
-            className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          >
-            Paste from Clipboard
-          </button>
-        </div>
 
         <button
           onClick={handleReceive}
           disabled={!ticket.trim() || isReceiving}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          className="w-full py-3 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          style={{
+            backgroundColor: 'var(--app-accent)',
+            color: 'var(--app-accent-fg)',
+          }}
         >
           <Download className="h-4 w-4 mr-2" />
           {isReceiving ? 'Receiving...' : 'Receive File'}
         </button>
 
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">How to receive files:</h3>
-          <ol className="text-xs text-gray-600 space-y-1 list-decimal list-inside">
+        <div className="p-4 rounded-lg border" style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+          borderColor: 'rgba(255, 255, 255, 0.1)' 
+        }}>
+          <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
+            How to receive files:
+          </h3>
+          <ol className="text-xs space-y-1 list-decimal list-inside" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
             <li>Get a ticket from someone who is sharing a file</li>
             <li>Paste the ticket in the text area above</li>
             <li>Click "Receive File" to start downloading</li>
@@ -83,6 +98,22 @@ export function Receiver() {
           </ol>
         </div>
       </div>
+
+      <AlertDialog open={alertDialog.isOpen} onOpenChange={(open) => setAlertDialog(prev => ({ ...prev, isOpen: open }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertDialog.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setAlertDialog(prev => ({ ...prev, isOpen: false }))}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
