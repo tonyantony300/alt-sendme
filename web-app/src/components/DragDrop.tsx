@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
+import { useState, useEffect } from 'react'
 import { open } from '@tauri-apps/plugin-dialog'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog'
-import { Upload, FileText, AlertCircle } from 'lucide-react'
+import { Upload, FileText } from 'lucide-react'
 
 interface DragDropProps {
   onFileSelect: (path: string) => void
@@ -19,6 +19,8 @@ interface DragDropProps {
 }
 
 export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProps) {
+  const [isDragActive, setIsDragActive] = useState(false)
+  
   const [alertDialog, setAlertDialog] = useState<{
     isOpen: boolean
     title: string
@@ -34,6 +36,53 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
   const showAlert = (title: string, description: string, type: 'success' | 'error' | 'info' = 'info') => {
     setAlertDialog({ isOpen: true, title, description, type })
   }
+
+  // Listen for Tauri's file drop events
+  useEffect(() => {
+    const window = getCurrentWindow()
+    
+    let dropUnlisten: (() => void) | undefined
+    let hoverUnlisten: (() => void) | undefined
+    let cancelUnlisten: (() => void) | undefined
+
+    // Listen for file drop
+    window.listen<{ paths: string[], position: { x: number, y: number } }>('tauri://drag-drop', (event) => {
+      setIsDragActive(false)
+      
+      if (event.payload?.paths && event.payload.paths.length > 0) {
+        const path = event.payload.paths[0]
+        onFileSelect(path)
+      }
+    }).then(unlisten => {
+      dropUnlisten = unlisten
+    }).catch(err => {
+      console.error('Failed to register drag-drop listener:', err)
+    })
+
+    // Listen for drag hover
+    window.listen('tauri://drag-hover', (event) => {
+      setIsDragActive(true)
+    }).then(unlisten => {
+      hoverUnlisten = unlisten
+    }).catch(err => {
+      console.error('Failed to register drag-hover listener:', err)
+    })
+
+    // Listen for drag cancelled
+    window.listen('tauri://drag-leave', (event) => {
+      setIsDragActive(false)
+    }).then(unlisten => {
+      cancelUnlisten = unlisten
+    }).catch(err => {
+      console.error('Failed to register drag-leave listener:', err)
+    })
+
+    return () => {
+      dropUnlisten?.()
+      hoverUnlisten?.()
+      cancelUnlisten?.()
+    }
+  }, [onFileSelect])
 
   const openFileDialog = async () => {
     try {
@@ -67,20 +116,6 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
     }
   }
 
-  const onDrop = useCallback((_acceptedFiles: File[]) => {
-    // For Tauri, we need to handle file paths differently
-    // The drag and drop will need to be handled by the Tauri backend
-    // For now, we'll just show a message
-    showAlert('Drag & Drop Not Implemented', 'Drag and drop is not yet implemented. Please use the browse button.', 'info')
-  }, [showAlert])
-
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
-    onDrop,
-    multiple: false,
-    noClick: true, // Disable click to open file dialog
-    noKeyboard: true,
-  })
-
   const getDropzoneStyles = () => {
     const baseStyles = {
       border: '2px dashed',
@@ -92,14 +127,6 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
       backgroundColor: 'var(--app-main-view)',
       borderColor: 'rgba(255, 255, 255, 0.2)',
       color: 'var(--app-main-view-fg)',
-    }
-
-    if (isDragReject) {
-      return {
-        ...baseStyles,
-        borderColor: 'var(--app-destructive)',
-        backgroundColor: 'rgba(144, 60, 60, 0.1)',
-      }
     }
 
     if (isDragActive) {
@@ -122,14 +149,11 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
   }
 
   return (
-    <div {...getRootProps()} style={getDropzoneStyles()}>
-      <input {...getInputProps()} />
+    <div style={getDropzoneStyles()}>
       
       <div className="space-y-4">
         <div className="flex justify-center">
-          {isDragReject ? (
-            <AlertCircle className="h-12 w-12" style={{ color: 'var(--app-destructive)' }} />
-          ) : selectedPath ? (
+          {selectedPath ? (
             <FileText className="h-12 w-12" style={{ color: 'var(--app-primary)' }} />
           ) : (
             <Upload className="h-12 w-12" style={{ 
@@ -140,13 +164,11 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
         
         <div>
           <p className="text-lg font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-            {isDragReject 
-              ? 'Invalid file type' 
-              : isDragActive 
-                ? 'Drop files or folders here' 
-                : selectedPath 
-                  ? 'File selected' 
-                  : 'Drag & drop files or folders here'
+            {isDragActive 
+              ? 'Drop files or folders here' 
+              : selectedPath 
+                ? 'File selected' 
+                : 'Drag & drop files or folders here'
             }
           </p>
           <p className="text-sm mb-4" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
@@ -158,28 +180,38 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
         </div>
 
         {!selectedPath && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              // Let user choose between file and folder
-              const choice = confirm('Select a file or folder?\n\nOK = File\nCancel = Folder')
-              if (choice) {
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
                 openFileDialog()
-              } else {
+              }}
+              disabled={isLoading}
+              className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--app-accent)',
+                color: 'var(--app-accent-fg)',
+                border: '1px solid var(--app-accent)',
+              }}
+            >
+              {isLoading ? 'Loading...' : 'Browse File'}
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
                 openFolderDialog()
-              }
-            }}
-            disabled={isLoading}
-            className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: 'var(--app-accent)',
-              color: 'var(--app-accent-fg)',
-              border: '1px solid var(--app-accent)',
-            }}
-          >
-           
-            {isLoading ? 'Loading...' : 'Browse'}
-          </button>
+              }}
+              disabled={isLoading}
+              className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--app-accent)',
+                color: 'var(--app-accent-fg)',
+                border: '1px solid var(--app-accent)',
+              }}
+            >
+              {isLoading ? 'Loading...' : 'Browse Folder'}
+            </button>
+          </div>
         )}
       </div>
 
