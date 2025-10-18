@@ -177,8 +177,8 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
               border: '1px solid var(--app-accent)',
             }}
           >
-            <Upload className="h-4 w-4 mr-2" />
-            {isLoading ? 'Loading...' : 'Browse Files & Folders'}
+           
+            {isLoading ? 'Loading...' : 'Browse'}
           </button>
         )}
       </div>

@@ -59,7 +59,7 @@ export function Receiver() {
             value={ticket}
             onChange={(e) => setTicket(e.target.value)}
             placeholder="sendme receive [ticket]..."
-            className="w-full p-3 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-offset-2"
+            className="w-full p-3 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
               border: '1px solid rgba(255, 255, 255, 0.2)',

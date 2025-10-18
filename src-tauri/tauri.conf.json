@@ -24,7 +24,12 @@
         "transparent": true,
         "decorations": true,
         "titleBarStyle": "Overlay",
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "windowEffects": {
+          "effects": ["fullScreenUI", "mica", "tabbed", "blur", "acrylic"],
+          "state": "active",
+          "radius": 8
+        }
       }
     ],
     "security": {

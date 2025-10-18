@@ -86,7 +86,7 @@ export function Sender() {
           Send Files
         </h2>
         <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          Share files and folders with others using P2P technology
+          Share files with others the peer to peer way
         </p>
       </div>
 

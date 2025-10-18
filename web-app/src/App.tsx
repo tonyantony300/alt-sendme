@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Sender } from './components/Sender'
 import { Receiver } from './components/Receiver'
 
@@ -15,47 +16,101 @@ function App() {
       
       <div className="container mx-auto p-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--app-bg-fg)' }}>
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="text-3xl font-bold text-center mb-8 select-none" 
+            style={{ color: 'var(--app-bg-fg)' }}
+          >
             BETTER-SENDME
-          </h1>
+          </motion.h1>
           
           {/* Tab Navigation */}
-          <div className="flex space-x-1 mb-6 p-1 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
-            <button
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+            className="flex space-x-1 mb-6 p-1 rounded-lg relative select-none" 
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+          >
+            {/* Animated Background Indicator */}
+            <motion.div
+              layoutId="activeTab"
+              className="absolute h-[calc(100%-8px)] rounded-md"
+              style={{
+                backgroundColor: 'var(--app-main-view)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+              }}
+              initial={false}
+              animate={{
+                left: activeTab === 'send' ? '4px' : 'calc(50% + 2px)',
+                width: 'calc(50% - 6px)',
+              }}
+           
+            />
+            
+            <motion.button
               onClick={() => setActiveTab('send')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium relative z-10 ${
                 activeTab === 'send'
-                  ? 'shadow-sm'
-                  : 'opacity-70 hover:opacity-100'
+                  ? ''
+                  : 'opacity-70'
               }`}
               style={{
-                backgroundColor: activeTab === 'send' ? 'var(--app-main-view)' : 'transparent',
                 color: 'var(--app-main-view-fg)',
-                border: activeTab === 'send' ? '1px solid rgba(255, 255, 255, 0.2)' : 'none'
               }}
+             
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
             >
               Send Files
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => setActiveTab('receive')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium relative z-10 ${
                 activeTab === 'receive'
-                  ? 'shadow-sm'
-                  : 'opacity-70 hover:opacity-100'
+                  ? ''
+                  : 'opacity-70'
               }`}
               style={{
-                backgroundColor: activeTab === 'receive' ? 'var(--app-main-view)' : 'transparent',
                 color: 'var(--app-main-view-fg)',
-                border: activeTab === 'receive' ? '1px solid rgba(255, 255, 255, 0.2)' : 'none'
               }}
+             
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
             >
               Receive Files
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
           
           {/* Tab Content */}
-          <div className="rounded-lg shadow-sm glass-card">
-            {activeTab === 'send' ? <Sender /> : <Receiver />}
+          <div 
+            className="rounded-lg shadow-sm glass-card overflow-hidden"
+          >
+        
+              {activeTab === 'send' ? (
+                <motion.div
+                  key="send"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                >
+                  <Sender />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="receive"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                 
+                >
+                  <Receiver />
+                </motion.div>
+              )}
+          
           </div>
         </div>
       </div>

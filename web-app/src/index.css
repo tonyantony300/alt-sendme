@@ -31,7 +31,7 @@
   
   /* Dark theme colors */
   --app-bg: rgb(25, 25, 25);
-  --app-main-view: rgb(25, 25, 25);
+  --app-main-view: rgba(25, 25, 25, 0.45);
   --app-primary: rgb(219, 88, 44);
   --app-accent: rgb(45, 120, 220);
   --app-destructive: rgb(144, 60, 60);
@@ -93,17 +93,25 @@
     background: transparent;
   }
   
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/20 border border-white/30;
+  }
+  
+  .glass-overlay {
+    @apply backdrop-blur-sm bg-black/50;
+  }
+  
+  .glass-panel {
+    @apply backdrop-blur-xl bg-white/10 border border-white/20;
+  }
+  
   .glass-background {
-    background: rgba(25, 25, 25, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    @apply backdrop-blur-lg bg-black/20 border border-white/10;
   }
   
   .glass-card {
-    background: rgba(25, 25, 25, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* @apply backdrop-blur-md bg-white/5 border border-white/10; */
+    background: rgba(25, 25, 25, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
@@ -116,5 +124,22 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+/* Global smooth transitions for interactive elements */
+button, input, textarea {
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Disable transitions for motion-reduced preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
