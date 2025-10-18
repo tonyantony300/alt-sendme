@@ -13,32 +13,33 @@ export function TicketInput({
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
           Paste the ticket here:
         </label>
-        <textarea
-          value={ticket}
-          onChange={(e) => onTicketChange(e.target.value)}
-          placeholder="sendme receive [ticket]..."
-          className="w-full p-3 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            color: 'var(--app-main-view-fg)',
-          }}
-          rows={4}
-        />
+        <div className="flex gap-2">
+          <textarea
+            value={ticket}
+            onChange={(e) => onTicketChange(e.target.value)}
+            placeholder="sendme receive [ticket]..."
+            className="p-3 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'var(--app-main-view-fg)',
+              width: '85%',
+            }}
+            rows={4}
+          />
+          <button
+            onClick={onReceive}
+            disabled={!ticket.trim() || isReceiving}
+            className="w-[15%] py-3 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            style={{
+              backgroundColor: 'var(--app-accent)',
+              color: 'var(--app-accent-fg)',
+            }}
+          >
+            <Download className="h-8 w-8" />
+          </button>
+        </div>
       </div>
-
-      <button
-        onClick={onReceive}
-        disabled={!ticket.trim() || isReceiving}
-        className="w-full py-3 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-        style={{
-          backgroundColor: 'var(--app-accent)',
-          color: 'var(--app-accent-fg)',
-        }}
-      >
-        <Download className="h-4 w-4 mr-2" />
-        {isReceiving ? 'Receiving...' : 'Receive File'}
-      </button>
     </div>
   )
 }

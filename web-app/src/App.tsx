@@ -66,7 +66,7 @@ function App() {
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
             >
-              Send Files
+              Send
             </motion.button>
             <motion.button
               onClick={() => setActiveTab('receive')}
@@ -82,7 +82,7 @@ function App() {
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
             >
-              Receive Files
+              Receive
             </motion.button>
           </div>
           
