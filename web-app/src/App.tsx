@@ -6,7 +6,13 @@ function App() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--app-bg)', color: 'var(--app-bg-fg)' }}>
+    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--app-bg)', color: 'var(--app-bg-fg)' }}>
+      {/* Custom drag region - enables window dragging */}
+      <div 
+        className="absolute w-full h-10 z-10" 
+        data-tauri-drag-region 
+      />
+      
       <div className="container mx-auto p-8">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--app-bg-fg)' }}>
