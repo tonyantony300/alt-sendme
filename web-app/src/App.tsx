@@ -6,7 +6,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--app-bg)', color: 'var(--app-bg-fg)' }}>
+    <div className="min-h-screen relative glass-background" style={{ color: 'var(--app-bg-fg)' }}>
       {/* Custom drag region - enables window dragging */}
       <div 
         className="absolute w-full h-10 z-10" 
@@ -54,10 +54,7 @@ function App() {
           </div>
           
           {/* Tab Content */}
-          <div className="rounded-lg shadow-sm border" style={{ 
-            backgroundColor: 'var(--app-main-view)', 
-            borderColor: 'rgba(255, 255, 255, 0.1)' 
-          }}>
+          <div className="rounded-lg shadow-sm glass-card">
             {activeTab === 'send' ? <Sender /> : <Receiver />}
           </div>
         </div>

@@ -53,18 +53,18 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: var(--app-bg);
+    background: transparent;
     color: var(--app-bg-fg);
     min-height: 100vh;
     overflow: hidden;
   }
   
   html {
-    background-color: var(--app-bg);
+    background: transparent;
   }
   
   #root {
-    background-color: var(--app-bg);
+    background: transparent;
     min-height: 100vh;
   }
   
@@ -91,6 +91,20 @@
   .drag-region {
     @apply absolute w-full h-10 z-10;
     background: transparent;
+  }
+  
+  .glass-background {
+    background: rgba(25, 25, 25, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-card {
+    background: rgba(25, 25, 25, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
