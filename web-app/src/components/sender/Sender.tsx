@@ -25,6 +25,7 @@ export function Sender() {
     copySuccess,
     alertDialog,
     transferMetadata,
+    transferProgress,
     handleFileSelect,
     startSharing,
     stopSharing,
@@ -32,15 +33,6 @@ export function Sender() {
     closeAlert,
     resetForNewTransfer
   } = useSender()
-
-  // Debug logging
-  console.log('🎨 Sender render state:', {
-    isSharing,
-    isTransporting,
-    isCompleted,
-    transferMetadata: transferMetadata ? 'present' : 'null',
-    selectedPath
-  })
 
   return (
     <div className="p-6 space-y-6 relative" style={{ color: 'var(--app-main-view-fg)' }}>
@@ -71,8 +63,8 @@ export function Sender() {
           />
         </div>
         </>
-      ) : transferMetadata ? (
-        // Success screen
+      ) : isCompleted && transferMetadata ? (
+        // Success screen - only show when transfer is completed AND metadata is available
         <TransferSuccessScreen 
           metadata={transferMetadata}
           onDone={resetForNewTransfer}
@@ -95,6 +87,7 @@ export function Sender() {
           selectedPath={selectedPath}
           ticket={ticket}
           copySuccess={copySuccess}
+          transferProgress={transferProgress}
           onStartSharing={startSharing}
           onStopSharing={stopSharing}
           onCopyTicket={copyTicket}

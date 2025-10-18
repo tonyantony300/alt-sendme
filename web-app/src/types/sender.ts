@@ -6,6 +6,13 @@ export interface TransferMetadata {
   endTime: number
 }
 
+export interface TransferProgress {
+  bytesTransferred: number
+  totalBytes: number
+  speedBps: number // bytes per second
+  percentage: number
+}
+
 export interface SuccessScreenProps {
   metadata: TransferMetadata
   onDone: () => void
@@ -49,6 +56,7 @@ export interface SharingControlsProps {
   selectedPath: string | null
   ticket: string | null
   copySuccess: boolean
+  transferProgress: TransferProgress | null
   onStartSharing: () => Promise<void>
   onStopSharing: () => Promise<void>
   onCopyTicket: () => Promise<void>

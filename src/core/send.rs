@@ -38,6 +38,25 @@ fn emit_event(app_handle: &AppHandle, event_name: &str) {
     }
 }
 
+// Helper function to emit progress events with payload
+fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_bytes: u64, speed_bps: f64) {
+    if let Some(handle) = app_handle {
+        // Use a consistent event name
+        let event_name = "transfer-progress";
+        
+        // Convert speed to integer (multiply by 1000 to preserve 3 decimal places)
+        let speed_int = (speed_bps * 1000.0) as i64;
+        
+        // Create payload data as colon-separated string
+        let payload = format!("{}:{}:{}", bytes_transferred, total_bytes, speed_int);
+        
+        // Emit the event with proper payload
+        if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
+            tracing::warn!("Failed to emit progress event: {}", e);
+        }
+    }
+}
+
 /// Start sharing a file or directory
 pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHandle) -> anyhow::Result<SendResult> {
     tracing::info!("🚀 Starting share for path: {}", path.display());
@@ -89,10 +108,6 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     let blobs_data_dir2 = blobs_data_dir.clone();
     let (progress_tx, progress_rx) = mpsc::channel(32);
     let app_handle_clone = app_handle.clone();
-    let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
-        progress_rx,
-        app_handle_clone,
-    ));
     
     let setup = async move {
         let t0 = Instant::now();
@@ -127,6 +142,14 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         let dt = t0.elapsed();
         tracing::info!("✅ Import complete in {:?}", dt);
 
+        // Start the progress handler with the total file size
+        let (ref _temp_tag, size, ref _collection) = import_result;
+        let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
+            progress_rx,
+            app_handle_clone,
+            size, // Pass the total file size
+        ));
+
         tracing::info!("🌐 Starting protocol router...");
         let router = iroh::protocol::Router::builder(endpoint)
             .accept(iroh_blobs::ALPN, blobs.clone())
@@ -145,10 +168,10 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         })
         .await?;
 
-        anyhow::Ok((router, import_result, dt, blobs_data_dir2, store))
+        anyhow::Ok((router, import_result, dt, blobs_data_dir2, store, progress_handle))
     };
     
-    let (router, (temp_tag, size, _collection), _dt, _blobs_data_dir, store) = select! {
+    let (router, (temp_tag, size, _collection), _dt, _blobs_data_dir, store, progress_handle) = select! {
         x = setup => x?,
         _ = tokio::signal::ctrl_c() => {
             anyhow::bail!("Operation cancelled");
@@ -339,12 +362,25 @@ pub fn canonicalized_path_to_string(
 async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
     app_handle: AppHandle,
+    total_file_size: u64,
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
     
-    tracing::info!("🔍 Provider progress handler started");
+    tracing::info!("🔍 Provider progress handler started with total file size: {} bytes", total_file_size);
     
     let mut tasks = FuturesUnordered::new();
+    
+    // Track transfer state per request
+    #[derive(Clone)]
+    struct TransferState {
+        start_time: Instant,
+        total_size: u64,
+    }
+    
+    let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> = 
+        Arc::new(Mutex::new(std::collections::HashMap::new()));
     
     loop {
         tokio::select! {
@@ -369,8 +405,9 @@ async fn show_provide_progress_with_logging(
                         tracing::info!("📥 Get request received: connection_id {}, request_id {}", 
                             connection_id, request_id);
                         
-                        // Clone app_handle for the task
+                        // Clone app_handle and state for the task
                         let app_handle_task = app_handle.clone();
+                        let transfer_states_task = transfer_states.clone();
                         
                         // Spawn a task to monitor this request
                         let mut rx = msg.rx;
@@ -382,9 +419,17 @@ async fn show_provide_progress_with_logging(
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
                                     iroh_blobs::provider::events::RequestUpdate::Started(m) => {
-                                        tracing::info!("▶️  Request started: conn {} req {} idx {} hash {}", 
-                                            connection_id, request_id, m.index, m.hash.fmt_short());
+                                        tracing::info!("▶️  Request started: conn {} req {} idx {} hash {} size {}", 
+                                            connection_id, request_id, m.index, m.hash.fmt_short(), m.size);
                                         if !transfer_started {
+                                            // Store transfer state with the total file size, not individual blob size
+                                            transfer_states_task.lock().await.insert(
+                                                (connection_id, request_id),
+                                                TransferState {
+                                                    start_time: Instant::now(),
+                                                    total_size: total_file_size,
+                                                }
+                                            );
                                             emit_event(&app_handle_task, "transfer-started");
                                             transfer_started = true;
                                         }
@@ -396,11 +441,30 @@ async fn show_provide_progress_with_logging(
                                             emit_event(&app_handle_task, "transfer-started");
                                             transfer_started = true;
                                         }
+                                        
+                                        // Emit progress event with speed calculation
+                                        if let Some(state) = transfer_states_task.lock().await.get(&(connection_id, request_id)) {
+                                            let elapsed = state.start_time.elapsed().as_secs_f64();
+                                            let speed_bps = if elapsed > 0.0 {
+                                                m.end_offset as f64 / elapsed
+                                            } else {
+                                                0.0
+                                            };
+                                            
+                                            emit_progress_event(
+                                                &app_handle_task,
+                                                m.end_offset,
+                                                state.total_size,
+                                                speed_bps
+                                            );
+                                        }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         tracing::info!("✅ Request completed: conn {} req {}", 
                                             connection_id, request_id);
                                         if transfer_started {
+                                            // Clean up state
+                                            transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             emit_event(&app_handle_task, "transfer-completed");
                                         }
                                     }
@@ -408,6 +472,8 @@ async fn show_provide_progress_with_logging(
                                         tracing::warn!("⚠️  Request aborted: conn {} req {}", 
                                             connection_id, request_id);
                                         if transfer_started {
+                                            // Clean up state
+                                            transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             emit_event(&app_handle_task, "transfer-completed");
                                         }
                                     }

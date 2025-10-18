@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
-import type { AlertDialogState, AlertType, TransferMetadata } from '../types/sender'
+import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
 export interface UseSenderReturn {
   // State
@@ -14,6 +14,7 @@ export interface UseSenderReturn {
   copySuccess: boolean
   alertDialog: AlertDialogState
   transferMetadata: TransferMetadata | null
+  transferProgress: TransferProgress | null
   
   // Actions
   handleFileSelect: (path: string) => void
@@ -34,6 +35,7 @@ export function useSender(): UseSenderReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [transferMetadata, setTransferMetadata] = useState<TransferMetadata | null>(null)
+  const [transferProgress, setTransferProgress] = useState<TransferProgress | null>(null)
   const [transferStartTime, setTransferStartTime] = useState<number | null>(null)
   const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
     isOpen: false,
@@ -45,6 +47,7 @@ export function useSender(): UseSenderReturn {
   // Listen for transfer events from Rust backend
   useEffect(() => {
     let unlistenStart: UnlistenFn | undefined
+    let unlistenProgress: UnlistenFn | undefined
     let unlistenComplete: UnlistenFn | undefined
 
     const setupListeners = async () => {
@@ -53,24 +56,46 @@ export function useSender(): UseSenderReturn {
         setIsTransporting(true)
         setIsCompleted(false)
         setTransferStartTime(Date.now())
+        setTransferProgress(null) // Reset progress
+      })
+
+      // Listen for transfer progress events
+      unlistenProgress = await listen('transfer-progress', (event: any) => {
+        // Parse the payload from the event
+        // The payload is in event.payload as a string: "bytes_transferred:total_bytes:speed_int"
+        try {
+          const payload = event.payload as string
+          const parts = payload.split(':')
+          
+          if (parts.length === 3) {
+            const bytesTransferred = parseInt(parts[0], 10)
+            const totalBytes = parseInt(parts[1], 10)
+            const speedInt = parseInt(parts[2], 10)
+            // Convert speed back from integer (divide by 1000 to get original value)
+            const speedBps = speedInt / 1000.0
+            const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
+            
+            setTransferProgress({
+              bytesTransferred,
+              totalBytes,
+              speedBps,
+              percentage
+            })
+          }
+        } catch (error) {
+          console.error('Failed to parse progress event:', error)
+        }
       })
 
       // Listen for transfer completed event
       unlistenComplete = await listen('transfer-completed', async () => {
-        console.log('🟢 Transfer completed event received!')
         setIsTransporting(false)
         setIsCompleted(true)
+        setTransferProgress(null) // Clear progress on completion
         
         // Calculate transfer metadata
         const endTime = Date.now()
         const duration = transferStartTime ? endTime - transferStartTime : 0
-        
-        console.log('📊 Transfer metadata calculation:', {
-          transferStartTime,
-          endTime,
-          duration,
-          selectedPath
-        })
         
         if (selectedPath) {
           try {
@@ -83,7 +108,6 @@ export function useSender(): UseSenderReturn {
               startTime: transferStartTime || endTime, 
               endTime 
             }
-            console.log('✅ Setting transfer metadata:', metadata)
             setTransferMetadata(metadata)
           } catch (error) {
             console.error('Failed to get file size:', error)
@@ -95,11 +119,8 @@ export function useSender(): UseSenderReturn {
               startTime: transferStartTime || endTime, 
               endTime 
             }
-            console.log('⚠️ Setting transfer metadata with fallback:', metadata)
             setTransferMetadata(metadata)
           }
-        } else {
-          console.warn('❌ No selectedPath available for metadata')
         }
       })
     }
@@ -111,6 +132,7 @@ export function useSender(): UseSenderReturn {
     // Cleanup listeners on unmount
     return () => {
       if (unlistenStart) unlistenStart()
+      if (unlistenProgress) unlistenProgress()
       if (unlistenComplete) unlistenComplete()
     }
   }, [transferStartTime, selectedPath])
@@ -153,6 +175,7 @@ export function useSender(): UseSenderReturn {
       setTicket(null)
       setSelectedPath(null)
       setTransferMetadata(null)
+      setTransferProgress(null)
       setTransferStartTime(null)
     } catch (error) {
       console.error('Failed to stop sharing:', error)
@@ -189,6 +212,7 @@ export function useSender(): UseSenderReturn {
     copySuccess,
     alertDialog,
     transferMetadata,
+    transferProgress,
     
     // Actions
     handleFileSelect,

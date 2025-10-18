@@ -4,6 +4,7 @@ use std::sync::Arc;
 // Import the EventEmitter trait - we'll define it here or import it
 pub trait EventEmitter: Send + Sync {
     fn emit_event(&self, event_name: &str) -> Result<(), String>;
+    fn emit_event_with_payload(&self, event_name: &str, payload: &str) -> Result<(), String>;
 }
 
 // Type alias for the app handle - we use Arc<dyn EventEmitter> to allow cloning and avoid direct tauri dependency in core

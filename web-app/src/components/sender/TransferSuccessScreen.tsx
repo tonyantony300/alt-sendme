@@ -25,9 +25,26 @@ function formatDuration(ms: number): string {
   }
 }
 
+// Helper function to format speed
+function formatSpeed(bytesPerSecond: number): string {
+  const mbps = bytesPerSecond / (1024 * 1024)
+  const kbps = bytesPerSecond / 1024
+
+  if (mbps >= 1) {
+    return `${mbps.toFixed(2)} MB/s`
+  } else {
+    return `${kbps.toFixed(2)} KB/s`
+  }
+}
+
+// Helper function to calculate average transfer speed
+function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): number {
+  if (durationMs === 0) return 0
+  const durationSeconds = durationMs / 1000
+  return fileSizeBytes / durationSeconds
+}
+
 export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) {
-  console.log('🎉 TransferSuccessScreen rendered with metadata:', metadata)
-  
   return (
     <div className="flex flex-col items-center justify-center space-y-6 py-8">
       {/* Success Icon */}
@@ -104,6 +121,21 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               style={{ color: 'var(--app-main-view-fg)' }}
             >
               {formatDuration(metadata.duration)}
+            </span>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <span 
+              className="text-sm font-medium"
+              style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+            >
+              Avg Speed:
+            </span>
+            <span 
+              className="text-sm"
+              style={{ color: 'var(--app-main-view-fg)' }}
+            >
+              {formatSpeed(calculateAverageSpeed(metadata.fileSize, metadata.duration))}
             </span>
           </div>
         </div>

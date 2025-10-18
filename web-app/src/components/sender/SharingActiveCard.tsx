@@ -1,10 +1,13 @@
 import { Copy, CheckCircle } from 'lucide-react'
 import type { SharingControlsProps, TicketDisplayProps } from '../../types/sender'
+import { TransferProgressBar } from './TransferProgressBar'
+
 
 export function SharingActiveCard({ 
   selectedPath, 
   ticket, 
-  copySuccess, 
+  copySuccess,
+  transferProgress,
   isTransporting,
   isCompleted,
   onCopyTicket, 
@@ -30,6 +33,10 @@ export function SharingActiveCard({
     <div className="space-y-4">
       <div className="p-4 rounded-lg absolute top-0 left-0"
       >
+           <p className="text-xs mb-2 max-w-[80vw] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <strong>File:</strong> {selectedPath?.split('/').pop()}
+        </p>
+        
         <div className="flex items-center mb-2">
           <div 
             className="h-2 w-2 rounded-full mr-2" 
@@ -42,22 +49,23 @@ export function SharingActiveCard({
             {statusText}
           </p>
         </div>
-        <p className="text-xs mb-2 max-w-[14rem] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-          <strong>File:</strong> {selectedPath?.split('/').pop()}
-        </p>
-      
       </div>
       
       <p className="text-xs text-center" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
           Keep this app open while others download your files
         </p>
         
-      {ticket && (
+      {/* Show ticket when not transferring, show progress bar when transferring */}
+      {!isTransporting && ticket && (
         <TicketDisplay 
           ticket={ticket} 
           copySuccess={copySuccess} 
           onCopyTicket={onCopyTicket} 
         />
+      )}
+      
+      {isTransporting && transferProgress && (
+        <TransferProgressBar progress={transferProgress} />
       )}
        
     

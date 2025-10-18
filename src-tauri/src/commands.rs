@@ -15,6 +15,12 @@ impl EventEmitter for TauriEventEmitter {
             .emit(event_name, ())
             .map_err(|e| e.to_string())
     }
+    
+    fn emit_event_with_payload(&self, event_name: &str, payload: &str) -> Result<(), String> {
+        self.app_handle
+            .emit(event_name, payload)
+            .map_err(|e| e.to_string())
+    }
 }
 
 /// Get file or directory size
