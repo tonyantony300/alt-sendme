@@ -1,6 +1,7 @@
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
+import { RadioTower } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,16 +30,18 @@ export function Sender() {
 
   return (
     <div className="p-6 space-y-6" style={{ color: 'var(--app-main-view-fg)' }}>
-      <div className="text-center">
-        <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-          Send Files
-        </h2>
-        <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          Share files with others the peer to peer way
-        </p>
-      </div>
+   
 
       {!isSharing ? (
+        <>
+           <div className="text-center">
+           <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
+             Send Files
+           </h2>
+           <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+             Share files with others the peer to peer way
+           </p>
+         </div>
         <div className="space-y-4">
           <DragDrop 
             onFileSelect={handleFileSelect} 
@@ -53,7 +56,12 @@ export function Sender() {
             onStartSharing={startSharing}
           />
         </div>
+        </>
       ) : (
+        <>
+        <div className="text-center">
+        <RadioTower className="mx-auto mb-4 h-32 w-32" size={128} style={{ color: 'var(--app-accent)' }} />
+        </div>
         <SharingActiveCard
           isSharing={isSharing}
           isLoading={isLoading}
@@ -64,6 +72,7 @@ export function Sender() {
           onStopSharing={stopSharing}
           onCopyTicket={copyTicket}
         />
+        </>
       )}
 
       <AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
