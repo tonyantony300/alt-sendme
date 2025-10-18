@@ -1,33 +1,57 @@
-import { Copy, X, CheckCircle } from 'lucide-react'
+import { Copy, CheckCircle } from 'lucide-react'
 import type { SharingControlsProps, TicketDisplayProps } from '../../types/sender'
 
 export function SharingActiveCard({ 
   selectedPath, 
   ticket, 
   copySuccess, 
+  isTransporting,
+  isCompleted,
   onCopyTicket, 
   onStopSharing 
 }: SharingControlsProps) {
+  // Determine the current state and colors
+  const getStatusColor = () => {
+    if (isCompleted) return 'rgb(45, 120, 220)' // Blue - completed
+    if (isTransporting) return 'rgba(37, 211, 101, 0.687)' // Green - transporting
+    return '#B7B7B7' // Gray - listening
+  }
+
+  const getStatusText = () => {
+    if (isCompleted) return 'Transfer completed'
+    if (isTransporting) return 'Sharing in progress'
+    return 'Listening for connection'
+  }
+
+  const statusColor = getStatusColor()
+  const statusText = getStatusText()
+
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-lg border" style={{ 
-        backgroundColor: 'rgba(45, 120, 220, 0.1)', 
-        borderColor: 'var(--app-accent)' 
-      }}>
+      <div className="p-4 rounded-lg absolute top-0 left-0"
+      >
         <div className="flex items-center mb-2">
-          <div className="h-2 w-2 rounded-full mr-2" style={{ backgroundColor: 'var(--app-accent)' }}></div>
-          <p className="text-sm font-medium" style={{ color: 'var(--app-accent)' }}>
-            Sharing Active
+          <div 
+            className="h-2 w-2 rounded-full mr-2" 
+            style={{ backgroundColor: statusColor }}
+          ></div>
+          <p 
+            className="text-sm font-medium" 
+            style={{ color: statusColor }}
+          >
+            {statusText}
           </p>
         </div>
-        <p className="text-xs mb-2" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+        <p className="text-xs mb-2 max-w-[14rem] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
           <strong>File:</strong> {selectedPath?.split('/').pop()}
         </p>
-        <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-          Keep this app open while others download your files
-        </p>
+      
       </div>
       
+      <p className="text-xs text-center" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          Keep this app open while others download your files
+        </p>
+        
       {ticket && (
         <TicketDisplay 
           ticket={ticket} 
@@ -35,17 +59,18 @@ export function SharingActiveCard({
           onCopyTicket={onCopyTicket} 
         />
       )}
-      
+       
+    
       <button
         onClick={onStopSharing}
-        className="w-full py-2 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center"
+        className="absolute top-0 right-6 py-2 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center"
         style={{
           backgroundColor: 'var(--app-destructive)',
           color: 'var(--app-destructive-fg)',
         }}
       >
-        <X className="h-4 w-4 mr-2" />
-        Stop Sharing
+     
+        <span className="text-xl"> ⏹</span>
       </button>
     </div>
   )

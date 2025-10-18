@@ -1,4 +1,4 @@
-use crate::core::types::{SendResult, SendOptions, AddrInfoOptions, apply_options, get_or_create_secret};
+use crate::core::types::{SendResult, SendOptions, AddrInfoOptions, apply_options, get_or_create_secret, AppHandle};
 use anyhow::Context;
 use data_encoding::HEXLOWER;
 use iroh::{
@@ -29,8 +29,17 @@ use tracing::trace;
 use walkdir::WalkDir;
 use n0_future::StreamExt;
 
+// Helper function to emit events through the app handle
+fn emit_event(app_handle: &AppHandle, event_name: &str) {
+    if let Some(handle) = app_handle {
+        if let Err(e) = handle.emit_event(event_name) {
+            tracing::warn!("Failed to emit event {}: {}", event_name, e);
+        }
+    }
+}
+
 /// Start sharing a file or directory
-pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<SendResult> {
+pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHandle) -> anyhow::Result<SendResult> {
     tracing::info!("🚀 Starting share for path: {}", path.display());
     
     let secret_key = get_or_create_secret()?;
@@ -79,8 +88,10 @@ pub async fn start_share(path: PathBuf, options: SendOptions) -> anyhow::Result<
     let path2 = path.clone();
     let blobs_data_dir2 = blobs_data_dir.clone();
     let (progress_tx, progress_rx) = mpsc::channel(32);
+    let app_handle_clone = app_handle.clone();
     let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
         progress_rx,
+        app_handle_clone,
     ));
     
     let setup = async move {
@@ -327,6 +338,7 @@ pub fn canonicalized_path_to_string(
 /// Enhanced progress handler with detailed logging for debugging
 async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
+    app_handle: AppHandle,
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     
@@ -357,28 +369,47 @@ async fn show_provide_progress_with_logging(
                         tracing::info!("📥 Get request received: connection_id {}, request_id {}", 
                             connection_id, request_id);
                         
+                        // Clone app_handle for the task
+                        let app_handle_task = app_handle.clone();
+                        
                         // Spawn a task to monitor this request
                         let mut rx = msg.rx;
                         tasks.push(async move {
                             tracing::info!("🔄 Monitoring request: connection_id {}, request_id {}", connection_id, request_id);
+                            
+                            let mut transfer_started = false;
                             
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
                                     iroh_blobs::provider::events::RequestUpdate::Started(m) => {
                                         tracing::info!("▶️  Request started: conn {} req {} idx {} hash {}", 
                                             connection_id, request_id, m.index, m.hash.fmt_short());
+                                        if !transfer_started {
+                                            emit_event(&app_handle_task, "transfer-started");
+                                            transfer_started = true;
+                                        }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
                                         tracing::info!("📊 Progress: conn {} req {} offset {}", 
                                             connection_id, request_id, m.end_offset);
+                                        if !transfer_started {
+                                            emit_event(&app_handle_task, "transfer-started");
+                                            transfer_started = true;
+                                        }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         tracing::info!("✅ Request completed: conn {} req {}", 
                                             connection_id, request_id);
+                                        if transfer_started {
+                                            emit_event(&app_handle_task, "transfer-completed");
+                                        }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Aborted(_m) => {
                                         tracing::warn!("⚠️  Request aborted: conn {} req {}", 
                                             connection_id, request_id);
+                                        if transfer_started {
+                                            emit_event(&app_handle_task, "transfer-completed");
+                                        }
                                     }
                                 }
                             }

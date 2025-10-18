@@ -1,5 +1,5 @@
 {
-  "name": "better-sendme",
+  "name": "alt-sendme",
   "version": "0.1.0",
   "scripts": {
     "dev": "cd ../web-app && npm run dev",

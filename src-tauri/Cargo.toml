@@ -1,5 +1,5 @@
 [package]
-name = "better-sendme"
+name = "alt-sendme"
 version = "0.1.0"
 description = "Desktop version of sendme - P2P file sharing with NAT hole punching"
 authors = ["Sendme Team"]
@@ -25,6 +25,7 @@ dirs = "6.0"
 sendme = { path = "../" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+walkdir = "2.4"
 
 [features]
 default = ["custom-protocol"]

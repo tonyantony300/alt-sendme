@@ -1,3 +1,16 @@
+export interface TransferMetadata {
+  fileName: string
+  fileSize: number  // bytes
+  duration: number  // milliseconds
+  startTime: number
+  endTime: number
+}
+
+export interface SuccessScreenProps {
+  metadata: TransferMetadata
+  onDone: () => void
+}
+
 export interface AlertDialogState {
   isOpen: boolean
   title: string
@@ -31,6 +44,8 @@ export interface ShareActionProps {
 export interface SharingControlsProps {
   isSharing: boolean
   isLoading: boolean
+  isTransporting: boolean
+  isCompleted: boolean
   selectedPath: string | null
   ticket: string | null
   copySuccess: boolean

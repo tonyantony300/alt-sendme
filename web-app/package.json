@@ -1,5 +1,5 @@
 {
-  "name": "better-sendme",
+  "name": "alt-sendme",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -15,6 +15,7 @@
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.292.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

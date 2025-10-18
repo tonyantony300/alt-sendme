@@ -1,7 +1,8 @@
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
-import { RadioTower } from 'lucide-react'
+import { PulseAnimation } from './PulseAnimation'
+import { TransferSuccessScreen } from './TransferSuccessScreen'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,20 +17,33 @@ import { useSender } from '../../hooks/useSender'
 export function Sender() {
   const {
     isSharing,
+    isTransporting,
+    isCompleted,
     ticket,
     selectedPath,
     isLoading,
     copySuccess,
     alertDialog,
+    transferMetadata,
     handleFileSelect,
     startSharing,
     stopSharing,
     copyTicket,
-    closeAlert
+    closeAlert,
+    resetForNewTransfer
   } = useSender()
 
+  // Debug logging
+  console.log('🎨 Sender render state:', {
+    isSharing,
+    isTransporting,
+    isCompleted,
+    transferMetadata: transferMetadata ? 'present' : 'null',
+    selectedPath
+  })
+
   return (
-    <div className="p-6 space-y-6" style={{ color: 'var(--app-main-view-fg)' }}>
+    <div className="p-6 space-y-6 relative" style={{ color: 'var(--app-main-view-fg)' }}>
    
 
       {!isSharing ? (
@@ -57,14 +71,27 @@ export function Sender() {
           />
         </div>
         </>
+      ) : transferMetadata ? (
+        // Success screen
+        <TransferSuccessScreen 
+          metadata={transferMetadata}
+          onDone={resetForNewTransfer}
+        />
       ) : (
+        // Sharing active with pulse animation
         <>
         <div className="text-center">
-        <RadioTower className="mx-auto mb-4 h-32 w-32" size={128} style={{ color: 'var(--app-accent)' }} />
+        <PulseAnimation 
+          isTransporting={isTransporting}
+          isCompleted={isCompleted}
+          className="mx-auto mb-4 flex items-center justify-center" 
+        />
         </div>
         <SharingActiveCard
           isSharing={isSharing}
           isLoading={isLoading}
+          isTransporting={isTransporting}
+          isCompleted={isCompleted}
           selectedPath={selectedPath}
           ticket={ticket}
           copySuccess={copySuccess}
