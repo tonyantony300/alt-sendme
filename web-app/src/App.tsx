@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Sender } from './components/Sender'
-import { Receiver } from './components/Receiver'
+import { motion } from 'framer-motion'
+import { Sender } from './components/sender/Sender'
+import { Receiver } from './components/receiver/Receiver'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
@@ -16,21 +16,16 @@ function App() {
       
       <div className="container mx-auto p-8">
         <div className="max-w-2xl mx-auto">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+          <h1
             className="text-3xl font-bold text-center mb-8 select-none" 
             style={{ color: 'var(--app-bg-fg)' }}
           >
             BETTER-SENDME
-          </motion.h1>
+          </h1>
           
           {/* Tab Navigation */}
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+          <div 
+      
             className="flex space-x-1 mb-6 p-1 rounded-lg relative select-none" 
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
           >
@@ -83,7 +78,7 @@ function App() {
             >
               Receive Files
             </motion.button>
-          </motion.div>
+          </div>
           
           {/* Tab Content */}
           <div 

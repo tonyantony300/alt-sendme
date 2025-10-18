@@ -115,3 +115,21 @@ pub async fn get_sharing_status(
     let app_state = state.lock().await;
     Ok(app_state.current_share.as_ref().map(|share| share.ticket.clone()))
 }
+
+/// Check if a path is a file or directory
+#[tauri::command]
+pub async fn check_path_type(path: String) -> Result<String, String> {
+    let path = PathBuf::from(path);
+    
+    if !path.exists() {
+        return Err("Path does not exist".to_string());
+    }
+    
+    if path.is_dir() {
+        Ok("directory".to_string())
+    } else if path.is_file() {
+        Ok("file".to_string())
+    } else {
+        Err("Path is neither a file nor a directory".to_string())
+    }
+}

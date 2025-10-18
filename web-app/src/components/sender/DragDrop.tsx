@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { invoke } from '@tauri-apps/api/core'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,8 +10,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './ui/alert-dialog'
-import { Upload, FileText } from 'lucide-react'
+} from '../ui/alert-dialog'
+import { Upload, CheckCircle, ChevronRight, ChevronDown } from 'lucide-react'
 
 interface DragDropProps {
   onFileSelect: (path: string) => void
@@ -20,6 +21,13 @@ interface DragDropProps {
 
 export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProps) {
   const [isDragActive, setIsDragActive] = useState(false)
+  const [pathType, setPathType] = useState<'file' | 'directory' | null>(null)
+  const [showFullPath, setShowFullPath] = useState(false)
+  
+  // Reset showFullPath when selectedPath changes
+  useEffect(() => {
+    setShowFullPath(false)
+  }, [selectedPath])
   
   const [alertDialog, setAlertDialog] = useState<{
     isOpen: boolean
@@ -36,6 +44,29 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
   const showAlert = (title: string, description: string, type: 'success' | 'error' | 'info' = 'info') => {
     setAlertDialog({ isOpen: true, title, description, type })
   }
+
+  const closeAlert = () => {
+    setAlertDialog(prev => ({ ...prev, isOpen: false }))
+  }
+
+  const checkPathType = async (path: string) => {
+    try {
+      const type = await invoke<string>('check_path_type', { path })
+      setPathType(type as 'file' | 'directory')
+    } catch (error) {
+      console.error('Failed to check path type:', error)
+      setPathType(null)
+    }
+  }
+
+  // Check path type when selectedPath changes
+  useEffect(() => {
+    if (selectedPath) {
+      checkPathType(selectedPath)
+    } else {
+      setPathType(null)
+    }
+  }, [selectedPath])
 
   // Listen for Tauri's file drop events
   useEffect(() => {
@@ -60,7 +91,7 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
     })
 
     // Listen for drag hover
-    window.listen('tauri://drag-hover', (event) => {
+    window.listen('tauri://drag-hover', () => {
       setIsDragActive(true)
     }).then(unlisten => {
       hoverUnlisten = unlisten
@@ -69,7 +100,7 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
     })
 
     // Listen for drag cancelled
-    window.listen('tauri://drag-leave', (event) => {
+    window.listen('tauri://drag-leave', () => {
       setIsDragActive(false)
     }).then(unlisten => {
       cancelUnlisten = unlisten
@@ -120,7 +151,7 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
     const baseStyles = {
       border: '2px dashed',
       borderRadius: 'var(--radius-lg)',
-      padding: '2rem',
+      padding: '2rem 2rem 1rem 2rem',
       textAlign: 'center' as const,
       cursor: 'pointer',
       transition: 'all 0.2s ease',
@@ -137,13 +168,6 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
       }
     }
 
-    if (selectedPath) {
-      return {
-        ...baseStyles,
-        borderColor: 'var(--app-primary)',
-        backgroundColor: 'rgba(219, 88, 44, 0.1)',
-      }
-    }
 
     return baseStyles
   }
@@ -154,7 +178,7 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
       <div className="space-y-4">
         <div className="flex justify-center">
           {selectedPath ? (
-            <FileText className="h-12 w-12" style={{ color: 'var(--app-primary)' }} />
+            <CheckCircle className="h-12 w-12" style={{ color: 'var(--app-primary)' }} />
           ) : (
             <Upload className="h-12 w-12" style={{ 
               color: isDragActive ? 'var(--app-accent)' : 'rgba(255, 255, 255, 0.6)' 
@@ -167,13 +191,43 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
             {isDragActive 
               ? 'Drop files or folders here' 
               : selectedPath 
-                ? 'File selected' 
+                ? pathType === 'directory' 
+                  ? 'Folder selected' 
+                  : pathType === 'file'
+                    ? 'File selected'
+                    : 'Item selected'
                 : 'Drag & drop files or folders here'
             }
           </p>
           <p className="text-sm mb-4" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
             {selectedPath 
-              ? `Selected: ${selectedPath.split('/').pop()}` 
+              ? (
+                <div>
+                  <div 
+                    className="font-medium cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
+                    onClick={() => setShowFullPath(!showFullPath)}
+                    title="Click to toggle full path"
+                  >
+                    {selectedPath.split('/').pop()}
+                    <span className="-mr-2">
+                      {showFullPath ? (
+                        <ChevronDown className="p-0.5 h-6 w-6" size={16} />
+                      ) : (
+                        <ChevronRight className="p-0.5 h-6 w-6" size={16} />
+                      )}
+                    </span>
+                  </div>
+                  <div 
+                    className="text-xs mt-1 opacity-75 break-all transition-opacity"
+                    style={{ 
+                      visibility: showFullPath ? 'visible' : 'hidden',
+                    
+                    }}
+                  >
+                    {selectedPath}
+                  </div>
+                </div>
+              )
               : 'or browse to select files or folders'
             }
           </p>
@@ -215,7 +269,7 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
         )}
       </div>
 
-      <AlertDialog open={alertDialog.isOpen} onOpenChange={(open) => setAlertDialog(prev => ({ ...prev, isOpen: open }))}>
+      <AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{alertDialog.title}</AlertDialogTitle>
@@ -224,7 +278,7 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setAlertDialog(prev => ({ ...prev, isOpen: false }))}>
+            <AlertDialogAction onClick={closeAlert}>
               OK
             </AlertDialogAction>
           </AlertDialogFooter>

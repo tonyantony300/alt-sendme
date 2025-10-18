@@ -4,7 +4,7 @@
 mod commands;
 mod state;
 
-use commands::{start_sharing, stop_sharing, receive_file, get_sharing_status};
+use commands::{start_sharing, stop_sharing, receive_file, get_sharing_status, check_path_type};
 use state::AppState;
 use std::sync::Arc;
 
@@ -34,6 +34,7 @@ fn main() {
             stop_sharing,
             receive_file,
             get_sharing_status,
+            check_path_type,
         ])
         .setup(|_app| {
             // Cleanup happens automatically when AppState is dropped

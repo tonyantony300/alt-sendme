@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 interface CustomTitleBarProps {
   children?: React.ReactNode;
@@ -44,7 +44,8 @@ const CustomTitleBar: React.FC<CustomTitleBarProps> = ({
 const WindowControls: React.FC = () => {
   const minimize = async () => {
     try {
-      await appWindow.minimize();
+      const window = getCurrentWindow();
+      await window.minimize();
     } catch (error) {
       console.error('Failed to minimize window:', error);
     }
@@ -52,7 +53,8 @@ const WindowControls: React.FC = () => {
 
   const maximize = async () => {
     try {
-      await appWindow.toggleMaximize();
+      const window = getCurrentWindow();
+      await window.toggleMaximize();
     } catch (error) {
       console.error('Failed to maximize window:', error);
     }
@@ -60,7 +62,8 @@ const WindowControls: React.FC = () => {
 
   const close = async () => {
     try {
-      await appWindow.close();
+      const window = getCurrentWindow();
+      await window.close();
     } catch (error) {
       console.error('Failed to close window:', error);
     }
