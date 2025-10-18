@@ -62,3 +62,26 @@ export interface TicketInputProps {
 export interface InstructionsCardProps {
   // No props needed - static content
 }
+
+// DragDrop types
+export interface DragDropState {
+  isDragActive: boolean
+  pathType: 'file' | 'directory' | null
+  showFullPath: boolean
+  alertDialog: AlertDialogState
+}
+
+export interface DropzoneProps {
+  isDragActive: boolean
+  selectedPath: string | null
+  pathType: 'file' | 'directory' | null
+  showFullPath: boolean
+  isLoading: boolean
+  onToggleFullPath: () => void
+}
+
+export interface BrowseButtonsProps {
+  isLoading: boolean
+  onBrowseFile: () => Promise<void>
+  onBrowseFolder: () => Promise<void>
+}

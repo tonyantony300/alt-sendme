@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Sender } from './components/sender/Sender'
 import { Receiver } from './components/receiver/Receiver'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
+  const isInitialRender = useRef(false)
+
+
+  useEffect(() => {
+      isInitialRender.current = true
+  }, [])
 
   return (
     <div className="min-h-screen relative glass-background" style={{ color: 'var(--app-bg-fg)' }}>
@@ -88,7 +94,7 @@ function App() {
               {activeTab === 'send' ? (
                 <motion.div
                   key="send"
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={isInitialRender.current ? { opacity: 0, x: -20 } : false }
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                 >
