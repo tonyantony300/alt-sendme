@@ -1,4 +1,4 @@
-use crate::core::types::{ReceiveResult, ReceiveOptions, get_or_create_secret};
+use crate::core::types::{ReceiveResult, ReceiveOptions, get_or_create_secret, AppHandle};
 use iroh::{
     discovery::dns::DnsDiscovery,
     Endpoint,
@@ -15,11 +15,41 @@ use iroh_blobs::{
     ticket::BlobTicket,
 };
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 use tokio::select;
 use n0_future::StreamExt;
+use std::str::FromStr;
+
+// Helper function to emit events through the app handle
+fn emit_event(app_handle: &AppHandle, event_name: &str) {
+    if let Some(handle) = app_handle {
+        if let Err(e) = handle.emit_event(event_name) {
+            tracing::warn!("Failed to emit event {}: {}", event_name, e);
+        }
+    }
+}
+
+// Helper function to emit progress events with payload
+fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_bytes: u64, speed_bps: f64) {
+    if let Some(handle) = app_handle {
+        // Use a consistent event name
+        let event_name = "receive-progress";
+        
+        // Convert speed to integer (multiply by 1000 to preserve 3 decimal places)
+        let speed_int = (speed_bps * 1000.0) as i64;
+        
+        // Create payload data as colon-separated string
+        let payload = format!("{}:{}:{}", bytes_transferred, total_bytes, speed_int);
+        
+        // Emit the event with proper payload
+        if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
+            tracing::warn!("Failed to emit progress event: {}", e);
+        }
+    }
+}
 
 /// Receive a file or directory using a ticket
-pub async fn download(ticket_str: String, options: ReceiveOptions) -> anyhow::Result<ReceiveResult> {
+pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: AppHandle) -> anyhow::Result<ReceiveResult> {
     tracing::info!("🎫 Starting download with ticket: {}", &ticket_str[..50.min(ticket_str.len())]);
     
     let ticket = BlobTicket::from_str(&ticket_str)?;
@@ -80,6 +110,9 @@ pub async fn download(ticket_str: String, options: ReceiveOptions) -> anyhow::Re
             tracing::info!("   Target: {}", addr.node_id);
             tracing::info!("   ALPN: {:?}", iroh_blobs::protocol::ALPN);
             
+            // Emit receive-started event
+            emit_event(&app_handle, "receive-started");
+            
             let connection = match endpoint.connect(addr.clone(), iroh_blobs::protocol::ALPN).await {
                 Ok(conn) => {
                     tracing::info!("✅ Connection established successfully!");
@@ -126,18 +159,41 @@ pub async fn download(ticket_str: String, options: ReceiveOptions) -> anyhow::Re
             let mut stats = Stats::default();
             let mut stream = get.stream();
             let mut last_log_offset = 0u64;
+            let transfer_start_time = Instant::now();
+            
             while let Some(item) = stream.next().await {
                 match item {
                     GetProgressItem::Progress(offset) => {
-                        // Log every 1MB
+                        // Emit progress events every 1MB
                         if offset - last_log_offset > 1_000_000 {
                             tracing::info!("📥 Downloaded: {} bytes", offset);
                             last_log_offset = offset;
+                            
+                            // Calculate speed and emit progress event
+                            let elapsed = transfer_start_time.elapsed().as_secs_f64();
+                            let speed_bps = if elapsed > 0.0 {
+                                offset as f64 / elapsed
+                            } else {
+                                0.0
+                            };
+                            
+                            emit_progress_event(&app_handle, offset, payload_size, speed_bps);
                         }
                     }
                     GetProgressItem::Done(value) => {
                         tracing::info!("✅ Download complete!");
                         stats = value;
+                        
+                        // Emit final progress event and completion event
+                        let elapsed = transfer_start_time.elapsed().as_secs_f64();
+                        let speed_bps = if elapsed > 0.0 {
+                            payload_size as f64 / elapsed
+                        } else {
+                            0.0
+                        };
+                        emit_progress_event(&app_handle, payload_size, payload_size, speed_bps);
+                        emit_event(&app_handle, "receive-completed");
+                        
                         break;
                     }
                     GetProgressItem::Error(cause) => {
@@ -151,6 +207,11 @@ pub async fn download(ticket_str: String, options: ReceiveOptions) -> anyhow::Re
             tracing::info!("✅ Data already complete locally!");
             let total_files = local.children().unwrap() - 1;
             let payload_bytes = 0; // todo local.sizes().skip(2).map(Option::unwrap).sum::<u64>();
+            
+            // Emit events for already complete data
+            emit_event(&app_handle, "receive-started");
+            emit_event(&app_handle, "receive-completed");
+            
             (Stats::default(), total_files, payload_bytes)
         };
         
@@ -280,5 +341,3 @@ fn show_get_error(e: GetError) -> GetError {
     }
     e
 }
-
-use std::str::FromStr;

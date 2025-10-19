@@ -133,6 +133,7 @@ pub async fn stop_sharing(
 #[tauri::command]
 pub async fn receive_file(
     ticket: String,
+    app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     tracing::info!("📥 receive_file command called");
     tracing::info!("🎫 Ticket: {}", &ticket[..50.min(ticket.len())]);
@@ -148,8 +149,14 @@ pub async fn receive_file(
     tracing::info!("📁 Output directory: {:?}", options.output_dir);
     tracing::info!("🚀 Starting download...");
     
+    // Wrap the app_handle in our EventEmitter implementation
+    let emitter = Arc::new(TauriEventEmitter {
+        app_handle: app_handle.clone(),
+    });
+    let boxed_handle: AppHandle = Some(emitter);
+    
     // Download using the core library
-    match download(ticket, options).await {
+    match download(ticket, options, boxed_handle).await {
         Ok(result) => {
             tracing::info!("✅ Download completed successfully: {}", result.message);
             Ok(result.message)

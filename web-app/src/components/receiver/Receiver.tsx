@@ -1,5 +1,8 @@
 import { TicketInput } from './TicketInput'
 import { InstructionsCard } from './InstructionsCard'
+import { ReceivingActiveCard } from './ReceivingActiveCard'
+import { PulseAnimation } from '../sender/PulseAnimation'
+import { TransferSuccessScreen } from '../sender/TransferSuccessScreen'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,34 +18,70 @@ export function Receiver() {
   const {
     ticket,
     isReceiving,
+    isTransporting,
+    isCompleted,
     alertDialog,
+    transferMetadata,
+    transferProgress,
     handleTicketChange,
     handleReceive,
-    closeAlert
+    closeAlert,
+    resetForNewTransfer
   } = useReceiver()
 
 
   return (
-    <div className="p-6 space-y-6" style={{ color: 'var(--app-main-view-fg)' }}>
-      <div className="text-center">
-        <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-          Receive Files
-        </h2>
-        <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          Download files shared by others
-        </p>
-      </div>
+    <div className="p-6 space-y-6 relative" style={{ color: 'var(--app-main-view-fg)' }}>
 
-      <div className="space-y-4">
-        <TicketInput
-          ticket={ticket}
-          isReceiving={isReceiving}
-          onTicketChange={handleTicketChange}
-          onReceive={handleReceive}
+      {!isReceiving ? (
+        <>
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
+              Receive Files
+            </h2>
+            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+              Download files shared by others
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <TicketInput
+              ticket={ticket}
+              isReceiving={isReceiving}
+              onTicketChange={handleTicketChange}
+              onReceive={handleReceive}
+            />
+
+            <InstructionsCard />
+          </div>
+        </>
+      ) : isCompleted && transferMetadata ? (
+        // Success screen - only show when transfer is completed AND metadata is available
+        <TransferSuccessScreen 
+          metadata={transferMetadata}
+          onDone={resetForNewTransfer}
         />
-
-        <InstructionsCard />
-      </div>
+      ) : (
+        // Receiving active with pulse animation
+        <>
+          <div className="text-center">
+            <PulseAnimation 
+              isTransporting={isTransporting}
+              isCompleted={isCompleted}
+              className="mx-auto mb-4 flex items-center justify-center" 
+            />
+          </div>
+          <ReceivingActiveCard
+            isReceiving={isReceiving}
+            isTransporting={isTransporting}
+            isCompleted={isCompleted}
+            ticket={ticket}
+            transferProgress={transferProgress}
+            onReceive={handleReceive}
+            onStopReceiving={resetForNewTransfer}
+          />
+        </>
+      )}
 
       <AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
         <AlertDialogContent>
