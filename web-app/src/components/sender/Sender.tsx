@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
@@ -14,7 +15,11 @@ import {
 } from '../ui/alert-dialog'
 import { useSender } from '../../hooks/useSender'
 
-export function Sender() {
+interface SenderProps {
+  onTransferStateChange: (isSharing: boolean) => void
+}
+
+export function Sender({ onTransferStateChange }: SenderProps) {
   const {
     isSharing,
     isTransporting,
@@ -33,6 +38,11 @@ export function Sender() {
     closeAlert,
     resetForNewTransfer
   } = useSender()
+
+  // Notify parent component when transfer state changes
+  useEffect(() => {
+    onTransferStateChange(isSharing)
+  }, [isSharing, onTransferStateChange])
 
   return (
     <div className="p-6 space-y-6 relative" style={{ color: 'var(--app-main-view-fg)' }}>

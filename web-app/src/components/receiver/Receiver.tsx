@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { TicketInput } from './TicketInput'
 import { InstructionsCard } from './InstructionsCard'
 import { ReceivingActiveCard } from './ReceivingActiveCard'
@@ -14,7 +15,11 @@ import {
 } from '../ui/alert-dialog'
 import { useReceiver } from '../../hooks/useReceiver'
 
-export function Receiver() {
+interface ReceiverProps {
+  onTransferStateChange: (isReceiving: boolean) => void
+}
+
+export function Receiver({ onTransferStateChange }: ReceiverProps) {
   const {
     ticket,
     isReceiving,
@@ -30,6 +35,10 @@ export function Receiver() {
     resetForNewTransfer
   } = useReceiver()
 
+  // Notify parent component when transfer state changes
+  useEffect(() => {
+    onTransferStateChange(isReceiving)
+  }, [isReceiving, onTransferStateChange])
 
   return (
     <div className="p-6 space-y-6 relative" style={{ color: 'var(--app-main-view-fg)' }}>

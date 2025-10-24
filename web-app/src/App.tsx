@@ -5,6 +5,8 @@ import { Receiver } from './components/receiver/Receiver'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
+  const [isSharing, setIsSharing] = useState(false)
+  const [isReceiving, setIsReceiving] = useState(false)
   const isInitialRender = useRef(false)
 
 
@@ -54,6 +56,7 @@ function App() {
             
             <motion.button
               onClick={() => setActiveTab('send')}
+              disabled={isReceiving}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium relative z-10 ${
                 activeTab === 'send'
                   ? ''
@@ -70,6 +73,7 @@ function App() {
             </motion.button>
             <motion.button
               onClick={() => setActiveTab('receive')}
+              disabled={isSharing}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium relative z-10 ${
                 activeTab === 'receive'
                   ? ''
@@ -98,7 +102,7 @@ function App() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                 >
-                  <Sender />
+                  <Sender onTransferStateChange={setIsSharing} />
                 </motion.div>
               ) : (
                 <motion.div
@@ -108,7 +112,7 @@ function App() {
                   exit={{ opacity: 0, x: -20 }}
                  
                 >
-                  <Receiver />
+                  <Receiver onTransferStateChange={setIsReceiving} />
                 </motion.div>
               )}
           
