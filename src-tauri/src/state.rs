@@ -23,9 +23,11 @@ impl Drop for ShareHandle {
         tracing::info!("🧹 Cleaning up share session for ticket: {}", &self.ticket[..50.min(self.ticket.len())]);
         
         // Clean up the temporary blobs directory when share is stopped
+        // Use blocking cleanup since Drop is synchronous and we can't rely on tokio runtime
         let blobs_dir = self.send_result.blobs_data_dir.clone();
-        tokio::spawn(async move {
-            match tokio::fs::remove_dir_all(&blobs_dir).await {
+        std::thread::spawn(move || {
+            // Use blocking std::fs instead of tokio::fs for cleanup
+            match std::fs::remove_dir_all(&blobs_dir) {
                 Ok(_) => {
                     tracing::info!("✅ Successfully cleaned up blobs directory: {}", blobs_dir.display());
                 }
@@ -52,14 +54,9 @@ impl ShareHandle {
         
         tracing::info!("🛑 Stopping share session for ticket: {}", &self.ticket[..50.min(self.ticket.len())]);
         
-        // Drop temp_tag first to allow cleanup (same as CLI)
-        drop(std::mem::replace(&mut self.send_result.temp_tag, unsafe { std::mem::zeroed() }));
-        tracing::info!("✅ Dropped temp_tag");
-        
         // Gracefully shutdown the router with timeout (same as CLI implementation)
         tracing::info!("🔄 Shutting down router...");
-        let router = std::mem::replace(&mut self.send_result.router, unsafe { std::mem::zeroed() });
-        match tokio::time::timeout(Duration::from_secs(2), router.shutdown()).await {
+        match tokio::time::timeout(Duration::from_secs(2), self.send_result.router.shutdown()).await {
             Ok(Ok(())) => {
                 tracing::info!("✅ Router shutdown completed successfully");
             }
@@ -70,12 +67,6 @@ impl ShareHandle {
                 tracing::warn!("⚠️  Router shutdown timed out after 2 seconds");
             }
         }
-        
-        // Drop everything else that owns the store
-        drop(std::mem::replace(&mut self.send_result._store, unsafe { std::mem::zeroed() }));
-        tracing::info!("✅ Dropped store");
-        
-        // Progress handle will be dropped automatically via _progress_handle
         
         // Clean up the blobs directory (best effort, don't fail on cleanup error)
         let blobs_dir = self.send_result.blobs_data_dir.clone();
@@ -88,6 +79,9 @@ impl ShareHandle {
                 // Don't return error - cleanup is best effort
             }
         }
+        
+        // temp_tag, _store, and _progress_handle will be dropped automatically when the method ends
+        tracing::info!("✅ All resources will be dropped when method ends");
         
         Ok(())
     }

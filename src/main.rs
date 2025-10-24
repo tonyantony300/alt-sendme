@@ -649,19 +649,20 @@ async fn send(args: SendArgs) -> anyhow::Result<()> {
         builder = builder.bind_addr_v6(addr);
     }
 
-    // use a flat store - todo: use a partial in mem store instead
+    // Use system temp directory instead of current_dir for better cleanup
     let suffix = rand::rng().random::<[u8; 16]>();
-    let cwd = std::env::current_dir()?;
-    let blobs_data_dir = cwd.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
+    let temp_base = std::env::temp_dir();
+    let blobs_data_dir = temp_base.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
     if blobs_data_dir.exists() {
         println!(
             "can not share twice from the same directory: {}",
-            cwd.display(),
+            temp_base.display(),
         );
         std::process::exit(1);
     }
     // todo: remove this as soon as we have a mem store that does not require a temp dir,
     // or create a temp dir outside the current directory.
+    let cwd = std::env::current_dir()?;
     if cwd.join(&args.path) == cwd {
         println!("can not share from the current directory");
         std::process::exit(1);

@@ -7,6 +7,32 @@ mod state;
 use commands::{start_sharing, stop_sharing, receive_file, get_sharing_status, check_path_type, get_transport_status, get_file_size};
 use state::AppState;
 use std::sync::Arc;
+use std::fs;
+
+/// Clean up any orphaned .sendme-send-* directories from previous runs
+fn cleanup_orphaned_directories() {
+    tracing::info!("🧹 Checking for orphaned .sendme-send-* directories...");
+    
+    if let Ok(current_dir) = std::env::current_dir() {
+        if let Ok(entries) = fs::read_dir(&current_dir) {
+            for entry in entries.flatten() {
+                if let Some(name) = entry.file_name().to_str() {
+                    if name.starts_with(".sendme-send-") && entry.path().is_dir() {
+                        tracing::info!("🗑️  Found orphaned directory: {}", name);
+                        match fs::remove_dir_all(&entry.path()) {
+                            Ok(_) => {
+                                tracing::info!("✅ Successfully cleaned up orphaned directory: {}", name);
+                            }
+                            Err(e) => {
+                                tracing::warn!("⚠️  Failed to clean up orphaned directory {}: {}", name, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 fn main() {
     // Initialize tracing for better debugging
@@ -39,9 +65,8 @@ fn main() {
             get_file_size,
         ])
         .setup(|_app| {
-            // Cleanup happens automatically when AppState is dropped
-            // No need for explicit cleanup here since we're not keeping
-            // long-running tasks that need to be cancelled
+            // Clean up any orphaned .sendme-send-* directories from previous runs
+            cleanup_orphaned_directories();
             Ok(())
         })
         .run(tauri::generate_context!())
