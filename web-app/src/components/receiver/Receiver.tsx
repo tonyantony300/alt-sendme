@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { TicketInput } from './TicketInput'
-import { InstructionsCard } from './InstructionsCard'
 import { ReceivingActiveCard } from './ReceivingActiveCard'
 import { PulseAnimation } from '../sender/PulseAnimation'
 import { TransferSuccessScreen } from '../sender/TransferSuccessScreen'
@@ -14,12 +13,15 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog'
 import { useReceiver } from '../../hooks/useReceiver'
+import { Info } from 'lucide-react'
 
 interface ReceiverProps {
   onTransferStateChange: (isReceiving: boolean) => void
 }
 
 export function Receiver({ onTransferStateChange }: ReceiverProps) {
+  const [showInstructionsDialog, setShowInstructionsDialog] = useState(false)
+  
   const {
     ticket,
     isReceiving,
@@ -48,9 +50,18 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
       {!isReceiving ? (
         <>
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-              Receive Files
-            </h2>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--app-main-view-fg)' }}>
+                Receive Files
+              </h2>
+              <button
+                onClick={() => setShowInstructionsDialog(true)}
+                className="p-1 hover:bg-white/10 rounded-full transition-colors absolute top-6 right-6"
+                style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+              >
+                <Info size={24} />
+              </button>
+            </div>
             <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
               Download files shared by others
             </p>
@@ -65,8 +76,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
               onBrowseFolder={handleBrowseFolder}
               onReceive={handleReceive}
             />
-
-            <InstructionsCard />
           </div>
         </>
       ) : isCompleted && transferMetadata ? (
@@ -108,6 +117,29 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={closeAlert}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showInstructionsDialog} onOpenChange={setShowInstructionsDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>How to receive files</AlertDialogTitle>
+            <AlertDialogDescription>
+           
+            </AlertDialogDescription>
+            <ol className="text-sm space-y-2 list-decimal list-inside mt-2" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+              <li>Sender must be online and sharing a file</li>
+              <li>Get a ticket from the sender</li>
+              <li>Paste the ticket in the text area</li>
+              <li>Click download to start receiving</li>
+              <li>Files will be saved to your selected folder</li>
+            </ol>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowInstructionsDialog(false)}>
               OK
             </AlertDialogAction>
           </AlertDialogFooter>

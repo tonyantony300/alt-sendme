@@ -55,7 +55,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
              Send Files
            </h2>
            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-             Share files with others the peer to peer way
+           Connect devices directly & transfer data over the internet
            </p>
          </div>
         <div className="space-y-4">
