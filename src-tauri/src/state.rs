@@ -20,22 +20,9 @@ pub struct ShareHandle {
 
 impl Drop for ShareHandle {
     fn drop(&mut self) {
-        tracing::info!("🧹 Cleaning up share session for ticket: {}", &self.ticket[..50.min(self.ticket.len())]);
-        
-        // Clean up the temporary blobs directory when share is stopped
-        // Use blocking cleanup since Drop is synchronous and we can't rely on tokio runtime
-        let blobs_dir = self.send_result.blobs_data_dir.clone();
-        std::thread::spawn(move || {
-            // Use blocking std::fs instead of tokio::fs for cleanup
-            match std::fs::remove_dir_all(&blobs_dir) {
-                Ok(_) => {
-                    tracing::info!("✅ Successfully cleaned up blobs directory: {}", blobs_dir.display());
-                }
-                Err(e) => {
-                    tracing::warn!("⚠️  Failed to clean up blobs directory {}: {}", blobs_dir.display(), e);
-                }
-            }
-        });
+        tracing::info!("🧹 Dropping share session for ticket: {}", &self.ticket[..50.min(self.ticket.len())]);
+        // Note: Blob cleanup is handled explicitly in the stop() method
+        // This Drop implementation only logs the cleanup - no file system operations
     }
 }
 
@@ -70,14 +57,20 @@ impl ShareHandle {
         
         // Clean up the blobs directory (best effort, don't fail on cleanup error)
         let blobs_dir = self.send_result.blobs_data_dir.clone();
-        match tokio::fs::remove_dir_all(&blobs_dir).await {
-            Ok(_) => {
-                tracing::info!("✅ Successfully cleaned up blobs directory: {}", blobs_dir.display());
+        
+        // Check if directory exists before attempting cleanup
+        if blobs_dir.exists() {
+            match tokio::fs::remove_dir_all(&blobs_dir).await {
+                Ok(_) => {
+                    tracing::info!("✅ Successfully cleaned up blobs directory: {}", blobs_dir.display());
+                }
+                Err(e) => {
+                    tracing::warn!("⚠️  Failed to clean up blobs directory {}: {}", blobs_dir.display(), e);
+                    // Don't return error - cleanup is best effort
+                }
             }
-            Err(e) => {
-                tracing::warn!("⚠️  Failed to clean up blobs directory {}: {}", blobs_dir.display(), e);
-                // Don't return error - cleanup is best effort
-            }
+        } else {
+            tracing::debug!("📁 Blobs directory already cleaned up: {}", blobs_dir.display());
         }
         
         // temp_tag, _store, and _progress_handle will be dropped automatically when the method ends
