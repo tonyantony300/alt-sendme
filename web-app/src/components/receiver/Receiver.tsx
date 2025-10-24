@@ -63,7 +63,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
               </button>
             </div>
             <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-              Download files shared by others
+              Download files from sender using encrypted peer-to-peer connections over the internet.
             </p>
           </div>
 
