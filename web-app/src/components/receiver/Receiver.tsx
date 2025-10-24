@@ -26,12 +26,15 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
     ticket,
     isReceiving,
     isTransporting,
+    isExporting,
     isCompleted,
     savePath,
     alertDialog,
     transferMetadata,
     transferProgress,
     fileNames,
+    exportProgress,
+    resumedFrom,
     handleTicketChange,
     handleBrowseFolder,
     handleReceive,
@@ -97,9 +100,12 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
           <ReceivingActiveCard
             isReceiving={isReceiving}
             isTransporting={isTransporting}
+            isExporting={isExporting}
             isCompleted={isCompleted}
             ticket={ticket}
             transferProgress={transferProgress}
+            exportProgress={exportProgress}
+            resumedFrom={resumedFrom}
             fileNames={fileNames}
             onReceive={handleReceive}
             onStopReceiving={resetForNewTransfer}

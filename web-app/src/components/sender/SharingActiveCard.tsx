@@ -8,6 +8,8 @@ export function SharingActiveCard({
   ticket, 
   copySuccess,
   transferProgress,
+  isImporting,
+  importProgress,
   isTransporting,
   isCompleted,
   onCopyTicket, 
@@ -17,12 +19,14 @@ export function SharingActiveCard({
   const getStatusColor = () => {
     if (isCompleted) return 'rgb(45, 120, 220)' // Blue - completed
     if (isTransporting) return 'rgba(37, 211, 101, 0.687)' // Green - transporting
+    if (isImporting) return 'rgba(255, 193, 7, 0.8)' // Orange - preparing
     return '#B7B7B7' // Gray - listening
   }
 
   const getStatusText = () => {
     if (isCompleted) return 'Transfer completed'
     if (isTransporting) return 'Sharing in progress'
+    if (isImporting) return 'Preparing files...'
     return 'Listening for connection'
   }
 
@@ -55,8 +59,29 @@ export function SharingActiveCard({
           Keep this app open while others download your files
         </p>
         
-      {/* Show ticket when not transferring, show progress bar when transferring */}
-      {!isTransporting && ticket && (
+      {/* Show import progress when preparing files */}
+      {isImporting && importProgress && (
+        <div className="space-y-2 p-3 rounded-md" style={{ backgroundColor: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)' }}>
+          <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+            Preparing files: {importProgress.processed} / {importProgress.total}
+          </p>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div
+              className="h-2 rounded-full transition-all duration-300"
+              style={{ 
+                width: `${importProgress.percentage}%`,
+                backgroundColor: 'rgba(255, 193, 7, 0.8)'
+              }}
+            />
+          </div>
+          <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            This may take 20-30 seconds for large files...
+          </p>
+        </div>
+      )}
+        
+      {/* Show ticket when not transferring and not importing, show progress bar when transferring */}
+      {!isTransporting && !isImporting && ticket && (
         <TicketDisplay 
           ticket={ticket} 
           copySuccess={copySuccess} 

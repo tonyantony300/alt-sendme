@@ -99,8 +99,10 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
     tracing::info!("✅ Endpoint created successfully");
     tracing::info!("📡 Endpoint bound successfully");
     
+    // Use system temp directory instead of current_dir for GUI app
     let dir_name = format!(".sendme-recv-{}", ticket.hash().to_hex());
-    let iroh_data_dir = std::env::current_dir()?.join(&dir_name);
+    let temp_base = std::env::temp_dir();
+    let iroh_data_dir = temp_base.join(&dir_name);
     tracing::info!("💾 Storage directory: {}", iroh_data_dir.display());
     let db = FsStore::load(&iroh_data_dir).await?;
     let db2 = db.clone();
@@ -165,10 +167,20 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
             
             tracing::info!("📦 File info: {} files, {} bytes total", total_files, payload_size);
             
-            // Emit initial progress event (0%) so frontend can display total size immediately
-            emit_progress_event(&app_handle, 0, payload_size, 0.0);
+            // Track local size for resumable downloads (CLI implementation)
+            let local_size = local.local_bytes();
+            if local_size > 0 {
+                tracing::info!("🔄 Resuming download from {} bytes ({}% complete)", 
+                    local_size, 
+                    (local_size as f64 / payload_size as f64 * 100.0) as u64
+                );
+                // Emit event to indicate resume
+                emit_event_with_payload(&app_handle, "receive-resumed", &format!("{}", local_size));
+            }
             
-            let _local_size = local.local_bytes();
+            // Emit initial progress event with local_size so frontend shows correct starting point
+            emit_progress_event(&app_handle, local_size, payload_size, 0.0);
+            
             tracing::info!("⬇️  Starting data transfer...");
             let get = db.remote().execute_get(connection, local.missing());
             let mut stats = Stats::default();
@@ -181,10 +193,10 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
                     GetProgressItem::Progress(offset) => {
                         // Emit progress events every 1MB
                         if offset - last_log_offset > 1_000_000 {
-                            tracing::info!("📥 Downloaded: {} bytes", offset);
+                            tracing::info!("📥 Downloaded: {} bytes (total: {} bytes)", offset, local_size + offset);
                             last_log_offset = offset;
                             
-                            // Calculate speed and emit progress event
+                            // Calculate speed and emit progress event with local_size included (CLI implementation)
                             let elapsed = transfer_start_time.elapsed().as_secs_f64();
                             let speed_bps = if elapsed > 0.0 {
                                 offset as f64 / elapsed
@@ -192,17 +204,18 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
                                 0.0
                             };
                             
-                            emit_progress_event(&app_handle, offset, payload_size, speed_bps);
+                            emit_progress_event(&app_handle, local_size + offset, payload_size, speed_bps);
                         }
                     }
                     GetProgressItem::Done(value) => {
                         tracing::info!("✅ Download complete!");
                         stats = value;
                         
-                        // Emit final progress event
+                        // Emit final progress event (100% complete)
                         let elapsed = transfer_start_time.elapsed().as_secs_f64();
+                        let total_downloaded = stats.total_bytes_read();
                         let speed_bps = if elapsed > 0.0 {
-                            payload_size as f64 / elapsed
+                            total_downloaded as f64 / elapsed
                         } else {
                             0.0
                         };
@@ -253,7 +266,7 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
         });
         
         tracing::info!("📁 Exporting to: {}", output_dir.display());
-        export(&db, collection, &output_dir).await?;
+        export(&db, collection, &output_dir, &app_handle).await?;
         tracing::info!("✅ Export complete!");
         
         // Emit completion event AFTER everything is done
@@ -283,7 +296,13 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
     };
     
     tracing::info!("🧹 Cleaning up temporary directory...");
-    tokio::fs::remove_dir_all(&iroh_data_dir).await?;
+    // Best effort cleanup - don't fail on cleanup error
+    if let Err(e) = tokio::fs::remove_dir_all(&iroh_data_dir).await {
+        tracing::warn!("⚠️  Failed to clean up temporary directory {}: {}", iroh_data_dir.display(), e);
+        // Continue anyway - cleanup is best effort
+    } else {
+        tracing::info!("✅ Temporary directory cleaned up successfully");
+    }
     
     Ok(ReceiveResult {
         message: format!("Downloaded {} files, {} bytes", total_files, payload_size),
@@ -291,31 +310,46 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
     })
 }
 
-async fn export(db: &Store, collection: Collection, output_dir: &Path) -> anyhow::Result<()> {
-    for (_i, (name, hash)) in collection.iter().enumerate() {
+async fn export(db: &Store, collection: Collection, output_dir: &Path, app_handle: &AppHandle) -> anyhow::Result<()> {
+    let total_files = collection.len();
+    tracing::info!("📤 Starting export of {} files to {}", total_files, output_dir.display());
+    
+    // Emit export-started event
+    emit_event_with_payload(app_handle, "export-started", &format!("{}", total_files));
+    
+    for (i, (name, hash)) in collection.iter().enumerate() {
         let target = get_export_path(output_dir, name)?;
         if target.exists() {
             anyhow::bail!("target {} already exists", target.display());
         }
+        
+        // Emit progress for each file being exported
+        let progress = ((i + 1) as f64 / total_files as f64 * 100.0) as u64;
+        emit_event_with_payload(app_handle, "export-progress", &format!("{}:{}:{}", i + 1, total_files, progress));
+        tracing::info!("📤 Exporting file {}/{}: {}", i + 1, total_files, name);
+        
         let mut stream = db
             .export_with_opts(ExportOptions {
                 hash: *hash,
-                target,
+                target: target.clone(),
                 mode: ExportMode::Copy,
             })
             .stream()
             .await;
         
+        let mut file_size = 0u64;
         while let Some(item) = stream.next().await {
             match item {
-                ExportProgressItem::Size(_size) => {
-                    // Skip progress updates for library version
+                ExportProgressItem::Size(size) => {
+                    file_size = size;
+                    tracing::debug!("   File size: {} bytes", size);
                 }
-                ExportProgressItem::CopyProgress(_offset) => {
-                    // Skip progress updates for library version
+                ExportProgressItem::CopyProgress(offset) => {
+                    // Log progress for debugging but don't emit to UI (too frequent)
+                    tracing::debug!("   Export progress: {} / {} bytes", offset, file_size);
                 }
                 ExportProgressItem::Done => {
-                    // Export completed
+                    tracing::info!("   ✅ Exported {} ({} bytes)", name, file_size);
                 }
                 ExportProgressItem::Error(cause) => {
                     anyhow::bail!("error exporting {}: {}", name, cause);
@@ -323,6 +357,11 @@ async fn export(db: &Store, collection: Collection, output_dir: &Path) -> anyhow
             }
         }
     }
+    
+    // Emit export-completed event
+    emit_event(app_handle, "export-completed");
+    tracing::info!("✅ Export completed successfully");
+    
     Ok(())
 }
 

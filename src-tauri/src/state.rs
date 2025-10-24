@@ -48,9 +48,36 @@ impl ShareHandle {
     
     /// Explicitly stop the sharing session and clean up resources
     pub async fn stop(&mut self) -> Result<(), String> {
+        use std::time::Duration;
+        
         tracing::info!("🛑 Stopping share session for ticket: {}", &self.ticket[..50.min(self.ticket.len())]);
         
-        // Clean up the blobs directory
+        // Drop temp_tag first to allow cleanup (same as CLI)
+        drop(std::mem::replace(&mut self.send_result.temp_tag, unsafe { std::mem::zeroed() }));
+        tracing::info!("✅ Dropped temp_tag");
+        
+        // Gracefully shutdown the router with timeout (same as CLI implementation)
+        tracing::info!("🔄 Shutting down router...");
+        let router = std::mem::replace(&mut self.send_result.router, unsafe { std::mem::zeroed() });
+        match tokio::time::timeout(Duration::from_secs(2), router.shutdown()).await {
+            Ok(Ok(())) => {
+                tracing::info!("✅ Router shutdown completed successfully");
+            }
+            Ok(Err(e)) => {
+                tracing::warn!("⚠️  Router shutdown returned error: {}", e);
+            }
+            Err(_) => {
+                tracing::warn!("⚠️  Router shutdown timed out after 2 seconds");
+            }
+        }
+        
+        // Drop everything else that owns the store
+        drop(std::mem::replace(&mut self.send_result._store, unsafe { std::mem::zeroed() }));
+        tracing::info!("✅ Dropped store");
+        
+        // Progress handle will be dropped automatically via _progress_handle
+        
+        // Clean up the blobs directory (best effort, don't fail on cleanup error)
         let blobs_dir = self.send_result.blobs_data_dir.clone();
         match tokio::fs::remove_dir_all(&blobs_dir).await {
             Ok(_) => {
@@ -58,7 +85,7 @@ impl ShareHandle {
             }
             Err(e) => {
                 tracing::warn!("⚠️  Failed to clean up blobs directory {}: {}", blobs_dir.display(), e);
-                return Err(format!("Failed to clean up blobs directory: {}", e));
+                // Don't return error - cleanup is best effort
             }
         }
         

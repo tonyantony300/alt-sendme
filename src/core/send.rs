@@ -22,6 +22,7 @@ use n0_future::{task::AbortOnDropHandle, BufferedStreamExt};
 use rand::Rng;
 use std::{
     path::{Component, Path, PathBuf},
+    sync::{Arc, atomic::AtomicUsize},
     time::{Duration, Instant},
 };
 use tokio::{select, sync::mpsc};
@@ -34,6 +35,15 @@ fn emit_event(app_handle: &AppHandle, event_name: &str) {
     if let Some(handle) = app_handle {
         if let Err(e) = handle.emit_event(event_name) {
             tracing::warn!("Failed to emit event {}: {}", event_name, e);
+        }
+    }
+}
+
+// Helper function to emit events with payload
+fn emit_event_with_payload(app_handle: &AppHandle, event_name: &str, payload: &str) {
+    if let Some(handle) = app_handle {
+        if let Err(e) = handle.emit_event_with_payload(event_name, payload) {
+            tracing::warn!("Failed to emit event {} with payload: {}", event_name, e);
         }
     }
 }
@@ -138,7 +148,7 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         tracing::info!("📊 Store loaded successfully");
 
         tracing::info!("📦 Importing files...");
-        let import_result = import(path2, blobs.store()).await?;
+        let import_result = import(path2, blobs.store(), &app_handle_clone).await?;
         let dt = t0.elapsed();
         tracing::info!("✅ Import complete in {:?}", dt);
 
@@ -225,6 +235,7 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
 async fn import(
     path: PathBuf,
     db: &Store,
+    app_handle: &AppHandle,
 ) -> anyhow::Result<(TempTag, u64, Collection)> {
     let parallelism = num_cpus::get();
     let path = path.canonicalize()?;
@@ -249,11 +260,23 @@ async fn import(
         .filter_map(Result::transpose)
         .collect::<anyhow::Result<Vec<_>>>()?;
     
+    let total_files = data_sources.len();
+    tracing::info!("📦 Importing {} files...", total_files);
+    
+    // Emit import-started event
+    emit_event(app_handle, "import-started");
+    emit_event_with_payload(app_handle, "import-file-count", &format!("{}", total_files));
+    
     // import all the files, using num_cpus workers, return names and temp tags
+    let files_processed = Arc::new(std::sync::atomic::AtomicUsize::new(0));
     let mut names_and_tags = n0_future::stream::iter(data_sources)
         .map(|(name, path)| {
             let db = db.clone();
+            let app_handle = app_handle.clone();
+            let files_processed = files_processed.clone();
             async move {
+                tracing::info!("📄 Importing file: {}", name);
+                
                 let import = db.add_path_with_opts(AddPathOptions {
                     path,
                     mode: ImportMode::TryReference,
@@ -270,20 +293,27 @@ async fn import(
                     match item {
                         iroh_blobs::api::blobs::AddProgressItem::Size(size) => {
                             item_size = size;
+                            tracing::debug!("   Size: {} bytes", size);
                         }
-                        iroh_blobs::api::blobs::AddProgressItem::CopyProgress(_) => {
-                            // Skip progress updates for library version
+                        iroh_blobs::api::blobs::AddProgressItem::CopyProgress(offset) => {
+                            // Log progress for debugging
+                            tracing::debug!("   Copy progress: {} bytes", offset);
                         }
                         iroh_blobs::api::blobs::AddProgressItem::CopyDone => {
-                            // Skip progress updates for library version
+                            tracing::debug!("   Copy done, computing outboard...");
                         }
-                        iroh_blobs::api::blobs::AddProgressItem::OutboardProgress(_) => {
-                            // Skip progress updates for library version
+                        iroh_blobs::api::blobs::AddProgressItem::OutboardProgress(offset) => {
+                            tracing::debug!("   Outboard progress: {} bytes", offset);
                         }
                         iroh_blobs::api::blobs::AddProgressItem::Error(cause) => {
                             anyhow::bail!("error importing {}: {}", name, cause);
                         }
                         iroh_blobs::api::blobs::AddProgressItem::Done(tt) => {
+                            // Increment and emit progress
+                            let processed = files_processed.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+                            let progress = (processed as f64 / total_files as f64 * 100.0) as u64;
+                            emit_event_with_payload(&app_handle, "import-progress", &format!("{}:{}:{}", processed, total_files, progress));
+                            tracing::info!("   ✅ Imported {} ({}/{} files, {} bytes)", name, processed, total_files, item_size);
                             break tt;
                         }
                     }
@@ -310,6 +340,11 @@ async fn import(
     // now that the collection is stored, we can drop the tags
     // data is protected by the collection
     drop(tags);
+    
+    // Emit import-completed event
+    emit_event(app_handle, "import-completed");
+    tracing::info!("✅ Import completed: {} files, {} bytes total", total_files, size);
+    
     Ok((temp_tag, size, collection))
 }
 

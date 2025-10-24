@@ -22,6 +22,7 @@ interface SenderProps {
 export function Sender({ onTransferStateChange }: SenderProps) {
   const {
     isSharing,
+    isImporting,
     isTransporting,
     isCompleted,
     ticket,
@@ -31,6 +32,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
     alertDialog,
     transferMetadata,
     transferProgress,
+    importProgress,
     handleFileSelect,
     startSharing,
     stopSharing,
@@ -92,12 +94,14 @@ export function Sender({ onTransferStateChange }: SenderProps) {
         <SharingActiveCard
           isSharing={isSharing}
           isLoading={isLoading}
+          isImporting={isImporting}
           isTransporting={isTransporting}
           isCompleted={isCompleted}
           selectedPath={selectedPath}
           ticket={ticket}
           copySuccess={copySuccess}
           transferProgress={transferProgress}
+          importProgress={importProgress}
           onStartSharing={startSharing}
           onStopSharing={stopSharing}
           onCopyTicket={copyTicket}

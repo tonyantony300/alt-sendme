@@ -3,9 +3,16 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
+export interface ImportProgress {
+  processed: number
+  total: number
+  percentage: number
+}
+
 export interface UseSenderReturn {
   // State
   isSharing: boolean
+  isImporting: boolean
   isTransporting: boolean
   isCompleted: boolean
   ticket: string | null
@@ -15,6 +22,7 @@ export interface UseSenderReturn {
   alertDialog: AlertDialogState
   transferMetadata: TransferMetadata | null
   transferProgress: TransferProgress | null
+  importProgress: ImportProgress | null
   
   // Actions
   handleFileSelect: (path: string) => void
@@ -28,6 +36,7 @@ export interface UseSenderReturn {
 
 export function useSender(): UseSenderReturn {
   const [isSharing, setIsSharing] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const [isTransporting, setIsTransporting] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
   const [ticket, setTicket] = useState<string | null>(null)
@@ -36,6 +45,7 @@ export function useSender(): UseSenderReturn {
   const [copySuccess, setCopySuccess] = useState(false)
   const [transferMetadata, setTransferMetadata] = useState<TransferMetadata | null>(null)
   const [transferProgress, setTransferProgress] = useState<TransferProgress | null>(null)
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null)
   const [transferStartTime, setTransferStartTime] = useState<number | null>(null)
   const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
     isOpen: false,
@@ -46,17 +56,61 @@ export function useSender(): UseSenderReturn {
 
   // Listen for transfer events from Rust backend
   useEffect(() => {
+    let unlistenImportStart: UnlistenFn | undefined
+    let unlistenImportCount: UnlistenFn | undefined
+    let unlistenImportProgress: UnlistenFn | undefined
+    let unlistenImportComplete: UnlistenFn | undefined
     let unlistenStart: UnlistenFn | undefined
     let unlistenProgress: UnlistenFn | undefined
     let unlistenComplete: UnlistenFn | undefined
 
     const setupListeners = async () => {
+      // Listen for import-started event
+      unlistenImportStart = await listen('import-started', () => {
+        console.log('[Import] Started')
+        setIsImporting(true)
+        setImportProgress(null)
+      })
+
+      // Listen for import-file-count event
+      unlistenImportCount = await listen('import-file-count', (event: any) => {
+        const total = parseInt(event.payload as string, 10)
+        console.log('[Import] File count:', total)
+        setImportProgress({ processed: 0, total, percentage: 0 })
+      })
+
+      // Listen for import-progress event
+      unlistenImportProgress = await listen('import-progress', (event: any) => {
+        try {
+          const payload = event.payload as string
+          const parts = payload.split(':')
+          
+          if (parts.length === 3) {
+            const processed = parseInt(parts[0], 10)
+            const total = parseInt(parts[1], 10)
+            const percentage = parseInt(parts[2], 10)
+            console.log('[Import] Progress:', processed, '/', total, `(${percentage}%)`)
+            setImportProgress({ processed, total, percentage })
+          }
+        } catch (error) {
+          console.error('Failed to parse import progress event:', error)
+        }
+      })
+
+      // Listen for import-completed event
+      unlistenImportComplete = await listen('import-completed', () => {
+        console.log('[Import] Completed')
+        setIsImporting(false)
+        // Keep import progress visible until transfer starts
+      })
+
       // Listen for transfer started event
       unlistenStart = await listen('transfer-started', () => {
         setIsTransporting(true)
         setIsCompleted(false)
         setTransferStartTime(Date.now())
         setTransferProgress(null) // Reset progress
+        setImportProgress(null) // Clear import progress when transfer starts
       })
 
       // Listen for transfer progress events
@@ -131,6 +185,10 @@ export function useSender(): UseSenderReturn {
 
     // Cleanup listeners on unmount
     return () => {
+      if (unlistenImportStart) unlistenImportStart()
+      if (unlistenImportCount) unlistenImportCount()
+      if (unlistenImportProgress) unlistenImportProgress()
+      if (unlistenImportComplete) unlistenImportComplete()
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
       if (unlistenComplete) unlistenComplete()
@@ -170,12 +228,14 @@ export function useSender(): UseSenderReturn {
     try {
       await invoke('stop_sharing')
       setIsSharing(false)
+      setIsImporting(false)
       setIsTransporting(false)
       setIsCompleted(false)
       setTicket(null)
       setSelectedPath(null)
       setTransferMetadata(null)
       setTransferProgress(null)
+      setImportProgress(null)
       setTransferStartTime(null)
     } catch (error) {
       console.error('Failed to stop sharing:', error)
@@ -204,6 +264,7 @@ export function useSender(): UseSenderReturn {
   return {
     // State
     isSharing,
+    isImporting,
     isTransporting,
     isCompleted,
     ticket,
@@ -213,6 +274,7 @@ export function useSender(): UseSenderReturn {
     alertDialog,
     transferMetadata,
     transferProgress,
+    importProgress,
     
     // Actions
     handleFileSelect,

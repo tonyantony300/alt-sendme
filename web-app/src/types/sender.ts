@@ -1,3 +1,15 @@
+export interface ImportProgress {
+  processed: number
+  total: number
+  percentage: number
+}
+
+export interface ExportProgress {
+  current: number
+  total: number
+  percentage: number
+}
+
 export interface TransferMetadata {
   fileName: string
   fileSize: number  // bytes
@@ -52,12 +64,14 @@ export interface ShareActionProps {
 export interface SharingControlsProps {
   isSharing: boolean
   isLoading: boolean
+  isImporting?: boolean
   isTransporting: boolean
   isCompleted: boolean
   selectedPath: string | null
   ticket: string | null
   copySuccess: boolean
   transferProgress: TransferProgress | null
+  importProgress?: ImportProgress | null
   onStartSharing: () => Promise<void>
   onStopSharing: () => Promise<void>
   onCopyTicket: () => Promise<void>
