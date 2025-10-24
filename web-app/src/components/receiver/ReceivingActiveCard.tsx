@@ -77,10 +77,7 @@ export function ReceivingActiveCard({
           }}
         >
           <p className="text-sm font-medium">
-            🔄 Resuming download from {formatBytes(resumedFrom)}
-          </p>
-          <p className="text-xs opacity-80">
-            Previous progress saved - continuing where you left off
+            Resuming download from {formatBytes(resumedFrom)}
           </p>
         </div>
       )}
@@ -111,7 +108,7 @@ export function ReceivingActiveCard({
         <TransferProgressBar progress={transferProgress} />
       )}
        
-      <button
+      {/* <button
         onClick={onStopReceiving}
         className="absolute top-0 right-6 py-2 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center"
         style={{
@@ -120,7 +117,7 @@ export function ReceivingActiveCard({
         }}
       >
         <span className="text-xl"> ⏹</span>
-      </button>
+      </button> */}
     </div>
   )
 }
