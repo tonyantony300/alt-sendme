@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
+import { open } from '@tauri-apps/plugin-dialog'
+import { downloadDir } from '@tauri-apps/api/path'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
 export interface UseReceiverReturn {
@@ -9,6 +11,7 @@ export interface UseReceiverReturn {
   isReceiving: boolean
   isTransporting: boolean
   isCompleted: boolean
+  savePath: string
   alertDialog: AlertDialogState
   transferMetadata: TransferMetadata | null
   transferProgress: TransferProgress | null
@@ -16,6 +19,7 @@ export interface UseReceiverReturn {
   
   // Actions
   handleTicketChange: (ticket: string) => void
+  handleBrowseFolder: () => Promise<void>
   handleReceive: () => Promise<void>
   showAlert: (title: string, description: string, type?: AlertType) => void
   closeAlert: () => void
@@ -27,6 +31,7 @@ export function useReceiver(): UseReceiverReturn {
   const [isReceiving, setIsReceiving] = useState(false)
   const [isTransporting, setIsTransporting] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
+  const [savePath, setSavePath] = useState('')
   const [transferMetadata, setTransferMetadata] = useState<TransferMetadata | null>(null)
   const [transferProgress, setTransferProgress] = useState<TransferProgress | null>(null)
   const [transferStartTime, setTransferStartTime] = useState<number | null>(null)
@@ -56,6 +61,21 @@ export function useReceiver(): UseReceiverReturn {
     description: '',
     type: 'info'
   })
+
+  // Initialize savePath with Downloads folder
+  useEffect(() => {
+    const initializeSavePath = async () => {
+      try {
+        const downloadsPath = await downloadDir()
+        setSavePath(downloadsPath)
+      } catch (error) {
+        console.error('Failed to get downloads directory:', error)
+        // Fallback to current directory
+        setSavePath('')
+      }
+    }
+    initializeSavePath()
+  }, [])
 
   // Listen for transfer events from Rust backend
   useEffect(() => {
@@ -153,7 +173,8 @@ export function useReceiver(): UseReceiverReturn {
           fileSize: transferProgressRef.current?.totalBytes || 0,
           duration,
           startTime: transferStartTimeRef.current || endTime,
-          endTime
+          endTime,
+          downloadPath: savePath
         }
         setTransferMetadata(metadata)
       })
@@ -184,6 +205,22 @@ export function useReceiver(): UseReceiverReturn {
     setTicket(newTicket)
   }
 
+  const handleBrowseFolder = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        directory: true,
+      })
+      
+      if (selected) {
+        setSavePath(selected)
+      }
+    } catch (error) {
+      console.error('Failed to open folder dialog:', error)
+      showAlert('Folder Dialog Failed', `Failed to open folder dialog: ${error}`, 'error')
+    }
+  }
+
   const handleReceive = async () => {
     if (!ticket.trim()) return
     
@@ -195,10 +232,12 @@ export function useReceiver(): UseReceiverReturn {
       setTransferProgress(null)
       setTransferStartTime(null)
       
-      const result = await invoke<string>('receive_file', { ticket: ticket.trim() })
+      await invoke<string>('receive_file', { 
+        ticket: ticket.trim(),
+        outputPath: savePath
+      })
       // Don't show alert here - let the event listeners handle the UI updates
       // The success will be shown via the success screen
-      // console.log('Receive command completed:', result)
     } catch (error) {
       console.error('Failed to receive file:', error)
       showAlert('Receive Failed', `Failed to receive file: ${error}`, 'error')
@@ -225,6 +264,7 @@ export function useReceiver(): UseReceiverReturn {
     isReceiving,
     isTransporting,
     isCompleted,
+    savePath,
     alertDialog,
     transferMetadata,
     transferProgress,
@@ -232,6 +272,7 @@ export function useReceiver(): UseReceiverReturn {
     
     // Actions
     handleTicketChange,
+    handleBrowseFolder,
     handleReceive,
     showAlert,
     closeAlert,

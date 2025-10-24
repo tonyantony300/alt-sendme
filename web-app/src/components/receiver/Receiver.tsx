@@ -25,11 +25,13 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
     isReceiving,
     isTransporting,
     isCompleted,
+    savePath,
     alertDialog,
     transferMetadata,
     transferProgress,
     fileNames,
     handleTicketChange,
+    handleBrowseFolder,
     handleReceive,
     closeAlert,
     resetForNewTransfer
@@ -58,7 +60,9 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
             <TicketInput
               ticket={ticket}
               isReceiving={isReceiving}
+              savePath={savePath}
               onTicketChange={handleTicketChange}
+              onBrowseFolder={handleBrowseFolder}
               onReceive={handleReceive}
             />
 

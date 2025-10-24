@@ -133,14 +133,16 @@ pub async fn stop_sharing(
 #[tauri::command]
 pub async fn receive_file(
     ticket: String,
+    output_path: String,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     tracing::info!("📥 receive_file command called");
     tracing::info!("🎫 Ticket: {}", &ticket[..50.min(ticket.len())]);
     
-    // Create receive options with Downloads folder as default
+    // Create receive options with user-specified output path
+    let output_dir = PathBuf::from(output_path);
     let options = ReceiveOptions {
-        output_dir: Some(dirs::download_dir().unwrap_or_else(|| std::env::current_dir().unwrap())),
+        output_dir: Some(output_dir),
         relay_mode: RelayModeOption::Default,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,

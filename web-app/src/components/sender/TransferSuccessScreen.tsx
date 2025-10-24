@@ -74,19 +74,19 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
       
       {/* Transfer Metadata */}
       <div 
-        className="bg-opacity-10 rounded-lg p-4 w-full max-w-sm"
+        className="bg-opacity-10 rounded-lg p-4 w-full max-w-full"
         style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
       >
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <span 
-              className="text-sm font-medium"
+              className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
               File:
             </span>
             <span 
-              className="text-sm truncate max-w-[200px]"
+              className="text-sm truncate max-w-full"
               style={{ color: 'var(--app-main-view-fg)' }}
               title={metadata.fileName}
             >
@@ -94,9 +94,27 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
             </span>
           </div>
           
+          {metadata.downloadPath && (
+            <div className="flex justify-between items-center">
+              <span 
+                className="text-sm font-medium mr-2"
+                style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+              >
+                Download path:
+              </span>
+              <span 
+                className="text-sm truncate max-w-full"
+                style={{ color: 'var(--app-main-view-fg)' }}
+                title={metadata.downloadPath}
+              >
+                {metadata.downloadPath}
+              </span>
+            </div>
+          )}
+          
           <div className="flex justify-between items-center">
             <span 
-              className="text-sm font-medium"
+              className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
               Size:
@@ -111,7 +129,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
           
           <div className="flex justify-between items-center">
             <span 
-              className="text-sm font-medium"
+              className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
               Duration:
@@ -126,7 +144,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
           
           <div className="flex justify-between items-center">
             <span 
-              className="text-sm font-medium"
+              className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
               Avg Speed:

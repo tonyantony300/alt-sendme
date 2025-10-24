@@ -45,7 +45,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
   }, [isSharing, onTransferStateChange])
 
   return (
-    <div className="p-6 space-y-6 relative" style={{ color: 'var(--app-main-view-fg)' }}>
+    <div className="p-6 space-y-6 relative max-h-[30rem] overflow-y-auto" style={{ color: 'var(--app-main-view-fg)' }}>
    
 
       {!isSharing ? (
@@ -86,7 +86,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
         <PulseAnimation 
           isTransporting={isTransporting}
           isCompleted={isCompleted}
-          className="mx-auto mb-4 flex items-center justify-center" 
+          className="mx-auto my-4 flex items-center justify-center" 
         />
         </div>
         <SharingActiveCard

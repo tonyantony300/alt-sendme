@@ -4,6 +4,7 @@ export interface TransferMetadata {
   duration: number  // milliseconds
   startTime: number
   endTime: number
+  downloadPath?: string  // Optional for receiver success screen
 }
 
 export interface TransferProgress {
@@ -78,7 +79,9 @@ export interface ReceiverState {
 export interface TicketInputProps {
   ticket: string
   isReceiving: boolean
+  savePath: string
   onTicketChange: (ticket: string) => void
+  onBrowseFolder: () => Promise<void>
   onReceive: () => Promise<void>
 }
 
