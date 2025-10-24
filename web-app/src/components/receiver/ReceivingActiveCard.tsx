@@ -7,6 +7,7 @@ interface ReceivingActiveCardProps {
   isCompleted: boolean
   ticket: string
   transferProgress: TransferProgress | null
+  fileNames: string[]
   onReceive: () => Promise<void>
   onStopReceiving: () => Promise<void>
 }
@@ -14,8 +15,8 @@ interface ReceivingActiveCardProps {
 export function ReceivingActiveCard({ 
   isTransporting,
   isCompleted,
-  ticket,
   transferProgress,
+  fileNames,
   onStopReceiving 
 }: ReceivingActiveCardProps) {
   // Determine the current state and colors
@@ -31,16 +32,14 @@ export function ReceivingActiveCard({
     return 'Connecting to sender'
   }
 
+
   const statusColor = getStatusColor()
   const statusText = getStatusText()
 
   return (
     <div className="space-y-4">
       <div className="p-4 rounded-lg absolute top-0 left-0">
-        <p className="text-xs mb-2 max-w-[80vw] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-          <strong>Ticket:</strong> {ticket.substring(0, 20)}...
-        </p>
-        
+       
         <div className="flex items-center mb-2">
           <div 
             className="h-2 w-2 rounded-full mr-2" 

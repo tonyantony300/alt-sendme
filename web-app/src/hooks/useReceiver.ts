@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
@@ -12,6 +12,7 @@ export interface UseReceiverReturn {
   alertDialog: AlertDialogState
   transferMetadata: TransferMetadata | null
   transferProgress: TransferProgress | null
+  fileNames: string[]
   
   // Actions
   handleTicketChange: (ticket: string) => void
@@ -29,6 +30,26 @@ export function useReceiver(): UseReceiverReturn {
   const [transferMetadata, setTransferMetadata] = useState<TransferMetadata | null>(null)
   const [transferProgress, setTransferProgress] = useState<TransferProgress | null>(null)
   const [transferStartTime, setTransferStartTime] = useState<number | null>(null)
+  const [fileNames, setFileNames] = useState<string[]>([])
+  
+  // Use refs to store latest values for the event handlers
+  const fileNamesRef = useRef<string[]>([])
+  const transferProgressRef = useRef<TransferProgress | null>(null)
+  const transferStartTimeRef = useRef<number | null>(null)
+  
+  // Update refs when state changes
+  useEffect(() => {
+    fileNamesRef.current = fileNames
+  }, [fileNames])
+  
+  useEffect(() => {
+    transferProgressRef.current = transferProgress
+  }, [transferProgress])
+  
+  useEffect(() => {
+    transferStartTimeRef.current = transferStartTime
+  }, [transferStartTime])
+  
   const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
     isOpen: false,
     title: '',
@@ -41,6 +62,7 @@ export function useReceiver(): UseReceiverReturn {
     let unlistenStart: UnlistenFn | undefined
     let unlistenProgress: UnlistenFn | undefined
     let unlistenComplete: UnlistenFn | undefined
+    let unlistenFileNames: UnlistenFn | undefined
 
     const setupListeners = async () => {
       // Listen for receive started event
@@ -79,25 +101,59 @@ export function useReceiver(): UseReceiverReturn {
         }
       })
 
+      // Listen for file names event
+      unlistenFileNames = await listen('receive-file-names', (event: any) => {
+        try {
+          const payload = event.payload as string
+          const names = JSON.parse(payload) as string[]
+          
+          // Update BOTH state and ref immediately
+          setFileNames(names)
+          fileNamesRef.current = names  // CRITICAL: Update ref immediately!
+        } catch (error) {
+          console.error('Failed to parse file names event:', error)
+        }
+      })
+
       // Listen for receive completed event
       unlistenComplete = await listen('receive-completed', async () => {
         setIsTransporting(false)
         setIsCompleted(true)
         setTransferProgress(null) // Clear progress on completion
         
-        // Calculate transfer metadata
+        // Calculate transfer metadata using refs to get latest values
         const endTime = Date.now()
-        const duration = transferStartTime ? endTime - transferStartTime : 0
+        const duration = transferStartTimeRef.current ? endTime - transferStartTimeRef.current : 0
         
-        // Extract filename from ticket or use a default
-        const fileName = 'Downloaded File' // We'll improve this later with actual file info
+        // Get the display name based on file names
+        const currentFileNames = fileNamesRef.current
+        let displayName = 'Downloaded File'
         
-        const metadata = { 
-          fileName, 
-          fileSize: transferProgress?.totalBytes || 0, 
-          duration, 
-          startTime: transferStartTime || endTime, 
-          endTime 
+        if (currentFileNames.length > 0) {
+          if (currentFileNames.length === 1) {
+            // Single file/folder: extract just the name from the path
+            const fullPath = currentFileNames[0]
+            displayName = fullPath.split('/').pop() || fullPath
+          } else {
+            // Multiple files: show folder name from first file's path or count
+            const firstPath = currentFileNames[0]
+            const pathParts = firstPath.split('/')
+            // If there's a common parent folder, use it, otherwise just show count
+            if (pathParts.length > 1) {
+              displayName = pathParts[0] || `${currentFileNames.length} files`
+            } else {
+              displayName = `${currentFileNames.length} files`
+            }
+          }
+        }
+        
+        // Set metadata with the correct file name
+        const metadata = {
+          fileName: displayName,
+          fileSize: transferProgressRef.current?.totalBytes || 0,
+          duration,
+          startTime: transferStartTimeRef.current || endTime,
+          endTime
         }
         setTransferMetadata(metadata)
       })
@@ -112,6 +168,7 @@ export function useReceiver(): UseReceiverReturn {
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
       if (unlistenComplete) unlistenComplete()
+      if (unlistenFileNames) unlistenFileNames()
     }
   }, [transferStartTime, transferProgress])
 
@@ -141,7 +198,7 @@ export function useReceiver(): UseReceiverReturn {
       const result = await invoke<string>('receive_file', { ticket: ticket.trim() })
       // Don't show alert here - let the event listeners handle the UI updates
       // The success will be shown via the success screen
-      console.log('Receive command completed:', result)
+      // console.log('Receive command completed:', result)
     } catch (error) {
       console.error('Failed to receive file:', error)
       showAlert('Receive Failed', `Failed to receive file: ${error}`, 'error')
@@ -159,6 +216,7 @@ export function useReceiver(): UseReceiverReturn {
     setTransferMetadata(null)
     setTransferProgress(null)
     setTransferStartTime(null)
+    setFileNames([])
   }
 
   return {
@@ -170,6 +228,7 @@ export function useReceiver(): UseReceiverReturn {
     alertDialog,
     transferMetadata,
     transferProgress,
+    fileNames,
     
     // Actions
     handleTicketChange,

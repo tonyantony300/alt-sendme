@@ -23,6 +23,7 @@ export function Receiver() {
     alertDialog,
     transferMetadata,
     transferProgress,
+    fileNames,
     handleTicketChange,
     handleReceive,
     closeAlert,
@@ -77,6 +78,7 @@ export function Receiver() {
             isCompleted={isCompleted}
             ticket={ticket}
             transferProgress={transferProgress}
+            fileNames={fileNames}
             onReceive={handleReceive}
             onStopReceiving={resetForNewTransfer}
           />

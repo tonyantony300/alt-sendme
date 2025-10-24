@@ -48,6 +48,15 @@ fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_byt
     }
 }
 
+// Helper function to emit events with payload
+fn emit_event_with_payload(app_handle: &AppHandle, event_name: &str, payload: &str) {
+    if let Some(handle) = app_handle {
+        if let Err(e) = handle.emit_event_with_payload(event_name, payload) {
+            tracing::warn!("Failed to emit event {} with payload: {}", event_name, e);
+        }
+    }
+}
+
 /// Receive a file or directory using a ticket
 pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: AppHandle) -> anyhow::Result<ReceiveResult> {
     tracing::info!("🎫 Starting download with ticket: {}", &ticket_str[..50.min(ticket_str.len())]);
@@ -148,10 +157,16 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
                 }
             };
             let _total_size = sizes.iter().copied().sum::<u64>();
-            let payload_size = sizes.iter().skip(2).copied().sum::<u64>();
+            // For payload size, we want the actual file data size
+            // The sizes array contains: [collection_size, file1_size, file2_size, ...]
+            // We skip the first element (collection metadata) but include all file sizes
+            let payload_size = sizes.iter().skip(1).copied().sum::<u64>();
             let total_files = (sizes.len().saturating_sub(1)) as u64;
             
             tracing::info!("📦 File info: {} files, {} bytes total", total_files, payload_size);
+            
+            // Emit initial progress event (0%) so frontend can display total size immediately
+            emit_progress_event(&app_handle, 0, payload_size, 0.0);
             
             let _local_size = local.local_bytes();
             tracing::info!("⬇️  Starting data transfer...");
@@ -184,7 +199,7 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
                         tracing::info!("✅ Download complete!");
                         stats = value;
                         
-                        // Emit final progress event and completion event
+                        // Emit final progress event
                         let elapsed = transfer_start_time.elapsed().as_secs_f64();
                         let speed_bps = if elapsed > 0.0 {
                             payload_size as f64 / elapsed
@@ -192,7 +207,6 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
                             0.0
                         };
                         emit_progress_event(&app_handle, payload_size, payload_size, speed_bps);
-                        emit_event(&app_handle, "receive-completed");
                         
                         break;
                     }
@@ -219,6 +233,20 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
         let collection = Collection::load(hash_and_format.hash, db.as_ref()).await?;
         tracing::info!("✅ Collection loaded: {} items", collection.len());
         
+        // Extract file names from collection and emit them BEFORE export
+        // This allows the UI to show file names during the export phase
+        let mut file_names: Vec<String> = Vec::new();
+        for (name, _hash) in collection.iter() {
+            file_names.push(name.to_string());
+        }
+        
+        // Emit file names information
+        if !file_names.is_empty() {
+            let file_names_json = serde_json::to_string(&file_names)
+                .unwrap_or_else(|_| "[]".to_string());
+            emit_event_with_payload(&app_handle, "receive-file-names", &file_names_json);
+        }
+        
         // Determine output directory
         let output_dir = options.output_dir.unwrap_or_else(|| {
             dirs::download_dir().unwrap_or_else(|| std::env::current_dir().unwrap())
@@ -227,6 +255,10 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
         tracing::info!("📁 Exporting to: {}", output_dir.display());
         export(&db, collection, &output_dir).await?;
         tracing::info!("✅ Export complete!");
+        
+        // Emit completion event AFTER everything is done
+        emit_event(&app_handle, "receive-completed");
+        
         anyhow::Ok((total_files, payload_size, stats, output_dir))
     };
     
