@@ -30,10 +30,11 @@
   --font-size-base: 15px;
   
   /* Dark theme colors */
-  --app-bg: rgb(25, 25, 25);
+  --app-bg: rgba(25, 25, 25);
   --app-main-view: rgba(25, 25, 25, 0.45);
   --app-primary: rgba(37, 211, 101, 0.687);
-  --app-accent: rgb(45, 120, 220);
+  --app-accent-light: rgb(45, 120, 220);
+  --app-accent: rgba(0, 0, 0, 0.687);
   --app-destructive: rgb(144, 60, 60);
   
   /* Text colors */
@@ -124,6 +125,31 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  
+  /* Thin scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(25, 25, 25, 0.45);
+    border-radius: 2px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(25, 25, 25, 0.6);
+  }
+  
+  /* Firefox scrollbar styling - limited control available */
+  * {
+    scrollbar-width: thin; /* Firefox only supports: auto, thin, none */
+    scrollbar-color: rgba(25, 25, 25, 0.45) transparent;
   }
 }
 

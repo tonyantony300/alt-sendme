@@ -67,7 +67,7 @@ export function useSender(): UseSenderReturn {
     const setupListeners = async () => {
       // Listen for import-started event
       unlistenImportStart = await listen('import-started', () => {
-        console.log('[Import] Started')
+        // console.log('[Import] Started')
         setIsImporting(true)
         setImportProgress(null)
       })
@@ -89,7 +89,7 @@ export function useSender(): UseSenderReturn {
             const processed = parseInt(parts[0], 10)
             const total = parseInt(parts[1], 10)
             const percentage = parseInt(parts[2], 10)
-            console.log('[Import] Progress:', processed, '/', total, `(${percentage}%)`)
+            // console.log('[Import] Progress:', processed, '/', total, `(${percentage}%)`)
             setImportProgress({ processed, total, percentage })
           }
         } catch (error) {

@@ -48,7 +48,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
   }, [isReceiving, onTransferStateChange])
 
   return (
-    <div className="p-6 space-y-6 relative" style={{ color: 'var(--app-main-view-fg)' }}>
+    <div className="p-6 space-y-6 pb-[4.25rem] relative" style={{ color: 'var(--app-main-view-fg)' }}>
 
       {!isReceiving ? (
         <>

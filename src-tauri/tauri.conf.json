@@ -15,8 +15,8 @@
       {
         "label": "main",
         "title": "ALT-SENDME",
-        "width": 1240,
-        "height": 640,
+        "width": 1024,
+        "height": 710,
         "resizable": true,
         "fullscreen": false,
         "center": true,

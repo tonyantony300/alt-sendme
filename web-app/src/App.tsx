@@ -25,7 +25,7 @@ function App() {
       <div className="container mx-auto p-8">
         <div className="max-w-2xl mx-auto">
           <h1
-            className="text-3xl font-bold text-center mb-8 select-none [@media(min-height:680px)]:block hidden" 
+            className="text-3xl font-bold font-mono text-center mb-8 select-none [@media(min-height:680px)]:block hidden" 
             style={{ color: 'var(--app-bg-fg)' }}
           >
             ALT-SENDME
@@ -119,6 +119,7 @@ function App() {
           </div>
         </div>
       </div>
+      <div className=" w-full h-10 z-10 text-center text-xs"><span>v0.1.0</span></div>
     </div>
   )
 }
