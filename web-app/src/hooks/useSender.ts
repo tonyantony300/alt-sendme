@@ -10,7 +10,6 @@ export interface ImportProgress {
 }
 
 export interface UseSenderReturn {
-  // State
   isSharing: boolean
   isImporting: boolean
   isTransporting: boolean
@@ -24,7 +23,6 @@ export interface UseSenderReturn {
   transferProgress: TransferProgress | null
   importProgress: ImportProgress | null
   
-  // Actions
   handleFileSelect: (path: string) => void
   startSharing: () => Promise<void>
   stopSharing: () => Promise<void>
@@ -54,7 +52,6 @@ export function useSender(): UseSenderReturn {
     type: 'info'
   })
 
-  // Listen for transfer events from Rust backend
   useEffect(() => {
     let unlistenImportStart: UnlistenFn | undefined
     let unlistenImportCount: UnlistenFn | undefined
@@ -65,21 +62,17 @@ export function useSender(): UseSenderReturn {
     let unlistenComplete: UnlistenFn | undefined
 
     const setupListeners = async () => {
-      // Listen for import-started event
       unlistenImportStart = await listen('import-started', () => {
-        // console.log('[Import] Started')
         setIsImporting(true)
         setImportProgress(null)
       })
 
-      // Listen for import-file-count event
       unlistenImportCount = await listen('import-file-count', (event: any) => {
         const total = parseInt(event.payload as string, 10)
-        console.log('[Import] File count:', total)
+        // // console.log('[Import] File count:', total)
         setImportProgress({ processed: 0, total, percentage: 0 })
       })
 
-      // Listen for import-progress event
       unlistenImportProgress = await listen('import-progress', (event: any) => {
         try {
           const payload = event.payload as string
@@ -89,34 +82,27 @@ export function useSender(): UseSenderReturn {
             const processed = parseInt(parts[0], 10)
             const total = parseInt(parts[1], 10)
             const percentage = parseInt(parts[2], 10)
-            // console.log('[Import] Progress:', processed, '/', total, `(${percentage}%)`)
             setImportProgress({ processed, total, percentage })
           }
         } catch (error) {
-          console.error('Failed to parse import progress event:', error)
+          // // console.error('Failed to parse import progress event:', error)
         }
       })
 
-      // Listen for import-completed event
       unlistenImportComplete = await listen('import-completed', () => {
-        console.log('[Import] Completed')
+        // // console.log('[Import] Completed')
         setIsImporting(false)
-        // Keep import progress visible until transfer starts
       })
 
-      // Listen for transfer started event
       unlistenStart = await listen('transfer-started', () => {
         setIsTransporting(true)
         setIsCompleted(false)
         setTransferStartTime(Date.now())
-        setTransferProgress(null) // Reset progress
-        setImportProgress(null) // Clear import progress when transfer starts
+        setTransferProgress(null)
+        setImportProgress(null)
       })
 
-      // Listen for transfer progress events
       unlistenProgress = await listen('transfer-progress', (event: any) => {
-        // Parse the payload from the event
-        // The payload is in event.payload as a string: "bytes_transferred:total_bytes:speed_int"
         try {
           const payload = event.payload as string
           const parts = payload.split(':')
@@ -125,7 +111,6 @@ export function useSender(): UseSenderReturn {
             const bytesTransferred = parseInt(parts[0], 10)
             const totalBytes = parseInt(parts[1], 10)
             const speedInt = parseInt(parts[2], 10)
-            // Convert speed back from integer (divide by 1000 to get original value)
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
@@ -137,17 +122,15 @@ export function useSender(): UseSenderReturn {
             })
           }
         } catch (error) {
-          console.error('Failed to parse progress event:', error)
+          // // console.error('Failed to parse progress event:', error)
         }
       })
 
-      // Listen for transfer completed event
       unlistenComplete = await listen('transfer-completed', async () => {
         setIsTransporting(false)
         setIsCompleted(true)
-        setTransferProgress(null) // Clear progress on completion
+        setTransferProgress(null)
         
-        // Calculate transfer metadata
         const endTime = Date.now()
         const duration = transferStartTime ? endTime - transferStartTime : 0
         
@@ -164,7 +147,7 @@ export function useSender(): UseSenderReturn {
             }
             setTransferMetadata(metadata)
           } catch (error) {
-            console.error('Failed to get file size:', error)
+            // // console.error('Failed to get file size:', error)
             const fileName = selectedPath.split('/').pop() || 'Unknown'
             const metadata = { 
               fileName, 
@@ -180,10 +163,9 @@ export function useSender(): UseSenderReturn {
     }
 
     setupListeners().catch((error) => {
-      console.error('Failed to set up event listeners:', error)
+      // // console.error('Failed to set up event listeners:', error)
     })
 
-    // Cleanup listeners on unmount
     return () => {
       if (unlistenImportStart) unlistenImportStart()
       if (unlistenImportCount) unlistenImportCount()
@@ -215,9 +197,8 @@ export function useSender(): UseSenderReturn {
       const result = await invoke<string>('start_sharing', { path: selectedPath })
       setTicket(result)
       setIsSharing(true)
-      // isTransporting will be updated by event listeners when actual transfer begins
     } catch (error) {
-      console.error('Failed to start sharing:', error)
+      // // console.error('Failed to start sharing:', error)
       showAlert('Sharing Failed', `Failed to start sharing: ${error}`, 'error')
     } finally {
       setIsLoading(false)
@@ -238,14 +219,13 @@ export function useSender(): UseSenderReturn {
       setImportProgress(null)
       setTransferStartTime(null)
     } catch (error) {
-      console.error('Failed to stop sharing:', error)
+      // // console.error('Failed to stop sharing:', error)
       showAlert('Stop Sharing Failed', `Failed to stop sharing: ${error}`, 'error')
     }
   }
 
   const resetForNewTransfer = async () => {
     await stopSharing()
-    // Keep user in file selection screen
   }
 
   const copyTicket = async () => {
@@ -255,14 +235,13 @@ export function useSender(): UseSenderReturn {
         setCopySuccess(true)
         setTimeout(() => setCopySuccess(false), 2000)
       } catch (error) {
-        console.error('Failed to copy ticket:', error)
+        // // console.error('Failed to copy ticket:', error)
         showAlert('Copy Failed', `Failed to copy ticket: ${error}`, 'error')
       }
     }
   }
 
   return {
-    // State
     isSharing,
     isImporting,
     isTransporting,
@@ -276,7 +255,6 @@ export function useSender(): UseSenderReturn {
     transferProgress,
     importProgress,
     
-    // Actions
     handleFileSelect,
     startSharing,
     stopSharing,

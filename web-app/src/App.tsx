@@ -16,7 +16,6 @@ function App() {
 
   return (
     <div className="min-h-screen relative glass-background" style={{ color: 'var(--app-bg-fg)' }}>
-      {/* Custom drag region - enables window dragging */}
       <div 
         className="absolute w-full h-10 z-10" 
         data-tauri-drag-region 
@@ -31,13 +30,11 @@ function App() {
             ALT-SENDME
           </h1>
           
-          {/* Tab Navigation */}
           <div 
       
             className="flex space-x-1 mb-6 p-1 rounded-lg relative select-none" 
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
           >
-            {/* Animated Background Indicator */}
             <motion.div
               layoutId="activeTab"
               className="absolute h-[calc(100%-8px)] rounded-md"
@@ -90,7 +87,6 @@ function App() {
             </motion.button>
           </div>
           
-          {/* Tab Content */}
           <div 
             className="rounded-lg shadow-sm glass-card overflow-hidden"
           >

@@ -47,7 +47,7 @@ const WindowControls: React.FC = () => {
       const window = getCurrentWindow();
       await window.minimize();
     } catch (error) {
-      console.error('Failed to minimize window:', error);
+      // console.error('Failed to minimize window:', error);
     }
   };
 
@@ -56,7 +56,7 @@ const WindowControls: React.FC = () => {
       const window = getCurrentWindow();
       await window.toggleMaximize();
     } catch (error) {
-      console.error('Failed to maximize window:', error);
+      // console.error('Failed to maximize window:', error);
     }
   };
 
@@ -65,7 +65,7 @@ const WindowControls: React.FC = () => {
       const window = getCurrentWindow();
       await window.close();
     } catch (error) {
-      console.error('Failed to close window:', error);
+      // console.error('Failed to close window:', error);
     }
   };
 

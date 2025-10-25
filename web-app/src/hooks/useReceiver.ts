@@ -12,7 +12,6 @@ export interface ExportProgress {
 }
 
 export interface UseReceiverReturn {
-  // State
   ticket: string
   isReceiving: boolean
   isTransporting: boolean
@@ -26,7 +25,6 @@ export interface UseReceiverReturn {
   exportProgress: ExportProgress | null
   resumedFrom: number | null
   
-  // Actions
   handleTicketChange: (ticket: string) => void
   handleBrowseFolder: () => Promise<void>
   handleReceive: () => Promise<void>
@@ -49,12 +47,10 @@ export function useReceiver(): UseReceiverReturn {
   const [transferStartTime, setTransferStartTime] = useState<number | null>(null)
   const [fileNames, setFileNames] = useState<string[]>([])
   
-  // Use refs to store latest values for the event handlers
   const fileNamesRef = useRef<string[]>([])
   const transferProgressRef = useRef<TransferProgress | null>(null)
   const transferStartTimeRef = useRef<number | null>(null)
   
-  // Update refs when state changes
   useEffect(() => {
     fileNamesRef.current = fileNames
   }, [fileNames])
@@ -74,22 +70,19 @@ export function useReceiver(): UseReceiverReturn {
     type: 'info'
   })
 
-  // Initialize savePath with Downloads folder
   useEffect(() => {
     const initializeSavePath = async () => {
       try {
         const downloadsPath = await downloadDir()
         setSavePath(downloadsPath)
       } catch (error) {
-        console.error('Failed to get downloads directory:', error)
-        // Fallback to current directory
+        // // console.error('Failed to get downloads directory:', error)
         setSavePath('')
       }
     }
     initializeSavePath()
   }, [])
 
-  // Listen for transfer events from Rust backend
   useEffect(() => {
     let unlistenStart: UnlistenFn | undefined
     let unlistenProgress: UnlistenFn | undefined
@@ -101,31 +94,25 @@ export function useReceiver(): UseReceiverReturn {
     let unlistenExportComplete: UnlistenFn | undefined
 
     const setupListeners = async () => {
-      // Listen for receive started event
       unlistenStart = await listen('receive-started', () => {
         setIsTransporting(true)
         setIsCompleted(false)
         setTransferStartTime(Date.now())
-        setTransferProgress(null) // Reset progress
+        setTransferProgress(null)
       })
 
-      // Listen for receive-resumed event
       unlistenResumed = await listen('receive-resumed', (event: any) => {
         try {
           const localSize = parseInt(event.payload as string, 10)
-          console.log('[Receive] Resuming from:', localSize, 'bytes')
+          // // console.log('[Receive] Resuming from:', localSize, 'bytes')
           setResumedFrom(localSize)
-          // Clear after 5 seconds so it doesn't stay forever
           setTimeout(() => setResumedFrom(null), 5000)
         } catch (error) {
-          console.error('Failed to parse resume event:', error)
+          // // console.error('Failed to parse resume event:', error)
         }
       })
 
-      // Listen for receive progress events
       unlistenProgress = await listen('receive-progress', (event: any) => {
-        // Parse the payload from the event
-        // The payload is in event.payload as a string: "bytes_transferred:total_bytes:speed_int"
         try {
           const payload = event.payload as string
           const parts = payload.split(':')
@@ -134,7 +121,6 @@ export function useReceiver(): UseReceiverReturn {
             const bytesTransferred = parseInt(parts[0], 10)
             const totalBytes = parseInt(parts[1], 10)
             const speedInt = parseInt(parts[2], 10)
-            // Convert speed back from integer (divide by 1000 to get original value)
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
@@ -146,37 +132,33 @@ export function useReceiver(): UseReceiverReturn {
             })
           }
         } catch (error) {
-          console.error('Failed to parse progress event:', error)
+          // // console.error('Failed to parse progress event:', error)
         }
       })
 
-      // Listen for file names event
       unlistenFileNames = await listen('receive-file-names', (event: any) => {
         try {
           const payload = event.payload as string
           const names = JSON.parse(payload) as string[]
           
-          // Update BOTH state and ref immediately
           setFileNames(names)
-          fileNamesRef.current = names  // CRITICAL: Update ref immediately!
+          fileNamesRef.current = names
         } catch (error) {
-          console.error('Failed to parse file names event:', error)
+          // // console.error('Failed to parse file names event:', error)
         }
       })
 
-      // Listen for export-started event
       unlistenExportStart = await listen('export-started', (event: any) => {
         try {
           const total = parseInt(event.payload as string, 10)
-          console.log('[Export] Started, total files:', total)
+          // // console.log('[Export] Started, total files:', total)
           setIsExporting(true)
           setExportProgress({ current: 0, total, percentage: 0 })
         } catch (error) {
-          console.error('Failed to parse export start event:', error)
+          // // console.error('Failed to parse export start event:', error)
         }
       })
 
-      // Listen for export-progress event
       unlistenExportProgress = await listen('export-progress', (event: any) => {
         try {
           const payload = event.payload as string
@@ -186,45 +168,38 @@ export function useReceiver(): UseReceiverReturn {
             const current = parseInt(parts[0], 10)
             const total = parseInt(parts[1], 10)
             const percentage = parseInt(parts[2], 10)
-            console.log('[Export] Progress:', current, '/', total, `(${percentage}%)`)
+            // // console.log('[Export] Progress:', current, '/', total, `(${percentage}%)`)
             setExportProgress({ current, total, percentage })
           }
         } catch (error) {
-          console.error('Failed to parse export progress event:', error)
+          // // console.error('Failed to parse export progress event:', error)
         }
       })
 
-      // Listen for export-completed event
       unlistenExportComplete = await listen('export-completed', () => {
-        console.log('[Export] Completed')
+        // // console.log('[Export] Completed')
         setIsExporting(false)
         setExportProgress(null)
       })
 
-      // Listen for receive completed event
       unlistenComplete = await listen('receive-completed', async () => {
         setIsTransporting(false)
         setIsCompleted(true)
-        setTransferProgress(null) // Clear progress on completion
+        setTransferProgress(null)
         
-        // Calculate transfer metadata using refs to get latest values
         const endTime = Date.now()
         const duration = transferStartTimeRef.current ? endTime - transferStartTimeRef.current : 0
         
-        // Get the display name based on file names
         const currentFileNames = fileNamesRef.current
         let displayName = 'Downloaded File'
         
         if (currentFileNames.length > 0) {
           if (currentFileNames.length === 1) {
-            // Single file/folder: extract just the name from the path
             const fullPath = currentFileNames[0]
             displayName = fullPath.split('/').pop() || fullPath
           } else {
-            // Multiple files: show folder name from first file's path or count
             const firstPath = currentFileNames[0]
             const pathParts = firstPath.split('/')
-            // If there's a common parent folder, use it, otherwise just show count
             if (pathParts.length > 1) {
               displayName = pathParts[0] || `${currentFileNames.length} files`
             } else {
@@ -233,7 +208,6 @@ export function useReceiver(): UseReceiverReturn {
           }
         }
         
-        // Set metadata with the correct file name
         const metadata = {
           fileName: displayName,
           fileSize: transferProgressRef.current?.totalBytes || 0,
@@ -247,10 +221,9 @@ export function useReceiver(): UseReceiverReturn {
     }
 
     setupListeners().catch((error) => {
-      console.error('Failed to set up event listeners:', error)
+      // // console.error('Failed to set up event listeners:', error)
     })
 
-    // Cleanup listeners on unmount
     return () => {
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
@@ -286,7 +259,7 @@ export function useReceiver(): UseReceiverReturn {
         setSavePath(selected)
       }
     } catch (error) {
-      console.error('Failed to open folder dialog:', error)
+      // // console.error('Failed to open folder dialog:', error)
       showAlert('Folder Dialog Failed', `Failed to open folder dialog: ${error}`, 'error')
     }
   }
@@ -309,10 +282,8 @@ export function useReceiver(): UseReceiverReturn {
         ticket: ticket.trim(),
         outputPath: savePath
       })
-      // Don't show alert here - let the event listeners handle the UI updates
-      // The success will be shown via the success screen
     } catch (error) {
-      console.error('Failed to receive file:', error)
+      // // console.error('Failed to receive file:', error)
       showAlert('Receive Failed', `Failed to receive file: ${error}`, 'error')
       setIsReceiving(false)
       setIsTransporting(false)
@@ -336,7 +307,6 @@ export function useReceiver(): UseReceiverReturn {
   }
 
   return {
-    // State
     ticket,
     isReceiving,
     isTransporting,
@@ -350,7 +320,6 @@ export function useReceiver(): UseReceiverReturn {
     exportProgress,
     resumedFrom,
     
-    // Actions
     handleTicketChange,
     handleBrowseFolder,
     handleReceive,

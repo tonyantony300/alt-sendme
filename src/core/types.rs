@@ -1,23 +1,19 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-// Import the EventEmitter trait - we'll define it here or import it
 pub trait EventEmitter: Send + Sync {
     fn emit_event(&self, event_name: &str) -> Result<(), String>;
     fn emit_event_with_payload(&self, event_name: &str, payload: &str) -> Result<(), String>;
 }
 
-// Type alias for the app handle - we use Arc<dyn EventEmitter> to allow cloning and avoid direct tauri dependency in core
 pub type AppHandle = Option<Arc<dyn EventEmitter>>;
 
-/// Result of a send operation
 pub struct SendResult {
     pub ticket: String,
     pub hash: String,
     pub size: u64,
     pub entry_type: String, // "file" or "directory"
     
-    // CRITICAL: These fields must be kept alive for the duration of the share
     pub router: iroh::protocol::Router,  // Keeps the server running and protocols active
     pub temp_tag: iroh_blobs::api::TempTag, // Prevents data from being garbage collected
     pub blobs_data_dir: PathBuf, // Path for cleanup when share stops
@@ -25,14 +21,12 @@ pub struct SendResult {
     pub _store: iroh_blobs::store::fs::FsStore, // Keeps the blob storage alive
 }
 
-/// Result of a receive operation
 #[derive(Debug)]
 pub struct ReceiveResult {
     pub message: String,
     pub file_path: PathBuf,
 }
 
-/// Options for send operation
 #[derive(Debug, Default)]
 pub struct SendOptions {
     pub relay_mode: RelayModeOption,
@@ -41,7 +35,6 @@ pub struct SendOptions {
     pub magic_ipv6_addr: Option<std::net::SocketAddrV6>,
 }
 
-/// Options for receive operation
 #[derive(Debug, Default)]
 pub struct ReceiveOptions {
     pub output_dir: Option<PathBuf>,
@@ -50,14 +43,10 @@ pub struct ReceiveOptions {
     pub magic_ipv6_addr: Option<std::net::SocketAddrV6>,
 }
 
-/// Available command line options for configuring relays.
 #[derive(Clone, Debug)]
 pub enum RelayModeOption {
-    /// Disables relays altogether.
     Disabled,
-    /// Uses the default relay servers.
     Default,
-    /// Uses a single, custom relay server by URL.
     Custom(iroh::RelayUrl),
 }
 
@@ -77,7 +66,6 @@ impl From<RelayModeOption> for iroh::RelayMode {
     }
 }
 
-/// Options to configure what is included in a [`NodeAddr`]
 #[derive(
     Copy,
     Clone,
@@ -91,16 +79,10 @@ impl From<RelayModeOption> for iroh::RelayMode {
     serde::Deserialize,
 )]
 pub enum AddrInfoOptions {
-    /// Only the Node ID is added.
-    ///
-    /// This usually means that iroh-dns discovery is used to find address information.
     #[default]
     Id,
-    /// Includes the Node ID and both the relay URL, and the direct addresses.
     RelayAndAddresses,
-    /// Includes the Node ID and the relay URL.
     Relay,
-    /// Includes the Node ID and the direct addresses.
     Addresses,
 }
 
@@ -111,7 +93,6 @@ pub fn apply_options(addr: &mut iroh::NodeAddr, opts: AddrInfoOptions) {
             addr.relay_url = None;
         }
         AddrInfoOptions::RelayAndAddresses => {
-            // nothing to do
         }
         AddrInfoOptions::Relay => {
             addr.direct_addresses.clear();
@@ -122,7 +103,6 @@ pub fn apply_options(addr: &mut iroh::NodeAddr, opts: AddrInfoOptions) {
     }
 }
 
-/// Get the secret key or generate a new one.
 pub fn get_or_create_secret() -> anyhow::Result<iroh::SecretKey> {
     match std::env::var("IROH_SECRET") {
         Ok(secret) => iroh::SecretKey::from_str(&secret).context("invalid secret"),

@@ -1,4 +1,3 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
@@ -9,22 +8,21 @@ use state::AppState;
 use std::sync::Arc;
 use std::fs;
 
-/// Clean up any orphaned .sendme-send-* directories from previous runs
 fn cleanup_orphaned_directories() {
-    tracing::info!("🧹 Checking for orphaned .sendme-send-* directories...");
+    // tracing::info!("🧹 Checking for orphaned .sendme-send-* directories...");
     
     if let Ok(current_dir) = std::env::current_dir() {
         if let Ok(entries) = fs::read_dir(&current_dir) {
             for entry in entries.flatten() {
                 if let Some(name) = entry.file_name().to_str() {
                     if name.starts_with(".sendme-send-") && entry.path().is_dir() {
-                        tracing::info!("🗑️  Found orphaned directory: {}", name);
+                        // tracing::info!("🗑️  Found orphaned directory: {}", name);
                         match fs::remove_dir_all(&entry.path()) {
                             Ok(_) => {
-                                tracing::info!("✅ Successfully cleaned up orphaned directory: {}", name);
+                                // tracing::info!("✅ Successfully cleaned up orphaned directory: {}", name);
                             }
                             Err(e) => {
-                                tracing::warn!("⚠️  Failed to clean up orphaned directory {}: {}", name, e);
+                                // tracing::warn!("⚠️  Failed to clean up orphaned directory {}: {}", name, e);
                             }
                         }
                     }
@@ -35,7 +33,6 @@ fn cleanup_orphaned_directories() {
 }
 
 fn main() {
-    // Initialize tracing for better debugging
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -46,7 +43,7 @@ fn main() {
         .with_line_number(true)
         .init();
     
-    tracing::info!("🚀 Starting Sendme Desktop application");
+    // tracing::info!("🚀 Starting Sendme Desktop application");
     
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -65,7 +62,6 @@ fn main() {
             get_file_size,
         ])
         .setup(|_app| {
-            // Clean up any orphaned .sendme-send-* directories from previous runs
             cleanup_orphaned_directories();
             Ok(())
         })

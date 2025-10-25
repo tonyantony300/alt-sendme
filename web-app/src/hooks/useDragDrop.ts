@@ -36,7 +36,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
       const type = await invoke<string>('check_path_type', { path })
       setPathType(type as 'file' | 'directory')
     } catch (error) {
-      console.error('Failed to check path type:', error)
+      // console.error('Failed to check path type:', error)
       setPathType(null)
     }
   }
@@ -64,7 +64,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
         onFileSelect(selected)
       }
     } catch (error) {
-      console.error('Failed to open file dialog:', error)
+      // console.error('Failed to open file dialog:', error)
       showAlert('File Dialog Failed', `Failed to open file dialog: ${error}`, 'error')
     }
   }
@@ -80,7 +80,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
         onFileSelect(selected)
       }
     } catch (error) {
-      console.error('Failed to open folder dialog:', error)
+      // console.error('Failed to open folder dialog:', error)
       showAlert('Folder Dialog Failed', `Failed to open folder dialog: ${error}`, 'error')
     }
   }
@@ -109,7 +109,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
     }).then(unlisten => {
       dropUnlisten = unlisten
     }).catch(err => {
-      console.error('Failed to register drag-drop listener:', err)
+      // console.error('Failed to register drag-drop listener:', err)
     })
 
     // Listen for drag hover
@@ -118,7 +118,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
     }).then(unlisten => {
       hoverUnlisten = unlisten
     }).catch(err => {
-      console.error('Failed to register drag-hover listener:', err)
+      // console.error('Failed to register drag-hover listener:', err)
     })
 
     // Listen for drag cancelled
@@ -127,7 +127,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
     }).then(unlisten => {
       cancelUnlisten = unlisten
     }).catch(err => {
-      console.error('Failed to register drag-leave listener:', err)
+      // console.error('Failed to register drag-leave listener:', err)
     })
 
     return () => {
