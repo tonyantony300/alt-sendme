@@ -23,7 +23,7 @@ Original sendme project:
   Copyright (C) Rüdiger Klaehn <rklaehn@protonmail.com> and n0 team
   Licensed under Apache-2.0 OR MIT
 
-This fork ("better-sendme") has been substantially modified and includes:
+This fork ("alt-sendme") has been substantially modified and includes:
   - Complete rewrite as a Tauri desktop application
   - New React-based frontend
   - Enhanced file transfer features and UI
