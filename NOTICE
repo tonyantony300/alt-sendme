@@ -1,0 +1,35 @@
+Better Sendme - P2P File Sharing Application
+
+Copyright (C) 2025 Better Sendme Contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+NOTICE - This is a fork of sendme (https://github.com/n0-computer/sendme)
+
+Original sendme project:
+  Copyright (C) Rüdiger Klaehn <rklaehn@protonmail.com> and n0 team
+  Licensed under Apache-2.0 OR MIT
+
+This fork ("better-sendme") has been substantially modified and includes:
+  - Complete rewrite as a Tauri desktop application
+  - New React-based frontend
+  - Enhanced file transfer features and UI
+  - Additional functionality beyond the original CLI tool
+
+The original sendme code portions incorporated in this work remain under their
+original licenses (Apache-2.0 OR MIT). This work as a whole is licensed under
+GNU Affero General Public License version 3 or later.
+
