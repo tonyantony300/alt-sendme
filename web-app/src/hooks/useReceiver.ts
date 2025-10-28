@@ -41,6 +41,7 @@ export function useReceiver(): UseReceiverReturn {
   const fileNamesRef = useRef<string[]>([])
   const transferProgressRef = useRef<TransferProgress | null>(null)
   const transferStartTimeRef = useRef<number | null>(null)
+  const savePathRef = useRef<string>('')
   
   // Update refs when state changes
   useEffect(() => {
@@ -54,6 +55,10 @@ export function useReceiver(): UseReceiverReturn {
   useEffect(() => {
     transferStartTimeRef.current = transferStartTime
   }, [transferStartTime])
+  
+  useEffect(() => {
+    savePathRef.current = savePath
+  }, [savePath])
   
   const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
     isOpen: false,
@@ -136,7 +141,7 @@ export function useReceiver(): UseReceiverReturn {
       })
 
       // Listen for receive completed event
-      unlistenComplete = await listen('receive-completed', async () => {
+      unlistenComplete = await listen('receive-completed', () => {
         setIsTransporting(false)
         setIsCompleted(true)
         setTransferProgress(null) // Clear progress on completion
@@ -174,7 +179,7 @@ export function useReceiver(): UseReceiverReturn {
           duration,
           startTime: transferStartTimeRef.current || endTime,
           endTime,
-          downloadPath: savePath
+          downloadPath: savePathRef.current
         }
         setTransferMetadata(metadata)
       })
@@ -191,7 +196,7 @@ export function useReceiver(): UseReceiverReturn {
       if (unlistenComplete) unlistenComplete()
       if (unlistenFileNames) unlistenFileNames()
     }
-  }, [transferStartTime, transferProgress])
+  }, [])
 
   const showAlert = (title: string, description: string, type: AlertType = 'info') => {
     setAlertDialog({ isOpen: true, title, description, type })
