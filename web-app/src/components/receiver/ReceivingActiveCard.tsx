@@ -16,7 +16,6 @@ export function ReceivingActiveCard({
   isTransporting,
   isCompleted,
   transferProgress,
-  fileNames,
   onStopReceiving 
 }: ReceivingActiveCardProps) {
   // Determine the current state and colors
