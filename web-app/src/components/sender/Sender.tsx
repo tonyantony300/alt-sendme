@@ -26,6 +26,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
     isCompleted,
     ticket,
     selectedPath,
+    pathType,
     isLoading,
     copySuccess,
     alertDialog,
@@ -95,6 +96,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
           isTransporting={isTransporting}
           isCompleted={isCompleted}
           selectedPath={selectedPath}
+          pathType={pathType}
           ticket={ticket}
           copySuccess={copySuccess}
           transferProgress={transferProgress}

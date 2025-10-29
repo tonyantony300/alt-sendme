@@ -55,6 +55,7 @@ export interface SharingControlsProps {
   isTransporting: boolean
   isCompleted: boolean
   selectedPath: string | null
+  pathType: 'file' | 'directory' | null
   ticket: string | null
   copySuccess: boolean
   transferProgress: TransferProgress | null

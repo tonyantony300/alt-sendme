@@ -10,6 +10,7 @@ export interface UseSenderReturn {
   isCompleted: boolean
   ticket: string | null
   selectedPath: string | null
+  pathType: 'file' | 'directory' | null
   isLoading: boolean
   copySuccess: boolean
   alertDialog: AlertDialogState
@@ -32,6 +33,7 @@ export function useSender(): UseSenderReturn {
   const [isCompleted, setIsCompleted] = useState(false)
   const [ticket, setTicket] = useState<string | null>(null)
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
+  const [pathType, setPathType] = useState<'file' | 'directory' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [transferMetadata, setTransferMetadata] = useState<TransferMetadata | null>(null)
@@ -145,8 +147,16 @@ export function useSender(): UseSenderReturn {
     setAlertDialog(prev => ({ ...prev, isOpen: false }))
   }
 
-  const handleFileSelect = (path: string) => {
+  const handleFileSelect = async (path: string) => {
     setSelectedPath(path)
+    // Check path type when file is selected
+    try {
+      const type = await invoke<string>('check_path_type', { path })
+      setPathType(type as 'file' | 'directory')
+    } catch (error) {
+      console.error('Failed to check path type:', error)
+      setPathType(null)
+    }
   }
 
   const startSharing = async () => {
@@ -174,6 +184,7 @@ export function useSender(): UseSenderReturn {
       setIsCompleted(false)
       setTicket(null)
       setSelectedPath(null)
+      setPathType(null)
       setTransferMetadata(null)
       setTransferProgress(null)
       setTransferStartTime(null)
@@ -208,6 +219,7 @@ export function useSender(): UseSenderReturn {
     isCompleted,
     ticket,
     selectedPath,
+    pathType,
     isLoading,
     copySuccess,
     alertDialog,

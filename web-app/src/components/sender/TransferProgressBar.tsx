@@ -5,7 +5,7 @@ interface TransferProgressBarProps {
 }
 
 // Format speed in human-readable format
-function formatSpeed(speedBps: number): string {
+export function formatSpeed(speedBps: number): string {
   const mbps = speedBps / (1024 * 1024)
   const kbps = speedBps / 1024
 

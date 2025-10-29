@@ -1,10 +1,11 @@
 import { Copy, CheckCircle } from 'lucide-react'
 import type { SharingControlsProps, TicketDisplayProps } from '../../types/sender'
-import { TransferProgressBar } from './TransferProgressBar'
+import { TransferProgressBar, formatSpeed } from './TransferProgressBar'
 
 
 export function SharingActiveCard({ 
   selectedPath, 
+  pathType,
   ticket, 
   copySuccess,
   transferProgress,
@@ -65,7 +66,22 @@ export function SharingActiveCard({
       )}
       
       {isTransporting && transferProgress && (
-        <TransferProgressBar progress={transferProgress} />
+        pathType === 'directory' ? (
+          // For folders: show message and speed only
+          <div className="space-y-3">
+            <div className="text-center">
+              <p className="text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                Files are being transmitted
+              </p>
+              <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                Speed: {formatSpeed(transferProgress.speedBps)}
+              </p>
+            </div>
+          </div>
+        ) : (
+          // For files: show progress bar
+          <TransferProgressBar progress={transferProgress} />
+        )
       )}
        
     
