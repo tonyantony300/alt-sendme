@@ -13,14 +13,18 @@ export function Dropzone({
     const baseStyles = {
       border: '2px dashed',
       borderRadius: 'var(--radius-lg)',
-      padding: '2rem',
-      marginBottom: '1.5rem',
+      padding: '4rem',
+      marginBottom: '1rem',
       textAlign: 'center' as const,
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
+      transition: 'border-color 0.2s ease, background-color 0.2s ease',
       backgroundColor: 'var(--app-main-view)',
       borderColor: 'rgba(255, 255, 255, 0.2)',
       color: 'var(--app-main-view-fg)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '12rem',
     }
 
     if (isDragActive) {
@@ -34,9 +38,17 @@ export function Dropzone({
     if (selectedPath && !isLoading) {
       return {
         ...baseStyles,
-        padding: '2rem 2rem 1rem 2rem',
+        paddingBottom: '2rem',
       }
     }
+
+    if (isLoading) {
+      return {
+        ...baseStyles,
+        paddingBottom: '4rem',
+      }
+    }
+
 
     return baseStyles
   }
@@ -87,7 +99,7 @@ export function Dropzone({
 
   return (
     <div style={getDropzoneStyles()}>
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         <div className="flex justify-center">
           {isLoading ? (
             <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent-light)' }} />
@@ -104,7 +116,7 @@ export function Dropzone({
           <p className="text-lg font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
             {getStatusText()}
           </p>
-          <div className="text-sm mb-4" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+          <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
             {getSubText()}
           </div>
         </div>

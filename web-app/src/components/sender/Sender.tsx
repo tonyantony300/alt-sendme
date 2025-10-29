@@ -46,20 +46,20 @@ export function Sender({ onTransferStateChange }: SenderProps) {
   }, [isSharing, onTransferStateChange])
 
   return (
-    <div className="p-6 space-y-6 relative max-h-[30rem] overflow-y-auto" style={{ color: 'var(--app-main-view-fg)' }}>
+    <div className="p-6 space-y-6 relative h-[28rem] overflow-y-auto flex flex-col" style={{ color: 'var(--app-main-view-fg)' }}>
    
 
       {!isSharing ? (
         <>
            <div className="text-center">
            <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-             Send Files
+             Send
            </h2>
            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-           Share files via encrypted peer-to-peer connections.
+           Share files or folders via encrypted peer-to-peer connections.
            </p>
          </div>
-        <div className="space-y-4">
+        <div className="space-y-4 flex-1 flex flex-col">
           <DragDrop 
             onFileSelect={handleFileSelect} 
             selectedPath={selectedPath}
@@ -76,10 +76,12 @@ export function Sender({ onTransferStateChange }: SenderProps) {
         </>
       ) : isCompleted && transferMetadata ? (
         // Success screen - only show when transfer is completed AND metadata is available
-        <TransferSuccessScreen 
-          metadata={transferMetadata}
-          onDone={resetForNewTransfer}
-        />
+        <div className="flex-1 flex flex-col">
+          <TransferSuccessScreen 
+            metadata={transferMetadata}
+            onDone={resetForNewTransfer}
+          />
+        </div>
       ) : (
         // Sharing active with pulse animation
         <>
@@ -90,20 +92,22 @@ export function Sender({ onTransferStateChange }: SenderProps) {
           className="mx-auto my-4 flex items-center justify-center" 
         />
         </div>
-        <SharingActiveCard
-          isSharing={isSharing}
-          isLoading={isLoading}
-          isTransporting={isTransporting}
-          isCompleted={isCompleted}
-          selectedPath={selectedPath}
-          pathType={pathType}
-          ticket={ticket}
-          copySuccess={copySuccess}
-          transferProgress={transferProgress}
-          onStartSharing={startSharing}
-          onStopSharing={stopSharing}
-          onCopyTicket={copyTicket}
-        />
+        <div className="flex-1 flex flex-col">
+          <SharingActiveCard
+            isSharing={isSharing}
+            isLoading={isLoading}
+            isTransporting={isTransporting}
+            isCompleted={isCompleted}
+            selectedPath={selectedPath}
+            pathType={pathType}
+            ticket={ticket}
+            copySuccess={copySuccess}
+            transferProgress={transferProgress}
+            onStartSharing={startSharing}
+            onStopSharing={stopSharing}
+            onCopyTicket={copyTicket}
+          />
+        </div>
         </>
       )}
 
