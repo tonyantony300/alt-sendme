@@ -7,6 +7,46 @@ mod state;
 use commands::{start_sharing, stop_sharing, receive_file, get_sharing_status, check_path_type, get_transport_status, get_file_size};
 use state::AppState;
 use std::sync::Arc;
+use std::fs;
+
+/// Clean up any orphaned .sendme-* directories from previous runs
+/// Scans both current_dir and temp_dir to handle transition and legacy directories
+fn cleanup_orphaned_directories() {
+    tracing::info!("🧹 Checking for orphaned .sendme-* directories...");
+    
+    // Scan both current_dir (legacy/transition) and temp_dir (current location)
+    let scan_dirs = vec![
+        std::env::current_dir().ok(),
+        Some(std::env::temp_dir()),
+    ];
+    
+    for base_dir in scan_dirs.into_iter().flatten() {
+        tracing::info!("🔍 Scanning directory: {}", base_dir.display());
+        
+        if let Ok(entries) = fs::read_dir(&base_dir) {
+            for entry in entries.flatten() {
+                if let Some(name) = entry.file_name().to_str() {
+                    // Clean up both send and recv directories
+                    if (name.starts_with(".sendme-send-") || name.starts_with(".sendme-recv-")) 
+                        && entry.path().is_dir() {
+                        tracing::info!("🗑️  Found orphaned directory: {}", entry.path().display());
+                        match fs::remove_dir_all(&entry.path()) {
+                            Ok(_) => {
+                                tracing::info!("✅ Successfully cleaned up orphaned directory: {}", name);
+                            }
+                            Err(e) => {
+                                tracing::warn!("⚠️  Failed to clean up orphaned directory {}: {}", name, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    tracing::info!("🧹 Orphan cleanup complete");
+}
+
 
 fn main() {
     // Initialize tracing for better debugging
@@ -39,9 +79,8 @@ fn main() {
             get_file_size,
         ])
         .setup(|app| {
-            // Cleanup happens automatically when AppState is dropped
-            // No need for explicit cleanup here since we're not keeping
-            // long-running tasks that need to be cancelled
+            // Clean up any orphaned .sendme-* directories from previous runs
+            cleanup_orphaned_directories();
             
             // Disable window decorations only on Linux
             #[cfg(target_os = "linux")]

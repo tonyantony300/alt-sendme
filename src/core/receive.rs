@@ -99,8 +99,11 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
     tracing::info!("✅ Endpoint created successfully");
     tracing::info!("📡 Endpoint bound successfully");
     
+    // Use system temp directory instead of current_dir for GUI app
+    // This avoids polluting user directories and OS manages cleanup automatically
     let dir_name = format!(".sendme-recv-{}", ticket.hash().to_hex());
-    let iroh_data_dir = std::env::current_dir()?.join(&dir_name);
+    let temp_base = std::env::temp_dir();
+    let iroh_data_dir = temp_base.join(&dir_name);
     tracing::info!("💾 Storage directory: {}", iroh_data_dir.display());
     let db = FsStore::load(&iroh_data_dir).await?;
     let db2 = db.clone();

@@ -87,19 +87,21 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         builder = builder.bind_addr_v6(addr);
     }
 
-    // use a flat store - todo: use a partial in mem store instead
+    // Use system temp directory instead of current_dir for GUI app
+    // This avoids polluting user directories and OS manages cleanup automatically
     let suffix = rand::rng().random::<[u8; 16]>();
-    let cwd = std::env::current_dir()?;
-    let blobs_data_dir = cwd.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
+    let temp_base = std::env::temp_dir();
+    let blobs_data_dir = temp_base.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
     tracing::info!("💾 Blob storage directory: {}", blobs_data_dir.display());
     if blobs_data_dir.exists() {
         anyhow::bail!(
             "can not share twice from the same directory: {}",
-            cwd.display(),
+            temp_base.display(),
         );
     }
-    // todo: remove this as soon as we have a mem store that does not require a temp dir,
-    // or create a temp dir outside the current directory.
+    // todo: remove this as soon as we have a mem store that does not require a temp dir
+    // Verify the path being shared is not the current directory
+    let cwd = std::env::current_dir()?;
     if cwd.join(&path) == cwd {
         anyhow::bail!("can not share from the current directory");
     }
