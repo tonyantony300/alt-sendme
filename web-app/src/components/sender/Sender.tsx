@@ -56,7 +56,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
              Send Files
            </h2>
            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-           Share files between devices using encrypted peer-to-peer connections over the internet.
+           Share files via encrypted peer-to-peer connections.
            </p>
          </div>
         <div className="space-y-4">

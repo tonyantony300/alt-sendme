@@ -48,6 +48,14 @@ export function TicketInput({
           <textarea
             value={ticket}
             onChange={(e) => onTicketChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (ticket.trim() && !isReceiving) {
+                  onReceive();
+                }
+              }
+            }}
             placeholder="sendme receive ticket..."
             className="custom-scrollbar p-3 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2"
             style={{
