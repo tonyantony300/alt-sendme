@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { CheckCircle, XCircle } from 'lucide-react'
 import type { SuccessScreenProps } from '../../types/sender'
+import { trackTransferComplete } from '../../lib/analytics'
 
 // Helper function to format file size
 function formatFileSize(bytes: number): string {
@@ -46,6 +48,12 @@ function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): numbe
 
 export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) {
   const wasStopped = metadata.wasStopped || false
+  
+  useEffect(() => {
+    if (metadata.downloadPath && !wasStopped && metadata.fileSize > 0) {
+      trackTransferComplete(metadata.fileSize)
+    }
+  }, [metadata.downloadPath, metadata.fileSize, wasStopped])
   
   return (
     <div className="flex flex-col items-center justify-center space-y-6 ">
