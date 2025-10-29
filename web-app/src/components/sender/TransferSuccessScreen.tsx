@@ -46,11 +46,11 @@ function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): numbe
 
 export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) {
   return (
-    <div className="flex flex-col items-center justify-center space-y-6 py-8">
+    <div className="flex flex-col items-center justify-center space-y-6 ">
       {/* Success Icon */}
       <div className="flex items-center justify-center">
         <CheckCircle 
-          size={32} 
+          size={44} 
           className="text-green-500"
           style={{ color: 'rgba(37, 211, 101, 1)' }}
         />
