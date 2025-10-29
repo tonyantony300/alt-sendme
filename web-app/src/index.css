@@ -29,12 +29,17 @@
   --radius: 0.625rem; /* 10px */
   --font-size-base: 15px;
   
-  /* Dark theme colors */
-  --app-bg: rgb(25, 25, 25);
-  --app-main-view: rgba(25, 25, 25, 0.45);
+  /* Dark theme colors - Default values (will be overridden by platformStyles.ts) */
+  /* macOS will use alpha 0.4, Linux/Windows will use alpha 1.0 */
+  --app-bg: rgba(25, 25, 25, 1);
+  --app-main-view: rgba(25, 25, 25, 1);
   --app-primary: rgba(37, 211, 101, 0.687);
-  --app-accent: rgb(45, 120, 220);
+  --app-accent-light: rgb(45, 120, 220);
+  --app-accent: rgb(54 54 54);
   --app-destructive: rgb(144, 60, 60);
+  
+  /* Body background - will be set to transparent on macOS, opaque on Linux */
+  --body-bg: rgba(25, 25, 25, 1);
   
   /* Text colors */
   --app-bg-fg: rgb(255, 255, 255);
@@ -53,18 +58,18 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: transparent;
+    background: var(--body-bg);
     color: var(--app-bg-fg);
     min-height: 100vh;
     overflow: hidden;
   }
   
   html {
-    background: transparent;
+    background: var(--body-bg);
   }
   
   #root {
-    background: transparent;
+    background: var(--body-bg);
     min-height: 100vh;
   }
   
@@ -82,6 +87,8 @@
     @apply h-10 flex items-center shrink-0;
     @apply border-b border-white/5;
     @apply px-4;
+    background-color: var(--app-bg);
+    color: var(--app-bg-fg);
   }
   
   .title-bar-macos {
@@ -93,25 +100,52 @@
     background: transparent;
   }
   
+  /* Custom title bar styling */
+  .custom-title-bar {
+    @apply h-10 flex items-center justify-between shrink-0 px-4 select-none border-b border-white/5;
+    background-color: var(--app-bg);
+    color: var(--app-bg-fg);
+  }
+  
+  .window-controls {
+    @apply flex items-center gap-2;
+  }
+  
+  .window-control-btn {
+    @apply w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-200;
+  }
+  
+  .window-control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .window-control-btn.close:hover {
+    background-color: rgba(239, 68, 68, 0.8);
+  }
+  
+  /* Glass effects with fallback for platforms without blur support */
   .glass-effect {
-    @apply backdrop-blur-md bg-white/20 border border-white/30;
+    background: var(--app-main-view);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
   
   .glass-overlay {
-    @apply backdrop-blur-sm bg-black/50;
+    background: var(--app-main-view);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .glass-panel {
-    @apply backdrop-blur-xl bg-white/10 border border-white/20;
+    background: var(--app-main-view);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
   
   .glass-background {
-    @apply backdrop-blur-lg bg-black/20 border border-white/10;
+    background: var(--app-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .glass-card {
-    /* @apply backdrop-blur-md bg-white/5 border border-white/10; */
-    background: rgba(25, 25, 25, 0.45);
+    background: var(--app-main-view);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
@@ -124,6 +158,36 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  
+  /* Custom styled scrollbar for textareas and other elements */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   }
 }
 

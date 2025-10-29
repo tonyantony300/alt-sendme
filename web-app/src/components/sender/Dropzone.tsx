@@ -90,12 +90,12 @@ export function Dropzone({
       <div className="space-y-4">
         <div className="flex justify-center">
           {isLoading ? (
-            <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent)' }} />
+            <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent-light)' }} />
           ) : selectedPath ? (
             <CheckCircle className="h-12 w-12" style={{ color: 'var(--app-primary)' }} />
           ) : (
             <Upload className="h-12 w-12" style={{ 
-              color: isDragActive ? 'var(--app-accent)' : 'rgba(255, 255, 255, 0.6)' 
+              color: isDragActive ? 'var(--app-accent-light)' : 'rgba(255, 255, 255, 0.6)' 
             }} />
           )}
         </div>

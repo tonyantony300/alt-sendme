@@ -34,8 +34,8 @@ export function SharingActiveCard({
     <div className="space-y-4">
       <div className="p-4 rounded-lg absolute top-0 left-0"
       >
-           <p className="text-xs mb-2 max-w-[80vw] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-          <strong>File:</strong> {selectedPath?.split('/').pop()}
+           <p className="text-xs mb-4 max-w-[30rem] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <strong className="mr-1">File:</strong> {selectedPath?.split('/').pop()}
         </p>
         
         <div className="flex items-center mb-2">
