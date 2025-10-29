@@ -1,12 +1,18 @@
-# Alt-Sendme -  Frictionless peer-to-peer file transfer tool
+# Alt-Sendme -  p2p file transfer
 
 ![Alt-Sendme Demo](assets/animation.gif)
 
-A cross-platform desktop application using [iroh](https://crates.io/crates/iroh) with
+Alt-Sendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) with
 the [iroh-blobs](https://crates.io/crates/iroh-blobs) protocol to send files and
 directories over the internet.
 
-Built with [Tauri](https://tauri.app/) for a native desktop experience with a modern React-based UI.
+No account requirement, no cloud dependency, encrypted transfer.
+
+Unlimited, Fast, Free and Open-source.
+
+## Download options
+
+
 
 ## Features
 
@@ -18,15 +24,7 @@ Built with [Tauri](https://tauri.app/) for a native desktop experience with a mo
 - **Secure**: 256-bit node IDs with TLS encryption
 - **CLI Compatible**: Works seamlessly with the original sendme CLI
 
-## Installation
 
-
-Build from source:
-
-```bash
-cd src-tauri
-cargo tauri build --no-bundle
-```
 
 ## Development
 
