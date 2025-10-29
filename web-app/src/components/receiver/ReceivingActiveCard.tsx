@@ -1,3 +1,4 @@
+import { Square } from 'lucide-react'
 import type { TransferProgress } from '../../types/sender'
 import { TransferProgressBar } from '../sender/TransferProgressBar'
 
@@ -64,13 +65,14 @@ export function ReceivingActiveCard({
        
       <button
         onClick={onStopReceiving}
-        className="absolute top-0 right-6 py-2 px-4 rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center"
+        className="absolute top-0 right-6 w-10 h-10 rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center p-0"
         style={{
           backgroundColor: 'var(--app-destructive)',
           color: 'var(--app-destructive-fg)',
         }}
+        aria-label="Stop receiving"
       >
-        <span className="text-xl"> ⏹</span>
+        <Square className="w-4 h-4" fill="currentColor" />
       </button>
     </div>
   )
