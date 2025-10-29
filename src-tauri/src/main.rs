@@ -79,14 +79,63 @@ fn main() {
             get_transport_status,
             get_file_size,
         ])
-        .setup(|app| {
+        .setup(|_app| {
             // Clean up any orphaned .sendme-* directories from previous runs
             cleanup_orphaned_directories();
+            
+            // Enable file drop handling for drag and drop functionality on Windows and Linux
+            // macOS works natively with dragDropEnabled config, but we add explicit handlers
+            // for Windows and Linux to ensure consistent behavior across distributions
+            #[cfg(any(target_os = "windows", target_os = "linux"))]
+            {
+                // Use a closure to set up file drop when window is ready
+                let window_handle = _app.handle();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                    if let Some(window) = window_handle.get_webview_window("main") {
+                        let window_clone = window.clone();
+                        window.on_file_drop(move |_window, event, paths| {
+                            match event {
+                                tauri::window::FileDropEvent::Hover { .. } => {
+                                    tracing::debug!("File drag hover over window");
+                                    // Emit drag-hover event to frontend
+                                    let _ = window_clone.emit("tauri://drag-hover", ());
+                                }
+                                tauri::window::FileDropEvent::Drop { position: _ } => {
+                                    if let Some(dropped_paths) = paths {
+                                        tracing::debug!("Files dropped: {:?}", dropped_paths);
+                                        // Convert paths to string vec
+                                        let path_strings: Vec<String> = dropped_paths
+                                            .iter()
+                                            .map(|p| p.to_string_lossy().to_string())
+                                            .collect();
+                                        // Emit drag-drop event with paths to frontend
+                                        // Position is optional, so we use a default value
+                                        let payload = serde_json::json!({
+                                            "paths": path_strings,
+                                            "position": {
+                                                "x": 0.0,
+                                                "y": 0.0
+                                            }
+                                        });
+                                        let _ = window_clone.emit("tauri://drag-drop", payload);
+                                    }
+                                }
+                                tauri::window::FileDropEvent::Cancelled => {
+                                    tracing::debug!("File drag cancelled");
+                                    // Emit drag-leave event to frontend
+                                    let _ = window_clone.emit("tauri://drag-leave", ());
+                                }
+                            }
+                        });
+                    }
+                });
+            }
             
             // Disable window decorations only on Linux
             #[cfg(target_os = "linux")]
             {
-                if let Some(window) = app.get_webview_window("main") {
+                if let Some(window) = _app.handle().get_webview_window("main") {
                     let _ = window.set_decorations(false);
                 }
             }
