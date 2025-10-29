@@ -80,6 +80,34 @@
   a {
     color: var(--app-accent);
   }
+  
+  /* Global invisible scrollbar rules - cross-platform compatible */
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+    width: 0;
+    height: 0;
+  }
+  
+  *::-webkit-scrollbar-track {
+    display: none;
+    background: transparent;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    display: none;
+    background: transparent;
+  }
+  
+  *::-webkit-scrollbar-corner {
+    display: none;
+    background: transparent;
+  }
 }
 
 @layer components {
@@ -151,6 +179,7 @@
 }
 
 @layer utilities {
+  /* Keep scrollbar-hide utility for backwards compatibility (though it's now redundant) */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -158,36 +187,6 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
-  }
-  
-  /* Custom styled scrollbar for textareas and other elements */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-    height: 6px;
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 4px;
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-  
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   }
 }
 
