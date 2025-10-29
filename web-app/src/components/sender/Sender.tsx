@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
@@ -28,6 +29,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
     selectedPath,
     pathType,
     isLoading,
+    isStopping,
     copySuccess,
     alertDialog,
     transferMetadata,
@@ -74,6 +76,14 @@ export function Sender({ onTransferStateChange }: SenderProps) {
           />
         </div>
         </>
+      ) : isStopping ? (
+        // Show loader while stopping
+        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent-light)' }} />
+          <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            Stopping transmission...
+          </p>
+        </div>
       ) : isCompleted && transferMetadata ? (
         // Success screen - only show when transfer is completed AND metadata is available
         <div className="flex-1 flex flex-col">

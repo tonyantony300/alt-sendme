@@ -5,6 +5,7 @@ export interface TransferMetadata {
   startTime: number
   endTime: number
   downloadPath?: string  // Optional for receiver success screen
+  wasStopped?: boolean  // Indicates if transfer was manually stopped
 }
 
 export interface TransferProgress {
@@ -17,6 +18,7 @@ export interface TransferProgress {
 export interface SuccessScreenProps {
   metadata: TransferMetadata
   onDone: () => void
+  wasStopped?: boolean  // Indicates if transfer was manually stopped
 }
 
 export interface AlertDialogState {

@@ -1,4 +1,4 @@
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, XCircle } from 'lucide-react'
 import type { SuccessScreenProps } from '../../types/sender'
 
 // Helper function to format file size
@@ -45,15 +45,24 @@ function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): numbe
 }
 
 export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) {
+  const wasStopped = metadata.wasStopped || false
+  
   return (
     <div className="flex flex-col items-center justify-center space-y-6 ">
-      {/* Success Icon */}
+      {/* Success/Failure Icon */}
       <div className="flex items-center justify-center">
-        <CheckCircle 
-          size={44} 
-          className="text-green-500"
-          style={{ color: 'rgba(37, 211, 101, 1)' }}
-        />
+        {wasStopped ? (
+          <XCircle 
+            size={44} 
+            style={{ color: 'rgba(239, 68, 68, 1)' }}
+          />
+        ) : (
+          <CheckCircle 
+            size={44} 
+            className="text-green-500"
+            style={{ color: 'rgba(37, 211, 101, 1)' }}
+          />
+        )}
       </div>
       
       {/* Success Message */}
@@ -62,13 +71,13 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
           className="text-2xl font-semibold mb-2"
           style={{ color: 'var(--app-main-view-fg)' }}
         >
-          Transfer Complete!
+          {wasStopped ? 'Transmission Stopped' : 'Transfer Complete!'}
         </h2>
         <p 
           className="text-sm"
           style={{ color: 'rgba(255, 255, 255, 0.6)' }}
         >
-          Your file has been successfully shared
+          {wasStopped ? 'The transmission was stopped before completion' : 'Your file has been successfully shared'}
         </p>
       </div>
       
@@ -123,7 +132,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm"
               style={{ color: 'var(--app-main-view-fg)' }}
             >
-              {formatFileSize(metadata.fileSize)}
+              {wasStopped ? '0 B' : formatFileSize(metadata.fileSize)}
             </span>
           </div>
           
@@ -138,7 +147,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm"
               style={{ color: 'var(--app-main-view-fg)' }}
             >
-              {formatDuration(metadata.duration)}
+              {wasStopped ? '0ms' : formatDuration(metadata.duration)}
             </span>
           </div>
           
@@ -153,7 +162,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm"
               style={{ color: 'var(--app-main-view-fg)' }}
             >
-              {formatSpeed(calculateAverageSpeed(metadata.fileSize, metadata.duration))}
+              {wasStopped ? '0 KB/s' : formatSpeed(calculateAverageSpeed(metadata.fileSize, metadata.duration))}
             </span>
           </div>
         </div>
