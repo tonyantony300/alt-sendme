@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-export function trackTransferComplete(fileSizeBytes: number): void {
+export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'receiver'): void {
   if (typeof window === 'undefined' || !window.goatcounter) {
     return
   }
@@ -34,8 +34,8 @@ export function trackTransferComplete(fileSizeBytes: number): void {
     }
     
     window.goatcounter.count({
-      path: `transfer-complete/${bucketSize}`,
-      title: `Transfer Complete - ${bucketSize}`,
+      path: `transfer-complete/${role}/${bucketSize}`,
+      title: `Transfer Complete - ${role} - ${bucketSize}`,
       event: true,
       allow_local: true,
     })

@@ -125,7 +125,7 @@ function App() {
           </div>
         </div>
       </div>
-      <div className="w-full h-10 text-center text-xs flex items-center justify-center"><span>v0.1.0</span></div>
+      <div className="w-full h-10 text-center text-xs flex items-center justify-center"><span>v1.0.0</span></div>
     </div>
   )
 }

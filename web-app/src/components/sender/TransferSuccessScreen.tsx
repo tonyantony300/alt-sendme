@@ -48,12 +48,13 @@ function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): numbe
 
 export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) {
   const wasStopped = metadata.wasStopped || false
+  const isReceiver = !!metadata.downloadPath
   
   useEffect(() => {
-    if (metadata.downloadPath && !wasStopped && metadata.fileSize > 0) {
-      trackTransferComplete(metadata.fileSize)
+    if (!wasStopped && metadata.fileSize > 0) {
+      trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
     }
-  }, [metadata.downloadPath, metadata.fileSize, wasStopped])
+  }, [isReceiver, metadata.fileSize, wasStopped])
   
   return (
     <div className="flex flex-col items-center justify-center space-y-6 ">
