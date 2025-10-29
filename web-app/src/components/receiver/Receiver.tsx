@@ -45,7 +45,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
   }, [isReceiving, onTransferStateChange])
 
   return (
-    <div className="p-6 space-y-6 pb-[4.25rem] relative" style={{ color: 'var(--app-main-view-fg)' }}>
+    <div className="p-6 space-y-6 relative h-[28rem] overflow-y-auto flex flex-col" style={{ color: 'var(--app-main-view-fg)' }}>
 
       {!isReceiving ? (
         <>
@@ -67,7 +67,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1 flex flex-col">
             <TicketInput
               ticket={ticket}
               isReceiving={isReceiving}
@@ -80,10 +80,12 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
         </>
       ) : isCompleted && transferMetadata ? (
         // Success screen - only show when transfer is completed AND metadata is available
-        <TransferSuccessScreen 
-          metadata={transferMetadata}
-          onDone={resetForNewTransfer}
-        />
+        <div className="flex-1 flex flex-col">
+          <TransferSuccessScreen 
+            metadata={transferMetadata}
+            onDone={resetForNewTransfer}
+          />
+        </div>
       ) : (
         // Receiving active with pulse animation
         <>
@@ -91,19 +93,21 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
             <PulseAnimation 
               isTransporting={isTransporting}
               isCompleted={isCompleted}
-              className="mx-auto mb-4 flex items-center justify-center" 
+              className="mx-auto my-4 flex items-center justify-center" 
             />
           </div>
-          <ReceivingActiveCard
-            isReceiving={isReceiving}
-            isTransporting={isTransporting}
-            isCompleted={isCompleted}
-            ticket={ticket}
-            transferProgress={transferProgress}
-            fileNames={fileNames}
-            onReceive={handleReceive}
-            onStopReceiving={resetForNewTransfer}
-          />
+          <div className="flex-1 flex flex-col">
+            <ReceivingActiveCard
+              isReceiving={isReceiving}
+              isTransporting={isTransporting}
+              isCompleted={isCompleted}
+              ticket={ticket}
+              transferProgress={transferProgress}
+              fileNames={fileNames}
+              onReceive={handleReceive}
+              onStopReceiving={resetForNewTransfer}
+            />
+          </div>
         </>
       )}
 
