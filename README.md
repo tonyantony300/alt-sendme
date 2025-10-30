@@ -59,25 +59,18 @@ More download options in [GitHub Releases](https://github.com/tonyantony300/alt-
 - **CLI Compatible**: Works seamlessly with the [sendme](https://www.iroh.computer/sendme) CLI tool 
 
 
-### macOS Installation (Unsigned App)
+### macOS Installation 
 
-Alt-Sendme is currently distributed **without code signing**. When you first open it, macOS will show a security warning. Here are two ways to run it:
+Alt-Sendme is currently distributed **without code signing**. When you first open it, macOS will show a security warning saying the application is damaged. Here is how you can run it:
 
-**Option 1: Right-Click to Open (Easiest)**
-1. Download and extract the `.dmg` file
-2. **Don't** double-click the app directly
-3. **Right-click** (or Control+Click) on `Alt-Sendme.app`
-4. Select **"Open"** from the menu
-5. Click **"Open"** in the security dialog
-6. The app will remember this preference and open normally from now on
 
-**Option 2: Remove Quarantine Flag (Terminal)**
+**Remove Quarantine Flag (Terminal)**
 ```bash
 # Navigate to where you installed the app (usually /Applications)
 cd /Applications
 
 # Remove the quarantine flag
-xattr -dr com.apple.quarantine Alt-Sendme.app
+xattr -dr com.apple.quarantine alt-sendme.app
 ```
 
 The app is open source and safe - the warning is just macOS's gatekeeper for unsigned applications. Code signing will be added in future releases.
