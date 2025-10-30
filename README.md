@@ -11,6 +11,8 @@ directories over the internet.
 
 Share files with **full control** and **privacy**.
 
+optionally **interoperable** with [Sendme](https://www.iroh.computer/sendme) CLI tool
+
 ## Installation
 
 The easiest way to get started is by downloading one of the following versions for your respective operating system:
@@ -22,19 +24,19 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme'>alt-sendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.0/ALT-SENDME_0.1.0_x64-setup_windows.exe'>alt-sendme.exe</a></td>
   </tr>
   <tr>
     <td><b>macOS*</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme'>alt-sendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.0/alt-sendme_0.1.0_aarch64_darwin.dmg'>alt-sendme.dmg</a></td>
   </tr>
   <tr>
     <td><b>Linux (deb)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme'>alt-sendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.0/ALT-SENDME_0.1.0_amd64_linux.deb'>alt-sendme.deb</a></td>
   </tr>
   <tr>
     <td><b>Linux (AppImage)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme'>alt-sendme.AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.0/ALT-SENDME_0.1.0_amd64_linux.AppImage'>alt-sendme.AppImage</a></td>
   </tr>
 </table>
 
@@ -42,7 +44,7 @@ The easiest way to get started is by downloading one of the following versions f
 *For running on macOS, see [macOS Installation (Unsigned App)](#macos-installation-unsigned-app) below.
 
 
-Download from [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
+More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
 
 
@@ -54,7 +56,7 @@ Download from [GitHub Releases](https://github.com/tonyantony300/alt-sendme/rele
 - **Cross-Platform**: Native desktop application for Windows, macOS, and Linux
 - **Modern UI**: React-based interface built with modern web technologies
 - **Secure**: 256-bit node IDs with TLS encryption
-- **CLI Compatible**: Works seamlessly with the original sendme CLI
+- **CLI Compatible**: Works seamlessly with the [sendme](https://www.iroh.computer/sendme) CLI tool 
 
 
 ### macOS Installation (Unsigned App)
