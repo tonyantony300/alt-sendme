@@ -51,9 +51,9 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
   const isReceiver = !!metadata.downloadPath
   
   useEffect(() => {
-    if (!wasStopped && metadata.fileSize > 0) {
-      trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
-    }
+    // Track analytics for all transfers, regardless of completion status or file size
+    // This provides better insights into user behavior and transfer patterns
+    trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender', wasStopped)
   }, [isReceiver, metadata.fileSize, wasStopped])
   
   return (

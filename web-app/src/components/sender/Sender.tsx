@@ -84,8 +84,8 @@ export function Sender({ onTransferStateChange }: SenderProps) {
             Stopping transmission...
           </p>
         </div>
-      ) : isCompleted && transferMetadata ? (
-        // Success screen - only show when transfer is completed AND metadata is available
+      ) : isCompleted && transferMetadata && !isTransporting ? (
+        // Success screen - only show when transfer is completed AND metadata is available AND not currently transporting
         <div className="flex-1 flex flex-col">
           <TransferSuccessScreen 
             metadata={transferMetadata}
