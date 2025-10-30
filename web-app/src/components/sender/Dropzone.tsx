@@ -14,7 +14,6 @@ export function Dropzone({
       border: '2px dashed',
       borderRadius: 'var(--radius-lg)',
       padding: '4rem',
-      marginBottom: '1rem',
       textAlign: 'center' as const,
       cursor: 'pointer',
       transition: 'border-color 0.2s ease, background-color 0.2s ease',

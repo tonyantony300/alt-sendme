@@ -476,7 +476,7 @@ async fn show_provide_progress_with_logging(
                                         if transfer_started {
                                             // Clean up state
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
-                                            emit_event(&app_handle_task, "transfer-completed");
+                                            emit_event(&app_handle_task, "transfer-failed");
                                         }
                                     }
                                 }
