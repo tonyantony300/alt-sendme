@@ -2,6 +2,13 @@
 /target
 **/target
 
+# TypeScript build info files (incremental compilation cache)
+*.tsbuildinfo
+
+# Generated Cargo.toml files (legitimate source Cargo.toml files should be tracked)
+# This covers any Cargo.toml generated during builds outside of target/
+**/target/**/Cargo.toml
+
 # Reference directories
 src-tauri-reference/
 web-app-reference/

@@ -52,7 +52,12 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
   
   useEffect(() => {
     if (!wasStopped && metadata.fileSize > 0) {
-      trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
+      // Analytics commented out for sender end
+      // trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
+      if (isReceiver) {
+        // Still track receiver analytics
+        trackTransferComplete(metadata.fileSize, 'receiver')
+      }
     }
   }, [isReceiver, metadata.fileSize, wasStopped])
   
