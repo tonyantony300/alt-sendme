@@ -62,6 +62,7 @@ export function useSender(): UseSenderReturn {
         setIsCompleted(false)
         setTransferStartTime(Date.now())
         setTransferProgress(null) // Reset progress
+        setTransferMetadata(null) // Reset metadata from previous transfer
         wasManuallyStoppedRef.current = false // Reset stopped flag when new transfer starts
         setIsStopping(false) // Reset stopping flag when new transfer starts
       })
@@ -189,9 +190,10 @@ export function useSender(): UseSenderReturn {
 
   const stopSharing = async () => {
     try {
-      // Check if we're stopping during an active transfer (sharing or transporting)
-      // and we haven't already shown the stopped screen (i.e., metadata doesn't exist or isn't stopped)
+      // Check if we're stopping during an active transfer (not completed yet)
+      // Don't treat a completed transfer as an active one
       const wasActiveTransfer = (isSharing || isTransporting) && 
+                                !isCompleted &&
                                 (!transferMetadata || !transferMetadata.wasStopped)
       // Capture values before clearing
       const currentSelectedPath = selectedPath
