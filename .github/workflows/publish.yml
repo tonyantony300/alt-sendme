@@ -103,6 +103,5 @@ jobs:
             See full instructions: https://github.com/${{ github.repository }}/blob/main/.github/MACOS_INSTALL.md
           releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }}
           includeUpdaterJson: true
 
