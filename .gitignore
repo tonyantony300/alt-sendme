@@ -101,3 +101,10 @@ jspm_packages/
 .temp/
 
 src-tauri/target/*
+
+# Markdown files (except README files)
+*.md
+!README.md
+!README
+!**/README.md
+!**/README

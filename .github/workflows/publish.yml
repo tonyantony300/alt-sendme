@@ -1,0 +1,111 @@
+name: 'publish'
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest' # for Intel based macs.
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: install frontend dependencies
+        run: cd web-app && npm install
+
+      # macOS code signing setup (optional - builds work without it)
+      - name: import certificate (macOS only)
+        if: matrix.platform == 'macos-latest' && secrets.APPLE_CERTIFICATE != ''
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          
+          # import certificate from secrets
+          echo -n "$APPLE_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
+          
+          # create temporary keychain
+          security create-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
+          
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          
+          # enable codesigning from a non user interactive shell
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
+          
+          echo "Certificate imported successfully"
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY || '' }}
+          APPLE_ID: ${{ secrets.APPLE_ID || '' }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || '' }}
+        with:
+          projectPath: ./src-tauri
+          tagName: ${{ github.ref_name }}
+          releaseName: 'ALT-SENDME v__VERSION__'
+          releaseBody: |
+            See the assets below to download and install this version.
+            
+            ## macOS Users
+            
+            This app is **not code-signed**. When you first open it:
+            
+            **Option 1 (Easiest):** Right-click the app → Select "Open" → Click "Open" in the dialog
+            
+            **Option 2 (Terminal):**
+            ```bash
+            xattr -dr com.apple.quarantine /path/to/ALT-SENDME.app
+            ```
+            
+            See full instructions: https://github.com/${{ github.repository }}/blob/main/.github/MACOS_INSTALL.md
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+          includeUpdaterJson: true
+
