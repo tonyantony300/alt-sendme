@@ -1,8 +1,8 @@
-# Alt-Sendme -  p2p file transfer
+# AltSendme -  p2p file transfer
 
-![Alt-Sendme Demo](assets/animation.gif)
+![AltSendme Demo](assets/animation.gif)
 
-Alt-Sendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
+AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
 directories over the internet.
 
 **No account requirement**, no cloud dependency, encrypted transfer.
@@ -24,19 +24,19 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_x64-setup_windows.exe'>alt-sendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_x64-setup_windows.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
     <td><b>macOS*</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_aarch64_darwin.dmg'>alt-sendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_aarch64_darwin.dmg'>AltSendme.dmg</a></td>
   </tr>
   <tr>
     <td><b>Linux (deb)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_amd64_linux.deb'>alt-sendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_amd64_linux.deb'>AltSendme.deb</a></td>
   </tr>
   <tr>
     <td><b>Linux (AppImage)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_amd64_linux.AppImage'>alt-sendme.AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_amd64_linux.AppImage'>AltSendme.AppImage</a></td>
   </tr>
 </table>
 
