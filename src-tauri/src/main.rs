@@ -3,12 +3,12 @@
 
 mod commands;
 mod state;
+mod version;
 
 use commands::{start_sharing, stop_sharing, receive_file, get_sharing_status, check_path_type, get_transport_status, get_file_size};
 use state::AppState;
 use std::sync::Arc;
 use std::fs;
-use tauri::Manager;
 
 /// Clean up any orphaned .sendme-* directories from previous runs
 /// Scans both current_dir and temp_dir to handle transition and legacy directories
@@ -61,7 +61,7 @@ fn main() {
         .with_line_number(true)
         .init();
     
-    tracing::info!("🚀 Starting Sendme Desktop application");
+    tracing::info!("🚀 Starting Sendme Desktop application v{}", version::VERSION);
     
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())

@@ -3,6 +3,7 @@
   "version": "0.1.2",
   "scripts": {
     "dev": "cd ../web-app && npm run dev",
-    "build": "cd ../web-app && npm run build"
+    "build": "cd ../web-app && npm run build",
+    "sync-version": "node ../scripts/sync-version.js"
   }
 }

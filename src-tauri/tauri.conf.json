@@ -27,7 +27,13 @@
         "titleBarStyle": "Overlay",
         "dragDropEnabled": true,
         "windowEffects": {
-          "effects": ["fullScreenUI", "mica", "tabbed", "blur", "acrylic"],
+          "effects": [
+            "fullScreenUI",
+            "mica",
+            "tabbed",
+            "blur",
+            "acrylic"
+          ],
           "state": "active",
           "radius": 8
         }
@@ -50,7 +56,9 @@
         "enable": true,
         "scope": {
           "requireLiteralLeadingDot": false,
-          "allow": ["**/*"]
+          "allow": [
+            "**/*"
+          ]
         }
       }
     }

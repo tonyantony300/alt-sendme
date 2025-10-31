@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync-version": "node ../scripts/sync-version.js"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",

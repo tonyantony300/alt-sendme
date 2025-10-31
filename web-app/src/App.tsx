@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Sender } from './components/sender/Sender'
 import { Receiver } from './components/receiver/Receiver'
 import { TitleBar } from './components/TitleBar'
+import { VERSION_DISPLAY } from './lib/version'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
@@ -125,7 +126,7 @@ function App() {
           </div>
         </div>
       </div>
-      <div className="w-full h-10 text-center text-xs flex items-center justify-center"><span>v0.1.2</span></div>
+      <div className="w-full h-10 text-center text-xs flex items-center justify-center"><span>{VERSION_DISPLAY}</span></div>
     </div>
   )
 }

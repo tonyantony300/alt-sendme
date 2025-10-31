@@ -1,6 +1,6 @@
 [package]
 name = "alt-sendme"
-version = "0.1.0"
+version = "0.1.2"
 description = "Desktop version of sendme - P2P file sharing with NAT hole punching"
 authors = ["Sendme Team"]
 license = "Apache-2.0 OR MIT"
@@ -9,6 +9,7 @@ rust-version = "1.81"
 
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
+serde_json = "1.0"
 
 [dependencies]
 tauri = { version = "2.0", features = ["protocol-asset", "macos-private-api"] }
