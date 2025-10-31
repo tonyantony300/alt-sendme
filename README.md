@@ -24,19 +24,19 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_x64-setup_windows.exe'>AltSendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.3/AltSendme_0.1.3_x64-setup_windows.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
     <td><b>macOS*</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_aarch64_darwin.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.3/AltSendme_0.1.3_aarch64_darwin.dmg'>AltSendme.dmg</a></td>
   </tr>
   <tr>
     <td><b>Linux (deb)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_amd64_linux.deb'>AltSendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.3/AltSendme_0.1.3_amd64_linux.deb'>AltSendme.deb</a></td>
   </tr>
   <tr>
     <td><b>Linux (AppImage)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.2/AltSendme_0.1.2_amd64_linux.AppImage'>AltSendme.AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.3/AltSendme_0.1.3_amd64_linux.AppImage'>AltSendme.AppImage</a></td>
   </tr>
 </table>
 
