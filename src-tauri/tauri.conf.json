@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "AltSendme",
-  "version": "0.1.1",
-  "identifier": "com.sendme.desktop",
+  "version": "0.1.2",
+  "identifier": "com.altsendme.desktop",
   "build": {
     "frontendDist": "../web-app/dist",
     "devUrl": "http://localhost:1420",
@@ -44,7 +44,7 @@
         "font-src": "'self' asset: http://asset.localhost blob: data: https:",
         "img-src": "'self' asset: http://asset.localhost blob: data: https:",
         "style-src": "'unsafe-inline' 'self'",
-        "script-src": "'self' asset: http://asset.localhost"
+        "script-src": "'self' asset: http://asset.localhost https://gc.zgo.at"
       },
       "assetProtocol": {
         "enable": true,

@@ -15,7 +15,7 @@ export function ShareActionCard({
       <button
         onClick={onStartSharing}
         disabled={isLoading}
-        className="w-full py-2 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+        className="w-full py-2 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-default flex items-center justify-center"
         style={{
           backgroundColor: 'var(--app-primary)',
           color: 'var(--app-primary-fg)',

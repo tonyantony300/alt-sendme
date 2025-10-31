@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { CheckCircle, XCircle } from 'lucide-react'
 import type { SuccessScreenProps } from '../../types/sender'
 import { trackTransferComplete } from '../../lib/analytics'
@@ -50,11 +49,13 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
   const wasStopped = metadata.wasStopped || false
   const isReceiver = !!metadata.downloadPath
   
-  useEffect(() => {
-    // Track analytics for all transfers, regardless of completion status or file size
-    // This provides better insights into user behavior and transfer patterns
-    trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender', wasStopped)
-  }, [isReceiver, metadata.fileSize, wasStopped])
+  const handleDone = () => {
+    // Only track analytics if transfer completed successfully (not stopped)
+    if (!wasStopped) {
+      trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
+    }
+    onDone()
+  }
   
   return (
     <div className="flex flex-col items-center justify-center space-y-6 ">
@@ -179,7 +180,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
       
       {/* Done Button */}
       <button
-        onClick={onDone}
+        onClick={handleDone}
         className="w-full max-w-sm py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
         style={{
           backgroundColor: 'var(--app-primary)',

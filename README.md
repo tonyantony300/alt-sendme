@@ -65,12 +65,12 @@ Alt-Sendme is currently distributed **without code signing**. When you first ope
 
 
 **Remove Quarantine Flag (Terminal)**
-```bash
-# Navigate to where you installed the app (usually /Applications)
-cd /Applications
 
-# Remove the quarantine flag
-xattr -dr com.apple.quarantine AltSendme.app
+1. Open Spotlight Search (⌘+space) - search for terminal and open
+2. Paste the following command and hit enter
+
+```bash
+cd /Applications && xattr -dr com.apple.quarantine AltSendme.app
 ```
 
 The app is open source and safe - the warning is just macOS's gatekeeper for unsigned applications. Code signing will be added in future releases.

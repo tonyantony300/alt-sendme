@@ -1,6 +1,6 @@
 {
-  "name": "alt-sendme",
-  "version": "0.1.1",
+  "name": "AltSendme",
+  "version": "0.1.2",
   "scripts": {
     "dev": "cd ../web-app && npm run dev",
     "build": "cd ../web-app && npm run build"

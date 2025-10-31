@@ -84,7 +84,7 @@ jobs:
         with:
           projectPath: ./src-tauri
           tagName: ${{ github.ref_name }}
-          releaseName: 'alt-sendme v__VERSION__'
+          releaseName: 'AltSendme v__VERSION__'
           args: ${{ matrix.args }}
           releaseBody: |
             See the assets below to download and install this version.
@@ -93,14 +93,14 @@ jobs:
             
             This app is **not code-signed**. When you first open it:
             
-            **Option 1 (Easiest):** Right-click the app → Select "Open" → Click "Open" in the dialog
             
-            **Option 2 (Terminal):**
+            **Terminal:**
+
             ```bash
-            xattr -dr com.apple.quarantine /path/to/ALT-SENDME.app
+            cd /Applications && xattr -dr com.apple.quarantine AltSendme.app
             ```
             
-            See full instructions: https://github.com/${{ github.repository }}/blob/main/.github/MACOS_INSTALL.md
+            
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true

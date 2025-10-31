@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'receiver', wasStopped: boolean = false): void {
+export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'receiver'): void {
   if (typeof window === 'undefined' || !window.goatcounter) {
     return
   }
@@ -33,13 +33,8 @@ export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'r
       bucketSize = `${(sizeInMB / 1024).toFixed(1)}GB`
     }
     
-    const status = wasStopped ? 'stopped' : 'completed'
-    const statusEmoji = wasStopped ? '⏹️' : '✅'
-    
     window.goatcounter.count({
-      path: `transfer-${status}/${role}/${bucketSize}`,
-      title: `${statusEmoji} Transfer ${status.charAt(0).toUpperCase() + status.slice(1)} - ${role} - ${bucketSize}`,
-      event: true,
+      path: `transfer-complete/${role}/${bucketSize}`,
       allow_local: true,
     })
   } catch (error) {
