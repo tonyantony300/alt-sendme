@@ -5,7 +5,6 @@
 AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
 directories over the internet.
 
-*LocalSend Alternative for third parties / frictionless private ftp server*
 
 **No account requirements**, direct transfer between sender and receiver.
 
