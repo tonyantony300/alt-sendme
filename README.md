@@ -1,13 +1,15 @@
-# AltSendme -  Send files anywhere, On-premises or world-wide. Frictionless, Fast, Unlimited and free
+# AltSendme -  Send files anywhere, On-premises or world-wide. Frictionless, Fast, Private, Unlimited and Free
 
 ![AltSendme Demo](assets/animation.gif)
 
 AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
 directories over the internet.
 
+*LocalSend Alternative for third parties / frictionless private ftp server*
+
 **No account requirements**, direct transfer between sender and receiver.
 
-All traffic between endpoints is end-to-end encrypted, using QUIC + TLS 1.3. 
+**All traffic** between endpoints is **end-to-end encrypted**, using QUIC + TLS 1.3. 
 
 **Unlimited**, Fast, Free and Open-source.
 
