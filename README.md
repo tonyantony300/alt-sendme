@@ -137,6 +137,16 @@ If you want to contribute or run the app from source:
 
 This will start the app with hot reload enabled for both frontend and backend changes.
 
+### Pre-requirements for NixOS
+
+1. **Install [devenv](https://devenv.sh/getting-started/)**
+
+2. **Run**:
+  ```bash
+  devenv shell
+  ```
+
+Then proceed with the instructions above.
 
 
 ## Architecture

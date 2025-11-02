@@ -109,3 +109,13 @@ src-tauri/gen/*
 !README
 !**/README.md
 !**/README
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
