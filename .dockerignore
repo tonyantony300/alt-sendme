@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+.github
+
+# Build artifacts
+target/
+src-tauri/target/
+node_modules/
+web-app/node_modules/
+web-app/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (we'll copy selectively if needed)
+*.md
+!README.md
+
+# CI/CD
+.github/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Reference directories (not needed for build)
+src-tauri-reference/
+web-app-reference/
+
+# Cache files
+.cache/
+*.tsbuildinfo
+
+# Lock files (we use package-lock.json)
+yarn.lock
+pnpm-lock.yaml
+
