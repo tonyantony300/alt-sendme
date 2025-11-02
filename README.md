@@ -1,17 +1,22 @@
-# AltSendme -  p2p file transfer
+# AltSendme -  Send files anywhere, On-premises or world-wide. Frictionless, Fast, Unlimited and free
 
 ![AltSendme Demo](assets/animation.gif)
 
 AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
 directories over the internet.
 
-**No account requirement**, no cloud dependency, encrypted transfer.
+**No account requirements**, direct transfer between sender and receiver.
+
+All traffic between endpoints is end-to-end encrypted, using QUIC + TLS 1.3. 
 
 **Unlimited**, Fast, Free and Open-source.
 
 Share files with **full control** and **privacy**.
 
 optionally **interoperable** with [Sendme](https://www.iroh.computer/sendme) CLI tool
+
+
+[How it connects remote devices](https://www.iroh.computer/docs/faq)
 
 ## Installation
 
