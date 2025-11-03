@@ -2,6 +2,8 @@
 
 ![AltSendme Demo](assets/animation.gif)
 
+[![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
+
 AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
 directories over the internet.
 
@@ -51,8 +53,6 @@ The easiest way to get started is by downloading one of the following versions f
 
 
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
-
-
 
 ## Features
 
@@ -158,7 +158,7 @@ This will start the app with hot reload enabled for both frontend and backend ch
 
 AGPL-3.0
 
-
+[![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
 
 # Acknowledgements
 
