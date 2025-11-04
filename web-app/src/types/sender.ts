@@ -1,24 +1,24 @@
 export interface TransferMetadata {
   fileName: string
-  fileSize: number  // bytes
-  duration: number  // milliseconds
+  fileSize: number
+  duration: number
   startTime: number
   endTime: number
-  downloadPath?: string  // Optional for receiver success screen
-  wasStopped?: boolean  // Indicates if transfer was manually stopped
+  downloadPath?: string
+  wasStopped?: boolean
 }
 
 export interface TransferProgress {
   bytesTransferred: number
   totalBytes: number
-  speedBps: number // bytes per second
+  speedBps: number
   percentage: number
 }
 
 export interface SuccessScreenProps {
   metadata: TransferMetadata
   onDone: () => void
-  wasStopped?: boolean  // Indicates if transfer was manually stopped
+  wasStopped?: boolean
 }
 
 export interface AlertDialogState {
@@ -72,7 +72,6 @@ export interface TicketDisplayProps {
   onCopyTicket: () => Promise<void>
 }
 
-// Receiver types
 export interface ReceiverState {
   ticket: string
   isReceiving: boolean
@@ -89,10 +88,8 @@ export interface TicketInputProps {
 }
 
 export interface InstructionsCardProps {
-  // No props needed - static content
 }
 
-// DragDrop types
 export interface DragDropState {
   isDragActive: boolean
   pathType: 'file' | 'directory' | null

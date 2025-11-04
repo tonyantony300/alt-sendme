@@ -4,7 +4,6 @@ interface TransferProgressBarProps {
   progress: TransferProgress
 }
 
-// Format speed in human-readable format
 export function formatSpeed(speedBps: number): string {
   const mbps = speedBps / (1024 * 1024)
   const kbps = speedBps / 1024
@@ -20,7 +19,6 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
   const { percentage } = progress
   const barCount = 30
   
-  // Calculate how many bars should be filled
   const filledBars = Math.floor((percentage / 100) * barCount)
 
   return (
@@ -31,13 +29,11 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
           <span>{percentage.toFixed(1)}%</span>
         </div>
         
-        {/* Progress bars container */}
         <div className="flex gap-1 items-end h-8">
           {Array.from({ length: barCount }).map((_, index) => {
             const isFilled = index < filledBars
             const isPartiallyFilled = index === filledBars && percentage % (100 / barCount) > 0
             
-            // Calculate partial fill height for smoother animation
             let fillPercentage = 100
             if (isPartiallyFilled) {
               const barProgress = (percentage % (100 / barCount)) / (100 / barCount)
@@ -56,7 +52,6 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
                   height: '100%',
                 }}
               >
-                {/* Filled portion */}
                 <div
                   className="absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-300 ease-in-out"
                   style={{
@@ -69,7 +64,6 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
           })}
         </div>
 
-        {/* Speed display */}
         <div className="flex items-center justify-between text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
           <span>Speed: {formatSpeed(progress.speedBps)}</span>
           <span>

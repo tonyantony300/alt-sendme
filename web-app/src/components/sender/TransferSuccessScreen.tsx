@@ -2,7 +2,6 @@ import { CheckCircle, XCircle } from 'lucide-react'
 import type { SuccessScreenProps } from '../../types/sender'
 import { trackTransferComplete } from '../../lib/analytics'
 
-// Helper function to format file size
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B'
   
@@ -13,7 +12,6 @@ function formatFileSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-// Helper function to format duration
 function formatDuration(ms: number): string {
   if (ms < 1000) {
     return `${ms}ms`
@@ -26,7 +24,6 @@ function formatDuration(ms: number): string {
   }
 }
 
-// Helper function to format speed
 function formatSpeed(bytesPerSecond: number): string {
   const mbps = bytesPerSecond / (1024 * 1024)
   const kbps = bytesPerSecond / 1024
@@ -38,7 +35,6 @@ function formatSpeed(bytesPerSecond: number): string {
   }
 }
 
-// Helper function to calculate average transfer speed
 function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): number {
   if (durationMs === 0) return 0
   const durationSeconds = durationMs / 1000
@@ -50,7 +46,6 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
   const isReceiver = !!metadata.downloadPath
   
   const handleDone = () => {
-    // Only track analytics if transfer completed successfully (not stopped)
     if (!wasStopped) {
       trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
     }
@@ -59,7 +54,6 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
   
   return (
     <div className="flex flex-col items-center justify-center space-y-6 ">
-      {/* Success/Failure Icon */}
       <div className="flex items-center justify-center">
         {wasStopped ? (
           <XCircle 
@@ -75,7 +69,6 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
         )}
       </div>
       
-      {/* Success Message */}
       <div className="text-center">
         <h2 
           className="text-2xl font-semibold mb-2"
@@ -91,7 +84,6 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
         </p>
       </div>
       
-      {/* Transfer Metadata */}
       <div 
         className="bg-opacity-10 rounded-lg p-4 w-full max-w-full"
         style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
@@ -178,7 +170,6 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
         </div>
       </div>
       
-      {/* Done Button */}
       <button
         onClick={handleDone}
         className="w-full max-w-sm py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"

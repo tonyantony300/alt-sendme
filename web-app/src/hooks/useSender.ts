@@ -4,7 +4,6 @@ import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
 export interface UseSenderReturn {
-  // State
   isSharing: boolean
   isTransporting: boolean
   isCompleted: boolean
@@ -18,7 +17,6 @@ export interface UseSenderReturn {
   transferMetadata: TransferMetadata | null
   transferProgress: TransferProgress | null
   
-  // Actions
   handleFileSelect: (path: string) => void
   startSharing: () => Promise<void>
   stopSharing: () => Promise<void>
@@ -49,7 +47,6 @@ export function useSender(): UseSenderReturn {
     type: 'info'
   })
 
-  // Listen for transfer events from Rust backend
   useEffect(() => {
     let unlistenStart: UnlistenFn | undefined
     let unlistenProgress: UnlistenFn | undefined
@@ -57,21 +54,17 @@ export function useSender(): UseSenderReturn {
     let unlistenFailed: UnlistenFn | undefined
 
     const setupListeners = async () => {
-      // Listen for transfer started event
       unlistenStart = await listen('transfer-started', () => {
         setIsTransporting(true)
         setIsCompleted(false)
         setTransferStartTime(Date.now())
-        setTransferProgress(null) // Reset progress
-        setTransferMetadata(null) // Reset metadata from previous transfer
-        wasManuallyStoppedRef.current = false // Reset stopped flag when new transfer starts
-        setIsStopping(false) // Reset stopping flag when new transfer starts
+        setTransferProgress(null)
+        setTransferMetadata(null)
+        wasManuallyStoppedRef.current = false
+        setIsStopping(false)
       })
 
-      // Listen for transfer progress events
       unlistenProgress = await listen('transfer-progress', (event: any) => {
-        // Parse the payload from the event
-        // The payload is in event.payload as a string: "bytes_transferred:total_bytes:speed_int"
         try {
           const payload = event.payload as string
           const parts = payload.split(':')
@@ -80,7 +73,6 @@ export function useSender(): UseSenderReturn {
             const bytesTransferred = parseInt(parts[0], 10)
             const totalBytes = parseInt(parts[1], 10)
             const speedInt = parseInt(parts[2], 10)
-            // Convert speed back from integer (divide by 1000 to get original value)
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
@@ -96,19 +88,15 @@ export function useSender(): UseSenderReturn {
         }
       })
 
-      // Listen for transfer completed event
       unlistenComplete = await listen('transfer-completed', async () => {
-        // Ignore transfer-completed event if we manually stopped the transfer
-        // This prevents the event from overwriting the stopped metadata
         if (wasManuallyStoppedRef.current) {
           return
         }
         
         setIsTransporting(false)
         setIsCompleted(true)
-        setTransferProgress(null) // Clear progress on completion
+        setTransferProgress(null)
         
-        // Calculate transfer metadata
         const endTime = Date.now()
         const duration = transferStartTime ? endTime - transferStartTime : 0
         
@@ -139,19 +127,15 @@ export function useSender(): UseSenderReturn {
         }
       })
 
-      // Listen for transfer failed event (when receiver stops or connection is aborted)
       unlistenFailed = await listen('transfer-failed', async () => {
-        // Ignore transfer-failed event if we manually stopped the transfer
-        // (we handle manual stops separately)
         if (wasManuallyStoppedRef.current) {
           return
         }
         
         setIsTransporting(false)
         setIsCompleted(true)
-        setTransferProgress(null) // Clear progress on failure
+        setTransferProgress(null)
         
-        // Calculate transfer metadata with failure flag
         const endTime = Date.now()
         const duration = transferStartTime ? endTime - transferStartTime : 0
         
@@ -163,7 +147,7 @@ export function useSender(): UseSenderReturn {
             duration, 
             startTime: transferStartTime || endTime, 
             endTime,
-            wasStopped: true // Mark as stopped/failed
+            wasStopped: true
           }
           setTransferMetadata(metadata)
         }
@@ -174,7 +158,6 @@ export function useSender(): UseSenderReturn {
       console.error('Failed to set up event listeners:', error)
     })
 
-    // Cleanup listeners on unmount
     return () => {
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
@@ -193,7 +176,6 @@ export function useSender(): UseSenderReturn {
 
   const handleFileSelect = async (path: string) => {
     setSelectedPath(path)
-    // Check path type when file is selected
     try {
       const type = await invoke<string>('check_path_type', { path })
       setPathType(type as 'file' | 'directory')
@@ -211,7 +193,6 @@ export function useSender(): UseSenderReturn {
       const result = await invoke<string>('start_sharing', { path: selectedPath })
       setTicket(result)
       setIsSharing(true)
-      // isTransporting will be updated by event listeners when actual transfer begins
     } catch (error) {
       console.error('Failed to start sharing:', error)
       showAlert('Sharing Failed', `Failed to start sharing: ${error}`, 'error')
@@ -222,27 +203,20 @@ export function useSender(): UseSenderReturn {
 
   const stopSharing = async () => {
     try {
-      // Check if we're stopping during an active transfer (not completed yet)
-      // Don't treat a completed transfer as an active one
       const wasActiveTransfer = (isSharing || isTransporting) && 
                                 !isCompleted &&
                                 (!transferMetadata || !transferMetadata.wasStopped)
-      // Any completed transfer (success or failure) should get instant reset
       const isCompletedTransfer = isCompleted && transferMetadata
       
-      // Capture values before clearing
       const currentSelectedPath = selectedPath
       const currentTransferStartTime = transferStartTime
       
-      // If we were in an active transfer, set stopping state and prepare metadata immediately
       if (wasActiveTransfer && currentSelectedPath) {
-        // Mark that we manually stopped IMMEDIATELY to prevent transfer-completed event from overwriting
         wasManuallyStoppedRef.current = true
         
         const endTime = Date.now()
         const fileName = currentSelectedPath.split('/').pop() || 'Unknown'
         
-        // Create metadata with zero/stopped values immediately (before async call)
         const stoppedMetadata: TransferMetadata = {
           fileName,
           fileSize: 0,
@@ -252,23 +226,17 @@ export function useSender(): UseSenderReturn {
           wasStopped: true
         }
         
-        // Set metadata and states immediately to show stopped screen
         setTransferMetadata(stoppedMetadata)
         setIsCompleted(true)
         setIsTransporting(false)
-        // Keep isSharing true so we stay in the sharing state to show success screen
         
-        // Show loader briefly during transition to smooth out React render cycle
         setIsStopping(true)
-        // Clear loader after React has a chance to batch and render state updates
         requestAnimationFrame(() => {
           requestAnimationFrame(() => setIsStopping(false))
         })
       }
       
-      // For completed transfers, reset UI immediately without waiting for backend
       if (isCompletedTransfer) {
-        // Reset UI state immediately for instant feedback
         wasManuallyStoppedRef.current = false
         setIsSharing(false)
         setIsTransporting(false)
@@ -280,20 +248,15 @@ export function useSender(): UseSenderReturn {
         setTransferProgress(null)
         setTransferStartTime(null)
         
-        // Cleanup backend asynchronously in the background (fire and forget)
         invoke('stop_sharing').catch((error) => {
           console.warn('Background cleanup failed (non-critical):', error)
         })
         return
       }
       
-      // For active transfers, we need to wait for backend to stop
-      // Now call the backend to stop sharing
       await invoke('stop_sharing')
       
-      // After backend completes, finish cleanup
       if (!wasActiveTransfer || !currentSelectedPath) {
-        // Normal reset (e.g., after viewing success screen)
         wasManuallyStoppedRef.current = false
         setIsSharing(false)
         setIsTransporting(false)
@@ -315,7 +278,6 @@ export function useSender(): UseSenderReturn {
 
   const resetForNewTransfer = async () => {
     await stopSharing()
-    // Keep user in file selection screen
   }
 
   const copyTicket = async () => {
@@ -332,7 +294,6 @@ export function useSender(): UseSenderReturn {
   }
 
   return {
-    // State
     isSharing,
     isTransporting,
     isCompleted,
@@ -346,7 +307,6 @@ export function useSender(): UseSenderReturn {
     transferMetadata,
     transferProgress,
     
-    // Actions
     handleFileSelect,
     startSharing,
     stopSharing,

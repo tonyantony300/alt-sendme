@@ -59,15 +59,10 @@ fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_byt
 
 /// Start sharing a file or directory
 pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHandle) -> anyhow::Result<SendResult> {
-    tracing::info!("🚀 Starting share for path: {}", path.display());
-    
     let secret_key = get_or_create_secret()?;
-    let node_id = secret_key.public();
-    tracing::info!("🔑 Node ID: {}", node_id);
     
     // create a magicsocket endpoint
     let relay_mode: RelayMode = options.relay_mode.clone().into();
-    tracing::info!("🔧 Relay mode: {:?}", options.relay_mode);
     
     let mut builder = Endpoint::builder()
         .alpns(vec![iroh_blobs::protocol::ALPN.to_vec()])
@@ -75,15 +70,12 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         .relay_mode(relay_mode.clone());
     
     if options.ticket_type == AddrInfoOptions::Id {
-        tracing::info!("🔍 Adding DNS discovery (ticket type: Id)");
         builder = builder.add_discovery(PkarrPublisher::n0_dns());
     }
     if let Some(addr) = options.magic_ipv4_addr {
-        tracing::info!("🌐 Binding to IPv4: {}", addr);
         builder = builder.bind_addr_v4(addr);
     }
     if let Some(addr) = options.magic_ipv6_addr {
-        tracing::info!("🌐 Binding to IPv6: {}", addr);
         builder = builder.bind_addr_v6(addr);
     }
 
@@ -92,7 +84,6 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     let suffix = rand::rng().random::<[u8; 16]>();
     let temp_base = std::env::temp_dir();
     let blobs_data_dir = temp_base.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
-    tracing::info!("💾 Blob storage directory: {}", blobs_data_dir.display());
     if blobs_data_dir.exists() {
         anyhow::bail!(
             "can not share twice from the same directory: {}",
@@ -113,18 +104,12 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     
     let setup = async move {
         let t0 = Instant::now();
-        tracing::info!("📁 Creating blob storage directory...");
         tokio::fs::create_dir_all(&blobs_data_dir2).await?;
 
-        tracing::info!("🔌 Binding endpoint...");
         let endpoint = builder.bind().await?;
-        tracing::info!("✅ Endpoint created successfully");
-        tracing::info!("📡 Endpoint bound successfully");
         
-        tracing::info!("💾 Loading file store...");
         let store = FsStore::load(&blobs_data_dir2).await?;
         
-        tracing::info!("🔧 Initializing blobs protocol...");
         let blobs = BlobsProtocol::new(
             &store,
             Some(EventSender::new(
@@ -136,13 +121,9 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
                 },
             )),
         );
-        tracing::info!("✅ Blobs protocol initialized with event logging enabled");
-        tracing::info!("📊 Store loaded successfully");
 
-        tracing::info!("📦 Importing files...");
         let import_result = import(path2, blobs.store()).await?;
         let dt = t0.elapsed();
-        tracing::info!("✅ Import complete in {:?}", dt);
 
         // Start the progress handler with the total file size
         let (ref _temp_tag, size, ref _collection) = import_result;
@@ -152,20 +133,15 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
             size, // Pass the total file size
         ));
 
-        tracing::info!("🌐 Starting protocol router...");
         let router = iroh::protocol::Router::builder(endpoint)
             .accept(iroh_blobs::ALPN, blobs.clone())
             .spawn();
 
         // wait for the endpoint to figure out its address before making a ticket
         let ep = router.endpoint();
-        tracing::info!("🔗 Router endpoint info:");
-        tracing::info!("   Node ID: {}", ep.node_id());
-        tracing::info!("⏳ Waiting for endpoint to come online...");
         tokio::time::timeout(Duration::from_secs(30), async move {
             if !matches!(relay_mode, RelayMode::Disabled) {
                 let _ = ep.online().await;
-                tracing::info!("✅ Endpoint is online");
             }
         })
         .await?;
@@ -180,28 +156,14 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         }
     };
     let hash = temp_tag.hash();
-    tracing::info!("🔐 Content hash: {}", hash);
 
     // make a ticket
     let mut addr = router.endpoint().node_addr();
-    tracing::info!("📍 Node address before options:");
-    tracing::info!("  - Node ID: {}", addr.node_id);
-    tracing::info!("  - Relay URL: {:?}", addr.relay_url);
-    tracing::info!("  - Direct addresses: {:?}", addr.direct_addresses);
     
     apply_options(&mut addr, options.ticket_type);
-    tracing::info!("📍 Node address after options (ticket type: {:?}):", options.ticket_type);
-    tracing::info!("  - Node ID: {}", addr.node_id);
-    tracing::info!("  - Relay URL: {:?}", addr.relay_url);
-    tracing::info!("  - Direct addresses: {:?}", addr.direct_addresses);
     
     let ticket = BlobTicket::new(addr, hash, BlobFormat::HashSeq);
     let entry_type = if path.is_file() { "file" } else { "directory" };
-    
-    tracing::info!("🎫 Generated ticket: {}", ticket.to_string()[..80.min(ticket.to_string().len())].to_string());
-    tracing::info!("✅ Share started successfully! Entry type: {}, size: {} bytes", entry_type, size);
-    tracing::info!("🔄 Server is ready to accept connections...");
-    tracing::info!("📡 Listening for incoming requests...");
 
     // Return the result - CRITICAL: Keep router, temp_tag, store, and progress_handle alive
     Ok(SendResult {
@@ -370,8 +332,6 @@ async fn show_provide_progress_with_logging(
     use std::sync::Arc;
     use tokio::sync::Mutex;
     
-    tracing::info!("🔍 Provider progress handler started with total file size: {} bytes", total_file_size);
-    
     let mut tasks = FuturesUnordered::new();
     
     // Track transfer state per request
@@ -389,23 +349,17 @@ async fn show_provide_progress_with_logging(
             biased;
             item = recv.recv() => {
                 let Some(item) = item else {
-                    tracing::info!("🔍 Provider channel closed, exiting handler");
                     break;
                 };
 
                 match item {
-                    iroh_blobs::provider::events::ProviderMessage::ClientConnectedNotify(msg) => {
-                        let node_id = msg.node_id.map(|id| id.fmt_short().to_string()).unwrap_or_else(|| "?".to_string());
-                        tracing::info!("🔗 Client connected: {} (connection_id: {})", node_id, msg.connection_id);
+                    iroh_blobs::provider::events::ProviderMessage::ClientConnectedNotify(_msg) => {
                     }
-                    iroh_blobs::provider::events::ProviderMessage::ConnectionClosed(msg) => {
-                        tracing::info!("❌ Connection closed: connection_id {}", msg.connection_id);
+                    iroh_blobs::provider::events::ProviderMessage::ConnectionClosed(_msg) => {
                     }
                     iroh_blobs::provider::events::ProviderMessage::GetRequestReceivedNotify(msg) => {
                         let connection_id = msg.connection_id;
                         let request_id = msg.request_id;
-                        tracing::info!("📥 Get request received: connection_id {}, request_id {}", 
-                            connection_id, request_id);
                         
                         // Clone app_handle and state for the task
                         let app_handle_task = app_handle.clone();
@@ -414,15 +368,11 @@ async fn show_provide_progress_with_logging(
                         // Spawn a task to monitor this request
                         let mut rx = msg.rx;
                         tasks.push(async move {
-                            tracing::info!("🔄 Monitoring request: connection_id {}, request_id {}", connection_id, request_id);
-                            
                             let mut transfer_started = false;
                             
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
                                     iroh_blobs::provider::events::RequestUpdate::Started(m) => {
-                                        tracing::info!("▶️  Request started: conn {} req {} idx {} hash {} size {}", 
-                                            connection_id, request_id, m.index, m.hash.fmt_short(), m.size);
                                         if !transfer_started {
                                             // Store transfer state with the total file size, not individual blob size
                                             transfer_states_task.lock().await.insert(
@@ -437,8 +387,6 @@ async fn show_provide_progress_with_logging(
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
-                                        tracing::info!("📊 Progress: conn {} req {} offset {}", 
-                                            connection_id, request_id, m.end_offset);
                                         if !transfer_started {
                                             emit_event(&app_handle_task, "transfer-started");
                                             transfer_started = true;
@@ -462,8 +410,6 @@ async fn show_provide_progress_with_logging(
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
-                                        tracing::info!("✅ Request completed: conn {} req {}", 
-                                            connection_id, request_id);
                                         if transfer_started {
                                             // Clean up state
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
@@ -471,7 +417,7 @@ async fn show_provide_progress_with_logging(
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Aborted(_m) => {
-                                        tracing::warn!("⚠️  Request aborted: conn {} req {}", 
+                                        tracing::warn!("Request aborted: conn {} req {}", 
                                             connection_id, request_id);
                                         if transfer_started {
                                             // Clean up state
@@ -481,13 +427,9 @@ async fn show_provide_progress_with_logging(
                                     }
                                 }
                             }
-                            
-                            tracing::info!("🏁 Request monitoring finished: connection_id {}, request_id {}", 
-                                connection_id, request_id);
                         });
                     }
                     _ => {
-                        tracing::debug!("📊 Provider event: {:?}", item);
                     }
                 }
             }
@@ -499,9 +441,7 @@ async fn show_provide_progress_with_logging(
     
     // Wait for all request monitoring tasks to complete
     while tasks.next().await.is_some() {
-        tracing::info!("⏳ Waiting for remaining request tasks to complete...");
     }
     
-    tracing::info!("🔍 Provider progress handler finished");
     Ok(())
 }

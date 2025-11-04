@@ -8,29 +8,25 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   
-  /* Typography scale based on --font-size-base */
-  --text-xs: calc(var(--font-size-base) * 0.75); /* ~12px */
-  --text-sm: calc(var(--font-size-base) * 0.875); /* ~14px */
-  --text-base: var(--font-size-base); /* ~16px */
-  --text-lg: calc(var(--font-size-base) * 1.125); /* ~18px */
-  --text-xl: calc(var(--font-size-base) * 1.25); /* ~20px */
-  --text-2xl: calc(var(--font-size-base) * 1.5); /* ~24px */
-  --text-3xl: calc(var(--font-size-base) * 1.875); /* ~30px */
-  --text-4xl: calc(var(--font-size-base) * 2.25); /* ~36px */
-  --text-5xl: calc(var(--font-size-base) * 3); /* ~48px */
-  --text-6xl: calc(var(--font-size-base) * 3.75); /* ~60px */
-  --text-7xl: calc(var(--font-size-base) * 4.5); /* ~72px */
-  --text-8xl: calc(var(--font-size-base) * 6); /* ~96px */
-  --text-9xl: calc(var(--font-size-base) * 8); /* ~128px */
+  --text-xs: calc(var(--font-size-base) * 0.75);
+  --text-sm: calc(var(--font-size-base) * 0.875);
+  --text-base: var(--font-size-base);
+  --text-lg: calc(var(--font-size-base) * 1.125);
+  --text-xl: calc(var(--font-size-base) * 1.25);
+  --text-2xl: calc(var(--font-size-base) * 1.5);
+  --text-3xl: calc(var(--font-size-base) * 1.875);
+  --text-4xl: calc(var(--font-size-base) * 2.25);
+  --text-5xl: calc(var(--font-size-base) * 3);
+  --text-6xl: calc(var(--font-size-base) * 3.75);
+  --text-7xl: calc(var(--font-size-base) * 4.5);
+  --text-8xl: calc(var(--font-size-base) * 6);
+  --text-9xl: calc(var(--font-size-base) * 8);
 }
 
 :root {
-  /* Design tokens from web-app-reference */
-  --radius: 0.625rem; /* 10px */
+  --radius: 0.625rem;
   --font-size-base: 15px;
   
-  /* Dark theme colors - Default values (will be overridden by platformStyles.ts) */
-  /* macOS will use alpha 0.4, Linux/Windows will use alpha 1.0 */
   --app-bg: rgba(25, 25, 25, 1);
   --app-main-view: rgba(25, 25, 25, 1);
   --app-primary: rgba(37, 211, 101, 0.687);
@@ -38,10 +34,8 @@
   --app-accent: rgb(54 54 54);
   --app-destructive: rgb(144, 60, 60);
   
-  /* Body background - will be set to transparent on macOS, opaque on Linux */
   --body-bg: rgba(25, 25, 25, 1);
   
-  /* Text colors */
   --app-bg-fg: rgb(255, 255, 255);
   --app-main-view-fg: rgb(255, 255, 255);
   --app-primary-fg: rgb(255, 255, 255);
@@ -81,15 +75,13 @@
     color: var(--app-accent);
   }
   
-  /* Global invisible scrollbar rules - cross-platform compatible */
-  /* Webkit browsers (Chrome, Safari, Edge) */
   * {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   
   *::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
     width: 0;
     height: 0;
   }
@@ -128,7 +120,6 @@
     background: transparent;
   }
   
-  /* Custom title bar styling */
   .custom-title-bar {
     @apply h-10 flex items-center justify-between shrink-0 px-4 select-none border-b border-white/5;
     background-color: var(--app-bg);
@@ -151,7 +142,6 @@
     background-color: rgba(239, 68, 68, 0.8);
   }
   
-  /* Glass effects with fallback for platforms without blur support */
   .glass-effect {
     background: var(--app-main-view);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -179,7 +169,6 @@
 }
 
 @layer utilities {
-  /* Keep scrollbar-hide utility for backwards compatibility (though it's now redundant) */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -190,12 +179,10 @@
   }
 }
 
-/* Global smooth transitions for interactive elements */
 button, input, textarea {
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Disable transitions for motion-reduced preference */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

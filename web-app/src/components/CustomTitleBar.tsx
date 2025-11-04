@@ -16,7 +16,6 @@ const CustomTitleBar: React.FC<CustomTitleBarProps> = ({
       className={cn(
         'h-10 text-foreground flex items-center shrink-0 border-b border-white/5',
         'px-4',
-        // macOS-specific padding for traffic lights
         IS_MACOS ? 'pl-20' : '',
         children === undefined && 'border-none',
         className
@@ -32,7 +31,6 @@ const CustomTitleBar: React.FC<CustomTitleBarProps> = ({
           {children}
         </div>
         
-        {/* Window controls for non-macOS platforms */}
         {!IS_MACOS && (
           <WindowControls />
         )}

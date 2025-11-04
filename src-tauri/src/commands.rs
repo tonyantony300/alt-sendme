@@ -136,9 +136,6 @@ pub async fn receive_file(
     output_path: String,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
-    tracing::info!("📥 receive_file command called");
-    tracing::info!("🎫 Ticket: {}", &ticket[..50.min(ticket.len())]);
-    
     // Create receive options with user-specified output path
     let output_dir = PathBuf::from(output_path);
     let options = ReceiveOptions {
@@ -147,9 +144,6 @@ pub async fn receive_file(
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
-    
-    tracing::info!("📁 Output directory: {:?}", options.output_dir);
-    tracing::info!("🚀 Starting download...");
     
     // Wrap the app_handle in our EventEmitter implementation
     let emitter = Arc::new(TauriEventEmitter {
@@ -160,11 +154,10 @@ pub async fn receive_file(
     // Download using the core library
     match download(ticket, options, boxed_handle).await {
         Ok(result) => {
-            tracing::info!("✅ Download completed successfully: {}", result.message);
             Ok(result.message)
         },
         Err(e) => {
-            tracing::error!("❌ Failed to receive file: {}", e);
+            tracing::error!("Failed to receive file: {}", e);
             Err(format!("Failed to receive file: {}", e))
         },
     }

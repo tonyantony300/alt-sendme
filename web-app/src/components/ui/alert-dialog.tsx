@@ -20,7 +20,7 @@ const AlertDialogOverlay = React.forwardRef<
     )}
     style={{
       backdropFilter: 'blur(4px)',
-      WebkitBackdropFilter: 'blur(4px)', // Safari support
+      WebkitBackdropFilter: 'blur(4px)',
     }}
     {...props}
     ref={ref}

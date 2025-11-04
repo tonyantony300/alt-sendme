@@ -24,7 +24,6 @@ export const TitleBar = ({ title = 'ALT-SENDME' }: TitleBarProps) => {
         </span>
       </div>
       
-      {/* Window controls - only show on Linux */}
       <div className="window-controls">
         <button
           onClick={handleMinimize}

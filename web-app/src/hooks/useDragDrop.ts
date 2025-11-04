@@ -5,13 +5,11 @@ import { invoke } from '@tauri-apps/api/core'
 import type { AlertDialogState, AlertType } from '../types/sender'
 
 export interface UseDragDropReturn {
-  // State
   isDragActive: boolean
   pathType: 'file' | 'directory' | null
   showFullPath: boolean
   alertDialog: AlertDialogState
   
-  // Actions
   toggleFullPath: () => void
   browseFile: () => Promise<void>
   browseFolder: () => Promise<void>
@@ -85,12 +83,10 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
     }
   }
 
-  // Reset showFullPath when path changes
   useEffect(() => {
     setShowFullPath(false)
   }, [onFileSelect])
 
-  // Listen for Tauri's file drop events
   useEffect(() => {
     const window = getCurrentWindow()
     
@@ -98,7 +94,6 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
     let hoverUnlisten: (() => void) | undefined
     let cancelUnlisten: (() => void) | undefined
 
-    // Listen for file drop
     window.listen<{ paths: string[], position: { x: number, y: number } }>('tauri://drag-drop', (event) => {
       setIsDragActive(false)
       
@@ -112,7 +107,6 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
       console.error('Failed to register drag-drop listener:', err)
     })
 
-    // Listen for drag hover
     window.listen('tauri://drag-hover', () => {
       setIsDragActive(true)
     }).then(unlisten => {
@@ -121,7 +115,6 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
       console.error('Failed to register drag-hover listener:', err)
     })
 
-    // Listen for drag cancelled
     window.listen('tauri://drag-leave', () => {
       setIsDragActive(false)
     }).then(unlisten => {
@@ -138,13 +131,11 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
   }, [onFileSelect])
 
   return {
-    // State
     isDragActive,
     pathType,
     showFullPath,
     alertDialog,
     
-    // Actions
     toggleFullPath,
     browseFile,
     browseFolder,

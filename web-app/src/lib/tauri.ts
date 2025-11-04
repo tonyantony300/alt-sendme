@@ -1,4 +1,3 @@
-// Tauri API wrapper for type safety
 import { invoke } from '@tauri-apps/api/core'
 
 export interface TauriCommands {
@@ -8,7 +7,6 @@ export interface TauriCommands {
   get_sharing_status: () => Promise<string | null>
 }
 
-// Type-safe wrapper for Tauri commands
 export const tauriCommands: TauriCommands = {
   start_sharing: (path: string) => invoke('start_sharing', { path }),
   stop_sharing: () => invoke('stop_sharing'),

@@ -14,8 +14,6 @@ use tauri::Manager;
 /// Clean up any orphaned .sendme-* directories from previous runs
 /// Scans both current_dir and temp_dir to handle transition and legacy directories
 fn cleanup_orphaned_directories() {
-    tracing::info!("🧹 Checking for orphaned .sendme-* directories...");
-    
     // Scan both current_dir (legacy/transition) and temp_dir (current location)
     let scan_dirs = vec![
         std::env::current_dir().ok(),
@@ -23,21 +21,16 @@ fn cleanup_orphaned_directories() {
     ];
     
     for base_dir in scan_dirs.into_iter().flatten() {
-        tracing::info!("🔍 Scanning directory: {}", base_dir.display());
-        
         if let Ok(entries) = fs::read_dir(&base_dir) {
             for entry in entries.flatten() {
                 if let Some(name) = entry.file_name().to_str() {
                     // Clean up both send and recv directories
                     if (name.starts_with(".sendme-send-") || name.starts_with(".sendme-recv-")) 
                         && entry.path().is_dir() {
-                        tracing::info!("🗑️  Found orphaned directory: {}", entry.path().display());
                         match fs::remove_dir_all(&entry.path()) {
-                            Ok(_) => {
-                                tracing::info!("✅ Successfully cleaned up orphaned directory: {}", name);
-                            }
+                            Ok(_) => {}
                             Err(e) => {
-                                tracing::warn!("⚠️  Failed to clean up orphaned directory {}: {}", name, e);
+                                tracing::warn!("Failed to clean up orphaned directory {}: {}", name, e);
                             }
                         }
                     }
@@ -45,8 +38,6 @@ fn cleanup_orphaned_directories() {
             }
         }
     }
-    
-    tracing::info!("🧹 Orphan cleanup complete");
 }
 
 
@@ -62,7 +53,7 @@ fn main() {
         .with_line_number(true)
         .init();
     
-    tracing::info!("🚀 Starting Sendme Desktop application v{}", version::VERSION);
+    tracing::info!("Starting Sendme Desktop application v{}", version::VERSION);
     
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())

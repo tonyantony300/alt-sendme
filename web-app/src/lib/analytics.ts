@@ -38,6 +38,5 @@ export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'r
       allow_local: true,
     })
   } catch (error) {
-    // Silently fail
   }
 }

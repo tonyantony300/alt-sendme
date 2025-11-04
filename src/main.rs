@@ -406,7 +406,6 @@ async fn import(
                         .next()
                         .await
                         .context("import stream ended without a tag")?;
-                    trace!("importing {name} {item:?}");
                     match item {
                         AddProgressItem::Size(size) => {
                             item_size = size;
@@ -589,7 +588,6 @@ async fn show_provide_progress(
                     break;
                 };
 
-                trace!("got event {item:?}");
                 match item {
                     ProviderMessage::ClientConnectedNotify(msg) => {
                         let node_id = msg.node_id.map(|id| id.fmt_short().to_string()).unwrap_or_else(|| "?".to_string());
@@ -1009,9 +1007,7 @@ async fn receive(args: ReceiveArgs) -> anyhow::Result<()> {
     let iroh_data_dir = std::env::current_dir()?.join(dir_name);
     let db = iroh_blobs::store::fs::FsStore::load(&iroh_data_dir).await?;
     let db2 = db.clone();
-    trace!("load done!");
     let fut = async move {
-        trace!("running");
         let mut mp: MultiProgress = MultiProgress::new();
         let draw_target = if args.common.no_progress {
             ProgressDrawTarget::hidden()
@@ -1020,11 +1016,8 @@ async fn receive(args: ReceiveArgs) -> anyhow::Result<()> {
         };
         mp.set_draw_target(draw_target);
         let hash_and_format = ticket.hash_and_format();
-        trace!("computing local");
         let local = db.remote().local(hash_and_format).await?;
-        trace!("local done");
         let (stats, total_files, payload_size) = if !local.is_complete() {
-            trace!("{} not complete", hash_and_format.hash);
             let cp = mp.add(make_connect_progress());
             let connection = endpoint.connect(addr, iroh_blobs::protocol::ALPN).await?;
             cp.finish_and_clear();
@@ -1064,7 +1057,6 @@ async fn receive(args: ReceiveArgs) -> anyhow::Result<()> {
             let mut stats = Stats::default();
             let mut stream = get.stream();
             while let Some(item) = stream.next().await {
-                trace!("got item {item:?}");
                 match item {
                     GetProgressItem::Progress(offset) => {
                         tx.send(offset).await.ok();

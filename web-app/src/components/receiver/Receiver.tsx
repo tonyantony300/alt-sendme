@@ -39,7 +39,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
     resetForNewTransfer
   } = useReceiver()
 
-  // Notify parent component when transfer state changes
   useEffect(() => {
     onTransferStateChange(isReceiving)
   }, [isReceiving, onTransferStateChange])
@@ -79,7 +78,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
           </div>
         </>
       ) : isCompleted && transferMetadata ? (
-        // Success screen - only show when transfer is completed AND metadata is available
         <div className="flex-1 flex flex-col">
           <TransferSuccessScreen 
             metadata={transferMetadata}
@@ -87,7 +85,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
           />
         </div>
       ) : (
-        // Receiving active with pulse animation
         <>
           <div className="text-center">
             <PulseAnimation 

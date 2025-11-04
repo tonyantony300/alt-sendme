@@ -23,7 +23,6 @@ export function DragDrop({ onFileSelect, selectedPath, isLoading }: DragDropProp
     checkPathType
   } = useDragDrop(onFileSelect)
 
-  // Check path type when selectedPath changes
   useEffect(() => {
     if (selectedPath) {
       checkPathType(selectedPath)

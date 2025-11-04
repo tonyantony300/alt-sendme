@@ -42,7 +42,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
     resetForNewTransfer
   } = useSender()
 
-  // Notify parent component when transfer state changes
   useEffect(() => {
     onTransferStateChange(isSharing)
   }, [isSharing, onTransferStateChange])
@@ -77,7 +76,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
         </div>
         </>
       ) : isStopping ? (
-        // Show loader while stopping
         <div className="flex-1 flex flex-col items-center justify-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent-light)' }} />
           <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
@@ -85,7 +83,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
           </p>
         </div>
       ) : isCompleted && transferMetadata && !isTransporting ? (
-        // Success screen - only show when transfer is completed AND metadata is available AND not currently transporting
         <div className="flex-1 flex flex-col">
           <TransferSuccessScreen 
             metadata={transferMetadata}
@@ -93,7 +90,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
           />
         </div>
       ) : (
-        // Sharing active with pulse animation
         <>
         <div className="text-center">
         <PulseAnimation 

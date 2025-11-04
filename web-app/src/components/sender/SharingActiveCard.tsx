@@ -3,7 +3,6 @@ import { Copy, CheckCircle, Square } from 'lucide-react'
 import type { SharingControlsProps, TicketDisplayProps } from '../../types/sender'
 import { TransferProgressBar } from './TransferProgressBar'
 
-// Helper function to format file size
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B'
   
@@ -14,7 +13,6 @@ function formatFileSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-// Helper function to format file size without decimals
 function formatFileSizeNoDecimals(bytes: number): string {
   if (bytes === 0) return '0 B'
   
@@ -25,7 +23,6 @@ function formatFileSizeNoDecimals(bytes: number): string {
   return Math.round(bytes / Math.pow(k, i)) + ' ' + sizes[i]
 }
 
-// Format speed without decimals
 function formatSpeedNoDecimals(speedBps: number): string {
   const mbps = speedBps / (1024 * 1024)
   const kbps = speedBps / 1024
@@ -48,11 +45,10 @@ export function SharingActiveCard({
   onCopyTicket, 
   onStopSharing 
 }: SharingControlsProps) {
-  // Determine the current state and colors
   const getStatusColor = () => {
-    if (isCompleted) return 'rgb(45, 120, 220)' // Blue - completed
-    if (isTransporting) return 'rgba(37, 211, 101, 0.687)' // Green - transporting
-    return '#B7B7B7' // Gray - listening
+    if (isCompleted) return 'rgb(45, 120, 220)'
+    if (isTransporting) return 'rgba(37, 211, 101, 0.687)'
+    return '#B7B7B7'
   }
 
   const getStatusText = () => {
@@ -64,14 +60,12 @@ export function SharingActiveCard({
   const statusColor = getStatusColor()
   const statusText = getStatusText()
 
-  // Track cumulative transferred bytes for folders
   const [cumulativeBytesTransferred, setCumulativeBytesTransferred] = useState(0)
   const [transferStartTime, setTransferStartTime] = useState<number | null>(null)
   const previousBytesRef = useRef<number>(0)
   const maxBytesRef = useRef<number>(0)
   const isFolderTransfer = pathType === 'directory' && isTransporting
 
-  // Reset cumulative bytes and track start time when transfer starts
   useEffect(() => {
     if (isTransporting && pathType === 'directory') {
       setCumulativeBytesTransferred(0)
@@ -81,58 +75,48 @@ export function SharingActiveCard({
     }
   }, [isTransporting, pathType])
 
-  // Track cumulative bytes when transferring folders
   useEffect(() => {
     if (isFolderTransfer && transferProgress) {
       const currentBytes = transferProgress.bytesTransferred
       const previousBytes = previousBytesRef.current
       const maxBytes = maxBytesRef.current
 
-      // Update max bytes seen for current file
       if (currentBytes > maxBytes) {
         maxBytesRef.current = currentBytes
       }
 
-      // Detect file transition: if bytes decreased significantly, new file started
-      // Add the max bytes from previous file to cumulative
       if (previousBytes > 0 && currentBytes < previousBytes * 0.5 && maxBytes > 0) {
-        // Significant decrease (more than 50%) - likely new file started
         setCumulativeBytesTransferred(prev => prev + maxBytes)
         maxBytesRef.current = currentBytes
         previousBytesRef.current = currentBytes
       } else if (currentBytes === 0 && previousBytes > 0 && maxBytes > 0) {
-        // Bytes reset to 0 - previous file completed
         setCumulativeBytesTransferred(prev => prev + maxBytes)
         maxBytesRef.current = 0
         previousBytesRef.current = 0
       } else if (currentBytes > previousBytes) {
-        // Normal progress - just update previous
         previousBytesRef.current = currentBytes
       } else if (currentBytes < previousBytes && currentBytes >= previousBytes * 0.5) {
-        // Small decrease but not significant - might be normal fluctuation, just update
         previousBytesRef.current = currentBytes
       }
     }
   }, [isFolderTransfer, transferProgress?.bytesTransferred])
 
-  // Calculate total transferred bytes for display
   const totalTransferredBytes = isFolderTransfer && transferProgress
     ? cumulativeBytesTransferred + transferProgress.bytesTransferred
     : transferProgress?.bytesTransferred ?? 0
 
-  // Calculate speed based on cumulative bytes and elapsed time for folder transfers
   const [calculatedSpeed, setCalculatedSpeed] = useState(0)
   
   useEffect(() => {
     if (isFolderTransfer && transferProgress && transferStartTime) {
       const updateSpeed = () => {
-        const elapsed = (Date.now() - transferStartTime) / 1000.0 // Convert to seconds
+        const elapsed = (Date.now() - transferStartTime) / 1000.0
         const speed = elapsed > 0 ? totalTransferredBytes / elapsed : 0
         setCalculatedSpeed(speed)
       }
       
       updateSpeed()
-      const interval = setInterval(updateSpeed, 500) // Update every 500ms for smoother display
+      const interval = setInterval(updateSpeed, 500)
       return () => clearInterval(interval)
     } else if (transferProgress) {
       setCalculatedSpeed(transferProgress.speedBps)
@@ -143,8 +127,7 @@ export function SharingActiveCard({
 
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-lg absolute top-0 left-0"
-      >
+      <div className="p-4 rounded-lg absolute top-0 left-0">
            <p className="text-xs mb-4 max-w-[30rem] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
           <strong className="mr-1">File:</strong> {selectedPath?.split('/').pop()}
         </p>
@@ -167,7 +150,6 @@ export function SharingActiveCard({
           Keep this app open while others download your files
         </p>
         
-      {/* Show ticket when not transferring, show progress bar when transferring */}
       {!isTransporting && ticket && (
         <TicketDisplay 
           ticket={ticket} 
@@ -178,7 +160,6 @@ export function SharingActiveCard({
       
       {isTransporting && transferProgress && (
         pathType === 'directory' ? (
-          // For folders: show message, speed, and transferred/total size
           <div className="space-y-3">
             <div className="text-center">
               <p className="text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
@@ -205,7 +186,6 @@ export function SharingActiveCard({
             </div>
           </div>
         ) : (
-          // For files: show progress bar
           <TransferProgressBar progress={transferProgress} />
         )
       )}

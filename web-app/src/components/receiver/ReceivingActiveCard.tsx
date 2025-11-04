@@ -19,11 +19,10 @@ export function ReceivingActiveCard({
   transferProgress,
   onStopReceiving 
 }: ReceivingActiveCardProps) {
-  // Determine the current state and colors
   const getStatusColor = () => {
-    if (isCompleted) return 'rgb(45, 120, 220)' // Blue - completed
-    if (isTransporting) return 'rgba(37, 211, 101, 0.687)' // Green - transporting
-    return '#B7B7B7' // Gray - connecting
+    if (isCompleted) return 'rgb(45, 120, 220)'
+    if (isTransporting) return 'rgba(37, 211, 101, 0.687)'
+    return '#B7B7B7'
   }
 
   const getStatusText = () => {
@@ -39,7 +38,6 @@ export function ReceivingActiveCard({
   return (
     <div className="space-y-4">
       <div className="p-4 rounded-lg absolute top-0 left-0">
-       
         <div className="flex items-center mb-2">
           <div 
             className="h-2 w-2 rounded-full mr-2" 
@@ -58,7 +56,6 @@ export function ReceivingActiveCard({
         Keep this app open while downloading files
       </p>
         
-      {/* Show progress bar when transporting */}
       {isTransporting && transferProgress && (
         <TransferProgressBar progress={transferProgress} />
       )}
