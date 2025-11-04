@@ -57,7 +57,6 @@ fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_byt
     }
 }
 
-/// Start sharing a file or directory
 pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHandle) -> anyhow::Result<SendResult> {
     let secret_key = get_or_create_secret()?;
     
@@ -179,13 +178,6 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     })
 }
 
-/// Import from a file or directory into the database.
-///
-/// The returned tag always refers to a collection. If the input is a file, this
-/// is a collection with a single blob, named like the file.
-///
-/// If the input is a directory, the collection contains all the files in the
-/// directory.
 async fn import(
     path: PathBuf,
     db: &Store,
@@ -277,14 +269,6 @@ async fn import(
     Ok((temp_tag, size, collection))
 }
 
-/// This function converts an already canonicalized path to a string.
-///
-/// If `must_be_relative` is true, the function will fail if any component of the path is
-/// `Component::RootDir`
-///
-/// This function will also fail if the path is non canonical, i.e. contains
-/// `..` or `.`, or if the path components contain any windows or unix path
-/// separators.
 pub fn canonicalized_path_to_string(
     path: impl AsRef<Path>,
     must_be_relative: bool,
@@ -322,7 +306,6 @@ pub fn canonicalized_path_to_string(
     Ok(path_str)
 }
 
-/// Enhanced progress handler with detailed logging for debugging
 async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
     app_handle: AppHandle,
@@ -372,7 +355,7 @@ async fn show_provide_progress_with_logging(
                             
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
-                                    iroh_blobs::provider::events::RequestUpdate::Started(m) => {
+                                    iroh_blobs::provider::events::RequestUpdate::Started(_m) => {
                                         if !transfer_started {
                                             // Store transfer state with the total file size, not individual blob size
                                             transfer_states_task.lock().await.insert(

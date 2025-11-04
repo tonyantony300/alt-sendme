@@ -5,6 +5,10 @@
 # TypeScript build info files (incremental compilation cache)
 *.tsbuildinfo
 
+# Generated Vite config files (compiled from vite.config.ts)
+vite.config.js
+vite.config.d.ts
+
 # Generated Cargo.toml files (legitimate source Cargo.toml files should be tracked)
 # This covers any Cargo.toml generated during builds outside of target/
 **/target/**/Cargo.toml

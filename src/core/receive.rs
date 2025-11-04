@@ -57,7 +57,6 @@ fn emit_event_with_payload(app_handle: &AppHandle, event_name: &str, payload: &s
     }
 }
 
-/// Receive a file or directory using a ticket
 pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: AppHandle) -> anyhow::Result<ReceiveResult> {
     let ticket = BlobTicket::from_str(&ticket_str)?;
     

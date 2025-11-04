@@ -9,7 +9,6 @@ use commands::{start_sharing, stop_sharing, receive_file, get_sharing_status, ch
 use state::AppState;
 use std::sync::Arc;
 use std::fs;
-use tauri::Manager;
 
 /// Clean up any orphaned .sendme-* directories from previous runs
 /// Scans both current_dir and temp_dir to handle transition and legacy directories
