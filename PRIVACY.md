@@ -70,17 +70,18 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 
 ## Analytics and Usage Data
 
-This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respecting, open‑source analytics service, to measure anonymous, aggregate transfer statistics. This helps measure overall usage (e.g., total bytes transferred across all users) to improve AltSendme.
+This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respecting, open‑source analytics service.
 
-**What GoatCounter Records (Aggregate Only):**
-- Anonymous totals such as overall transfer volume 
-- No cookies, no device fingerprinting, no unique identifiers
+**What GoatCounter Records :**
+- Anonymous total transfer volume 
+
 
 **What Is Never Collected via GoatCounter:**
 - IP addresses
 - Personal information or user identities
 - File contents, file names, or per‑transfer details/sizes
 - Cross‑site tracking or profiling
+- No cookies, no device fingerprinting, no unique identifiers
 
 GoatCounter is privacy‑friendly by design and respects “Do Not Track”. Learn more on their [privacy page](https://www.goatcounter.com/help/privacy).
 

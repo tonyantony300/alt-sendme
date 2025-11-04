@@ -1,4 +1,4 @@
-# Send files anywhere, On-premises or world-wide. Frictionless, Fast, Private, Unlimited and Free
+# Send files anywhere - Frictionless, Fast, Private, Unlimited and Free
 
 ![AltSendme Demo](assets/animation.gif)
 
@@ -162,11 +162,11 @@ This will start the app with hot reload enabled for both frontend and backend ch
 
 AGPL-3.0
 
-## Privacy
+## Privacy Policy
 
 See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your data and privacy.
 
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
+
 
 # Acknowledgements
 
@@ -174,3 +174,5 @@ Built on the shoulders of giants:
 
 - [Iroh](https://www.iroh.computer)
 - [Tauri](https://v2.tauri.app)
+
+[![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
