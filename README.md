@@ -1,4 +1,4 @@
-# AltSendme -  Send files anywhere, On-premises or world-wide. Frictionless, Fast, Private, Unlimited and Free
+# Send files anywhere, On-premises or world-wide. Frictionless, Fast, Private, Unlimited and Free
 
 ![AltSendme Demo](assets/animation.gif)
 
@@ -35,8 +35,12 @@ The easiest way to get started is by downloading one of the following versions f
     <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_x64-setup_windows.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
-    <td><b>macOS*</b></td>
+    <td><b>macOS*(apple sillicon)</b></td>
     <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_aarch64_darwin.dmg'>AltSendme.dmg</a></td>
+  </tr>
+   <tr>
+    <td><b>macOS*(Intel x86_64)</b></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_x64_darwin.dmg'>AltSendme.dmg</a></td>
   </tr>
   <tr>
     <td><b>Linux (deb)</b></td>
@@ -157,6 +161,10 @@ This will start the app with hot reload enabled for both frontend and backend ch
 ## License
 
 AGPL-3.0
+
+## Privacy
+
+See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your data and privacy.
 
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
 

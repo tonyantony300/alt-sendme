@@ -109,3 +109,4 @@ src-tauri/gen/*
 !README
 !**/README.md
 !**/README
+!PRIVACY.md
