@@ -1,11 +1,13 @@
 import {  Share2 } from 'lucide-react'
 import type { ShareActionProps } from '../../types/sender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 export function ShareActionCard({ 
   selectedPath, 
   isLoading, 
   onStartSharing 
 }: ShareActionProps & { onStartSharing: () => Promise<void> }) {
+  const { t } = useTranslation()
   if (!selectedPath) return null
 
   return (
@@ -22,7 +24,7 @@ export function ShareActionCard({
         }}
       >
         <Share2 className="h-4 w-4 mr-2" />
-        {isLoading ? 'Starting Share...' : 'Start Sharing'}
+        {isLoading ? t('common:sender.startingShare') : t('common:sender.startSharing')}
       </button>
     </div>
   )

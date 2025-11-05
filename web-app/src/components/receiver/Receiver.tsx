@@ -14,6 +14,7 @@ import {
 } from '../ui/alert-dialog'
 import { useReceiver } from '../../hooks/useReceiver'
 import { Info } from 'lucide-react'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 interface ReceiverProps {
   onTransferStateChange: (isReceiving: boolean) => void
@@ -21,6 +22,7 @@ interface ReceiverProps {
 
 export function Receiver({ onTransferStateChange }: ReceiverProps) {
   const [showInstructionsDialog, setShowInstructionsDialog] = useState(false)
+  const { t } = useTranslation()
   
   const {
     ticket,
@@ -51,7 +53,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <h2 className="text-xl font-semibold" style={{ color: 'var(--app-main-view-fg)' }}>
-                Receive Files
+                {t('common:receiver.title')}
               </h2>
               <button
                 onClick={() => setShowInstructionsDialog(true)}
@@ -62,7 +64,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
               </button>
             </div>
             <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-              Download files from sender using encrypted peer-to-peer connections over the internet.
+              {t('common:receiver.subtitle')}
             </p>
           </div>
 
@@ -118,7 +120,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={closeAlert}>
-              OK
+              {t('common:ok')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -127,21 +129,21 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
       <AlertDialog open={showInstructionsDialog} onOpenChange={setShowInstructionsDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>How to receive files</AlertDialogTitle>
+            <AlertDialogTitle>{t('common:receiver.howToReceive')}</AlertDialogTitle>
             <AlertDialogDescription>
            
             </AlertDialogDescription>
             <ol className="text-sm space-y-2 list-decimal list-inside mt-2" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-              <li>Sender must be online and sharing a file</li>
-              <li>Get a ticket from the sender</li>
-              <li>Paste the ticket in the text area</li>
-              <li>Click download to start receiving</li>
-              <li>Files will be saved to your selected folder</li>
+              <li>{t('common:receiver.instruction1')}</li>
+              <li>{t('common:receiver.instruction2')}</li>
+              <li>{t('common:receiver.instruction3')}</li>
+              <li>{t('common:receiver.instruction4')}</li>
+              <li>{t('common:receiver.instruction5')}</li>
             </ol>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setShowInstructionsDialog(false)}>
-              OK
+              {t('common:ok')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

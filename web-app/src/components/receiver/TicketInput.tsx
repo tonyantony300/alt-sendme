@@ -1,5 +1,6 @@
 import { Download } from 'lucide-react'
 import type { TicketInputProps } from '../../types/sender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 export function TicketInput({ 
   ticket, 
@@ -9,11 +10,13 @@ export function TicketInput({
   onBrowseFolder,
   onReceive 
 }: TicketInputProps) {
+  const { t } = useTranslation()
+  
   return (
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-          Save to folder:
+          {t('common:receiver.saveToFolder')}
         </label>
         <div className="flex gap-2">
           <div
@@ -24,7 +27,7 @@ export function TicketInput({
               width: '85%',
             }}
           >
-            {savePath || 'No folder selected'}
+            {savePath || t('common:receiver.noFolderSelected')}
           </div>
           <button
             onClick={onBrowseFolder}
@@ -35,14 +38,14 @@ export function TicketInput({
               color: 'var(--app-accent-fg)',
             }}
           >
-            Browse
+            {t('common:browse')}
           </button>
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-          Paste the ticket here:
+          {t('common:receiver.pasteTicket')}
         </label>
         <div className="flex gap-2 p-0.5">
           <textarea
@@ -56,7 +59,7 @@ export function TicketInput({
                 }
               }
             }}
-            placeholder="sendme receive ticket..."
+            placeholder={t('common:receiver.ticketPlaceholder')}
             className="p-3 rounded-md text-sm font-mono resize-none focus:outline-none focus:ring-2"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.1)',

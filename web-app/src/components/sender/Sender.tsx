@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog'
 import { useSender } from '../../hooks/useSender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 interface SenderProps {
   onTransferStateChange: (isSharing: boolean) => void
@@ -42,6 +43,8 @@ export function Sender({ onTransferStateChange }: SenderProps) {
     resetForNewTransfer
   } = useSender()
 
+  const { t } = useTranslation()
+
   useEffect(() => {
     onTransferStateChange(isSharing)
   }, [isSharing, onTransferStateChange])
@@ -54,10 +57,10 @@ export function Sender({ onTransferStateChange }: SenderProps) {
         <>
            <div className="text-center">
            <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-             Send
+             {t('common:sender.title')}
            </h2>
            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-           Share files or folders via encrypted peer-to-peer connections.
+           {t('common:sender.subtitle')}
            </p>
          </div>
         <div className="space-y-4 flex-1 flex flex-col">
@@ -79,7 +82,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
         <div className="flex-1 flex flex-col items-center justify-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent-light)' }} />
           <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            Stopping transmission...
+            {t('common:sender.stoppingTransmission')}
           </p>
         </div>
       ) : isCompleted && transferMetadata && !isTransporting ? (
@@ -127,7 +130,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={closeAlert}>
-              OK
+              {t('common:ok')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
