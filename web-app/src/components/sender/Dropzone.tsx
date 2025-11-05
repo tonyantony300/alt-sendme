@@ -1,5 +1,6 @@
 import { Upload, CheckCircle, ChevronRight, ChevronDown, Loader2 } from 'lucide-react'
 import type { DropzoneProps } from '../../types/sender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 export function Dropzone({ 
   isDragActive, 
@@ -9,6 +10,7 @@ export function Dropzone({
   isLoading, 
   onToggleFullPath 
 }: DropzoneProps) {
+  const { t } = useTranslation()
   const getDropzoneStyles = () => {
     const baseStyles = {
       border: '2px dashed',
@@ -53,18 +55,18 @@ export function Dropzone({
   }
 
   const getStatusText = () => {
-    if (isLoading) return 'Preparing for transport...'
-    if (isDragActive) return 'Drop files or folders here'
+    if (isLoading) return t('common:sender.preparingForTransport')
+    if (isDragActive) return t('common:sender.dropFilesHere')
     if (selectedPath) {
-      if (pathType === 'directory') return 'Folder selected'
-      if (pathType === 'file') return 'File selected'
-      return 'Item selected'
+      if (pathType === 'directory') return t('common:sender.folderSelected')
+      if (pathType === 'file') return t('common:sender.fileSelected')
+      return t('common:sender.itemSelected')
     }
-    return 'Drag & drop'
+    return t('common:sender.dragAndDrop')
   }
 
   const getSubText = () => {
-    if (isLoading) return 'Please wait while we process your files for sharing...'
+    if (isLoading) return t('common:sender.pleaseWaitProcessing')
     if (selectedPath) {
       return (
         <div>
@@ -93,7 +95,7 @@ export function Dropzone({
         </div>
       )
     }
-    return 'or browse to select files or folders'
+    return t('common:sender.orBrowse')
   }
 
   return (

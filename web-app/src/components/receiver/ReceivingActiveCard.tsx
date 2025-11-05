@@ -1,6 +1,7 @@
 import { Square } from 'lucide-react'
 import type { TransferProgress } from '../../types/sender'
 import { TransferProgressBar } from '../sender/TransferProgressBar'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 interface ReceivingActiveCardProps {
   isReceiving: boolean
@@ -19,6 +20,8 @@ export function ReceivingActiveCard({
   transferProgress,
   onStopReceiving 
 }: ReceivingActiveCardProps) {
+  const { t } = useTranslation()
+  
   const getStatusColor = () => {
     if (isCompleted) return 'rgb(45, 120, 220)'
     if (isTransporting) return 'rgba(37, 211, 101, 0.687)'
@@ -26,9 +29,9 @@ export function ReceivingActiveCard({
   }
 
   const getStatusText = () => {
-    if (isCompleted) return 'Download completed'
-    if (isTransporting) return 'Downloading in progress'
-    return 'Connecting to sender'
+    if (isCompleted) return t('common:receiver.downloadCompleted')
+    if (isTransporting) return t('common:receiver.downloadingInProgress')
+    return t('common:receiver.connectingToSender')
   }
 
 
@@ -53,7 +56,7 @@ export function ReceivingActiveCard({
       </div>
       
       <p className="text-xs text-center" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-        Keep this app open while downloading files
+        {t('common:receiver.keepAppOpen')}
       </p>
         
       {isTransporting && transferProgress && (

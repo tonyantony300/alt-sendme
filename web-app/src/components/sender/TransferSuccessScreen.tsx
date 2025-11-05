@@ -1,6 +1,7 @@
 import { CheckCircle, XCircle } from 'lucide-react'
 import type { SuccessScreenProps } from '../../types/sender'
 import { trackTransferComplete } from '../../lib/analytics'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -44,10 +45,11 @@ function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): numbe
 export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) {
   const wasStopped = metadata.wasStopped || false
   const isReceiver = !!metadata.downloadPath
+  const { t } = useTranslation()
   
   const handleDone = () => {
-    if (!wasStopped) {
-      trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
+    if (!wasStopped && !isReceiver) {
+      trackTransferComplete(metadata.fileSize, 'sender', metadata.duration)
     }
     onDone()
   }
@@ -74,13 +76,13 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
           className="text-2xl font-semibold mb-2"
           style={{ color: 'var(--app-main-view-fg)' }}
         >
-          {wasStopped ? 'Transmission Stopped' : 'Transfer Complete!'}
+          {wasStopped ? t('common:transfer.stopped') : t('common:transfer.complete')}
         </h2>
         <p 
           className="text-sm"
           style={{ color: 'rgba(255, 255, 255, 0.6)' }}
         >
-          {wasStopped ? 'The transmission was stopped before completion' : 'Your file has been successfully shared'}
+          {wasStopped ? t('common:transfer.wasStopped') : t('common:transfer.successMessage')}
         </p>
       </div>
       
@@ -94,7 +96,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              File:
+              {t('common:transfer.fileName')}:
             </span>
             <span 
               className="text-sm truncate max-w-full"
@@ -111,7 +113,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
                 className="text-sm font-medium mr-2"
                 style={{ color: 'rgba(255, 255, 255, 0.7)' }}
               >
-                Download path:
+                {t('common:transfer.downloadPath')}:
               </span>
               <span 
                 className="text-sm truncate max-w-full"
@@ -128,7 +130,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              Size:
+              {t('common:transfer.fileSize')}:
             </span>
             <span 
               className="text-sm"
@@ -178,7 +180,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
           color: 'var(--app-primary-fg)',
         }}
       >
-        Done
+        {t('common:transfer.done')}
       </button>
     </div>
   )

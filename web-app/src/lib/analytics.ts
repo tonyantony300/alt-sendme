@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'receiver'): void {
+export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'receiver', durationMs: number = 0): void {
   if (typeof window === 'undefined' || !window.goatcounter) {
     return
   }
@@ -33,8 +33,28 @@ export function trackTransferComplete(fileSizeBytes: number, role: 'sender' | 'r
       bucketSize = `${(sizeInMB / 1024).toFixed(1)}GB`
     }
     
+    let speedBucket = ''
+    if (durationMs > 0) {
+      const durationSeconds = durationMs / 1000
+      const speedBytesPerSecond = fileSizeBytes / durationSeconds
+      const speedMBps = speedBytesPerSecond / (1024 * 1024)
+      
+      if (speedMBps < 1) {
+        const speedKBps = speedBytesPerSecond / 1024
+        speedBucket = `${Math.round(speedKBps)}KBps`
+      } else if (speedMBps < 1024) {
+        speedBucket = `${Math.round(speedMBps)}MBps`
+      } else {
+        speedBucket = `${(speedMBps / 1024).toFixed(1)}GBps`
+      }
+    }
+    
+    const path = speedBucket 
+      ? `transfer-complete/${role}/${bucketSize}/${speedBucket}`
+      : `transfer-complete/${role}/${bucketSize}`
+    
     window.goatcounter.count({
-      path: `transfer-complete/${role}/${bucketSize}`,
+      path,
       allow_local: true,
     })
   } catch (error) {

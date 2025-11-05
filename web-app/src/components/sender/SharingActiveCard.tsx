@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Copy, CheckCircle, Square } from 'lucide-react'
 import type { SharingControlsProps, TicketDisplayProps } from '../../types/sender'
 import { TransferProgressBar } from './TransferProgressBar'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -45,6 +46,8 @@ export function SharingActiveCard({
   onCopyTicket, 
   onStopSharing 
 }: SharingControlsProps) {
+  const { t } = useTranslation()
+  
   const getStatusColor = () => {
     if (isCompleted) return 'rgb(45, 120, 220)'
     if (isTransporting) return 'rgba(37, 211, 101, 0.687)'
@@ -52,9 +55,9 @@ export function SharingActiveCard({
   }
 
   const getStatusText = () => {
-    if (isCompleted) return 'Transfer completed'
-    if (isTransporting) return 'Sharing in progress'
-    return 'Listening for connection'
+    if (isCompleted) return t('common:sender.transferCompleted')
+    if (isTransporting) return t('common:sender.sharingInProgress')
+    return t('common:sender.listeningForConnection')
   }
 
   const statusColor = getStatusColor()
@@ -129,7 +132,7 @@ export function SharingActiveCard({
     <div className="space-y-4">
       <div className="p-4 rounded-lg absolute top-0 left-0">
            <p className="text-xs mb-4 max-w-[30rem] truncate" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-          <strong className="mr-1">File:</strong> {selectedPath?.split('/').pop()}
+          <strong className="mr-1">{t('common:sender.fileLabel')}</strong> {selectedPath?.split('/').pop()}
         </p>
         
         <div className="flex items-center mb-2">
@@ -147,7 +150,7 @@ export function SharingActiveCard({
       </div>
       
       <p className="text-xs text-center" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-          Keep this app open while others download your files
+          {t('common:sender.keepAppOpen')}
         </p>
         
       {!isTransporting && ticket && (
@@ -163,10 +166,10 @@ export function SharingActiveCard({
           <div className="space-y-3">
             <div className="text-center">
               <p className="text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                Files are being transmitted
+                {t('common:sender.filesBeingTransmitted')}
               </p>
               <p className="text-xs mb-1" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                Speed: {formatSpeedNoDecimals(calculatedSpeed)}
+                {t('common:transfer.speed')}: {formatSpeedNoDecimals(calculatedSpeed)}
               </p>
               <p 
                 className="text-xs" 
@@ -207,10 +210,12 @@ export function SharingActiveCard({
 }
 
 export function TicketDisplay({ ticket, copySuccess, onCopyTicket }: TicketDisplayProps) {
+  const { t } = useTranslation()
+  
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium" style={{ color: 'var(--app-main-view-fg)' }}>
-        Share this ticket:
+        {t('common:sender.shareThisTicket')}
       </label>
       <div className="flex gap-2">
         <input
@@ -232,13 +237,13 @@ export function TicketDisplay({ ticket, copySuccess, onCopyTicket }: TicketDispl
             border: '1px solid rgba(255, 255, 255, 0.2)',
             color: copySuccess ? 'var(--app-primary-fg)' : 'var(--app-main-view-fg)',
           }}
-          title="Copy to clipboard"
+          title={t('common:sender.copyToClipboard')}
         >
           {copySuccess ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </button>
       </div>
       <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-        Send this ticket to the person who wants to receive your file
+        {t('common:sender.sendThisTicket')}
       </p>
     </div>
   )

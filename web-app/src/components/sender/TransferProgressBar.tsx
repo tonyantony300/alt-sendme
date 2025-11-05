@@ -1,4 +1,5 @@
 import type { TransferProgress } from '../../types/sender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 interface TransferProgressBarProps {
   progress: TransferProgress
@@ -18,6 +19,7 @@ export function formatSpeed(speedBps: number): string {
 export function TransferProgressBar({ progress }: TransferProgressBarProps) {
   const { percentage } = progress
   const barCount = 30
+  const { t } = useTranslation()
   
   const filledBars = Math.floor((percentage / 100) * barCount)
 
@@ -25,7 +27,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
     <div className="space-y-3">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-          <span>Transfer Progress</span>
+          <span>{t('common:transfer.progress')}</span>
           <span>{percentage.toFixed(1)}%</span>
         </div>
         
@@ -65,7 +67,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
         </div>
 
         <div className="flex items-center justify-between text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          <span>Speed: {formatSpeed(progress.speedBps)}</span>
+          <span>{t('common:transfer.speed')}: {formatSpeed(progress.speedBps)}</span>
           <span>
             {(progress.bytesTransferred / (1024 * 1024)).toFixed(2)} MB / {(progress.totalBytes / (1024 * 1024)).toFixed(2)} MB
           </span>

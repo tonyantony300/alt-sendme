@@ -4,13 +4,16 @@ import { Sender } from './components/sender/Sender'
 import { Receiver } from './components/receiver/Receiver'
 import { TitleBar } from './components/TitleBar'
 import { VERSION_DISPLAY } from './lib/version'
+import { TranslationProvider } from './i18n'
+import { useTranslation } from './i18n/react-i18next-compat'
+import { LanguageSwitcher } from './components/LanguageSwitcher'
 
-function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
   const [isSharing, setIsSharing] = useState(false)
   const [isReceiving, setIsReceiving] = useState(false)
   const isInitialRender = useRef(false)
-
+  const { t } = useTranslation()
 
   useEffect(() => {
       isInitialRender.current = true
@@ -18,7 +21,7 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col relative glass-background select-none" style={{ color: 'var(--app-bg-fg)' }}>
-      {IS_LINUX && <TitleBar title="ALT-SENDME" />}
+      {IS_LINUX && <TitleBar title={t('common:appTitle')} />}
       
       {IS_MACOS && (
         <div 
@@ -33,7 +36,7 @@ function App() {
             className="text-3xl font-bold font-mono text-center mb-8 select-none [@media(min-height:680px)]:block hidden" 
             style={{ color: 'var(--app-bg-fg)' }}
           >
-            ALT-SENDME
+            {t('common:appTitle')}
           </h1>
           
           <div 
@@ -72,7 +75,7 @@ function App() {
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
             >
-              Send
+              {t('common:send')}
             </motion.button>
             <motion.button
               onClick={() => setActiveTab('receive')}
@@ -89,7 +92,7 @@ function App() {
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
             >
-              Receive
+              {t('common:receive')}
             </motion.button>
           </div>
           
@@ -121,8 +124,21 @@ function App() {
           </div>
         </div>
       </div>
-      <div className="w-full h-10 text-center text-xs flex items-center justify-center"><span>{VERSION_DISPLAY}</span></div>
+      <div className="w-full h-10 text-center text-xs flex items-center justify-center relative">
+        <span>{VERSION_DISPLAY}</span>
+        <div className="absolute right-4 bottom-2">
+          <LanguageSwitcher />
+        </div>
+      </div>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <TranslationProvider>
+      <AppContent />
+    </TranslationProvider>
   )
 }
 

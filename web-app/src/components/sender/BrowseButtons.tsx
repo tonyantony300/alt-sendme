@@ -1,10 +1,13 @@
 import type { BrowseButtonsProps } from '../../types/sender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 
 export function BrowseButtons({ 
   isLoading, 
   onBrowseFile, 
   onBrowseFolder 
 }: BrowseButtonsProps) {
+  const { t } = useTranslation()
+  
   return (
     <div className="flex gap-3 justify-center">
       <button
@@ -20,7 +23,7 @@ export function BrowseButtons({
           border: '1px solid var(--app-accent)',
         }}
       >
-        {isLoading ? 'Loading...' : 'Browse File'}
+        {isLoading ? t('common:loading') : t('common:sender.browseFile')}
       </button>
       <button
         onClick={(e) => {
@@ -35,7 +38,7 @@ export function BrowseButtons({
           border: '1px solid var(--app-accent)',
         }}
       >
-        {isLoading ? 'Loading...' : 'Browse Folder'}
+        {isLoading ? t('common:loading') : t('common:sender.browseFolder')}
       </button>
     </div>
   )
