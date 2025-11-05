@@ -48,8 +48,8 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
   const { t } = useTranslation()
   
   const handleDone = () => {
-    if (!wasStopped) {
-      trackTransferComplete(metadata.fileSize, isReceiver ? 'receiver' : 'sender')
+    if (!wasStopped && !isReceiver) {
+      trackTransferComplete(metadata.fileSize, 'sender', metadata.duration)
     }
     onDone()
   }
