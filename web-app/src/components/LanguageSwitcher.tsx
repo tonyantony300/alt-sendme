@@ -5,6 +5,11 @@ import { ChevronDown } from 'lucide-react'
 const LANGUAGES = [
   { value: 'en', label: 'English' },
   { value: 'fr', label: 'Français' },
+  { value: 'th', label: 'ไทย' },
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'zh-TW', label: '繁體中文' },
+  { value: 'de', label: 'Deutsch' },
+  { value: 'ja', label: '日本語' },
 ]
 
 export function LanguageSwitcher() {
@@ -17,11 +22,9 @@ export function LanguageSwitcher() {
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng)
     setIsOpen(false)
-    // Trigger a re-render by dispatching a custom event
     window.dispatchEvent(new Event('languagechange'))
   }
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -56,7 +59,7 @@ export function LanguageSwitcher() {
           size={12} 
           className="transition-transform"
           style={{ 
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transform: isOpen ? 'rotate(0deg)' : 'rotate(180deg)',
           }}
         />
       </button>
