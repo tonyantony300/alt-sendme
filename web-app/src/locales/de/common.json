@@ -5,6 +5,7 @@
   "ok": "OK",
   "loading": "Wird geladen...",
   "browse": "Durchsuchen",
+  "reportIssue": "Problem melden",
   "sender": {
     "title": "Senden",
     "subtitle": "Dateien oder Ordner über verschlüsselte Peer-to-Peer-Verbindungen teilen.",

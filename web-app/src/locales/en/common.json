@@ -5,6 +5,7 @@
   "ok": "OK",
   "loading": "Loading...",
   "browse": "Browse",
+  "reportIssue": "Report Issue",
   "sender": {
     "title": "Send",
     "subtitle": "Share files or folders via encrypted peer-to-peer connections.",

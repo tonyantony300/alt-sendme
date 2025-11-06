@@ -5,6 +5,7 @@
   "ok": "确定",
   "loading": "加载中...",
   "browse": "浏览",
+  "reportIssue": "报告问题",
   "sender": {
     "title": "发送",
     "subtitle": "通过加密的点对点连接共享文件或文件夹。",

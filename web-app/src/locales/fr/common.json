@@ -5,6 +5,7 @@
   "ok": "OK",
   "loading": "Chargement...",
   "browse": "Parcourir",
+  "reportIssue": "Signaler un problème",
   "sender": {
     "title": "Envoyer",
     "subtitle": "Partagez des fichiers ou dossiers via des connexions pair-à-pair chiffrées.",

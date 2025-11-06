@@ -7,6 +7,7 @@ import { VERSION_DISPLAY } from './lib/version'
 import { TranslationProvider } from './i18n'
 import { useTranslation } from './i18n/react-i18next-compat'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
+import { openUrl } from '@tauri-apps/plugin-opener'
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
@@ -126,6 +127,25 @@ function AppContent() {
       </div>
       <div className="w-full h-10 text-center text-xs flex items-center justify-center relative">
         <span>{VERSION_DISPLAY}</span>
+        <button
+          onClick={async () => {
+            try {
+              await openUrl('https://github.com/tonyantony300/alt-sendme/issues/new')
+            } catch (error) {
+              console.error('Failed to open URL:', error)
+            }
+          }}
+          className="absolute left-6 bottom-2 px-2 py-1 text-xs transition-colors hover:opacity-80"
+          style={{
+            color: 'var(--app-main-view-fg)',
+            textDecoration: 'underline',
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          {t('reportIssue')}
+        </button>
         <div className="absolute right-4 bottom-2">
           <LanguageSwitcher />
         </div>
