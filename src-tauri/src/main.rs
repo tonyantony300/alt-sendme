@@ -10,6 +10,9 @@ use state::AppState;
 use std::sync::Arc;
 use std::fs;
 
+#[cfg(target_os = "linux")]
+use tauri::Manager;
+
 /// Clean up any orphaned .sendme-* directories from previous runs
 /// Scans both current_dir and temp_dir to handle transition and legacy directories
 fn cleanup_orphaned_directories() {
