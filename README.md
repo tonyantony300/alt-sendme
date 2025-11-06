@@ -24,6 +24,7 @@ optionally **interoperable** with [Sendme](https://www.iroh.computer/sendme) CLI
 
 [How it connects remote devices](https://www.iroh.computer/docs/faq)
 
+[![Hire developer](https://img.shields.io/badge/%20Hire%20developer-30363D?style=for-the-badge)](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
 ## Supported Languages
 
 
