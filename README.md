@@ -1,10 +1,7 @@
 # Send files anywhere - Frictionless, Fast, Private, Unlimited and Free
 
 ![AltSendme Demo](assets/animation.gif)
-
-[![Report speeds](https://img.shields.io/badge/⚡%20Report%20speeds-30363D?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLSfdfBh9neAu3_lg3lC0xwwaEmfLrVSMDeVbzBkwBW0m2s23hg/viewform)
-[![Give feedback](https://img.shields.io/badge/💡%20Give%20feedback-30363D?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLScpzdmmkl2zxbq9RXFtojlALQGAaNgcut4VX6cAnf46RElsSg/viewform?usp=dialog)
-[![Subscribe to receive updates via email](https://img.shields.io/badge/🔔%20receive%20updates-30363D?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLSdZ_YjMNTm5jvJ_eKjcTafecCUbNel8OD_lDAXnu4uPfr2mSw/viewform?usp=publish-editor)
+[![Give feedback](https://img.shields.io/badge/💡%20feedback-30363D?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLScpzdmmkl2zxbq9RXFtojlALQGAaNgcut4VX6cAnf46RElsSg/viewform?usp=dialog)
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
 
 AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
