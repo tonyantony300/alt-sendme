@@ -9,7 +9,8 @@ const LANGUAGES = [
   { value: 'zh-CN', label: '简体中文' },
   { value: 'de', label: 'Deutsch' },
   { value: 'ja', label: '日本語' },
-  { value: 'th', label: 'Thai' }
+  { value: 'th', label: 'Thai' },
+  { value: 'it', label: 'Italiano' },
 ]
 
 export function LanguageSwitcher() {
