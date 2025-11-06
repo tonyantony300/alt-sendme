@@ -2,12 +2,12 @@
 name = "sendme"
 version = "0.29.0"
 edition = "2021"
-authors = ["Rüdiger Klaehn <rklaehn@protonmail.com>", "n0 team"]
+authors = ["Tony Antony <tonyantony300@gmail.com>"]
 keywords = ["scp", "sftp", "network", "p2p", "holepunching"]
 categories = ["network-programming"]
-license = "Apache-2.0 OR MIT"
-repository = "https://github.com/n0-computer/sendme"
-description = "A cli tool to send directories over the network, with NAT hole punching"
+license = "AGPL-3.0"
+repository = "https://github.com/tonyantony300/alt-sendme"
+description = "AltSendme - Frictionless peer-to-peer file transfer desktop application with NAT hole punching"
 readme = "README.md"
 
 # Sadly this also needs to be updated in .github/workflows/ci.yml
