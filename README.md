@@ -130,7 +130,7 @@ If you want to contribute or run the app from source:
 2. **Run the desktop app**:
    ```bash
    cd src-tauri
-   cargo tauri dev
+   cargo run tauri dev
    ```
 
 This will start the app with hot reload enabled for both frontend and backend changes.
@@ -140,7 +140,7 @@ This will start the app with hot reload enabled for both frontend and backend ch
 
    ```bash
    cd src-tauri
-   cargo tauri build --no-bundle
+   cargo run tauri build --no-bundle
    ```
 
 
