@@ -1,6 +1,6 @@
 [package]
 name = "alt-sendme"
-version = "0.1.4"
+version = "0.1.5"
 description = "Desktop version of sendme - P2P file sharing with NAT hole punching"
 authors = ["Sendme Team"]
 license = "Apache-2.0 OR MIT"

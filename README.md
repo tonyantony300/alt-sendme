@@ -45,27 +45,27 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_x64-setup_windows.exe'>AltSendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.5/AltSendme_0.1.5_x64-setup_windows.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
     <td><b>Windows - MSI</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_x64_en-US_windows.msi'>AltSendme.msi</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.5/AltSendme_0.1.5_x64_en-US_windows.msi'>AltSendme.msi</a></td>
   </tr>
   <tr>
     <td><b>macOS* - Apple sillicon</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_aarch64_darwin.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.5/AltSendme_0.1.5_aarch64_darwin.dmg'>AltSendme.dmg</a></td>
   </tr>
    <tr>
     <td><b>macOS* -Intel x86_64</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_x64_darwin.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.5/AltSendme_0.1.5_x64_darwin.dmg'>AltSendme.dmg</a></td>
   </tr>
   <tr>
     <td><b>Linux (deb)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_amd64_linux.deb'>AltSendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.5/AltSendme_0.1.5_amd64_linux.deb'>AltSendme.deb</a></td>
   </tr>
   <tr>
     <td><b>Linux (AppImage)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.4/AltSendme_0.1.4_amd64_linux.AppImage'>AltSendme.AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.1.5/AltSendme_0.1.5_amd64_linux.AppImage'>AltSendme.AppImage</a></td>
   </tr>
 </table>
 
