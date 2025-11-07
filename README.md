@@ -138,9 +138,18 @@ This will start the app with hot reload enabled for both frontend and backend ch
 
 ### Building Locally
 
+
+ 1. **Build stage**:
    ```bash
    cd src-tauri
    cargo tauri build --no-bundle
+   ```
+ 2. **Run**:
+
+  ```bash
+   cd src-tauri/target/release
+   ./alt-sendme        # macOS or Linux
+   alt-sendme.exe      # Windows
    ```
 
 
