@@ -52,6 +52,7 @@ export function useSender(): UseSenderReturn {
     let unlistenProgress: UnlistenFn | undefined
     let unlistenComplete: UnlistenFn | undefined
     let unlistenFailed: UnlistenFn | undefined
+    let progressUpdateTimeout: NodeJS.Timeout | undefined
 
     const setupListeners = async () => {
       unlistenStart = await listen('transfer-started', () => {
@@ -76,12 +77,18 @@ export function useSender(): UseSenderReturn {
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
-            setTransferProgress({
-              bytesTransferred,
-              totalBytes,
-              speedBps,
-              percentage
-            })
+            if (progressUpdateTimeout) {
+              clearTimeout(progressUpdateTimeout)
+            }
+            
+            progressUpdateTimeout = setTimeout(() => {
+              setTransferProgress({
+                bytesTransferred,
+                totalBytes,
+                speedBps,
+                percentage
+              })
+            }, 100)
           }
         } catch (error) {
           console.error('Failed to parse progress event:', error)
@@ -91,6 +98,10 @@ export function useSender(): UseSenderReturn {
       unlistenComplete = await listen('transfer-completed', async () => {
         if (wasManuallyStoppedRef.current) {
           return
+        }
+        
+        if (progressUpdateTimeout) {
+          clearTimeout(progressUpdateTimeout)
         }
         
         setIsTransporting(false)
@@ -132,6 +143,10 @@ export function useSender(): UseSenderReturn {
           return
         }
         
+        if (progressUpdateTimeout) {
+          clearTimeout(progressUpdateTimeout)
+        }
+        
         setIsTransporting(false)
         setIsCompleted(true)
         setTransferProgress(null)
@@ -159,6 +174,9 @@ export function useSender(): UseSenderReturn {
     })
 
     return () => {
+      if (progressUpdateTimeout) {
+        clearTimeout(progressUpdateTimeout)
+      }
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
       if (unlistenComplete) unlistenComplete()

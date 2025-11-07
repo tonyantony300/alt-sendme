@@ -81,6 +81,7 @@ export function useReceiver(): UseReceiverReturn {
     let unlistenProgress: UnlistenFn | undefined
     let unlistenComplete: UnlistenFn | undefined
     let unlistenFileNames: UnlistenFn | undefined
+    let progressUpdateTimeout: NodeJS.Timeout | undefined
 
     const setupListeners = async () => {
       unlistenStart = await listen('receive-started', () => {
@@ -102,12 +103,18 @@ export function useReceiver(): UseReceiverReturn {
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
-            setTransferProgress({
-              bytesTransferred,
-              totalBytes,
-              speedBps,
-              percentage
-            })
+            if (progressUpdateTimeout) {
+              clearTimeout(progressUpdateTimeout)
+            }
+            
+            progressUpdateTimeout = setTimeout(() => {
+              setTransferProgress({
+                bytesTransferred,
+                totalBytes,
+                speedBps,
+                percentage
+              })
+            }, 100)
           }
         } catch (error) {
           console.error('Failed to parse progress event:', error)
@@ -127,6 +134,10 @@ export function useReceiver(): UseReceiverReturn {
       })
 
       unlistenComplete = await listen('receive-completed', () => {
+        if (progressUpdateTimeout) {
+          clearTimeout(progressUpdateTimeout)
+        }
+        
         setIsTransporting(false)
         setIsCompleted(true)
         setTransferProgress(null)
@@ -169,6 +180,9 @@ export function useReceiver(): UseReceiverReturn {
     })
 
     return () => {
+      if (progressUpdateTimeout) {
+        clearTimeout(progressUpdateTimeout)
+      }
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
       if (unlistenComplete) unlistenComplete()

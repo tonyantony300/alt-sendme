@@ -317,11 +317,11 @@ async fn show_provide_progress_with_logging(
     
     let mut tasks = FuturesUnordered::new();
     
-    // Track transfer state per request
     #[derive(Clone)]
     struct TransferState {
         start_time: Instant,
         total_size: u64,
+        last_emit_time: Instant,
     }
     
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> = 
@@ -357,12 +357,13 @@ async fn show_provide_progress_with_logging(
                                 match update {
                                     iroh_blobs::provider::events::RequestUpdate::Started(_m) => {
                                         if !transfer_started {
-                                            // Store transfer state with the total file size, not individual blob size
+                                            let now = Instant::now();
                                             transfer_states_task.lock().await.insert(
                                                 (connection_id, request_id),
                                                 TransferState {
-                                                    start_time: Instant::now(),
+                                                    start_time: now,
                                                     total_size: total_file_size,
+                                                    last_emit_time: now,
                                                 }
                                             );
                                             emit_event(&app_handle_task, "transfer-started");
@@ -375,26 +376,40 @@ async fn show_provide_progress_with_logging(
                                             transfer_started = true;
                                         }
                                         
-                                        // Emit progress event with speed calculation
-                                        if let Some(state) = transfer_states_task.lock().await.get(&(connection_id, request_id)) {
-                                            let elapsed = state.start_time.elapsed().as_secs_f64();
-                                            let speed_bps = if elapsed > 0.0 {
-                                                m.end_offset as f64 / elapsed
+                                        let emission_data = {
+                                            let mut states = transfer_states_task.lock().await;
+                                            if let Some(state) = states.get_mut(&(connection_id, request_id)) {
+                                                let now = Instant::now();
+                                                let time_since_last = now.duration_since(state.last_emit_time);
+                                                
+                                                if time_since_last >= Duration::from_millis(250) {
+                                                    state.last_emit_time = now;
+                                                    
+                                                    let elapsed = state.start_time.elapsed().as_secs_f64();
+                                                    let speed_bps = if elapsed > 0.0 {
+                                                        m.end_offset as f64 / elapsed
+                                                    } else {
+                                                        0.0
+                                                    };
+                                                    
+                                                    Some((m.end_offset, state.total_size, speed_bps))
+                                                } else {
+                                                    None
+                                                }
                                             } else {
-                                                0.0
-                                            };
-                                            
-                                            emit_progress_event(
-                                                &app_handle_task,
-                                                m.end_offset,
-                                                state.total_size,
-                                                speed_bps
-                                            );
+                                                None
+                                            }
+                                        };
+                                        
+                                        if let Some((end_offset, total_size, speed_bps)) = emission_data {
+                                            let app_handle_clone = app_handle_task.clone();
+                                            tokio::spawn(async move {
+                                                emit_progress_event(&app_handle_clone, end_offset, total_size, speed_bps);
+                                            });
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         if transfer_started {
-                                            // Clean up state
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             emit_event(&app_handle_task, "transfer-completed");
                                         }
@@ -403,7 +418,6 @@ async fn show_provide_progress_with_logging(
                                         tracing::warn!("Request aborted: conn {} req {}", 
                                             connection_id, request_id);
                                         if transfer_started {
-                                            // Clean up state
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             emit_event(&app_handle_task, "transfer-failed");
                                         }
