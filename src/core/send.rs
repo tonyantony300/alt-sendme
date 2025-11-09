@@ -317,7 +317,6 @@ async fn show_provide_progress_with_logging(
     
     let mut tasks = FuturesUnordered::new();
     
-    // Track transfer state per request
     #[derive(Clone)]
     struct TransferState {
         start_time: Instant,
@@ -357,7 +356,6 @@ async fn show_provide_progress_with_logging(
                                 match update {
                                     iroh_blobs::provider::events::RequestUpdate::Started(_m) => {
                                         if !transfer_started {
-                                            // Store transfer state with the total file size, not individual blob size
                                             transfer_states_task.lock().await.insert(
                                                 (connection_id, request_id),
                                                 TransferState {
@@ -375,7 +373,7 @@ async fn show_provide_progress_with_logging(
                                             transfer_started = true;
                                         }
                                         
-                                        // Emit progress event with speed calculation
+                                        // Get state and emit progress directly (no throttling)
                                         if let Some(state) = transfer_states_task.lock().await.get(&(connection_id, request_id)) {
                                             let elapsed = state.start_time.elapsed().as_secs_f64();
                                             let speed_bps = if elapsed > 0.0 {
@@ -384,17 +382,11 @@ async fn show_provide_progress_with_logging(
                                                 0.0
                                             };
                                             
-                                            emit_progress_event(
-                                                &app_handle_task,
-                                                m.end_offset,
-                                                state.total_size,
-                                                speed_bps
-                                            );
+                                            emit_progress_event(&app_handle_task, m.end_offset, state.total_size, speed_bps);
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         if transfer_started {
-                                            // Clean up state
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             emit_event(&app_handle_task, "transfer-completed");
                                         }
@@ -403,7 +395,6 @@ async fn show_provide_progress_with_logging(
                                         tracing::warn!("Request aborted: conn {} req {}", 
                                             connection_id, request_id);
                                         if transfer_started {
-                                            // Clean up state
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             emit_event(&app_handle_task, "transfer-failed");
                                         }
