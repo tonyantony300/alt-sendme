@@ -140,10 +140,6 @@ export function useSender(): UseSenderReturn {
         // Small delay to ensure state commit
         await new Promise(resolve => setTimeout(resolve, 10))
         
-        setIsTransporting(false)
-        setIsCompleted(true)
-        setTransferProgress(null)
-        
         const endTime = Date.now()
         const duration = transferStartTimeRef.current 
           ? endTime - transferStartTimeRef.current 
@@ -151,9 +147,27 @@ export function useSender(): UseSenderReturn {
         
         const currentPath = selectedPathRef.current
         if (currentPath) {
+          const fileName = currentPath.split('/').pop() || 'Unknown'
+          // Use fileSize from progress if available, otherwise 0 (will be updated async)
+          const estimatedFileSize = latestProgressRef.current?.totalBytes || 0
+          
+          // Set metadata FIRST (before state changes) to prevent flash
+          setTransferMetadata({ 
+            fileName, 
+            fileSize: estimatedFileSize, 
+            duration, 
+            startTime: transferStartTimeRef.current || endTime, 
+            endTime 
+          })
+          
+          // Now update state - success screen condition will be met immediately
+          setIsTransporting(false)
+          setIsCompleted(true)
+          setTransferProgress(null)
+          
+          // Update metadata with accurate file size if we can get it
           try {
             const fileSize = await invoke<number>('get_file_size', { path: currentPath })
-            const fileName = currentPath.split('/').pop() || 'Unknown'
             setTransferMetadata({ 
               fileName, 
               fileSize, 
@@ -163,15 +177,13 @@ export function useSender(): UseSenderReturn {
             })
           } catch (error) {
             console.error('Failed to get file size:', error)
-            const fileName = currentPath.split('/').pop() || 'Unknown'
-            setTransferMetadata({ 
-              fileName, 
-              fileSize: 0, 
-              duration, 
-              startTime: transferStartTimeRef.current || endTime, 
-              endTime 
-            })
+            // Keep the estimated file size we already set
           }
+        } else {
+          // No path - just update state
+          setIsTransporting(false)
+          setIsCompleted(true)
+          setTransferProgress(null)
         }
       })
 
