@@ -65,7 +65,23 @@
     "successMessage": "Ваша передача была успешно завершена.",
     "fileName": "Имя файла",
     "fileSize": "Размер файла",
-    "downloadPath": "Путь для скачивания"
+    "downloadPath": "Путь для скачивания",
+    "duration": "Длительность",
+    "avgSpeed": "Средняя скорость"
+  },
+  "errors": {
+    "sharingFailed": "Ошибка передачи",
+    "sharingFailedDesc": "Не удалось начать передачу",
+    "stopSharingFailed": "Ошибка остановки передачи",
+    "stopSharingFailedDesc": "Не удалось остановить передачу",
+    "copyFailed": "Ошибка копирования",
+    "copyFailedDesc": "Не удалось скопировать тикет",
+    "folderDialogFailed": "Ошибка диалога папки",
+    "folderDialogFailedDesc": "Не удалось открыть диалог выбора папки",
+    "fileDialogFailed": "Ошибка диалога файла",
+    "fileDialogFailedDesc": "Не удалось открыть диалог выбора файла",
+    "receiveFailed": "Ошибка получения",
+    "receiveFailedDesc": "Не удалось получить файл"
   }
 }
 
