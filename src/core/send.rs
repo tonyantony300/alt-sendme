@@ -29,7 +29,6 @@ use tracing::trace;
 use walkdir::WalkDir;
 use n0_future::StreamExt;
 
-// Helper function to emit events through the app handle
 fn emit_event(app_handle: &AppHandle, event_name: &str) {
     if let Some(handle) = app_handle {
         if let Err(e) = handle.emit_event(event_name) {
@@ -38,19 +37,14 @@ fn emit_event(app_handle: &AppHandle, event_name: &str) {
     }
 }
 
-// Helper function to emit progress events with payload
 fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_bytes: u64, speed_bps: f64) {
     if let Some(handle) = app_handle {
-        // Use a consistent event name
         let event_name = "transfer-progress";
         
-        // Convert speed to integer (multiply by 1000 to preserve 3 decimal places)
         let speed_int = (speed_bps * 1000.0) as i64;
         
-        // Create payload data as colon-separated string
         let payload = format!("{}:{}:{}", bytes_transferred, total_bytes, speed_int);
         
-        // Emit the event with proper payload
         if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
             tracing::warn!("Failed to emit progress event: {}", e);
         }
@@ -60,7 +54,6 @@ fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_byt
 pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHandle) -> anyhow::Result<SendResult> {
     let secret_key = get_or_create_secret()?;
     
-    // create a magicsocket endpoint
     let relay_mode: RelayMode = options.relay_mode.clone().into();
     
     let mut builder = Endpoint::builder()
@@ -78,8 +71,6 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         builder = builder.bind_addr_v6(addr);
     }
 
-    // Use system temp directory instead of current_dir for GUI app
-    // This avoids polluting user directories and OS manages cleanup automatically
     let suffix = rand::rng().random::<[u8; 16]>();
     let temp_base = std::env::temp_dir();
     let blobs_data_dir = temp_base.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
@@ -89,8 +80,6 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
             temp_base.display(),
         );
     }
-    // todo: remove this as soon as we have a mem store that does not require a temp dir
-    // Verify the path being shared is not the current directory
     let cwd = std::env::current_dir()?;
     if cwd.join(&path) == cwd {
         anyhow::bail!("can not share from the current directory");
@@ -124,19 +113,17 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         let import_result = import(path2, blobs.store()).await?;
         let dt = t0.elapsed();
 
-        // Start the progress handler with the total file size
         let (ref _temp_tag, size, ref _collection) = import_result;
         let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
             progress_rx,
             app_handle_clone,
-            size, // Pass the total file size
+            size,
         ));
 
         let router = iroh::protocol::Router::builder(endpoint)
             .accept(iroh_blobs::ALPN, blobs.clone())
             .spawn();
 
-        // wait for the endpoint to figure out its address before making a ticket
         let ep = router.endpoint();
         tokio::time::timeout(Duration::from_secs(30), async move {
             if !matches!(relay_mode, RelayMode::Disabled) {
@@ -156,7 +143,6 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     };
     let hash = temp_tag.hash();
 
-    // make a ticket
     let mut addr = router.endpoint().node_addr();
     
     apply_options(&mut addr, options.ticket_type);
@@ -164,17 +150,16 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     let ticket = BlobTicket::new(addr, hash, BlobFormat::HashSeq);
     let entry_type = if path.is_file() { "file" } else { "directory" };
 
-    // Return the result - CRITICAL: Keep router, temp_tag, store, and progress_handle alive
     Ok(SendResult {
         ticket: ticket.to_string(),
         hash: hash.to_hex().to_string(),
         size,
         entry_type: entry_type.to_string(),
-        router,           // Keeps server running and protocols active
-        temp_tag,         // Prevents data GC
-        blobs_data_dir,   // For cleanup
-        _progress_handle: AbortOnDropHandle::new(progress_handle), // Keeps event channel open
-        _store: store,    // Keeps blob storage alive
+        router,
+        temp_tag,
+        blobs_data_dir,
+        _progress_handle: AbortOnDropHandle::new(progress_handle),
+        _store: store,
     })
 }
 
@@ -186,15 +171,11 @@ async fn import(
     let path = path.canonicalize()?;
     anyhow::ensure!(path.exists(), "path {} does not exist", path.display());
     let root = path.parent().context("context get parent")?;
-    // walkdir also works for files, so we don't need to special case them
     let files = WalkDir::new(path.clone()).into_iter();
-    // flatten the directory structure into a list of (name, path) pairs.
-    // ignore symlinks.
     let data_sources: Vec<(String, PathBuf)> = files
         .map(|entry| {
             let entry = entry?;
             if !entry.file_type().is_file() {
-                // Skip symlinks. Directories are handled by WalkDir.
                 return Ok(None);
             }
             let path = entry.into_path();
@@ -205,7 +186,6 @@ async fn import(
         .filter_map(Result::transpose)
         .collect::<anyhow::Result<Vec<_>>>()?;
     
-    // import all the files, using num_cpus workers, return names and temp tags
     let mut names_and_tags = n0_future::stream::iter(data_sources)
         .map(|(name, path)| {
             let db = db.clone();
@@ -228,13 +208,10 @@ async fn import(
                             item_size = size;
                         }
                         iroh_blobs::api::blobs::AddProgressItem::CopyProgress(_) => {
-                            // Skip progress updates for library version
                         }
                         iroh_blobs::api::blobs::AddProgressItem::CopyDone => {
-                            // Skip progress updates for library version
                         }
                         iroh_blobs::api::blobs::AddProgressItem::OutboardProgress(_) => {
-                            // Skip progress updates for library version
                         }
                         iroh_blobs::api::blobs::AddProgressItem::Error(cause) => {
                             anyhow::bail!("error importing {}: {}", name, cause);
@@ -254,17 +231,12 @@ async fn import(
         .collect::<anyhow::Result<Vec<_>>>()?;
     
     names_and_tags.sort_by(|(a, _, _), (b, _, _)| a.cmp(b));
-    // total size of all files
     let size = names_and_tags.iter().map(|(_, _, size)| *size).sum::<u64>();
-    // collect the (name, hash) tuples into a collection
-    // we must also keep the tags around so the data does not get gced.
     let (collection, tags) = names_and_tags
         .into_iter()
         .map(|(name, tag, _)| ((name, tag.hash()), tag))
         .unzip::<_, _, Collection, Vec<_>>();
     let temp_tag = collection.clone().store(db).await?;
-    // now that the collection is stored, we can drop the tags
-    // data is protected by the collection
     drop(tags);
     Ok((temp_tag, size, collection))
 }
@@ -327,7 +299,6 @@ async fn show_provide_progress_with_logging(
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> = 
         Arc::new(Mutex::new(std::collections::HashMap::new()));
     
-    // Track active and completed requests for proper completion signaling
     let active_requests = Arc::new(AtomicUsize::new(0));
     let completed_requests = Arc::new(AtomicUsize::new(0));
     let has_emitted_started = Arc::new(std::sync::atomic::AtomicBool::new(false));
@@ -351,14 +322,11 @@ async fn show_provide_progress_with_logging(
                         let connection_id = msg.connection_id;
                         let request_id = msg.request_id;
                         
-                        // Increment active request count
                         active_requests.fetch_add(1, Ordering::SeqCst);
                         
-                        // Update last request time to prevent premature completion
                         let mut last_time = last_request_time.lock().await;
                         *last_time = Some(Instant::now());
                         
-                        // Clone app_handle and state for the task
                         let app_handle_task = app_handle.clone();
                         let transfer_states_task = transfer_states.clone();
                         let active_requests_task = active_requests.clone();
@@ -367,7 +335,6 @@ async fn show_provide_progress_with_logging(
                         let has_any_transfer_task = has_any_transfer.clone();
                         let last_request_time_task = last_request_time.clone();
                         
-                        // Spawn a task to monitor this request
                         let mut rx = msg.rx;
                         tasks.push(async move {
                             let mut transfer_started = false;
@@ -385,7 +352,6 @@ async fn show_provide_progress_with_logging(
                                                 }
                                             );
                                             
-                                            // Only emit transfer-started once for the entire session
                                             if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
                                                 emit_event(&app_handle_task, "transfer-started");
                                             }
@@ -396,7 +362,6 @@ async fn show_provide_progress_with_logging(
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
                                         if !transfer_started {
-                                            // Fallback: emit started if we get progress without Started event
                                             if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
                                                 emit_event(&app_handle_task, "transfer-started");
                                             }
@@ -404,7 +369,6 @@ async fn show_provide_progress_with_logging(
                                             has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
                                         
-                                        // Get state and emit progress directly (no throttling)
                                         if let Some(state) = transfer_states_task.lock().await.get(&(connection_id, request_id)) {
                                             let elapsed = state.start_time.elapsed().as_secs_f64();
                                             let speed_bps = if elapsed > 0.0 {
@@ -421,35 +385,24 @@ async fn show_provide_progress_with_logging(
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             request_completed = true;
                                             
-                                            // Increment completed count
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                             let active = active_requests_task.load(Ordering::SeqCst);
                                             
-                                            // Only emit completion if:
-                                            // 1. All requests are completed
-                                            // 2. No active transfer states remain (all transfers actually done)
-                                            // 3. We've waited to ensure no new requests arrive
                                             if completed >= active && has_any_transfer_task.load(Ordering::SeqCst) {
-                                                // Store initial active count to detect new requests
                                                 let active_before_wait = active;
                                                 
-                                                // Wait grace period to allow new requests to arrive
                                                 tokio::time::sleep(Duration::from_millis(500)).await;
                                                 
-                                                // Re-check counts after grace period
                                                 let completed_after = completed_requests_task.load(Ordering::SeqCst);
                                                 let active_after = active_requests_task.load(Ordering::SeqCst);
                                                 
-                                                // Check if new requests arrived during grace period
                                                 let new_requests_arrived = active_after > active_before_wait;
                                                 
-                                                // Check if there are any active transfer states (transfers in progress)
                                                 let has_active_transfers = {
                                                     let states = transfer_states_task.lock().await;
                                                     !states.is_empty()
                                                 };
                                                 
-                                                // Check if last request was recent
                                                 let last_request_recent = {
                                                     let last_time = last_request_time_task.lock().await;
                                                     if let Some(time) = *last_time {
@@ -459,11 +412,6 @@ async fn show_provide_progress_with_logging(
                                                     }
                                                 };
                                                 
-                                                // Only emit if:
-                                                // - All requests completed
-                                                // - No new requests arrived during grace period
-                                                // - No active transfers in progress
-                                                // - No recent requests (no new requests during grace period)
                                                 if completed_after >= active_after 
                                                     && !new_requests_arrived
                                                     && !has_active_transfers 
@@ -480,11 +428,9 @@ async fn show_provide_progress_with_logging(
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             request_completed = true;
                                             
-                                            // Mark as completed (failed) and check if all done
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                             let active = active_requests_task.load(Ordering::SeqCst);
                                             
-                                            // If this was the last request, emit failed
                                             if completed >= active {
                                                 emit_event(&app_handle_task, "transfer-failed");
                                             }
@@ -493,31 +439,25 @@ async fn show_provide_progress_with_logging(
                                 }
                             }
                             
-                            // If task ends without completion, mark as completed
                             if transfer_started && !request_completed {
                                 let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                 let active = active_requests_task.load(Ordering::SeqCst);
                                 
                                 if completed >= active && has_any_transfer_task.load(Ordering::SeqCst) {
-                                    // Store initial active count to detect new requests
                                     let active_before_wait = active;
                                     
-                                    // Wait grace period before emitting
                                     tokio::time::sleep(Duration::from_millis(500)).await;
                                     
                                     let completed_after = completed_requests_task.load(Ordering::SeqCst);
                                     let active_after = active_requests_task.load(Ordering::SeqCst);
                                     
-                                    // Check if new requests arrived during grace period
                                     let new_requests_arrived = active_after > active_before_wait;
                                     
-                                    // Check if there are any active transfer states
                                     let has_active_transfers = {
                                         let states = transfer_states_task.lock().await;
                                         !states.is_empty()
                                     };
                                     
-                                    // Check if last request was recent
                                     let last_request_recent = {
                                         let last_time = last_request_time_task.lock().await;
                                         if let Some(time) = *last_time {
@@ -542,16 +482,13 @@ async fn show_provide_progress_with_logging(
                 }
             }
             Some(_) = tasks.next(), if !tasks.is_empty() => {
-                // Request monitoring task completed
             }
         }
     }
     
-    // Wait for all request monitoring tasks to complete
     while tasks.next().await.is_some() {
     }
     
-    // Final safety check: ensure completion is emitted if we had any transfers
     if has_any_transfer.load(Ordering::SeqCst) {
         let completed = completed_requests.load(Ordering::SeqCst);
         let active = active_requests.load(Ordering::SeqCst);

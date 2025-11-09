@@ -45,7 +45,6 @@ export function useSender(): UseSenderReturn {
     type: 'info'
   })
 
-  // Refs for event ingestion (backend as source of truth)
   const latestProgressRef = useRef<TransferProgress | null>(null)
   const transferStartTimeRef = useRef<number | null>(null)
   const progressUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -53,12 +52,10 @@ export function useSender(): UseSenderReturn {
   const wasManuallyStoppedRef = useRef(false)
   const selectedPathRef = useRef<string | null>(null)
 
-  // Keep selectedPathRef in sync with state
   useEffect(() => {
     selectedPathRef.current = selectedPath
   }, [selectedPath])
 
-  // Setup event listeners ONCE on mount (empty dependency array)
   useEffect(() => {
     let unlistenStart: UnlistenFn | undefined
     let unlistenProgress: UnlistenFn | undefined
@@ -66,13 +63,11 @@ export function useSender(): UseSenderReturn {
     let unlistenFailed: UnlistenFn | undefined
 
     const setupListeners = async () => {
-      // transfer-started: Store in ref immediately, start controlled update interval
       unlistenStart = await listen('transfer-started', () => {
         transferStartTimeRef.current = Date.now()
         isCompletedRef.current = false
         latestProgressRef.current = null
         
-        // Update React state
         setIsTransporting(true)
         setIsCompleted(false)
         setTransferProgress(null)
@@ -80,7 +75,6 @@ export function useSender(): UseSenderReturn {
         wasManuallyStoppedRef.current = false
         setIsStopping(false)
         
-        // Start controlled update interval (50ms = ~20 FPS)
         if (progressUpdateIntervalRef.current) {
           clearInterval(progressUpdateIntervalRef.current)
         }
@@ -91,7 +85,6 @@ export function useSender(): UseSenderReturn {
         }, 50)
       })
 
-      // transfer-progress: Store in ref immediately, interval updates React
       unlistenProgress = await listen('transfer-progress', (event: any) => {
         try {
           const payload = event.payload as string
@@ -104,27 +97,23 @@ export function useSender(): UseSenderReturn {
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
-            // Store immediately in ref (no React render triggered)
             latestProgressRef.current = {
               bytesTransferred,
               totalBytes,
               speedBps,
               percentage
             }
-            // Interval will update React state at controlled pace
           }
         } catch (error) {
           console.error('Failed to parse progress event:', error)
         }
       })
 
-      // transfer-completed: Flush state and complete
       unlistenComplete = await listen('transfer-completed', async () => {
         if (wasManuallyStoppedRef.current) {
           return
         }
         
-        // Stop interval updates
         if (progressUpdateIntervalRef.current) {
           clearInterval(progressUpdateIntervalRef.current)
           progressUpdateIntervalRef.current = null
@@ -132,12 +121,10 @@ export function useSender(): UseSenderReturn {
         
         isCompletedRef.current = true
         
-        // Flush final progress if any
         if (latestProgressRef.current) {
           setTransferProgress(latestProgressRef.current)
         }
         
-        // Small delay to ensure state commit
         await new Promise(resolve => setTimeout(resolve, 10))
         
         const endTime = Date.now()
@@ -148,10 +135,8 @@ export function useSender(): UseSenderReturn {
         const currentPath = selectedPathRef.current
         if (currentPath) {
           const fileName = currentPath.split('/').pop() || 'Unknown'
-          // Use fileSize from progress if available, otherwise 0 (will be updated async)
           const estimatedFileSize = latestProgressRef.current?.totalBytes || 0
           
-          // Set metadata FIRST (before state changes) to prevent flash
           setTransferMetadata({ 
             fileName, 
             fileSize: estimatedFileSize, 
@@ -160,12 +145,10 @@ export function useSender(): UseSenderReturn {
             endTime 
           })
           
-          // Now update state - success screen condition will be met immediately
           setIsTransporting(false)
           setIsCompleted(true)
           setTransferProgress(null)
           
-          // Update metadata with accurate file size if we can get it
           try {
             const fileSize = await invoke<number>('get_file_size', { path: currentPath })
             setTransferMetadata({ 
@@ -177,23 +160,19 @@ export function useSender(): UseSenderReturn {
             })
           } catch (error) {
             console.error('Failed to get file size:', error)
-            // Keep the estimated file size we already set
           }
         } else {
-          // No path - just update state
           setIsTransporting(false)
           setIsCompleted(true)
           setTransferProgress(null)
         }
       })
 
-      // transfer-failed: Similar cleanup
       unlistenFailed = await listen('transfer-failed', async () => {
         if (wasManuallyStoppedRef.current) {
           return
         }
         
-        // Stop interval updates
         if (progressUpdateIntervalRef.current) {
           clearInterval(progressUpdateIntervalRef.current)
           progressUpdateIntervalRef.current = null
@@ -237,7 +216,7 @@ export function useSender(): UseSenderReturn {
       if (unlistenComplete) unlistenComplete()
       if (unlistenFailed) unlistenFailed()
     }
-  }, []) // Empty deps - setup once only on mount
+  }, [])
 
   const showAlert = (title: string, description: string, type: AlertType = 'info') => {
     setAlertDialog({ isOpen: true, title, description, type })
@@ -296,7 +275,6 @@ export function useSender(): UseSenderReturn {
       if (wasActiveTransfer && currentSelectedPath) {
         wasManuallyStoppedRef.current = true
         
-        // Stop interval updates
         if (progressUpdateIntervalRef.current) {
           clearInterval(progressUpdateIntervalRef.current)
           progressUpdateIntervalRef.current = null
