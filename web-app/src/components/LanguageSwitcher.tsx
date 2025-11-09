@@ -10,6 +10,7 @@ const LANGUAGES = [
   { value: 'zh-TW', label: '繁體中文' },
   { value: 'de', label: 'Deutsch' },
   { value: 'ja', label: '日本語' },
+  { value: 'ru', label: 'Русский' }
 ]
 
 export function LanguageSwitcher() {
