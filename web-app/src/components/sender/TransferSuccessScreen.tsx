@@ -145,7 +145,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              Duration:
+              {t('common:transfer.duration')}:
             </span>
             <span 
               className="text-sm"
@@ -160,7 +160,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              Avg Speed:
+              {t('common:transfer.avgSpeed')}:
             </span>
             <span 
               className="text-sm"

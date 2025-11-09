@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
+import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
 export interface UseSenderReturn {
@@ -27,6 +28,7 @@ export interface UseSenderReturn {
 }
 
 export function useSender(): UseSenderReturn {
+  const { t } = useTranslation()
   const [isSharing, setIsSharing] = useState(false)
   const [isTransporting, setIsTransporting] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
@@ -37,9 +39,7 @@ export function useSender(): UseSenderReturn {
   const [copySuccess, setCopySuccess] = useState(false)
   const [transferMetadata, setTransferMetadata] = useState<TransferMetadata | null>(null)
   const [transferProgress, setTransferProgress] = useState<TransferProgress | null>(null)
-  const [transferStartTime, setTransferStartTime] = useState<number | null>(null)
   const [isStopping, setIsStopping] = useState(false)
-  const wasManuallyStoppedRef = useRef(false)
   const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
     isOpen: false,
     title: '',
@@ -47,22 +47,44 @@ export function useSender(): UseSenderReturn {
     type: 'info'
   })
 
+  const latestProgressRef = useRef<TransferProgress | null>(null)
+  const transferStartTimeRef = useRef<number | null>(null)
+  const progressUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const isCompletedRef = useRef(false)
+  const wasManuallyStoppedRef = useRef(false)
+  const selectedPathRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    selectedPathRef.current = selectedPath
+  }, [selectedPath])
+
   useEffect(() => {
     let unlistenStart: UnlistenFn | undefined
     let unlistenProgress: UnlistenFn | undefined
     let unlistenComplete: UnlistenFn | undefined
     let unlistenFailed: UnlistenFn | undefined
-    let progressUpdateTimeout: NodeJS.Timeout | undefined
 
     const setupListeners = async () => {
       unlistenStart = await listen('transfer-started', () => {
+        transferStartTimeRef.current = Date.now()
+        isCompletedRef.current = false
+        latestProgressRef.current = null
+        
         setIsTransporting(true)
         setIsCompleted(false)
-        setTransferStartTime(Date.now())
         setTransferProgress(null)
         setTransferMetadata(null)
         wasManuallyStoppedRef.current = false
         setIsStopping(false)
+        
+        if (progressUpdateIntervalRef.current) {
+          clearInterval(progressUpdateIntervalRef.current)
+        }
+        progressUpdateIntervalRef.current = setInterval(() => {
+          if (latestProgressRef.current && !isCompletedRef.current) {
+            setTransferProgress(latestProgressRef.current)
+          }
+        }, 50)
       })
 
       unlistenProgress = await listen('transfer-progress', (event: any) => {
@@ -77,18 +99,12 @@ export function useSender(): UseSenderReturn {
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
-            if (progressUpdateTimeout) {
-              clearTimeout(progressUpdateTimeout)
+            latestProgressRef.current = {
+              bytesTransferred,
+              totalBytes,
+              speedBps,
+              percentage
             }
-            
-            progressUpdateTimeout = setTimeout(() => {
-              setTransferProgress({
-                bytesTransferred,
-                totalBytes,
-                speedBps,
-                percentage
-              })
-            }, 100)
           }
         } catch (error) {
           console.error('Failed to parse progress event:', error)
@@ -100,41 +116,57 @@ export function useSender(): UseSenderReturn {
           return
         }
         
-        if (progressUpdateTimeout) {
-          clearTimeout(progressUpdateTimeout)
+        if (progressUpdateIntervalRef.current) {
+          clearInterval(progressUpdateIntervalRef.current)
+          progressUpdateIntervalRef.current = null
         }
         
-        setIsTransporting(false)
-        setIsCompleted(true)
-        setTransferProgress(null)
+        isCompletedRef.current = true
+        
+        if (latestProgressRef.current) {
+          setTransferProgress(latestProgressRef.current)
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 10))
         
         const endTime = Date.now()
-        const duration = transferStartTime ? endTime - transferStartTime : 0
+        const duration = transferStartTimeRef.current 
+          ? endTime - transferStartTimeRef.current 
+          : 0
         
-        if (selectedPath) {
+        const currentPath = selectedPathRef.current
+        if (currentPath) {
+          const fileName = currentPath.split('/').pop() || 'Unknown'
+          const estimatedFileSize = latestProgressRef.current?.totalBytes || 0
+          
+          setTransferMetadata({ 
+            fileName, 
+            fileSize: estimatedFileSize, 
+            duration, 
+            startTime: transferStartTimeRef.current || endTime, 
+            endTime 
+          })
+          
+          setIsTransporting(false)
+          setIsCompleted(true)
+          setTransferProgress(null)
+          
           try {
-            const fileSize = await invoke<number>('get_file_size', { path: selectedPath })
-            const fileName = selectedPath.split('/').pop() || 'Unknown'
-            const metadata = { 
+            const fileSize = await invoke<number>('get_file_size', { path: currentPath })
+            setTransferMetadata({ 
               fileName, 
               fileSize, 
               duration, 
-              startTime: transferStartTime || endTime, 
+              startTime: transferStartTimeRef.current || endTime, 
               endTime 
-            }
-            setTransferMetadata(metadata)
+            })
           } catch (error) {
             console.error('Failed to get file size:', error)
-            const fileName = selectedPath.split('/').pop() || 'Unknown'
-            const metadata = { 
-              fileName, 
-              fileSize: 0, 
-              duration, 
-              startTime: transferStartTime || endTime, 
-              endTime 
-            }
-            setTransferMetadata(metadata)
           }
+        } else {
+          setIsTransporting(false)
+          setIsCompleted(true)
+          setTransferProgress(null)
         }
       })
 
@@ -143,28 +175,32 @@ export function useSender(): UseSenderReturn {
           return
         }
         
-        if (progressUpdateTimeout) {
-          clearTimeout(progressUpdateTimeout)
+        if (progressUpdateIntervalRef.current) {
+          clearInterval(progressUpdateIntervalRef.current)
+          progressUpdateIntervalRef.current = null
         }
         
+        isCompletedRef.current = true
         setIsTransporting(false)
         setIsCompleted(true)
         setTransferProgress(null)
         
         const endTime = Date.now()
-        const duration = transferStartTime ? endTime - transferStartTime : 0
+        const duration = transferStartTimeRef.current 
+          ? endTime - transferStartTimeRef.current 
+          : 0
         
-        if (selectedPath) {
-          const fileName = selectedPath.split('/').pop() || 'Unknown'
-          const metadata: TransferMetadata = { 
+        const currentPath = selectedPathRef.current
+        if (currentPath) {
+          const fileName = currentPath.split('/').pop() || 'Unknown'
+          setTransferMetadata({ 
             fileName, 
             fileSize: 0, 
             duration, 
-            startTime: transferStartTime || endTime, 
+            startTime: transferStartTimeRef.current || endTime, 
             endTime,
             wasStopped: true
-          }
-          setTransferMetadata(metadata)
+          })
         }
       })
     }
@@ -174,15 +210,15 @@ export function useSender(): UseSenderReturn {
     })
 
     return () => {
-      if (progressUpdateTimeout) {
-        clearTimeout(progressUpdateTimeout)
+      if (progressUpdateIntervalRef.current) {
+        clearInterval(progressUpdateIntervalRef.current)
       }
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
       if (unlistenComplete) unlistenComplete()
       if (unlistenFailed) unlistenFailed()
     }
-  }, [transferStartTime, selectedPath])
+  }, [])
 
   const showAlert = (title: string, description: string, type: AlertType = 'info') => {
     setAlertDialog({ isOpen: true, title, description, type })
@@ -207,13 +243,22 @@ export function useSender(): UseSenderReturn {
     if (!selectedPath) return
     
     try {
+      isCompletedRef.current = false
+      setIsCompleted(false)
+      setIsTransporting(false)
+      setTransferMetadata(null)
+      setTransferProgress(null)
+      transferStartTimeRef.current = null
+      wasManuallyStoppedRef.current = false
+      latestProgressRef.current = null
+      
       setIsLoading(true)
       const result = await invoke<string>('start_sharing', { path: selectedPath })
       setTicket(result)
       setIsSharing(true)
     } catch (error) {
       console.error('Failed to start sharing:', error)
-      showAlert('Sharing Failed', `Failed to start sharing: ${error}`, 'error')
+      showAlert(t('common:errors.sharingFailed'), `${t('common:errors.sharingFailedDesc')}: ${error}`, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -221,16 +266,21 @@ export function useSender(): UseSenderReturn {
 
   const stopSharing = async () => {
     try {
-      const wasActiveTransfer = (isSharing || isTransporting) && 
+      const wasActiveTransfer = isTransporting && 
                                 !isCompleted &&
                                 (!transferMetadata || !transferMetadata.wasStopped)
       const isCompletedTransfer = isCompleted && transferMetadata
       
-      const currentSelectedPath = selectedPath
-      const currentTransferStartTime = transferStartTime
+      const currentSelectedPath = selectedPathRef.current
+      const currentTransferStartTime = transferStartTimeRef.current
       
       if (wasActiveTransfer && currentSelectedPath) {
         wasManuallyStoppedRef.current = true
+        
+        if (progressUpdateIntervalRef.current) {
+          clearInterval(progressUpdateIntervalRef.current)
+          progressUpdateIntervalRef.current = null
+        }
         
         const endTime = Date.now()
         const fileName = currentSelectedPath.split('/').pop() || 'Unknown'
@@ -264,7 +314,7 @@ export function useSender(): UseSenderReturn {
         setSelectedPath(null)
         setPathType(null)
         setTransferProgress(null)
-        setTransferStartTime(null)
+        transferStartTimeRef.current = null
         
         invoke('stop_sharing').catch((error) => {
           console.warn('Background cleanup failed (non-critical):', error)
@@ -274,23 +324,30 @@ export function useSender(): UseSenderReturn {
       
       await invoke('stop_sharing')
       
+      // If no active transfer (just sharing, waiting for acceptance), reset to idle
       if (!wasActiveTransfer || !currentSelectedPath) {
         wasManuallyStoppedRef.current = false
         setIsSharing(false)
         setIsTransporting(false)
         setIsCompleted(false)
         setTransferMetadata(null)
+        setTicket(null)
+        setSelectedPath(null)
+        setPathType(null)
+        setTransferProgress(null)
+        transferStartTimeRef.current = null
+        return
       }
       
       setTicket(null)
       setSelectedPath(null)
       setPathType(null)
       setTransferProgress(null)
-      setTransferStartTime(null)
+      transferStartTimeRef.current = null
     } catch (error) {
       console.error('Failed to stop sharing:', error)
       setIsStopping(false)
-      showAlert('Stop Sharing Failed', `Failed to stop sharing: ${error}`, 'error')
+      showAlert(t('common:errors.stopSharingFailed'), `${t('common:errors.stopSharingFailedDesc')}: ${error}`, 'error')
     }
   }
 
@@ -306,7 +363,7 @@ export function useSender(): UseSenderReturn {
         setTimeout(() => setCopySuccess(false), 2000)
       } catch (error) {
         console.error('Failed to copy ticket:', error)
-        showAlert('Copy Failed', `Failed to copy ticket: ${error}`, 'error')
+        showAlert(t('common:errors.copyFailed'), `${t('common:errors.copyFailedDesc')}: ${error}`, 'error')
       }
     }
   }

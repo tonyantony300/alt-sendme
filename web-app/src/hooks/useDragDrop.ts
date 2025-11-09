@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
+import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/sender'
 
 export interface UseDragDropReturn {
@@ -19,6 +20,7 @@ export interface UseDragDropReturn {
 }
 
 export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropReturn {
+  const { t } = useTranslation()
   const [isDragActive, setIsDragActive] = useState(false)
   const [pathType, setPathType] = useState<'file' | 'directory' | null>(null)
   const [showFullPath, setShowFullPath] = useState(false)
@@ -63,7 +65,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
       }
     } catch (error) {
       console.error('Failed to open file dialog:', error)
-      showAlert('File Dialog Failed', `Failed to open file dialog: ${error}`, 'error')
+      showAlert(t('common:errors.fileDialogFailed'), `${t('common:errors.fileDialogFailedDesc')}: ${error}`, 'error')
     }
   }
 
@@ -79,7 +81,7 @@ export function useDragDrop(onFileSelect: (path: string) => void): UseDragDropRe
       }
     } catch (error) {
       console.error('Failed to open folder dialog:', error)
-      showAlert('Folder Dialog Failed', `Failed to open folder dialog: ${error}`, 'error')
+      showAlert(t('common:errors.folderDialogFailed'), `${t('common:errors.folderDialogFailedDesc')}: ${error}`, 'error')
     }
   }
 
