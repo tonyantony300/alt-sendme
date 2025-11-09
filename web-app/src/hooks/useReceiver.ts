@@ -237,7 +237,7 @@ export function useReceiver(): UseReceiverReturn {
       })
     } catch (error) {
       console.error('Failed to receive file:', error)
-      showAlert(t('common:errors.receiveFailed'), `${t('common:errors.receiveFailedDesc')}: ${error}`, 'error')
+      showAlert(t('common:errors.receiveFailed'), String(error), 'error')
       setIsReceiving(false)
       setIsTransporting(false)
       setIsCompleted(false)

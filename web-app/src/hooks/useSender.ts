@@ -266,7 +266,7 @@ export function useSender(): UseSenderReturn {
 
   const stopSharing = async () => {
     try {
-      const wasActiveTransfer = (isSharing || isTransporting) && 
+      const wasActiveTransfer = isTransporting && 
                                 !isCompleted &&
                                 (!transferMetadata || !transferMetadata.wasStopped)
       const isCompletedTransfer = isCompleted && transferMetadata
@@ -324,12 +324,19 @@ export function useSender(): UseSenderReturn {
       
       await invoke('stop_sharing')
       
+      // If no active transfer (just sharing, waiting for acceptance), reset to idle
       if (!wasActiveTransfer || !currentSelectedPath) {
         wasManuallyStoppedRef.current = false
         setIsSharing(false)
         setIsTransporting(false)
         setIsCompleted(false)
         setTransferMetadata(null)
+        setTicket(null)
+        setSelectedPath(null)
+        setPathType(null)
+        setTransferProgress(null)
+        transferStartTimeRef.current = null
+        return
       }
       
       setTicket(null)
