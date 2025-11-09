@@ -313,6 +313,7 @@ async fn show_provide_progress_with_logging(
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use tokio::sync::Mutex;
     
     let mut tasks = FuturesUnordered::new();
@@ -325,6 +326,13 @@ async fn show_provide_progress_with_logging(
     
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> = 
         Arc::new(Mutex::new(std::collections::HashMap::new()));
+    
+    // Track active and completed requests for proper completion signaling
+    let active_requests = Arc::new(AtomicUsize::new(0));
+    let completed_requests = Arc::new(AtomicUsize::new(0));
+    let has_emitted_started = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let has_any_transfer = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let last_request_time: Arc<tokio::sync::Mutex<Option<Instant>>> = Arc::new(tokio::sync::Mutex::new(None));
     
     loop {
         tokio::select! {
@@ -343,14 +351,27 @@ async fn show_provide_progress_with_logging(
                         let connection_id = msg.connection_id;
                         let request_id = msg.request_id;
                         
+                        // Increment active request count
+                        active_requests.fetch_add(1, Ordering::SeqCst);
+                        
+                        // Update last request time to prevent premature completion
+                        let mut last_time = last_request_time.lock().await;
+                        *last_time = Some(Instant::now());
+                        
                         // Clone app_handle and state for the task
                         let app_handle_task = app_handle.clone();
                         let transfer_states_task = transfer_states.clone();
+                        let active_requests_task = active_requests.clone();
+                        let completed_requests_task = completed_requests.clone();
+                        let has_emitted_started_task = has_emitted_started.clone();
+                        let has_any_transfer_task = has_any_transfer.clone();
+                        let last_request_time_task = last_request_time.clone();
                         
                         // Spawn a task to monitor this request
                         let mut rx = msg.rx;
                         tasks.push(async move {
                             let mut transfer_started = false;
+                            let mut request_completed = false;
                             
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
@@ -363,14 +384,24 @@ async fn show_provide_progress_with_logging(
                                                     total_size: total_file_size,
                                                 }
                                             );
-                                            emit_event(&app_handle_task, "transfer-started");
+                                            
+                                            // Only emit transfer-started once for the entire session
+                                            if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
+                                                emit_event(&app_handle_task, "transfer-started");
+                                            }
+                                            
                                             transfer_started = true;
+                                            has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
                                         if !transfer_started {
-                                            emit_event(&app_handle_task, "transfer-started");
+                                            // Fallback: emit started if we get progress without Started event
+                                            if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
+                                                emit_event(&app_handle_task, "transfer-started");
+                                            }
                                             transfer_started = true;
+                                            has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
                                         
                                         // Get state and emit progress directly (no throttling)
@@ -386,18 +417,121 @@ async fn show_provide_progress_with_logging(
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
-                                        if transfer_started {
+                                        if transfer_started && !request_completed {
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
-                                            emit_event(&app_handle_task, "transfer-completed");
+                                            request_completed = true;
+                                            
+                                            // Increment completed count
+                                            let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
+                                            let active = active_requests_task.load(Ordering::SeqCst);
+                                            
+                                            // Only emit completion if:
+                                            // 1. All requests are completed
+                                            // 2. No active transfer states remain (all transfers actually done)
+                                            // 3. We've waited to ensure no new requests arrive
+                                            if completed >= active && has_any_transfer_task.load(Ordering::SeqCst) {
+                                                // Store initial active count to detect new requests
+                                                let active_before_wait = active;
+                                                
+                                                // Wait grace period to allow new requests to arrive
+                                                tokio::time::sleep(Duration::from_millis(500)).await;
+                                                
+                                                // Re-check counts after grace period
+                                                let completed_after = completed_requests_task.load(Ordering::SeqCst);
+                                                let active_after = active_requests_task.load(Ordering::SeqCst);
+                                                
+                                                // Check if new requests arrived during grace period
+                                                let new_requests_arrived = active_after > active_before_wait;
+                                                
+                                                // Check if there are any active transfer states (transfers in progress)
+                                                let has_active_transfers = {
+                                                    let states = transfer_states_task.lock().await;
+                                                    !states.is_empty()
+                                                };
+                                                
+                                                // Check if last request was recent
+                                                let last_request_recent = {
+                                                    let last_time = last_request_time_task.lock().await;
+                                                    if let Some(time) = *last_time {
+                                                        time.elapsed() < Duration::from_millis(500)
+                                                    } else {
+                                                        false
+                                                    }
+                                                };
+                                                
+                                                // Only emit if:
+                                                // - All requests completed
+                                                // - No new requests arrived during grace period
+                                                // - No active transfers in progress
+                                                // - No recent requests (no new requests during grace period)
+                                                if completed_after >= active_after 
+                                                    && !new_requests_arrived
+                                                    && !has_active_transfers 
+                                                    && !last_request_recent {
+                                                    emit_event(&app_handle_task, "transfer-completed");
+                                                }
+                                            }
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Aborted(_m) => {
                                         tracing::warn!("Request aborted: conn {} req {}", 
                                             connection_id, request_id);
-                                        if transfer_started {
+                                        if transfer_started && !request_completed {
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
-                                            emit_event(&app_handle_task, "transfer-failed");
+                                            request_completed = true;
+                                            
+                                            // Mark as completed (failed) and check if all done
+                                            let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
+                                            let active = active_requests_task.load(Ordering::SeqCst);
+                                            
+                                            // If this was the last request, emit failed
+                                            if completed >= active {
+                                                emit_event(&app_handle_task, "transfer-failed");
+                                            }
                                         }
+                                    }
+                                }
+                            }
+                            
+                            // If task ends without completion, mark as completed
+                            if transfer_started && !request_completed {
+                                let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
+                                let active = active_requests_task.load(Ordering::SeqCst);
+                                
+                                if completed >= active && has_any_transfer_task.load(Ordering::SeqCst) {
+                                    // Store initial active count to detect new requests
+                                    let active_before_wait = active;
+                                    
+                                    // Wait grace period before emitting
+                                    tokio::time::sleep(Duration::from_millis(500)).await;
+                                    
+                                    let completed_after = completed_requests_task.load(Ordering::SeqCst);
+                                    let active_after = active_requests_task.load(Ordering::SeqCst);
+                                    
+                                    // Check if new requests arrived during grace period
+                                    let new_requests_arrived = active_after > active_before_wait;
+                                    
+                                    // Check if there are any active transfer states
+                                    let has_active_transfers = {
+                                        let states = transfer_states_task.lock().await;
+                                        !states.is_empty()
+                                    };
+                                    
+                                    // Check if last request was recent
+                                    let last_request_recent = {
+                                        let last_time = last_request_time_task.lock().await;
+                                        if let Some(time) = *last_time {
+                                            time.elapsed() < Duration::from_millis(500)
+                                        } else {
+                                            false
+                                        }
+                                    };
+                                    
+                                    if completed_after >= active_after 
+                                        && !new_requests_arrived
+                                        && !has_active_transfers 
+                                        && !last_request_recent {
+                                        emit_event(&app_handle_task, "transfer-completed");
                                     }
                                 }
                             }
@@ -415,6 +549,16 @@ async fn show_provide_progress_with_logging(
     
     // Wait for all request monitoring tasks to complete
     while tasks.next().await.is_some() {
+    }
+    
+    // Final safety check: ensure completion is emitted if we had any transfers
+    if has_any_transfer.load(Ordering::SeqCst) {
+        let completed = completed_requests.load(Ordering::SeqCst);
+        let active = active_requests.load(Ordering::SeqCst);
+        
+        if completed >= active && completed > 0 {
+            emit_event(&app_handle, "transfer-completed");
+        }
     }
     
     Ok(())
