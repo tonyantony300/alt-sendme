@@ -65,7 +65,23 @@
     "successMessage": "การส่งของคุณเสร็จสมบูรณ์แล้ว",
     "fileName": "ชื่อไฟล์",
     "fileSize": "ขนาดไฟล์",
-    "downloadPath": "เส้นทางดาวน์โหลด"
+    "downloadPath": "เส้นทางดาวน์โหลด",
+    "duration": "ระยะเวลา",
+    "avgSpeed": "ความเร็วเฉลี่ย"
+  },
+  "errors": {
+    "sharingFailed": "การแชร์ล้มเหลว",
+    "sharingFailedDesc": "ไม่สามารถเริ่มการแชร์ได้",
+    "stopSharingFailed": "การหยุดแชร์ล้มเหลว",
+    "stopSharingFailedDesc": "ไม่สามารถหยุดการแชร์ได้",
+    "copyFailed": "การคัดลอกล้มเหลว",
+    "copyFailedDesc": "ไม่สามารถคัดลอกตั๋วได้",
+    "folderDialogFailed": "การเปิดกล่องโต้ตอบโฟลเดอร์ล้มเหลว",
+    "folderDialogFailedDesc": "ไม่สามารถเปิดกล่องโต้ตอบโฟลเดอร์ได้",
+    "fileDialogFailed": "การเปิดกล่องโต้ตอบไฟล์ล้มเหลว",
+    "fileDialogFailedDesc": "ไม่สามารถเปิดกล่องโต้ตอบไฟล์ได้",
+    "receiveFailed": "การรับล้มเหลว",
+    "receiveFailedDesc": "ไม่สามารถรับไฟล์ได้"
   }
 }
 

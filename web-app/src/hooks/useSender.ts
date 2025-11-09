@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
+import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
 export interface UseSenderReturn {
@@ -27,6 +28,7 @@ export interface UseSenderReturn {
 }
 
 export function useSender(): UseSenderReturn {
+  const { t } = useTranslation()
   const [isSharing, setIsSharing] = useState(false)
   const [isTransporting, setIsTransporting] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
@@ -256,7 +258,7 @@ export function useSender(): UseSenderReturn {
       setIsSharing(true)
     } catch (error) {
       console.error('Failed to start sharing:', error)
-      showAlert('Sharing Failed', `Failed to start sharing: ${error}`, 'error')
+      showAlert(t('common:errors.sharingFailed'), `${t('common:errors.sharingFailedDesc')}: ${error}`, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -338,7 +340,7 @@ export function useSender(): UseSenderReturn {
     } catch (error) {
       console.error('Failed to stop sharing:', error)
       setIsStopping(false)
-      showAlert('Stop Sharing Failed', `Failed to stop sharing: ${error}`, 'error')
+      showAlert(t('common:errors.stopSharingFailed'), `${t('common:errors.stopSharingFailedDesc')}: ${error}`, 'error')
     }
   }
 
@@ -354,7 +356,7 @@ export function useSender(): UseSenderReturn {
         setTimeout(() => setCopySuccess(false), 2000)
       } catch (error) {
         console.error('Failed to copy ticket:', error)
-        showAlert('Copy Failed', `Failed to copy ticket: ${error}`, 'error')
+        showAlert(t('common:errors.copyFailed'), `${t('common:errors.copyFailedDesc')}: ${error}`, 'error')
       }
     }
   }

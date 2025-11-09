@@ -65,7 +65,23 @@
     "successMessage": "Your transfer has been completed successfully.",
     "fileName": "File name",
     "fileSize": "File size",
-    "downloadPath": "Download path"
+    "downloadPath": "Download path",
+    "duration": "Duration",
+    "avgSpeed": "Avg Speed"
+  },
+  "errors": {
+    "sharingFailed": "Sharing Failed",
+    "sharingFailedDesc": "Failed to start sharing",
+    "stopSharingFailed": "Stop Sharing Failed",
+    "stopSharingFailedDesc": "Failed to stop sharing",
+    "copyFailed": "Copy Failed",
+    "copyFailedDesc": "Failed to copy ticket",
+    "folderDialogFailed": "Folder Dialog Failed",
+    "folderDialogFailedDesc": "Failed to open folder dialog",
+    "fileDialogFailed": "File Dialog Failed",
+    "fileDialogFailedDesc": "Failed to open file dialog",
+    "receiveFailed": "Receive Failed",
+    "receiveFailedDesc": "Failed to receive file"
   }
 }
 

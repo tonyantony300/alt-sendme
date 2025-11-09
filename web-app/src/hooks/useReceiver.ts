@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
 import { downloadDir } from '@tauri-apps/api/path'
+import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
 export interface UseReceiverReturn {
@@ -25,6 +26,7 @@ export interface UseReceiverReturn {
 }
 
 export function useReceiver(): UseReceiverReturn {
+  const { t } = useTranslation()
   const [ticket, setTicket] = useState('')
   const [isReceiving, setIsReceiving] = useState(false)
   const [isTransporting, setIsTransporting] = useState(false)
@@ -214,7 +216,7 @@ export function useReceiver(): UseReceiverReturn {
       }
     } catch (error) {
       console.error('Failed to open folder dialog:', error)
-      showAlert('Folder Dialog Failed', `Failed to open folder dialog: ${error}`, 'error')
+      showAlert(t('common:errors.folderDialogFailed'), `${t('common:errors.folderDialogFailedDesc')}: ${error}`, 'error')
     }
   }
 
@@ -235,7 +237,7 @@ export function useReceiver(): UseReceiverReturn {
       })
     } catch (error) {
       console.error('Failed to receive file:', error)
-      showAlert('Receive Failed', `Failed to receive file: ${error}`, 'error')
+      showAlert(t('common:errors.receiveFailed'), `${t('common:errors.receiveFailedDesc')}: ${error}`, 'error')
       setIsReceiving(false)
       setIsTransporting(false)
       setIsCompleted(false)

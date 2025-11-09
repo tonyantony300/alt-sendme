@@ -65,7 +65,23 @@
     "successMessage": "Ihre Übertragung wurde erfolgreich abgeschlossen.",
     "fileName": "Dateiname",
     "fileSize": "Dateigröße",
-    "downloadPath": "Downloadpfad"
+    "downloadPath": "Downloadpfad",
+    "duration": "Dauer",
+    "avgSpeed": "Durchschnittsgeschwindigkeit"
+  },
+  "errors": {
+    "sharingFailed": "Freigabe fehlgeschlagen",
+    "sharingFailedDesc": "Freigabe konnte nicht gestartet werden",
+    "stopSharingFailed": "Freigabe beenden fehlgeschlagen",
+    "stopSharingFailedDesc": "Freigabe konnte nicht beendet werden",
+    "copyFailed": "Kopieren fehlgeschlagen",
+    "copyFailedDesc": "Ticket konnte nicht kopiert werden",
+    "folderDialogFailed": "Ordnerdialog fehlgeschlagen",
+    "folderDialogFailedDesc": "Ordnerdialog konnte nicht geöffnet werden",
+    "fileDialogFailed": "Dateidialog fehlgeschlagen",
+    "fileDialogFailedDesc": "Dateidialog konnte nicht geöffnet werden",
+    "receiveFailed": "Empfang fehlgeschlagen",
+    "receiveFailedDesc": "Datei konnte nicht empfangen werden"
   }
 }
 

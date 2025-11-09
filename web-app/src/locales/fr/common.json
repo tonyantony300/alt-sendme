@@ -65,7 +65,23 @@
     "successMessage": "Votre transfert a été complété avec succès.",
     "fileName": "Nom du fichier",
     "fileSize": "Taille du fichier",
-    "downloadPath": "Chemin de téléchargement"
+    "downloadPath": "Chemin de téléchargement",
+    "duration": "Durée",
+    "avgSpeed": "Vitesse moyenne"
+  },
+  "errors": {
+    "sharingFailed": "Échec du partage",
+    "sharingFailedDesc": "Échec du démarrage du partage",
+    "stopSharingFailed": "Échec de l'arrêt du partage",
+    "stopSharingFailedDesc": "Échec de l'arrêt du partage",
+    "copyFailed": "Échec de la copie",
+    "copyFailedDesc": "Échec de la copie du ticket",
+    "folderDialogFailed": "Échec de la boîte de dialogue de dossier",
+    "folderDialogFailedDesc": "Échec de l'ouverture de la boîte de dialogue de dossier",
+    "fileDialogFailed": "Échec de la boîte de dialogue de fichier",
+    "fileDialogFailedDesc": "Échec de l'ouverture de la boîte de dialogue de fichier",
+    "receiveFailed": "Échec de la réception",
+    "receiveFailedDesc": "Échec de la réception du fichier"
   }
 }
 

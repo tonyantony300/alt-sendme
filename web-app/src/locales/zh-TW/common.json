@@ -65,7 +65,23 @@
     "successMessage": "您的傳輸已成功完成。",
     "fileName": "檔案名稱",
     "fileSize": "檔案大小",
-    "downloadPath": "下載路徑"
+    "downloadPath": "下載路徑",
+    "duration": "持續時間",
+    "avgSpeed": "平均速度"
+  },
+  "errors": {
+    "sharingFailed": "分享失敗",
+    "sharingFailedDesc": "無法開始分享",
+    "stopSharingFailed": "停止分享失敗",
+    "stopSharingFailedDesc": "無法停止分享",
+    "copyFailed": "複製失敗",
+    "copyFailedDesc": "無法複製票券",
+    "folderDialogFailed": "資料夾對話框失敗",
+    "folderDialogFailedDesc": "無法開啟資料夾對話框",
+    "fileDialogFailed": "檔案對話框失敗",
+    "fileDialogFailedDesc": "無法開啟檔案對話框",
+    "receiveFailed": "接收失敗",
+    "receiveFailedDesc": "無法接收檔案"
   }
 }
 
