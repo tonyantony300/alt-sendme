@@ -250,6 +250,15 @@ export function useSender(): UseSenderReturn {
     if (!selectedPath) return
     
     try {
+      isCompletedRef.current = false
+      setIsCompleted(false)
+      setIsTransporting(false)
+      setTransferMetadata(null)
+      setTransferProgress(null)
+      transferStartTimeRef.current = null
+      wasManuallyStoppedRef.current = false
+      latestProgressRef.current = null
+      
       setIsLoading(true)
       const result = await invoke<string>('start_sharing', { path: selectedPath })
       setTicket(result)
