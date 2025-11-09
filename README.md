@@ -30,6 +30,7 @@ optionally **interoperable** with [Sendme](https://www.iroh.computer/sendme) CLI
 - 🇩🇪 German
 - 🇨🇳 Chinese
 - 🇯🇵 Japanese
+- 🇷🇺 Russian
 
 
 ## Installation
