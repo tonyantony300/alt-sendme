@@ -1,6 +1,6 @@
 # Send files anywhere - Frictionless, Private, Unlimited
 
-![AltSendme Header](assets/test.png)
+![AltSendme Header](assets/header.png)
 
 <div align="center">
 
