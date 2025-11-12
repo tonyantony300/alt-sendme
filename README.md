@@ -1,8 +1,11 @@
-# Send files anywhere - Frictionless, Fast, Private, Unlimited and Free
+# Send files anywhere - Frictionless, Private, Unlimited
 
-![AltSendme Demo](assets/animation.gif)
-[![Give feedback](https://img.shields.io/badge/💡%20feedback-30363D?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLScpzdmmkl2zxbq9RXFtojlALQGAaNgcut4VX6cAnf46RElsSg/viewform?usp=dialog)
+![AltSendme Header](assets/header.png)
+
+<video src="assets/animation.mp4" autoplay loop muted playsinline></video>
+
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
+[![Hire developer](https://img.shields.io/badge/%20Hire%20developer-30363D?style=for-the-badge)](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
 
 AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
 directories over the internet.
@@ -21,7 +24,7 @@ optionally **interoperable** with [Sendme](https://www.iroh.computer/sendme) CLI
 
 [How it connects remote devices](https://www.iroh.computer/docs/faq)
 
-[![Hire developer](https://img.shields.io/badge/%20Hire%20developer-30363D?style=for-the-badge)](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
+
 ## Supported Languages
 
 
