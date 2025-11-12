@@ -2,7 +2,7 @@
 
 ![AltSendme Header](assets/header.png)
 
-<video src="assets/animation.mp4" autoplay loop muted playsinline></video>
+![AltSendme Header](assets/animation.gif)
 
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
 [![Hire developer](https://img.shields.io/badge/%20Hire%20developer-30363D?style=for-the-badge)](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
