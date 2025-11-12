@@ -1,8 +1,12 @@
 # Send files anywhere - Frictionless, Private, Unlimited
 
-![AltSendme Header](assets/header.png)
+![AltSendme Header](assets/test.png)
 
-![AltSendme Header](assets/animation.gif)
+<div align="center">
+
+![AltSendme working demo](assets/animation.gif)
+
+</div>
 
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
 [![Hire developer](https://img.shields.io/badge/%20Hire%20developer-30363D?style=for-the-badge)](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
