@@ -1,4 +1,8 @@
-# Send files anywhere - Frictionless, Private, Unlimited
+<div align="center">
+
+# File transfer doesn't need to be complicated
+
+</div>
 
 ![AltSendme Header](assets/header.png)
 
@@ -8,25 +12,37 @@
 
 </div>
 
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
-[![Hire developer](https://img.shields.io/badge/%20Hire%20developer-30363D?style=for-the-badge)](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
+<div align="center">
 
-AltSendme is frictionless peer-to-peer file transfer cross-platform desktop application using [iroh](https://crates.io/crates/iroh) to send files and
-directories over the internet.
+![Version][badge-version]
+![Website][badge-website]
+![Platforms][badge-platforms]
+[![Sponsor][badge-sponsor]](https://github.com/sponsors/tonyantony300)
+[![Hire developer][badge-hire]](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
 
-
-**No account requirements**, direct transfer between sender and receiver.
-
-**All traffic** between endpoints is **end-to-end encrypted**, using QUIC + TLS 1.3. 
-
-**Unlimited**, Fast, Free and Open-source.
-
-Share files with **full control** and **privacy**.
-
-optionally **interoperable** with [Sendme](https://www.iroh.computer/sendme) CLI tool
+</div>
 
 
-[How it connects remote devices](https://www.iroh.computer/docs/faq)
+
+A free and open-source file transfer tool that harnesses the power of cutting-edge peer-to-peer networking, letting you transfer files directly without storing them on cloud servers.
+
+Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
+
+
+## Features
+
+- **Send anywhere** – Works seamlessly on local networks or across continents.
+- **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud servers or intermediaries.
+- **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
+- **No accounts or personal info** – Transfer files without sign-ups or exposing private data.
+- **Transfer anything** – Send files or directories of any size, verified with BLAKE3-based integrity checks.
+- **Resumable transfers** – Interrupted downloads automatically resume where they left off.
+- **Fast & reliable** – Capable of saturating multi-gigabit connections for lightning-fast transfers.
+- **NAT traversal via QUIC** – Secure, low-latency connections using QUIC hole punching with encrypted relay fallback.
+- **CLI integration** – Interoperable with the Sendme CLI.
+- **Mobile & web** – Coming soon.
+- **Free & open source** – No upload costs, no size limits, and fully community-driven.
+
 
 
 ## Installation
@@ -70,15 +86,6 @@ The easiest way to get started is by downloading one of the following versions f
 
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
-## Features
-
-- **NAT Hole Punching**: Iroh handles NAT traversal automatically, falling back to a relay if needed
-- **Verified Streaming**: Blake3-verified streaming ensures data integrity
-- **Resumable Downloads**: Interrupted downloads can be resumed seamlessly
-- **Cross-Platform**: Native desktop application for Windows, macOS, and Linux
-- **Modern UI**: React-based interface built with modern web technologies
-- **Secure**: 256-bit node IDs with TLS encryption
-- **CLI Compatible**: Works seamlessly with the [sendme](https://www.iroh.computer/sendme) CLI tool 
 
 
 ### macOS Installation 
@@ -181,3 +188,14 @@ Built on the shoulders of giants:
 - [Tauri](https://v2.tauri.app)
 
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
+
+
+<div align="center" style="color: gray;">Happy transfers with Altsendme!</div>
+
+[badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
+[badge-version]: https://img.shields.io/badge/version-0.2.0-blue
+[badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20-green
+[badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
+[badge-hire]: https://img.shields.io/badge/hire%20developer-8b5cf6
+
+
