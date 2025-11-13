@@ -4,13 +4,13 @@ import { ChevronDown } from 'lucide-react'
 
 const LANGUAGES = [
   { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Русский' },
   { value: 'fr', label: 'Français' },
-  { value: 'th', label: 'ไทย' },
   { value: 'zh-CN', label: '简体中文' },
-  { value: 'zh-TW', label: '繁體中文' },
   { value: 'de', label: 'Deutsch' },
   { value: 'ja', label: '日本語' },
   { value: 'cs', label: 'Čeština' },
+  { value: 'th', label: 'Thai' }
 ]
 
 export function LanguageSwitcher() {

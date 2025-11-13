@@ -109,9 +109,14 @@ src-tauri/gen/*
 
 # Markdown files (except README files)
 *.md
+!feature-request.md
+!report-bug.md
 !README.md
 !README
 !**/README.md
 !**/README
 !PRIVACY.md
 !CONTRIBUTING.md
+
+.github-reference/
+.github-reference-readest/

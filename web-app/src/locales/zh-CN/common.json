@@ -65,7 +65,23 @@
     "successMessage": "您的传输已成功完成。",
     "fileName": "文件名",
     "fileSize": "文件大小",
-    "downloadPath": "下载路径"
+    "downloadPath": "下载路径",
+    "duration": "持续时间",
+    "avgSpeed": "平均速度"
+  },
+  "errors": {
+    "sharingFailed": "共享失败",
+    "sharingFailedDesc": "无法开始共享",
+    "stopSharingFailed": "停止共享失败",
+    "stopSharingFailedDesc": "无法停止共享",
+    "copyFailed": "复制失败",
+    "copyFailedDesc": "无法复制票据",
+    "folderDialogFailed": "文件夹对话框失败",
+    "folderDialogFailedDesc": "无法打开文件夹对话框",
+    "fileDialogFailed": "文件对话框失败",
+    "fileDialogFailedDesc": "无法打开文件对话框",
+    "receiveFailed": "接收失败",
+    "receiveFailedDesc": "无法接收文件"
   }
 }
 

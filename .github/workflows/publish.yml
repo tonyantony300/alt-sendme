@@ -13,10 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
+          - platform: 'macos-latest' # universal binary for both Apple Silicon and Intel.
+            args: '--target universal-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
           - platform: 'windows-latest'
@@ -90,6 +88,8 @@ jobs:
             See the assets below to download and install this version.
             
             ## macOS Users
+            
+            Download the universal macOS build (supports Apple Silicon and Intel).
             
             This app is **not code-signed**. When you first open it:
             

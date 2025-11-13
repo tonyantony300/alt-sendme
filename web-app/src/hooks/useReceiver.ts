@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
 import { downloadDir } from '@tauri-apps/api/path'
+import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
 export interface UseReceiverReturn {
@@ -25,6 +26,7 @@ export interface UseReceiverReturn {
 }
 
 export function useReceiver(): UseReceiverReturn {
+  const { t } = useTranslation()
   const [ticket, setTicket] = useState('')
   const [isReceiving, setIsReceiving] = useState(false)
   const [isTransporting, setIsTransporting] = useState(false)
@@ -81,6 +83,7 @@ export function useReceiver(): UseReceiverReturn {
     let unlistenProgress: UnlistenFn | undefined
     let unlistenComplete: UnlistenFn | undefined
     let unlistenFileNames: UnlistenFn | undefined
+    let progressUpdateTimeout: NodeJS.Timeout | undefined
 
     const setupListeners = async () => {
       unlistenStart = await listen('receive-started', () => {
@@ -102,12 +105,18 @@ export function useReceiver(): UseReceiverReturn {
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
-            setTransferProgress({
-              bytesTransferred,
-              totalBytes,
-              speedBps,
-              percentage
-            })
+            if (progressUpdateTimeout) {
+              clearTimeout(progressUpdateTimeout)
+            }
+            
+            progressUpdateTimeout = setTimeout(() => {
+              setTransferProgress({
+                bytesTransferred,
+                totalBytes,
+                speedBps,
+                percentage
+              })
+            }, 100)
           }
         } catch (error) {
           console.error('Failed to parse progress event:', error)
@@ -127,6 +136,10 @@ export function useReceiver(): UseReceiverReturn {
       })
 
       unlistenComplete = await listen('receive-completed', () => {
+        if (progressUpdateTimeout) {
+          clearTimeout(progressUpdateTimeout)
+        }
+        
         setIsTransporting(false)
         setIsCompleted(true)
         setTransferProgress(null)
@@ -169,6 +182,9 @@ export function useReceiver(): UseReceiverReturn {
     })
 
     return () => {
+      if (progressUpdateTimeout) {
+        clearTimeout(progressUpdateTimeout)
+      }
       if (unlistenStart) unlistenStart()
       if (unlistenProgress) unlistenProgress()
       if (unlistenComplete) unlistenComplete()
@@ -200,7 +216,7 @@ export function useReceiver(): UseReceiverReturn {
       }
     } catch (error) {
       console.error('Failed to open folder dialog:', error)
-      showAlert('Folder Dialog Failed', `Failed to open folder dialog: ${error}`, 'error')
+      showAlert(t('common:errors.folderDialogFailed'), `${t('common:errors.folderDialogFailedDesc')}: ${error}`, 'error')
     }
   }
 
@@ -221,7 +237,7 @@ export function useReceiver(): UseReceiverReturn {
       })
     } catch (error) {
       console.error('Failed to receive file:', error)
-      showAlert('Receive Failed', `Failed to receive file: ${error}`, 'error')
+      showAlert(t('common:errors.receiveFailed'), String(error), 'error')
       setIsReceiving(false)
       setIsTransporting(false)
       setIsCompleted(false)

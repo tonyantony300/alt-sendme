@@ -65,7 +65,23 @@
     "successMessage": "転送が正常に完了しました。",
     "fileName": "ファイル名",
     "fileSize": "ファイルサイズ",
-    "downloadPath": "ダウンロードパス"
+    "downloadPath": "ダウンロードパス",
+    "duration": "所要時間",
+    "avgSpeed": "平均速度"
+  },
+  "errors": {
+    "sharingFailed": "共有に失敗しました",
+    "sharingFailedDesc": "共有を開始できませんでした",
+    "stopSharingFailed": "共有の停止に失敗しました",
+    "stopSharingFailedDesc": "共有を停止できませんでした",
+    "copyFailed": "コピーに失敗しました",
+    "copyFailedDesc": "チケットをコピーできませんでした",
+    "folderDialogFailed": "フォルダダイアログに失敗しました",
+    "folderDialogFailedDesc": "フォルダダイアログを開けませんでした",
+    "fileDialogFailed": "ファイルダイアログに失敗しました",
+    "fileDialogFailedDesc": "ファイルダイアログを開けませんでした",
+    "receiveFailed": "受信に失敗しました",
+    "receiveFailedDesc": "ファイルを受信できませんでした"
   }
 }
 

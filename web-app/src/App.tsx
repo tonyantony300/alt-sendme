@@ -144,7 +144,7 @@ function AppContent() {
             cursor: 'pointer',
           }}
         >
-          {t('reportIssue')}
+          {t('common:reportIssue')}
         </button>
         <div className="absolute right-4 bottom-2">
           <LanguageSwitcher />
