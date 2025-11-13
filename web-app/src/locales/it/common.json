@@ -79,7 +79,7 @@
     "folderDialogFailed": "Apertura Cartella Fallita",
     "folderDialogFailedDesc": "Impossibile aprire la finestra di selezione della cartella",
     "fileDialogFailed": "Apertura File Fallita",
-    "fileDialogFailedDesc": "Impossibile aprire la finestra di selezione della file",
+    "fileDialogFailedDesc": "Impossibile aprire la finestra di selezione del file",
     "receiveFailed": "Ricevimento Fallito",
     "receiveFailedDesc": "Impossibile ricevere il file"
   }
