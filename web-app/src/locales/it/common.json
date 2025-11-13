@@ -65,6 +65,22 @@
     "successMessage": "Il trasferimento è stato completato con successo.",
     "fileName": "Nome file",
     "fileSize": "Dimensione file",
-    "downloadPath": "Percorso di download"
+    "downloadPath": "Percorso di download",
+    "duration": "Durata",
+    "avgSpeed": "Velocità Media"
+  },
+  "errors": {
+    "sharingFailed": "Condivisione Fallita",
+    "sharingFailedDesc": "Impossibile avviare la condivisione",
+    "stopSharingFailed": "Arresto Condivisione Fallito",
+    "stopSharingFailedDesc": "Impossibile arrestare la condivisione",
+    "copyFailed": "Copia Fallita",
+    "copyFailedDesc": "Impossibile copiare il ticket",
+    "folderDialogFailed": "Apertura Cartella Fallita",
+    "folderDialogFailedDesc": "Impossibile aprire la finestra di selezione della cartella",
+    "fileDialogFailed": "Apertura File Fallita",
+    "fileDialogFailedDesc": "Impossibile aprire la finestra di selezione della file",
+    "receiveFailed": "Ricevimento Fallito",
+    "receiveFailedDesc": "Impossibile ricevere il file"
   }
 }
