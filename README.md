@@ -24,7 +24,7 @@
 
 
 
-A free and open-source file transfer tool that harnesses the power of cutting-edge peer-to-peer networking, letting you transfer files directly without storing them on cloud servers.
+A free and open-source file transfer tool that harnesses the power of [cutting-edge peer-to-peer networking](https://www.iroh.computer), letting you transfer files directly without storing them on cloud servers.
 
 Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
 
@@ -33,13 +33,13 @@ Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easil
 
 - **Send anywhere** – Works seamlessly on local networks or across continents.
 - **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud servers or intermediaries.
-- **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
+- [**End-to-end encryption**](https://www.iroh.computer/docs/faq#how-secure-is-irohs-end-to-end-encryption) – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
 - **No accounts or personal info** – Transfer files without sign-ups or exposing private data.
-- **Transfer anything** – Send files or directories of any size, verified with BLAKE3-based integrity checks.
+- [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size, verified with BLAKE3-based integrity checks.
 - **Resumable transfers** – Interrupted downloads automatically resume where they left off.
 - **Fast & reliable** – Capable of saturating multi-gigabit connections for lightning-fast transfers.
-- **NAT traversal via QUIC** – Secure, low-latency connections using QUIC hole punching with encrypted relay fallback.
-- **CLI integration** – Interoperable with the Sendme CLI.
+- [**NAT traversal via QUIC**](https://www.iroh.computer/docs/faq#does-iroh-use-relay-servers) – Secure, low-latency connections using QUIC hole punching with encrypted relay fallback.
+- **CLI integration** – Interoperable with the [Sendme CLI](https://www.iroh.computer/sendme).
 - **Mobile & web** – Coming soon.
 - **Free & open source** – No upload costs, no size limits, and fully community-driven.
 
@@ -59,20 +59,12 @@ The easiest way to get started is by downloading one of the following versions f
     <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.0/AltSendme_0.2.0_x64-setup_windows.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
-    <td><b>Windows - MSI</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.0/AltSendme_0.2.0_x64_en-US_windows.msi'>AltSendme.msi</a></td>
-  </tr>
-  <tr>
-    <td><b>macOS* - Apple sillicon</b></td>
+    <td><b>macOS - Apple chip</b></td>
     <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.0/AltSendme_0.2.0_aarch64_darwin.dmg'>AltSendme.dmg</a></td>
   </tr>
    <tr>
-    <td><b>macOS* -Intel x86_64</b></td>
+    <td><b>macOS -Intel chip</b></td>
     <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.0/AltSendme_0.2.0_x64_darwin.dmg'>AltSendme.dmg</a></td>
-  </tr>
-  <tr>
-    <td><b>Linux (deb)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.0/AltSendme_0.2.0_amd64_linux.deb'>AltSendme.deb</a></td>
   </tr>
   <tr>
     <td><b>Linux (AppImage)</b></td>
@@ -179,18 +171,35 @@ AGPL-3.0
 
 See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your data and privacy.
 
-
-# Acknowledgements
-
-Built on the shoulders of giants:
-
-- [Iroh](https://www.iroh.computer)
-- [Tauri](https://v2.tauri.app)
-
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
 
 
-<div align="center" style="color: gray;">Happy transfers with Altsendme!</div>
+## Contributors
+
+<a href="https://github.com/tonyantony300/alt-sendme/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=tonyantony300/alt-sendme" />
+</a>
+
+
+# Acknowledgements
+
+Built with and around
+
+
+- [Sendme](https://www.iroh.computer/sendme)
+- [Tauri](https://v2.tauri.app)
+
+
+<div align="center" style="font-size: 2em;">
+
+**Built with ❤️ on [Iroh](https://www.iroh.computer)**
+
+</div>
+
+
+
+
+<!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
 [badge-version]: https://img.shields.io/badge/version-0.2.0-blue
