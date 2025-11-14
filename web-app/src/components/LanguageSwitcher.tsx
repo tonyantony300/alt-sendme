@@ -11,6 +11,7 @@ const LANGUAGES = [
   { value: 'ja', label: '日本語' },
   { value: 'th', label: 'Thai' },
   { value: 'it', label: 'Italiano' },
+  { value: 'cs', label: 'Čeština' },
 ]
 
 export function LanguageSwitcher() {
