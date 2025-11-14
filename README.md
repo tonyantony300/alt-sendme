@@ -20,6 +20,7 @@
 [![Sponsor][badge-sponsor]](https://github.com/sponsors/tonyantony300)
 [![Hire developer][badge-hire]](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
 
+
 </div>
 
 
@@ -171,7 +172,7 @@ AGPL-3.0
 
 See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your data and privacy.
 
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300)
+[![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300) [![Buy Me Coffee](https://img.shields.io/badge/Buy%20Me%20Coffee-FF5A5F?style=for-the-badge&logo=coffee&logoColor=FFFFFF)](https://buymeacoffee.com/tny_antny)
 
 
 ## Contributors
