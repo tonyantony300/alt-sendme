@@ -81,7 +81,9 @@
     "fileDialogFailed": "File Dialog Failed",
     "fileDialogFailedDesc": "Failed to open file dialog",
     "receiveFailed": "Receive Failed",
-    "receiveFailedDesc": "Failed to receive file"
+    "receiveFailedDesc": "Failed to receive file",
+    "openFolderFailed": "Open Folder Failed",
+    "openFolderFailedDesc": "Failed to open download folder"
   }
 }
 
