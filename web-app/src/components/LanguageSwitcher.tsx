@@ -9,7 +9,6 @@ const LANGUAGES = [
   { value: 'zh-CN', label: '简体中文' },
   { value: 'de', label: 'Deutsch' },
   { value: 'ja', label: '日本語' },
-  { value: 'cs', label: 'Čeština' },
   { value: 'th', label: 'Thai' },
   { value: 'it', label: 'Italiano' },
   { value: 'cs', label: 'Čeština' },
