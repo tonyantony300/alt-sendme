@@ -130,7 +130,7 @@ function AppContent() {
         <button
           onClick={async () => {
             try {
-              await openUrl('https://github.com/tonyantony300/alt-sendme/issues/new')
+              await openUrl('https://buymeacoffee.com/tny_antny')
             } catch (error) {
               console.error('Failed to open URL:', error)
             }
@@ -144,7 +144,7 @@ function AppContent() {
             cursor: 'pointer',
           }}
         >
-          {t('common:reportIssue')}
+          {t('common:donate')}
         </button>
         <div className="absolute right-4 bottom-2">
           <LanguageSwitcher />

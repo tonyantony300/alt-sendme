@@ -4,7 +4,7 @@ import { trackTransferComplete } from '../../lib/analytics'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
+  if (bytes === 0) return 'NA'
   
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -26,6 +26,8 @@ function formatDuration(ms: number): string {
 }
 
 function formatSpeed(bytesPerSecond: number): string {
+  if (bytesPerSecond === 0) return 'NA'
+  
   const mbps = bytesPerSecond / (1024 * 1024)
   const kbps = bytesPerSecond / 1024
 
@@ -136,7 +138,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm"
               style={{ color: 'var(--app-main-view-fg)' }}
             >
-              {wasStopped ? '0 B' : formatFileSize(metadata.fileSize)}
+              {wasStopped ? 'NA' : formatFileSize(metadata.fileSize)}
             </span>
           </div>
           
@@ -166,7 +168,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm"
               style={{ color: 'var(--app-main-view-fg)' }}
             >
-              {wasStopped ? '0 KB/s' : formatSpeed(calculateAverageSpeed(metadata.fileSize, metadata.duration))}
+              {wasStopped ? 'NA' : formatSpeed(calculateAverageSpeed(metadata.fileSize, metadata.duration))}
             </span>
           </div>
         </div>

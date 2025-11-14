@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
-import { downloadDir } from '@tauri-apps/api/path'
+import { downloadDir, join } from '@tauri-apps/api/path'
+import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType, TransferMetadata, TransferProgress } from '../types/sender'
 
@@ -41,6 +42,59 @@ export function useReceiver(): UseReceiverReturn {
   const transferProgressRef = useRef<TransferProgress | null>(null)
   const transferStartTimeRef = useRef<number | null>(null)
   const savePathRef = useRef<string>('')
+  const folderOpenTriggeredRef = useRef(false)
+  
+  const isAbsolutePath = (path: string) => {
+    if (!path) return false
+    return path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path)
+  }
+  
+  const normalizeSeparators = (path: string) => path.replace(/\\/g, '/')
+  
+  const resolveRevealPath = async (basePath: string, names: string[]) => {
+    if (!basePath) return null
+    
+    if (names.length === 0) {
+      return basePath
+    }
+    
+    if (names.length === 1) {
+      const [name] = names
+      if (isAbsolutePath(name)) {
+        return name
+      }
+      try {
+        return await join(basePath, name)
+      } catch (error) {
+        console.error('Failed to join path for reveal:', error)
+        return basePath
+      }
+    }
+    
+    const firstName = names[0]
+    
+    if (isAbsolutePath(firstName)) {
+      const normalized = normalizeSeparators(firstName)
+      const parts = normalized.split('/')
+      if (parts.length > 1) {
+        parts.pop()
+        return parts.join('/') || firstName
+      }
+      return firstName
+    }
+    
+    const normalized = normalizeSeparators(firstName)
+    const [topLevel] = normalized.split('/')
+    if (topLevel) {
+      try {
+        return await join(basePath, topLevel)
+      } catch (error) {
+        console.error('Failed to join directory path for reveal:', error)
+      }
+    }
+    
+    return basePath
+  }
   
   useEffect(() => {
     fileNamesRef.current = fileNames
@@ -230,6 +284,7 @@ export function useReceiver(): UseReceiverReturn {
       setTransferMetadata(null)
       setTransferProgress(null)
       setTransferStartTime(null)
+      folderOpenTriggeredRef.current = false
       
       await invoke<string>('receive_file', { 
         ticket: ticket.trim(),
@@ -253,7 +308,37 @@ export function useReceiver(): UseReceiverReturn {
     setTransferProgress(null)
     setTransferStartTime(null)
     setFileNames([])
+    folderOpenTriggeredRef.current = false
   }
+
+  useEffect(() => {
+    if (!isCompleted) {
+      folderOpenTriggeredRef.current = false
+      return
+    }
+    if (!savePath || folderOpenTriggeredRef.current) {
+      return
+    }
+
+    const revealDownloadFolder = async () => {
+      try {
+        folderOpenTriggeredRef.current = true
+        const targetPath = await resolveRevealPath(savePath, fileNamesRef.current)
+        if (targetPath) {
+          await revealItemInDir(targetPath)
+        }
+      } catch (error) {
+        console.error('Failed to open download folder:', error)
+        showAlert(
+          t('common:errors.openFolderFailed'),
+          `${t('common:errors.openFolderFailedDesc')}: ${error}`,
+          'error'
+        )
+      }
+    }
+
+    revealDownloadFolder()
+  }, [isCompleted, savePath, showAlert, t])
 
   return {
     ticket,
