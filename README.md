@@ -57,14 +57,14 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.0_x64-setup.exe'>AltSendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.1_x64-setup.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
     <td><b>macOS</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.0_universal.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.1_universal.dmg'>AltSendme.dmg</a></td>
   <tr>
     <td><b>Linux </b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.0_amd64.deb'>AltSendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.1_amd64.deb'>AltSendme.deb</a></td>
   </tr>
 </table>
 
