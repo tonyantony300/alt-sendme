@@ -34,9 +34,9 @@ Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easil
 
 - **Send anywhere** – Works seamlessly on local networks or across continents.
 - **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud servers or intermediaries.
-- [**End-to-end encryption**](https://www.iroh.computer/docs/faq#how-secure-is-irohs-end-to-end-encryption) – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
+- **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
 - **No accounts or personal info** – Transfer files without sign-ups or exposing private data.
-- [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size, verified with BLAKE3-based integrity checks.
+- [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size or any format, verified with BLAKE3-based integrity checks.
 - **Resumable transfers** – Interrupted downloads automatically resume where they left off.
 - **Fast & reliable** – Capable of saturating multi-gigabit connections for lightning-fast transfers.
 - [**NAT traversal via QUIC**](https://www.iroh.computer/docs/faq#does-iroh-use-relay-servers) – Secure, low-latency connections using QUIC hole punching with encrypted relay fallback.
@@ -111,6 +111,8 @@ The AltSendme uses the same core networking library as the [sendme](https://www.
 - 🇨🇳 Chinese
 - 🇯🇵 Japanese
 - 🇷🇺 Russian
+- 🇨🇿 Czech
+- 🇮🇹 Italian
 
 
 
@@ -177,20 +179,20 @@ See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your da
 </a>
 
 
-# Acknowledgements
-
-Built with and around
+## Acknowledgements
 
 
-- [Sendme](https://www.iroh.computer/sendme)
+- [Iroh](https://www.iroh.computer)
 - [Tauri](https://v2.tauri.app)
+- [Sendme](https://www.iroh.computer/sendme)
 
 
-<div align="center" style="font-size: 2em;">
+## Contact 
 
-**Built with ❤️ on [Iroh](https://www.iroh.computer)**
+Reach me [here](https://www.altsendme.com/en/contact) for suggestions, feedback or media related communication.
 
-</div>
+
+Thank you for checking out this project! If you find it useful, consider giving it a star and helping spread the word.
 
 
 
