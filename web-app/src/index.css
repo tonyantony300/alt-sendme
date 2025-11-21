@@ -166,6 +166,31 @@
     background: var(--app-main-view);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
+  
+  .language-dropdown {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  }
+  
+  .language-dropdown::-webkit-scrollbar {
+    display: block;
+    width: 4px;
+  }
+  
+  .language-dropdown::-webkit-scrollbar-track {
+    display: block;
+    background: transparent;
+  }
+  
+  .language-dropdown::-webkit-scrollbar-thumb {
+    display: block;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+  
+  .language-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
 }
 
 @layer utilities {

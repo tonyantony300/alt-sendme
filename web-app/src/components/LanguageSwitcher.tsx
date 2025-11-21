@@ -13,6 +13,9 @@ const LANGUAGES = [
   { value: 'it', label: 'Italiano' },
   { value: 'cs', label: 'Čeština' },
   { value: 'es', label: 'Español' },
+  { value: 'pt-BR', label: 'Português' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'ko', label: '한국어' },
 ]
 
 export function LanguageSwitcher() {
@@ -69,11 +72,12 @@ export function LanguageSwitcher() {
 
       {isOpen && (
         <div
-          className="absolute right-0 bottom-full mb-1 rounded-md shadow-lg overflow-hidden z-50"
+          className="language-dropdown absolute right-0 bottom-full mb-1 rounded-md shadow-lg overflow-y-auto z-50"
           style={{
             backgroundColor: 'var(--app-main-view)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             minWidth: '120px',
+            maxHeight: '30vh',
           }}
         >
           {LANGUAGES.map((lang) => (

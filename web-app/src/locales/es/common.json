@@ -63,8 +63,11 @@
     "done": "Hecho",
     "wasStopped": "La transferencia se detuvo antes de completarse.",
     "successMessage": "Tu transferencia se ha completado correctamente.",
+    "file": "Archivo",
+    "folder": "Carpeta",
     "fileName": "Nombre del archivo",
     "fileSize": "Tamaño del archivo",
+    "folderSize": "Tamaño de la carpeta",
     "downloadPath": "Ruta de descarga",
     "duration": "Duración",
     "avgSpeed": "Velocidad media"
