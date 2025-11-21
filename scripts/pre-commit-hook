@@ -1,0 +1,11 @@
+#!/bin/sh
+
+node scripts/validate-version.js
+
+if [ $? -ne 0 ]; then
+  echo "Version validation failed. Please run 'npm run sync-version' to fix."
+  exit 1
+fi
+
+exit 0
+

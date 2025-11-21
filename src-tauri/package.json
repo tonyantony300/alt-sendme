@@ -4,6 +4,8 @@
   "scripts": {
     "dev": "cd ../web-app && npm run dev",
     "build": "cd ../web-app && npm run build",
-    "sync-version": "node ../scripts/sync-version.js"
+    "sync-version": "node ../scripts/sync-version.js",
+    "validate-version": "node ../scripts/validate-version.js",
+    "release": "node ../scripts/release.js"
   }
 }
