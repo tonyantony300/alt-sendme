@@ -66,6 +66,8 @@
   "plugins": {},
   "bundle": {
     "active": true,
+    "targets": "all",
+    "identifier": "com.altsendme.desktop",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -74,7 +76,22 @@
       "icons/icon.ico"
     ],
     "macOS": {
-      "signingIdentity": null
+      "signingIdentity": "Developer ID Application: Tony Antony (9H7RVQAP36)"
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": "en-US"
+      },
+      "nsis": {
+        "installMode": "perUser",
+        "languages": ["en-US"],
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico",
+        "license": "../LICENSE"
+      }
     }
   }
 }
