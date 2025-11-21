@@ -53,10 +53,15 @@ export function useSender(): UseSenderReturn {
   const isCompletedRef = useRef(false)
   const wasManuallyStoppedRef = useRef(false)
   const selectedPathRef = useRef<string | null>(null)
+  const pathTypeRef = useRef<'file' | 'directory' | null>(null)
 
   useEffect(() => {
     selectedPathRef.current = selectedPath
   }, [selectedPath])
+
+  useEffect(() => {
+    pathTypeRef.current = pathType
+  }, [pathType])
 
   useEffect(() => {
     let unlistenStart: UnlistenFn | undefined
@@ -135,6 +140,7 @@ export function useSender(): UseSenderReturn {
           : 0
         
         const currentPath = selectedPathRef.current
+        const currentPathType = pathTypeRef.current
         if (currentPath) {
           const fileName = currentPath.split('/').pop() || 'Unknown'
           const estimatedFileSize = latestProgressRef.current?.totalBytes || 0
@@ -144,7 +150,8 @@ export function useSender(): UseSenderReturn {
             fileSize: estimatedFileSize, 
             duration, 
             startTime: transferStartTimeRef.current || endTime, 
-            endTime 
+            endTime,
+            pathType: currentPathType
           })
           
           setIsTransporting(false)
@@ -158,7 +165,8 @@ export function useSender(): UseSenderReturn {
               fileSize, 
               duration, 
               startTime: transferStartTimeRef.current || endTime, 
-              endTime 
+              endTime,
+              pathType: currentPathType
             })
           } catch (error) {
             console.error('Failed to get file size:', error)
@@ -191,6 +199,7 @@ export function useSender(): UseSenderReturn {
           : 0
         
         const currentPath = selectedPathRef.current
+        const currentPathType = pathTypeRef.current
         if (currentPath) {
           const fileName = currentPath.split('/').pop() || 'Unknown'
           setTransferMetadata({ 
@@ -199,7 +208,8 @@ export function useSender(): UseSenderReturn {
             duration, 
             startTime: transferStartTimeRef.current || endTime, 
             endTime,
-            wasStopped: true
+            wasStopped: true,
+            pathType: currentPathType
           })
         }
       })
@@ -284,6 +294,7 @@ export function useSender(): UseSenderReturn {
         
         const endTime = Date.now()
         const fileName = currentSelectedPath.split('/').pop() || 'Unknown'
+        const currentPathType = pathTypeRef.current
         
         const stoppedMetadata: TransferMetadata = {
           fileName,
@@ -291,7 +302,8 @@ export function useSender(): UseSenderReturn {
           duration: 0,
           startTime: currentTransferStartTime || endTime,
           endTime,
-          wasStopped: true
+          wasStopped: true,
+          pathType: currentPathType
         }
         
         setTransferMetadata(stoppedMetadata)

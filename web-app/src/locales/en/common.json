@@ -63,8 +63,11 @@
     "done": "Done",
     "wasStopped": "The transfer was stopped before completion.",
     "successMessage": "Your transfer has been completed successfully.",
+    "file": "File",
+    "folder": "Folder",
     "fileName": "File name",
     "fileSize": "File size",
+    "folderSize": "Folder size",
     "downloadPath": "Download path",
     "duration": "Duration",
     "avgSpeed": "Avg Speed"

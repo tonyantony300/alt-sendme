@@ -63,8 +63,11 @@
     "done": "完了",
     "wasStopped": "転送は完了前に停止されました。",
     "successMessage": "転送が正常に完了しました。",
+    "file": "ファイル",
+    "folder": "フォルダ",
     "fileName": "ファイル名",
     "fileSize": "ファイルサイズ",
+    "folderSize": "フォルダサイズ",
     "downloadPath": "ダウンロードパス",
     "duration": "所要時間",
     "avgSpeed": "平均速度"

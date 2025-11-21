@@ -63,8 +63,11 @@
     "done": "完成",
     "wasStopped": "传输在完成前已停止。",
     "successMessage": "您的传输已成功完成。",
+    "file": "文件",
+    "folder": "文件夹",
     "fileName": "文件名",
     "fileSize": "文件大小",
+    "folderSize": "文件夹大小",
     "downloadPath": "下载路径",
     "duration": "持续时间",
     "avgSpeed": "平均速度"

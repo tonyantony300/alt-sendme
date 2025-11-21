@@ -6,6 +6,7 @@ export interface TransferMetadata {
   endTime: number
   downloadPath?: string
   wasStopped?: boolean
+  pathType?: 'file' | 'directory' | null
 }
 
 export interface TransferProgress {

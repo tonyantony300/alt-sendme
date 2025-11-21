@@ -63,8 +63,11 @@
     "done": "Hotovo",
     "wasStopped": "Přenos byl zastaven před dokončením.",
     "successMessage": "Váš přenos byl úspěšně dokončen.",
+    "file": "Soubor",
+    "folder": "Složka",
     "fileName": "Název souboru",
     "fileSize": "Velikost souboru",
+    "folderSize": "Velikost složky",
     "downloadPath": "Cesta pro uložení",
     "duration": "Doba trvání",
     "avgSpeed": "Průměrná rychlost"
