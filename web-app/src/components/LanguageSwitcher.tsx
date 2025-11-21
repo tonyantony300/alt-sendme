@@ -12,6 +12,7 @@ const LANGUAGES = [
   { value: 'th', label: 'Thai' },
   { value: 'it', label: 'Italiano' },
   { value: 'cs', label: 'Čeština' },
+  { value: 'es', label: 'Español' },
 ]
 
 export function LanguageSwitcher() {
