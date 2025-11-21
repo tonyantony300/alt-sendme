@@ -84,6 +84,8 @@
     "fileDialogFailed": "Apertura File Fallita",
     "fileDialogFailedDesc": "Impossibile aprire la finestra di selezione del file",
     "receiveFailed": "Ricevimento Fallito",
-    "receiveFailedDesc": "Impossibile ricevere il file"
+    "receiveFailedDesc": "Impossibile ricevere il file",
+    "openFolderFailed": "Apertura Cartella Fallita",
+    "openFolderFailedDesc": "Impossibile aprire la cartella di download"
   }
 }

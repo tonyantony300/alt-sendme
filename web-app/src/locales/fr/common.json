@@ -84,7 +84,9 @@
     "fileDialogFailed": "Échec de la boîte de dialogue de fichier",
     "fileDialogFailedDesc": "Échec de l'ouverture de la boîte de dialogue de fichier",
     "receiveFailed": "Échec de la réception",
-    "receiveFailedDesc": "Échec de la réception du fichier"
+    "receiveFailedDesc": "Échec de la réception du fichier",
+    "openFolderFailed": "Échec de l'ouverture du dossier",
+    "openFolderFailedDesc": "Échec de l'ouverture du dossier de téléchargement"
   }
 }
 

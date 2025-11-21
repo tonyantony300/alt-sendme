@@ -84,6 +84,8 @@
     "fileDialogFailed": "Chyba dialogového okna souboru",
     "fileDialogFailedDesc": "Nepodařilo se otevřít dialogové okno pro výběr souboru",
     "receiveFailed": "Příjem selhal",
-    "receiveFailedDesc": "Nepodařilo se přijmout soubor"
+    "receiveFailedDesc": "Nepodařilo se přijmout soubor",
+    "openFolderFailed": "Otevření složky selhalo",
+    "openFolderFailedDesc": "Nepodařilo se otevřít složku pro stahování"
   }
 }

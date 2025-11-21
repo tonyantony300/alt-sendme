@@ -84,7 +84,9 @@
     "fileDialogFailed": "文件对话框失败",
     "fileDialogFailedDesc": "无法打开文件对话框",
     "receiveFailed": "接收失败",
-    "receiveFailedDesc": "无法接收文件"
+    "receiveFailedDesc": "无法接收文件",
+    "openFolderFailed": "打开文件夹失败",
+    "openFolderFailedDesc": "无法打开下载文件夹"
   }
 }
 

@@ -84,7 +84,9 @@
     "fileDialogFailed": "การเปิดกล่องโต้ตอบไฟล์ล้มเหลว",
     "fileDialogFailedDesc": "ไม่สามารถเปิดกล่องโต้ตอบไฟล์ได้",
     "receiveFailed": "การรับล้มเหลว",
-    "receiveFailedDesc": "ไม่สามารถรับไฟล์ได้"
+    "receiveFailedDesc": "ไม่สามารถรับไฟล์ได้",
+    "openFolderFailed": "การเปิดโฟลเดอร์ล้มเหลว",
+    "openFolderFailedDesc": "ไม่สามารถเปิดโฟลเดอร์ดาวน์โหลดได้"
   }
 }
 
