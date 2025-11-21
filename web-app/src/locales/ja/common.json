@@ -81,7 +81,9 @@
     "fileDialogFailed": "ファイルダイアログに失敗しました",
     "fileDialogFailedDesc": "ファイルダイアログを開けませんでした",
     "receiveFailed": "受信に失敗しました",
-    "receiveFailedDesc": "ファイルを受信できませんでした"
+    "receiveFailedDesc": "ファイルを受信できませんでした",
+    "openFolderFailed": "フォルダを開くのに失敗しました",
+    "openFolderFailedDesc": "ダウンロードフォルダを開けませんでした"
   }
 }
 

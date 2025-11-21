@@ -81,7 +81,9 @@
     "fileDialogFailed": "Ошибка диалога файла",
     "fileDialogFailedDesc": "Не удалось открыть диалог выбора файла",
     "receiveFailed": "Ошибка получения",
-    "receiveFailedDesc": "Не удалось получить файл"
+    "receiveFailedDesc": "Не удалось получить файл",
+    "openFolderFailed": "Ошибка открытия папки",
+    "openFolderFailedDesc": "Не удалось открыть папку для скачивания"
   }
 }
 

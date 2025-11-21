@@ -81,7 +81,9 @@
     "fileDialogFailed": "Dateidialog fehlgeschlagen",
     "fileDialogFailedDesc": "Dateidialog konnte nicht geöffnet werden",
     "receiveFailed": "Empfang fehlgeschlagen",
-    "receiveFailedDesc": "Datei konnte nicht empfangen werden"
+    "receiveFailedDesc": "Datei konnte nicht empfangen werden",
+    "openFolderFailed": "Ordner öffnen fehlgeschlagen",
+    "openFolderFailedDesc": "Download-Ordner konnte nicht geöffnet werden"
   }
 }
 
