@@ -60,6 +60,16 @@ jobs:
       - name: install frontend dependencies
         run: cd web-app && npm install
 
+      - name: Extract version from tag and sync
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          cd src-tauri
+          npm pkg set version="$VERSION"
+          npm run sync-version
+          node ../scripts/validate-version.js
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: import certificate (macOS only)
         if: matrix.platform == 'macos-latest'
         env:
@@ -138,7 +148,7 @@ jobs:
         with:
           projectPath: ./src-tauri
           tagName: ${{ github.ref_name }}
-          releaseName: 'AltSendme v__VERSION__'
+          releaseName: 'AltSendme ${{ env.VERSION }}'
           args: ${{ matrix.args }}
           notarize: true
           releaseBody: ${{ steps.release_notes.outputs.notes }}
