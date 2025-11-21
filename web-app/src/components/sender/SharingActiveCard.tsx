@@ -4,37 +4,6 @@ import type { SharingControlsProps, TicketDisplayProps } from '../../types/sende
 import { TransferProgressBar } from './TransferProgressBar'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
-
-function formatFileSizeNoDecimals(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return Math.round(bytes / Math.pow(k, i)) + ' ' + sizes[i]
-}
-
-function formatSpeedNoDecimals(speedBps: number): string {
-  const mbps = speedBps / (1024 * 1024)
-  const kbps = speedBps / 1024
-
-  if (mbps >= 1) {
-    return `${Math.round(mbps)} MB/s`
-  } else {
-    return `${Math.round(kbps)} KB/s`
-  }
-}
-
 export function SharingActiveCard({ 
   selectedPath, 
   pathType,
@@ -128,6 +97,18 @@ export function SharingActiveCard({
     }
   }, [isFolderTransfer, transferProgress, transferStartTime, totalTransferredBytes])
 
+  // Calculate percentage and create progress object for folders
+  const folderProgress = isFolderTransfer && transferProgress
+    ? {
+        bytesTransferred: totalTransferredBytes,
+        totalBytes: transferProgress.totalBytes,
+        speedBps: calculatedSpeed,
+        percentage: transferProgress.totalBytes > 0 
+          ? (totalTransferredBytes / transferProgress.totalBytes) * 100 
+          : 0
+      }
+    : null
+
   return (
     <div className="space-y-4">
       <div className="p-4 rounded-lg absolute top-0 left-0">
@@ -162,32 +143,8 @@ export function SharingActiveCard({
       )}
       
       {isTransporting && transferProgress && (
-        pathType === 'directory' ? (
-          <div className="space-y-3">
-            <div className="text-center">
-              <p className="text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                {t('common:sender.filesBeingTransmitted')}
-              </p>
-              <p className="text-xs mb-1" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                {t('common:transfer.speed')}: {formatSpeedNoDecimals(calculatedSpeed)}
-              </p>
-              <p 
-                className="text-xs" 
-                style={{ 
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  textAlign: 'center'
-                }}
-              >
-                <span className="font-mono inline-block" style={{ minWidth: '8ch', textAlign: 'right' }}>
-                  {formatFileSizeNoDecimals(totalTransferredBytes)}
-                </span>
-                {' / '}
-                <span className="font-mono inline-block" style={{ minWidth: '8ch', textAlign: 'right' }}>
-                  {formatFileSize(transferProgress.totalBytes)}
-                </span>
-              </p>
-            </div>
-          </div>
+        folderProgress ? (
+          <TransferProgressBar progress={folderProgress} />
         ) : (
           <TransferProgressBar progress={transferProgress} />
         )
