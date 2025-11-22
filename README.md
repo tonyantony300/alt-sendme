@@ -69,28 +69,7 @@ The easiest way to get started is by downloading one of the following versions f
 </table>
 
 
-*For running on macOS, see [macOS Installation (Unsigned App)](#macos-installation) below.
-
-
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
-
-
-
-### macOS Installation 
-
-Alt-Sendme is currently distributed **without code signing**. When you first open it, macOS will show a security warning saying the application is damaged. Here is how you can run it:
-
-
-**Remove Quarantine Flag (Terminal)**
-
-1. Open Spotlight Search (⌘+space) - search for terminal and open
-2. Paste the following command and hit enter
-
-```bash
-cd /Applications && xattr -dr com.apple.quarantine AltSendme.app
-```
-
-The app is open source and safe - the warning is just macOS's gatekeeper for unsigned applications. Code signing will be added in future releases.
 
 
 ## CLI Compatibility
