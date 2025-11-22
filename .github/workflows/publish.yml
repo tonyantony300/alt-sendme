@@ -43,14 +43,14 @@ jobs:
       - name: Install NSIS (Windows only)
         if: matrix.platform == 'windows-latest'
         shell: pwsh
-        run: |
-          choco install nsis -y
+        run: choco install nsis -y
 
-      - name: Verify NSIS Installation
+      - name: Add NSIS to PATH
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
-          makensis /VERSION
+          $env:Path = "C:\Program Files (x86)\NSIS;" + $env:Path
+          echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -150,7 +150,6 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: 'AltSendme ${{ env.VERSION }}'
           args: ${{ matrix.args }}
-          notarize: true
           releaseBody: ${{ steps.release_notes.outputs.notes }}
           releaseDraft: true
           prerelease: false

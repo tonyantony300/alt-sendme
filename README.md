@@ -57,40 +57,19 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.1_x64-setup.exe'>AltSendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.2/AltSendme_0.2.2_x64-setup.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
     <td><b>macOS</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.1_universal.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.2/AltSendme_0.2.2_universal.dmg'>AltSendme.dmg</a></td>
   <tr>
     <td><b>Linux </b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.1/AltSendme_0.2.1_amd64.deb'>AltSendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.2/AltSendme_0.2.2_amd64.deb'>AltSendme.deb</a></td>
   </tr>
 </table>
 
 
-*For running on macOS, see [macOS Installation (Unsigned App)](#macos-installation) below.
-
-
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
-
-
-
-### macOS Installation 
-
-Alt-Sendme is currently distributed **without code signing**. When you first open it, macOS will show a security warning saying the application is damaged. Here is how you can run it:
-
-
-**Remove Quarantine Flag (Terminal)**
-
-1. Open Spotlight Search (⌘+space) - search for terminal and open
-2. Paste the following command and hit enter
-
-```bash
-cd /Applications && xattr -dr com.apple.quarantine AltSendme.app
-```
-
-The app is open source and safe - the warning is just macOS's gatekeeper for unsigned applications. Code signing will be added in future releases.
 
 
 ## CLI Compatibility
@@ -113,6 +92,10 @@ The AltSendme uses the same core networking library as the [sendme](https://www.
 - 🇷🇺 Russian
 - 🇨🇿 Czech
 - 🇮🇹 Italian
+- 🇸🇦 Arabic
+- 🇧🇷 Portuguese (Brazilian)
+- 🇰🇷 Korean
+- 🇪🇸 Spanish
 
 
 
@@ -200,7 +183,7 @@ Thank you for checking out this project! If you find it useful, consider giving 
 <!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
-[badge-version]: https://img.shields.io/badge/version-0.2.1-blue
+[badge-version]: https://img.shields.io/badge/version-0.2.2-blue
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
 [badge-hire]: https://img.shields.io/badge/hire%20developer-8b5cf6
