@@ -45,12 +45,13 @@ jobs:
         shell: pwsh
         run: |
           choco install nsis -y
-          refreshenv
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
       - name: Verify NSIS Installation
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           makensis /VERSION
 
       - name: Rust cache
