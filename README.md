@@ -113,6 +113,10 @@ The AltSendme uses the same core networking library as the [sendme](https://www.
 - 🇷🇺 Russian
 - 🇨🇿 Czech
 - 🇮🇹 Italian
+- 🇸🇦 Arabic
+- 🇧🇷 Portuguese (Brazilian)
+- 🇰🇷 Korean
+- 🇪🇸 Spanish
 
 
 
