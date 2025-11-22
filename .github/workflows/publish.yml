@@ -45,6 +45,7 @@ jobs:
         shell: pwsh
         run: |
           choco install nsis -y
+          refreshenv
 
       - name: Verify NSIS Installation
         if: matrix.platform == 'windows-latest'
