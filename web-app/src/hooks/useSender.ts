@@ -71,7 +71,9 @@ export function useSender(): UseSenderReturn {
 
     const setupListeners = async () => {
       unlistenStart = await listen('transfer-started', () => {
-        transferStartTimeRef.current = Date.now()
+        const epochMs = Date.now()
+        console.log(`[${epochMs}] Frontend: transfer-started event received`)
+        transferStartTimeRef.current = epochMs
         isCompletedRef.current = false
         latestProgressRef.current = null
         
@@ -93,6 +95,7 @@ export function useSender(): UseSenderReturn {
       })
 
       unlistenProgress = await listen('transfer-progress', (event: any) => {
+        const epochMs = Date.now()
         try {
           const payload = event.payload as string
           const parts = payload.split(':')
@@ -104,20 +107,28 @@ export function useSender(): UseSenderReturn {
             const speedBps = speedInt / 1000.0
             const percentage = totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
             
+            console.log(`[${epochMs}] Frontend: transfer-progress event - ${bytesTransferred}/${totalBytes} bytes (${percentage.toFixed(2)}%), speed: ${(speedBps / 1024 / 1024).toFixed(2)} MB/s`)
+            
             latestProgressRef.current = {
               bytesTransferred,
               totalBytes,
               speedBps,
               percentage
             }
+          } else {
+            console.warn(`[${epochMs}] Frontend: transfer-progress event with invalid payload format:`, payload)
           }
         } catch (error) {
-          console.error('Failed to parse progress event:', error)
+          console.error(`[${epochMs}] Frontend: Failed to parse progress event:`, error)
         }
       })
 
       unlistenComplete = await listen('transfer-completed', async () => {
+        const epochMs = Date.now()
+        console.log(`[${epochMs}] Frontend: transfer-completed event received`)
+        
         if (wasManuallyStoppedRef.current) {
+          console.log(`[${epochMs}] Frontend: Ignoring transfer-completed (manually stopped)`)
           return
         }
         
@@ -138,6 +149,8 @@ export function useSender(): UseSenderReturn {
         const duration = transferStartTimeRef.current 
           ? endTime - transferStartTimeRef.current 
           : 0
+        
+        console.log(`[${epochMs}] Frontend: Transfer completed - duration: ${duration}ms, start: ${transferStartTimeRef.current}, end: ${endTime}`)
         
         const currentPath = selectedPathRef.current
         const currentPathType = pathTypeRef.current
@@ -179,7 +192,11 @@ export function useSender(): UseSenderReturn {
       })
 
       unlistenFailed = await listen('transfer-failed', async () => {
+        const epochMs = Date.now()
+        console.log(`[${epochMs}] Frontend: transfer-failed event received`)
+        
         if (wasManuallyStoppedRef.current) {
+          console.log(`[${epochMs}] Frontend: Ignoring transfer-failed (manually stopped)`)
           return
         }
         
@@ -197,6 +214,8 @@ export function useSender(): UseSenderReturn {
         const duration = transferStartTimeRef.current 
           ? endTime - transferStartTimeRef.current 
           : 0
+        
+        console.log(`[${epochMs}] Frontend: Transfer failed - duration: ${duration}ms, start: ${transferStartTimeRef.current}, end: ${endTime}`)
         
         const currentPath = selectedPathRef.current
         const currentPathType = pathTypeRef.current
@@ -252,6 +271,9 @@ export function useSender(): UseSenderReturn {
   const startSharing = async () => {
     if (!selectedPath) return
     
+    const epochMs = Date.now()
+    console.log(`[${epochMs}] Frontend: startSharing called for path: ${selectedPath}`)
+    
     try {
       isCompletedRef.current = false
       setIsCompleted(false)
@@ -263,11 +285,16 @@ export function useSender(): UseSenderReturn {
       latestProgressRef.current = null
       
       setIsLoading(true)
+      const invokeStartMs = Date.now()
+      console.log(`[${invokeStartMs}] Frontend: Invoking start_sharing command`)
       const result = await invoke<string>('start_sharing', { path: selectedPath })
+      const invokeEndMs = Date.now()
+      console.log(`[${invokeEndMs}] Frontend: start_sharing completed in ${invokeEndMs - invokeStartMs}ms, ticket received`)
       setTicket(result)
       setIsSharing(true)
     } catch (error) {
-      console.error('Failed to start sharing:', error)
+      const errorMs = Date.now()
+      console.error(`[${errorMs}] Frontend: Failed to start sharing:`, error)
       showAlert(t('common:errors.sharingFailed'), `${t('common:errors.sharingFailedDesc')}: ${error}`, 'error')
     } finally {
       setIsLoading(false)

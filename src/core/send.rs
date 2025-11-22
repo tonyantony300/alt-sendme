@@ -16,13 +16,13 @@ use iroh_blobs::{
     },
     store::fs::FsStore,
     ticket::BlobTicket,
-    BlobFormat, BlobsProtocol,
+    BlobFormat, BlobsProtocol, Hash,
 };
 use n0_future::{task::AbortOnDropHandle, BufferedStreamExt};
 use rand::Rng;
 use std::{
     path::{Component, Path, PathBuf},
-    time::{Duration, Instant},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use tokio::{select, sync::mpsc};
 use tracing::trace;
@@ -114,10 +114,14 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
         let dt = t0.elapsed();
 
         let (ref _temp_tag, size, ref _collection) = import_result;
+        let collection_hash = _temp_tag.hash();
+        let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+        tracing::debug!("[{}] Collection hash for filtering: {}", epoch_ms, collection_hash.fmt_short());
         let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
             progress_rx,
             app_handle_clone,
             size,
+            collection_hash,
         ));
 
         let router = iroh::protocol::Router::builder(endpoint)
@@ -282,7 +286,11 @@ async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
     app_handle: AppHandle,
     total_file_size: u64,
+    collection_hash: Hash,
 ) -> anyhow::Result<()> {
+    let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+    tracing::debug!("[{}] Starting progress tracking: total_file_size={}, collection_hash={}", 
+        epoch_ms, total_file_size, collection_hash.fmt_short());
     use n0_future::FuturesUnordered;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -321,7 +329,8 @@ async fn show_provide_progress_with_logging(
                     iroh_blobs::provider::events::ProviderMessage::GetRequestReceivedNotify(msg) => {
                         let connection_id = msg.connection_id;
                         let request_id = msg.request_id;
-                        
+                        let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                        tracing::debug!("[{}] GetRequestReceivedNotify: conn={}, req={}", epoch_ms, connection_id, request_id);
                         active_requests.fetch_add(1, Ordering::SeqCst);
                         
                         let mut last_time = last_request_time.lock().await;
@@ -334,15 +343,36 @@ async fn show_provide_progress_with_logging(
                         let has_emitted_started_task = has_emitted_started.clone();
                         let has_any_transfer_task = has_any_transfer.clone();
                         let last_request_time_task = last_request_time.clone();
+                        let collection_hash_task = collection_hash;
                         
                         let mut rx = msg.rx;
                         tasks.push(async move {
                             let mut transfer_started = false;
                             let mut request_completed = false;
+                            let mut is_collection_request = false;
                             
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
-                                    iroh_blobs::provider::events::RequestUpdate::Started(_m) => {
+                                    iroh_blobs::provider::events::RequestUpdate::Started(m) => {
+                                        let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                                        tracing::debug!("[{}] RequestUpdate::Started: conn={}, req={}, hash={}, size={}", 
+                                            epoch_ms, connection_id, request_id, m.hash.fmt_short(), m.size);
+                                        
+                                        // Check if this is the collection request by comparing hashes
+                                        if m.hash == collection_hash_task {
+                                            tracing::info!("[{}] Identified collection metadata request: conn={}, req={}, hash={}", 
+                                                epoch_ms, connection_id, request_id, m.hash.fmt_short());
+                                            is_collection_request = true;
+                                            // Don't track state or emit events for collection
+                                            // Still mark as completed to maintain request counting
+                                            request_completed = true;
+                                            completed_requests_task.fetch_add(1, Ordering::SeqCst);
+                                            continue;
+                                        }
+                                        
+                                        tracing::debug!("[{}] File data request: conn={}, req={}, hash={}, size={}", 
+                                            epoch_ms, connection_id, request_id, m.hash.fmt_short(), m.size);
+                                        
                                         if !transfer_started {
                                             transfer_states_task.lock().await.insert(
                                                 (connection_id, request_id),
@@ -361,8 +391,17 @@ async fn show_provide_progress_with_logging(
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
+                                        let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                                        // Skip all progress events for collection requests
+                                        if is_collection_request {
+                                            tracing::trace!("[{}] Skipping progress event for collection: conn={}, req={}, offset={}", 
+                                                epoch_ms, connection_id, request_id, m.end_offset);
+                                            continue;
+                                        }
+                                        
                                         if !transfer_started {
                                             if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
+                                                tracing::debug!("[{}] Emitting transfer-started event", epoch_ms);
                                                 emit_event(&app_handle_task, "transfer-started");
                                             }
                                             transfer_started = true;
@@ -377,16 +416,35 @@ async fn show_provide_progress_with_logging(
                                                 0.0
                                             };
                                             
+                                            tracing::trace!("[{}] Emitting progress: conn={}, req={}, offset={}/{}, speed={:.2} B/s", 
+                                                epoch_ms, connection_id, request_id, m.end_offset, state.total_size, speed_bps);
                                             emit_progress_event(&app_handle_task, m.end_offset, state.total_size, speed_bps);
+                                        } else {
+                                            tracing::warn!("[{}] Progress event received but no state found: conn={}, req={}", 
+                                                epoch_ms, connection_id, request_id);
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
+                                        let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                                        // Skip completion event for collection requests
+                                        if is_collection_request {
+                                            tracing::debug!("[{}] Skipping completion event for collection: conn={}, req={}", 
+                                                epoch_ms, connection_id, request_id);
+                                            // Already marked as completed in Started handler
+                                            continue;
+                                        }
+                                        
+                                        tracing::debug!("[{}] RequestUpdate::Completed: conn={}, req={}", epoch_ms, connection_id, request_id);
+                                        
                                         if transfer_started && !request_completed {
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             request_completed = true;
                                             
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                             let active = active_requests_task.load(Ordering::SeqCst);
+                                            
+                                            tracing::debug!("[{}] Request completed: conn={}, req={}, completed={}, active={}", 
+                                                epoch_ms, connection_id, request_id, completed, active);
                                             
                                             if completed >= active && has_any_transfer_task.load(Ordering::SeqCst) {
                                                 let active_before_wait = active;
@@ -412,18 +470,35 @@ async fn show_provide_progress_with_logging(
                                                     }
                                                 };
                                                 
+                                                tracing::debug!("[{}] Completion check: completed={}, active={}, new_requests={}, has_active_transfers={}, last_request_recent={}", 
+                                                    epoch_ms, completed_after, active_after, new_requests_arrived, has_active_transfers, last_request_recent);
+                                                
                                                 if completed_after >= active_after 
                                                     && !new_requests_arrived
                                                     && !has_active_transfers 
                                                     && !last_request_recent {
+                                                    tracing::info!("[{}] Emitting transfer-completed event", epoch_ms);
                                                     emit_event(&app_handle_task, "transfer-completed");
+                                                } else {
+                                                    tracing::debug!("[{}] Not emitting transfer-completed: conditions not met", epoch_ms);
                                                 }
                                             }
+                                        } else {
+                                            tracing::debug!("[{}] Skipping completion logic: transfer_started={}, request_completed={}", 
+                                                epoch_ms, transfer_started, request_completed);
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Aborted(_m) => {
-                                        tracing::warn!("Request aborted: conn {} req {}", 
-                                            connection_id, request_id);
+                                        let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                                        // Skip abort handling for collection requests
+                                        if is_collection_request {
+                                            tracing::debug!("[{}] Skipping abort event for collection: conn={}, req={}", 
+                                                epoch_ms, connection_id, request_id);
+                                            // Already marked as completed in Started handler
+                                            continue;
+                                        }
+                                        
+                                        tracing::warn!("[{}] Request aborted: conn={}, req={}", epoch_ms, connection_id, request_id);
                                         if transfer_started && !request_completed {
                                             transfer_states_task.lock().await.remove(&(connection_id, request_id));
                                             request_completed = true;
@@ -431,7 +506,10 @@ async fn show_provide_progress_with_logging(
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                             let active = active_requests_task.load(Ordering::SeqCst);
                                             
+                                            tracing::debug!("[{}] Abort handling: completed={}, active={}", epoch_ms, completed, active);
+                                            
                                             if completed >= active {
+                                                tracing::info!("[{}] Emitting transfer-failed event", epoch_ms);
                                                 emit_event(&app_handle_task, "transfer-failed");
                                             }
                                         }
@@ -439,7 +517,16 @@ async fn show_provide_progress_with_logging(
                                 }
                             }
                             
-                            if transfer_started && !request_completed {
+                            // Handle stream end - only process if not a collection request
+                            let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                            if is_collection_request {
+                                tracing::debug!("[{}] Stream ended for collection request: conn={}, req={}", 
+                                    epoch_ms, connection_id, request_id);
+                                // Collection request already handled in Started
+                                // No need to do anything here
+                            } else if transfer_started && !request_completed {
+                                tracing::debug!("[{}] Stream ended without explicit completion: conn={}, req={}", 
+                                    epoch_ms, connection_id, request_id);
                                 let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                 let active = active_requests_task.load(Ordering::SeqCst);
                                 
@@ -492,11 +579,17 @@ async fn show_provide_progress_with_logging(
     if has_any_transfer.load(Ordering::SeqCst) {
         let completed = completed_requests.load(Ordering::SeqCst);
         let active = active_requests.load(Ordering::SeqCst);
+        let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+        
+        tracing::debug!("[{}] Final completion check: completed={}, active={}", epoch_ms, completed, active);
         
         if completed >= active && completed > 0 {
+            tracing::info!("[{}] Emitting final transfer-completed event", epoch_ms);
             emit_event(&app_handle, "transfer-completed");
         }
     }
     
+    let epoch_ms = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+    tracing::debug!("[{}] Progress tracking finished", epoch_ms);
     Ok(())
 }
