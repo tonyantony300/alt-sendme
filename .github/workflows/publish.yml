@@ -13,12 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # universal binary for both Apple Silicon and Intel.
+          - platform: 'macos-latest'
             args: '--target universal-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
           - platform: 'windows-latest'
-            args: ''
+            args: '--bundles nsis,msi'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -32,7 +32,6 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
@@ -40,6 +39,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install NSIS (Windows only)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: choco install nsis -y
+
+      - name: Add NSIS to PATH
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $env:Path = "C:\Program Files (x86)\NSIS;" + $env:Path
+          echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -60,57 +71,86 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: import certificate (macOS only)
-        if: matrix.platform == 'macos-latest' && env.APPLE_CERTIFICATE != ''
+        if: matrix.platform == 'macos-latest'
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         run: |
+          if [ -z "$APPLE_CERTIFICATE" ] || [ -z "$APPLE_CERTIFICATE_PASSWORD" ]; then
+            echo "Apple certificate secrets not set, skipping certificate import"
+            exit 0
+          fi
+          
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           
-          # import certificate from secrets
-          echo -n "$APPLE_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$APPLE_CERTIFICATE" | base64 --decode > $CERTIFICATE_PATH
           
-          # create temporary keychain
           security create-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
           
-          # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
-          
-          # enable codesigning from a non user interactive shell
+          security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains | sed 's/["]//g')
           security set-key-partition-list -S apple-tool:,apple: -s -k "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
           
           echo "Certificate imported successfully"
 
+      - name: Generate release notes from commits
+        id: release_notes
+        shell: bash
+        run: |
+          git fetch --tags --force --prune origin
+          
+          CURRENT_TAG="${{ github.ref_name }}"
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1)
+          
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, showing all commits"
+            COMMIT_RANGE="HEAD"
+          else
+            echo "Comparing ${PREVIOUS_TAG}...${CURRENT_TAG}"
+            COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
+          fi
+          
+          CHANGELOG=$(git log ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges | head -50)
+          
+          {
+            echo "## What's Changed"
+            echo ""
+            if [ -z "$CHANGELOG" ]; then
+              echo "- Initial release"
+            else
+              echo "$CHANGELOG"
+            fi
+            echo ""
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "See the assets below to download and install this version."
+          } > release_notes.txt
+          
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         with:
           projectPath: ./src-tauri
           tagName: ${{ github.ref_name }}
           releaseName: 'AltSendme ${{ env.VERSION }}'
           args: ${{ matrix.args }}
-          releaseBody: |
-            See the assets below to download and install this version.
-            
-            ## macOS Users
-            
-            Download the universal macOS build (supports Apple Silicon and Intel).
-            
-            This app is **not code-signed**. When you first open it:
-            
-            
-            **Terminal:**
-
-            ```bash
-            cd /Applications && xattr -dr com.apple.quarantine AltSendme.app
-            ```
-            
-            
+          releaseBody: ${{ steps.release_notes.outputs.notes }}
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
-
