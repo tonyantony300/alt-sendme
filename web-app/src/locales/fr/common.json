@@ -63,8 +63,11 @@
     "done": "Terminé",
     "wasStopped": "Le transfert a été arrêté avant la fin.",
     "successMessage": "Votre transfert a été complété avec succès.",
+    "file": "Fichier",
+    "folder": "Dossier",
     "fileName": "Nom du fichier",
     "fileSize": "Taille du fichier",
+    "folderSize": "Taille du dossier",
     "downloadPath": "Chemin de téléchargement",
     "duration": "Durée",
     "avgSpeed": "Vitesse moyenne"

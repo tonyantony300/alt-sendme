@@ -63,8 +63,11 @@
     "done": "Fertig",
     "wasStopped": "Die Übertragung wurde vor Abschluss gestoppt.",
     "successMessage": "Ihre Übertragung wurde erfolgreich abgeschlossen.",
+    "file": "Datei",
+    "folder": "Ordner",
     "fileName": "Dateiname",
     "fileSize": "Dateigröße",
+    "folderSize": "Ordner Größe",
     "downloadPath": "Downloadpfad",
     "duration": "Dauer",
     "avgSpeed": "Durchschnittsgeschwindigkeit"

@@ -69,9 +69,6 @@ The easiest way to get started is by downloading one of the following versions f
 </table>
 
 
-*For running on macOS, see [macOS Installation (Unsigned App)](#macos-installation) below.
-
-
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
 

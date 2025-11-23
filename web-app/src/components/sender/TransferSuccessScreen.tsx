@@ -47,6 +47,7 @@ function calculateAverageSpeed(fileSizeBytes: number, durationMs: number): numbe
 export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) {
   const wasStopped = metadata.wasStopped || false
   const isReceiver = !!metadata.downloadPath
+  const isDirectory = metadata.pathType === 'directory'
   const { t } = useTranslation()
   
   const handleDone = () => {
@@ -98,7 +99,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              {t('common:transfer.fileName')}:
+              {isDirectory ? t('common:transfer.folder') : t('common:transfer.file')}:
             </span>
             <span 
               className="text-sm truncate max-w-full"
@@ -132,7 +133,7 @@ export function TransferSuccessScreen({ metadata, onDone }: SuccessScreenProps) 
               className="text-sm font-medium mr-2"
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              {t('common:transfer.fileSize')}:
+              {isDirectory ? t('common:transfer.folderSize') : t('common:transfer.fileSize')}:
             </span>
             <span 
               className="text-sm"
