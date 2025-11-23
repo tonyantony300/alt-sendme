@@ -33,7 +33,7 @@ Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easil
 ## Features
 
 - **Send anywhere** – Works seamlessly on local networks or across continents.
-- **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud servers or intermediaries.
+- **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud storage in between.
 - **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
 - **No accounts or personal info** – Transfer files without sign-ups or exposing private data.
 - [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size or any format, verified with BLAKE3-based integrity checks.
