@@ -1,6 +1,6 @@
 {
   "name": "AltSendme",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "scripts": {
     "dev": "cd ../web-app && npm run dev",
     "build": "cd ../web-app && npm run build",
