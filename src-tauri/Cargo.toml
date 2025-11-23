@@ -1,10 +1,10 @@
 [package]
 name = "alt-sendme"
-version = "0.2.1"
-description = "Desktop version of sendme - P2P file sharing with NAT hole punching"
-authors = ["Sendme Team"]
-license = "Apache-2.0 OR MIT"
-edition = "2021"
+version = "0.2.3"
+description = "P2P file sharing with NAT hole punching"
+authors = ["Tony Antony"]
+license = "AGPL 3.0"
+edition = "2025"
 rust-version = "1.81"
 
 [build-dependencies]
