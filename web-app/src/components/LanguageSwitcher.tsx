@@ -17,6 +17,8 @@ const LANGUAGES = [
   { value: 'pt-BR', label: 'Português' },
   { value: 'ar', label: 'العربية' },
   { value: 'ko', label: '한국어' },
+  { value: 'hi', label: 'हिन्दी' },
+
 ]
 
 export function LanguageSwitcher() {
