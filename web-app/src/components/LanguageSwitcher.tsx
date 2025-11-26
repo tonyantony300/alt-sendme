@@ -18,6 +18,7 @@ const LANGUAGES = [
   { value: 'ar', label: 'العربية' },
   { value: 'ko', label: '한국어' },
   { value: 'hi', label: 'हिन्दी' },
+  { value: 'fa', label: 'فارسی' },
 
 ]
 
