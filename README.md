@@ -87,7 +87,6 @@ More download options in [GitHub Releases](https://github.com/tonyantony300/alt-
 - 🇧🇷 Portuguese (Brazilian)
 - 🇰🇷 Korean
 - 🇪🇸 Spanish
-- 🇮🇷 Persian (Farsi)
 
 
 
