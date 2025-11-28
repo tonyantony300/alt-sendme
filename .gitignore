@@ -31,6 +31,10 @@ tmp2/
 # Application specific
 .sendme-*
 
+# Tauri updater signing keys (private keys should never be committed)
+src-tauri/.tauri/*.key
+src-tauri/.tauri/*.key.pub
+
 # IDE and editor files
 .vscode/
 .idea/

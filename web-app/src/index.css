@@ -41,6 +41,7 @@
   --app-primary-fg: rgb(255, 255, 255);
   --app-accent-fg: rgb(255, 255, 255);
   --app-destructive-fg: rgb(255, 255, 255);
+  --app-update-toast-text: rgb(255, 255, 255, 0.5);
 }
 
 @layer base {

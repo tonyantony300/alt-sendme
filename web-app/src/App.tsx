@@ -8,17 +8,58 @@ import { TranslationProvider } from './i18n'
 import { useTranslation } from './i18n/react-i18next-compat'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { check } from '@tauri-apps/plugin-updater'
+import { UpdateToast } from './components/UpdateToast'
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
   const [isSharing, setIsSharing] = useState(false)
   const [isReceiving, setIsReceiving] = useState(false)
+  const [updateAvailable, setUpdateAvailable] = useState<{ version: string; update: any } | null>(null)
+  const [showUpdateToast, setShowUpdateToast] = useState(false)
   const isInitialRender = useRef(false)
   const { t } = useTranslation()
 
   useEffect(() => {
       isInitialRender.current = true
   }, [])
+
+  // Check for updates on startup
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const update = await check()
+        if (update?.available) {
+          setUpdateAvailable({ version: update.version, update })
+          // Download update in background
+          await update.download()
+          // Show toast when download is complete
+          setShowUpdateToast(true)
+        }
+      } catch (error) {
+        // Silently fail - updates are optional
+        console.debug('Update check failed:', error)
+      }
+    }
+
+    checkForUpdates()
+  }, [])
+
+  const handleUpdate = async () => {
+    if (updateAvailable?.update) {
+      try {
+        // Install update - will be applied on next launch
+        await updateAvailable.update.install()
+        setShowUpdateToast(false)
+      } catch (error) {
+        console.error('Failed to install update:', error)
+      }
+    }
+  }
+
+  const handleDismiss = () => {
+    setShowUpdateToast(false)
+  }
 
   return (
     <div className="h-screen flex flex-col relative glass-background select-none" style={{ color: 'var(--app-bg-fg)' }}>
@@ -150,6 +191,13 @@ function AppContent() {
           <LanguageSwitcher />
         </div>
       </div>
+      {showUpdateToast && updateAvailable && (
+        <UpdateToast
+          version={updateAvailable.version}
+          onUpdate={handleUpdate}
+          onDismiss={handleDismiss}
+        />
+      )}
     </div>
   )
 }

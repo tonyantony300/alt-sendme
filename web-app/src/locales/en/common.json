@@ -87,6 +87,9 @@
     "receiveFailedDesc": "Failed to receive file",
     "openFolderFailed": "Open Folder Failed",
     "openFolderFailedDesc": "Failed to open download folder"
-  }
+  },
+  "updateAvailable": "Version {{version}} available",
+  "updateLater": "Later",
+  "updateNow": "Update"
 }
 
