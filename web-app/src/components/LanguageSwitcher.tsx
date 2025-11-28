@@ -20,10 +20,6 @@ const LANGUAGES = [
   { value: 'hi', label: 'हिन्दी' },
   { value: 'pl', label: 'Polski' },
   { value: 'uk', label: 'Українська' },
-
-  
-
-
 ]
 
 export function LanguageSwitcher() {
