@@ -19,6 +19,10 @@ const LANGUAGES = [
   { value: 'ko', label: '한국어' },
   { value: 'hi', label: 'हिन्दी' },
   { value: 'pl', label: 'Polski' },
+  { value: 'uk', label: 'Українська' },
+
+  
+
 
 ]
 
