@@ -96,6 +96,17 @@ jobs:
           
           echo "Certificate imported successfully"
 
+      - name: Validate notarization requirements (macOS only)
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.APPLE_ID }}" ] || [ -z "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" ] || [ -z "${{ secrets.APPLE_TEAM_ID }}" ]; then
+            echo "ERROR: Missing required notarization secrets"
+            echo "Required: APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID"
+            exit 1
+          fi
+          echo "All notarization secrets present"
+
       - name: Generate release notes from commits
         id: release_notes
         shell: bash
@@ -137,11 +148,12 @@ jobs:
           cat release_notes.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@v0.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_SIGNING_IDENTITY: "Developer ID Application: Tony Antony (9H7RVQAP36)"
           APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}

@@ -33,7 +33,7 @@ Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easil
 ## Features
 
 - **Send anywhere** – Works seamlessly on local networks or across continents.
-- **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud servers or intermediaries.
+- **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud storage in between.
 - **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
 - **No accounts or personal info** – Transfer files without sign-ups or exposing private data.
 - [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size or any format, verified with BLAKE3-based integrity checks.
@@ -57,14 +57,14 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.3/AltSendme_0.2.3_x64-setup.exe'>AltSendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.4/AltSendme_0.2.4_x64-setup.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
     <td><b>macOS</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.3/AltSendme_0.2.3_universal.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.4/AltSendme_0.2.4_universal.dmg'>AltSendme.dmg</a></td>
   <tr>
     <td><b>Linux </b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.3/AltSendme_0.2.3_amd64.deb'>AltSendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.2.4/AltSendme_0.2.4_amd64.deb'>AltSendme.deb</a></td>
   </tr>
 </table>
 
@@ -173,7 +173,7 @@ Thank you for checking out this project! If you find it useful, consider giving 
 <!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
-[badge-version]: https://img.shields.io/badge/version-0.2.3-blue
+[badge-version]: https://img.shields.io/badge/version-0.2.4-blue
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
 [badge-hire]: https://img.shields.io/badge/hire%20developer-8b5cf6

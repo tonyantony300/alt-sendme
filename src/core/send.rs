@@ -89,6 +89,8 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     let blobs_data_dir2 = blobs_data_dir.clone();
     let (progress_tx, progress_rx) = mpsc::channel(32);
     let app_handle_clone = app_handle.clone();
+    let entry_type = if path.is_file() { "file" } else { "directory" };
+    let entry_type_for_progress = entry_type.to_string();
     
     let setup = async move {
         let t0 = Instant::now();
@@ -118,6 +120,7 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
             progress_rx,
             app_handle_clone,
             size,
+            entry_type_for_progress,
         ));
 
         let router = iroh::protocol::Router::builder(endpoint)
@@ -148,7 +151,6 @@ pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHan
     apply_options(&mut addr, options.ticket_type);
     
     let ticket = BlobTicket::new(addr, hash, BlobFormat::HashSeq);
-    let entry_type = if path.is_file() { "file" } else { "directory" };
 
     Ok(SendResult {
         ticket: ticket.to_string(),
@@ -282,6 +284,7 @@ async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
     app_handle: AppHandle,
     total_file_size: u64,
+    entry_type: String,
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     use std::sync::Arc;
@@ -334,6 +337,7 @@ async fn show_provide_progress_with_logging(
                         let has_emitted_started_task = has_emitted_started.clone();
                         let has_any_transfer_task = has_any_transfer.clone();
                         let last_request_time_task = last_request_time.clone();
+                        let entry_type_task = entry_type.clone();
                         
                         let mut rx = msg.rx;
                         tasks.push(async move {
@@ -388,7 +392,13 @@ async fn show_provide_progress_with_logging(
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                             let active = active_requests_task.load(Ordering::SeqCst);
                                             
-                                            if completed >= active && has_any_transfer_task.load(Ordering::SeqCst) {
+                                            // For directories, require at least 2 completed requests
+                                            // to avoid false completion from metadata transfer
+                                            let min_required = if entry_type_task == "directory" { 2 } else { 1 };
+                                            
+                                            if completed >= active 
+                                                && completed >= min_required
+                                                && has_any_transfer_task.load(Ordering::SeqCst) {
                                                 let active_before_wait = active;
                                                 
                                                 tokio::time::sleep(Duration::from_millis(500)).await;
@@ -413,6 +423,7 @@ async fn show_provide_progress_with_logging(
                                                 };
                                                 
                                                 if completed_after >= active_after 
+                                                    && completed_after >= min_required
                                                     && !new_requests_arrived
                                                     && !has_active_transfers 
                                                     && !last_request_recent {
@@ -443,7 +454,13 @@ async fn show_provide_progress_with_logging(
                                 let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                 let active = active_requests_task.load(Ordering::SeqCst);
                                 
-                                if completed >= active && has_any_transfer_task.load(Ordering::SeqCst) {
+                                // For directories, require at least 2 completed requests
+                                // to avoid false completion from metadata transfer
+                                let min_required = if entry_type_task == "directory" { 2 } else { 1 };
+                                
+                                if completed >= active 
+                                    && completed >= min_required
+                                    && has_any_transfer_task.load(Ordering::SeqCst) {
                                     let active_before_wait = active;
                                     
                                     tokio::time::sleep(Duration::from_millis(500)).await;
@@ -468,6 +485,7 @@ async fn show_provide_progress_with_logging(
                                     };
                                     
                                     if completed_after >= active_after 
+                                        && completed_after >= min_required
                                         && !new_requests_arrived
                                         && !has_active_transfers 
                                         && !last_request_recent {
@@ -493,7 +511,11 @@ async fn show_provide_progress_with_logging(
         let completed = completed_requests.load(Ordering::SeqCst);
         let active = active_requests.load(Ordering::SeqCst);
         
-        if completed >= active && completed > 0 {
+        // For directories, require at least 2 completed requests
+        // to avoid false completion from metadata transfer
+        let min_required = if entry_type == "directory" { 2 } else { 1 };
+        
+        if completed >= active && completed >= min_required && completed > 0 {
             emit_event(&app_handle, "transfer-completed");
         }
     }

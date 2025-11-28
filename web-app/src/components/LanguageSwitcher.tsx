@@ -16,10 +16,12 @@ const LANGUAGES = [
   { value: 'es', label: 'Español' },
   { value: 'pt-BR', label: 'Português' },
   { value: 'ar', label: 'العربية' },
+  { value: 'fa', label: 'فارسی' },
   { value: 'ko', label: '한국어' },
   { value: 'hi', label: 'हिन्दी' },
   { value: 'pl', label: 'Polski' },
   { value: 'uk', label: 'Українська' },
+  { value: 'tr', label: 'Türkçe' },
 ]
 
 export function LanguageSwitcher() {
