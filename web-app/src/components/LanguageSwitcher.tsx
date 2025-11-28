@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react'
 const LANGUAGES = [
   { value: 'en', label: 'English' },
   { value: 'ru', label: 'Русский' },
+  { value: 'sr', label: 'Српски' }, 
   { value: 'fr', label: 'Français' },
   { value: 'zh-CN', label: '简体中文' },
   { value: 'zh-TW', label: '繁體中文' },
