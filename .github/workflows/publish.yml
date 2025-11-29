@@ -183,6 +183,9 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       
+      - name: Install cargo-tauri-cli
+        run: cargo install cargo-tauri-cli --locked
+      
       - name: Get release assets and generate latest.json
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
@@ -273,7 +276,8 @@ jobs:
             local temp_file="/tmp/$(basename $file_name)"
             local sig_file="${temp_file}.sig"
             
-            echo "  Downloading $file_name..."
+            # Echo to stderr so it doesn't get captured in the return value
+            echo "  Downloading $file_name..." >&2
             # Download the file
             curl -sL -H "Authorization: token $GITHUB_TOKEN" "$file_url" -o "$temp_file"
             
@@ -282,16 +286,16 @@ jobs:
               echo ""
               return
             fi
-            echo "  ✓ Downloaded $(du -h "$temp_file" | cut -f1)"
+            echo "  ✓ Downloaded $(du -h "$temp_file" | cut -f1)" >&2
             
-            echo "  Signing file with Tauri signer..."
+            echo "  Signing file with Tauri signer..." >&2
             # Sign the file using Tauri signer (creates .sig file)
             # Use environment variable method which is more reliable
             SIGN_OUTPUT=$(cargo tauri signer sign "$temp_file" -k "$TAURI_PRIVATE_KEY" 2>&1)
             SIGN_EXIT_CODE=$?
             
             if [ $SIGN_EXIT_CODE -eq 0 ]; then
-              echo "  ✓ Signing command succeeded"
+              echo "  ✓ Signing command succeeded" >&2
             else
               echo "  ✗ Signing failed with exit code $SIGN_EXIT_CODE" >&2
               echo "  Error output: $SIGN_OUTPUT" >&2
@@ -302,7 +306,7 @@ jobs:
             # Read the signature file and extract base64 content
             if [ -f "$sig_file" ]; then
               SIG_SIZE=$(wc -c < "$sig_file")
-              echo "  ✓ Signature file created: $SIG_SIZE bytes"
+              echo "  ✓ Signature file created: $SIG_SIZE bytes" >&2
               # The .sig file is in minisign format, extract the base64 signature
               # Minisign format has comments, we need the actual signature data
               cat "$sig_file" | tr -d '\n'
