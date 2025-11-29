@@ -180,6 +180,9 @@ jobs:
       - name: Install jq
         uses: dcarbone/install-jq-action@v2.0.1
       
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
       - name: Get release assets and generate latest.json
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
@@ -240,48 +243,86 @@ jobs:
           echo "Available assets:"
           echo "$ASSETS" | jq -r '.[] | .name'
           
-          # Try multiple patterns for macOS
+          # Find update files (signatures will be generated on-the-fly)
           MACOS_APP=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz$|universal.*\\.app\\.tar\\.gz$")) | .name' | head -1)
-          MACOS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz\\.sig$|universal.*\\.app\\.tar\\.gz\\.sig$")) | .name' | head -1)
-          
-          # Try multiple patterns for Windows
           WINDOWS_EXE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip$|\\.exe$")) | .name' | head -1)
-          WINDOWS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip\\.sig$|\\.exe\\.sig$")) | .name' | head -1)
-          
-          # Try multiple patterns for Linux
           LINUX_APPIMAGE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz$|\\.AppImage$")) | .name' | head -1)
-          LINUX_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz\\.sig$|\\.AppImage\\.sig$")) | .name' | head -1)
           
-          echo "Found assets:"
-          echo "  macOS: $MACOS_APP (sig: $MACOS_SIG)"
-          echo "  windows: $WINDOWS_EXE (sig: $WINDOWS_SIG)"
-          echo "  linux: $LINUX_APPIMAGE (sig: $LINUX_SIG)"
+          echo "Found update files:"
+          echo "  macOS: $MACOS_APP"
+          echo "  windows: $WINDOWS_EXE"
+          echo "  linux: $LINUX_APPIMAGE"
+          echo ""
+          echo "Generating signatures on-the-fly (no .sig files needed)..."
           
           BASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG_NAME"
           
-          if [ -n "$MACOS_SIG" ]; then
-            curl -sL -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$(echo "$ASSETS" | jq -r ".[] | select(.name == \"$MACOS_SIG\") | .id")" \
-              -H "Accept: application/octet-stream" > /tmp/macos.sig
-            MACOS_SIGNATURE=$(cat /tmp/macos.sig | tr -d '\n')
+          # Setup private key for signing
+          PRIVATE_KEY_PATH="/tmp/tauri.key"
+          echo "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" > "$PRIVATE_KEY_PATH"
+          
+          # Function to sign a file and extract signature
+          sign_file() {
+            local file_url=$1
+            local file_name=$2
+            local temp_file="/tmp/$(basename $file_name)"
+            local sig_file="${temp_file}.sig"
+            local original_dir=$(pwd)
+            
+            # Download the file
+            curl -sL -H "Authorization: token $GITHUB_TOKEN" "$file_url" -o "$temp_file"
+            
+            if [ ! -f "$temp_file" ] || [ ! -s "$temp_file" ]; then
+              echo "Failed to download $file_name" >&2
+              echo ""
+              return
+            fi
+            
+            # Sign the file using Tauri signer (creates .sig file)
+            # Tauri signer needs to be run from the project root
+            cargo tauri signer sign "$temp_file" -f "$PRIVATE_KEY_PATH" 2>&1 >/dev/null
+            
+            # Read the signature file and extract base64 content
+            if [ -f "$sig_file" ]; then
+              cat "$sig_file" | tr -d '\n'
+            else
+              echo ""
+            fi
+          }
+          
+          # Generate signatures directly from the update files
+          if [ -n "$MACOS_APP" ]; then
+            echo "Signing macOS file: $MACOS_APP"
+            MACOS_SIGNATURE=$(sign_file "$BASE_URL/$MACOS_APP" "$MACOS_APP")
+            if [ -n "$MACOS_SIGNATURE" ]; then
+              echo "✓ Generated macOS signature (${#MACOS_SIGNATURE} chars)"
+            else
+              echo "✗ Failed to generate macOS signature"
+            fi
           else
             MACOS_SIGNATURE=""
           fi
           
-          if [ -n "$WINDOWS_SIG" ]; then
-            curl -sL -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$(echo "$ASSETS" | jq -r ".[] | select(.name == \"$WINDOWS_SIG\") | .id")" \
-              -H "Accept: application/octet-stream" > /tmp/windows.sig
-            WINDOWS_SIGNATURE=$(cat /tmp/windows.sig | tr -d '\n')
+          if [ -n "$WINDOWS_EXE" ]; then
+            echo "Signing Windows file: $WINDOWS_EXE"
+            WINDOWS_SIGNATURE=$(sign_file "$BASE_URL/$WINDOWS_EXE" "$WINDOWS_EXE")
+            if [ -n "$WINDOWS_SIGNATURE" ]; then
+              echo "✓ Generated Windows signature (${#WINDOWS_SIGNATURE} chars)"
+            else
+              echo "✗ Failed to generate Windows signature"
+            fi
           else
             WINDOWS_SIGNATURE=""
           fi
           
-          if [ -n "$LINUX_SIG" ]; then
-            curl -sL -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$(echo "$ASSETS" | jq -r ".[] | select(.name == \"$LINUX_SIG\") | .id")" \
-              -H "Accept: application/octet-stream" > /tmp/linux.sig
-            LINUX_SIGNATURE=$(cat /tmp/linux.sig | tr -d '\n')
+          if [ -n "$LINUX_APPIMAGE" ]; then
+            echo "Signing Linux file: $LINUX_APPIMAGE"
+            LINUX_SIGNATURE=$(sign_file "$BASE_URL/$LINUX_APPIMAGE" "$LINUX_APPIMAGE")
+            if [ -n "$LINUX_SIGNATURE" ]; then
+              echo "✓ Generated Linux signature (${#LINUX_SIGNATURE} chars)"
+            else
+              echo "✗ Failed to generate Linux signature"
+            fi
           else
             LINUX_SIGNATURE=""
           fi
