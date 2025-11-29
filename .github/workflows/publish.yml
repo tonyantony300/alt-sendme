@@ -183,8 +183,8 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       
-      - name: Install cargo-tauri-cli
-        run: cargo install cargo-tauri-cli --locked
+      - name: Install tauri-cli
+        run: cargo install tauri-cli --locked
       
       - name: Get release assets and generate latest.json
         run: |
