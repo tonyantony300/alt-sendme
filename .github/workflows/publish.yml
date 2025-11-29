@@ -167,3 +167,128 @@ jobs:
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
+
+  generate-latest-json:
+    needs: publish-tauri
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install jq
+        uses: dcarbone/install-jq-action@v2.0.1
+      
+      - name: Get release assets and generate latest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG_NAME#v}"
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+          
+          RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
+            jq -r '.id')
+          
+          if [ "$RELEASE_ID" == "null" ] || [ -z "$RELEASE_ID" ]; then
+            echo "ERROR: Could not find release for tag $TAG_NAME"
+            exit 1
+          fi
+          
+          ASSETS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
+          
+          MACOS_APP=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz$")) | .name' | head -1)
+          MACOS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz\\.sig$")) | .name' | head -1)
+          
+          WINDOWS_EXE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip$")) | .name' | head -1)
+          WINDOWS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip\\.sig$")) | .name' | head -1)
+          
+          LINUX_APPIMAGE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz$")) | .name' | head -1)
+          LINUX_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz\\.sig$")) | .name' | head -1)
+          
+          BASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG_NAME"
+          
+          if [ -n "$MACOS_SIG" ]; then
+            curl -sL -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$(echo "$ASSETS" | jq -r ".[] | select(.name == \"$MACOS_SIG\") | .id")" \
+              -H "Accept: application/octet-stream" > /tmp/macos.sig
+            MACOS_SIGNATURE=$(cat /tmp/macos.sig | tr -d '\n')
+          else
+            MACOS_SIGNATURE=""
+          fi
+          
+          if [ -n "$WINDOWS_SIG" ]; then
+            curl -sL -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$(echo "$ASSETS" | jq -r ".[] | select(.name == \"$WINDOWS_SIG\") | .id")" \
+              -H "Accept: application/octet-stream" > /tmp/windows.sig
+            WINDOWS_SIGNATURE=$(cat /tmp/windows.sig | tr -d '\n')
+          else
+            WINDOWS_SIGNATURE=""
+          fi
+          
+          if [ -n "$LINUX_SIG" ]; then
+            curl -sL -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$(echo "$ASSETS" | jq -r ".[] | select(.name == \"$LINUX_SIG\") | .id")" \
+              -H "Accept: application/octet-stream" > /tmp/linux.sig
+            LINUX_SIGNATURE=$(cat /tmp/linux.sig | tr -d '\n')
+          else
+            LINUX_SIGNATURE=""
+          fi
+          
+          MACOS_URL="$BASE_URL/$MACOS_APP"
+          WINDOWS_URL="$BASE_URL/$WINDOWS_EXE"
+          LINUX_URL="$BASE_URL/$LINUX_APPIMAGE"
+          
+          jq --arg version "$VERSION" \
+            --arg pub_date "$PUB_DATE" \
+            --arg linux_signature "$LINUX_SIGNATURE" \
+            --arg linux_url "$LINUX_URL" \
+            --arg windows_signature "$WINDOWS_SIGNATURE" \
+            --arg windows_url "$WINDOWS_URL" \
+            --arg darwin_arm_signature "$MACOS_SIGNATURE" \
+            --arg darwin_arm_url "$MACOS_URL" \
+            --arg darwin_amd_signature "$MACOS_SIGNATURE" \
+            --arg darwin_amd_url "$MACOS_URL" \
+            '.version = $version
+              | .pub_date = $pub_date
+              | .platforms["linux-x86_64"].signature = $linux_signature
+              | .platforms["linux-x86_64"].url = $linux_url
+              | .platforms["windows-x86_64"].signature = $windows_signature
+              | .platforms["windows-x86_64"].url = $windows_url
+              | .platforms["darwin-aarch64"].signature = $darwin_arm_signature
+              | .platforms["darwin-aarch64"].url = $darwin_arm_url
+              | .platforms["darwin-x86_64"].signature = $darwin_amd_signature
+              | .platforms["darwin-x86_64"].url = $darwin_amd_url' \
+            src-tauri/latest.json.template > latest.json
+          
+          cat latest.json
+      
+      - name: Get release upload URL
+        id: get_upload_url
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          UPLOAD_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
+            jq -r '.upload_url' | sed 's/{?name,label}//')
+          
+          if [ "$UPLOAD_URL" == "null" ] || [ -z "$UPLOAD_URL" ]; then
+            echo "ERROR: Could not get upload URL for release"
+            exit 1
+          fi
+          
+          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+      
+      - name: Upload latest.json to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1.0.1
+        with:
+          upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+          asset_path: ./latest.json
+          asset_name: latest.json
+          asset_content_type: application/json
