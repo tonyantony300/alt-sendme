@@ -257,9 +257,14 @@ jobs:
           
           BASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG_NAME"
           
-          # Setup private key for signing
-          PRIVATE_KEY_PATH="/tmp/tauri.key"
-          echo "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" > "$PRIVATE_KEY_PATH"
+          # Setup private key for signing (use environment variable method)
+          export TAURI_PRIVATE_KEY="${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}"
+          
+          if [ -z "$TAURI_PRIVATE_KEY" ]; then
+            echo "ERROR: TAURI_SIGNING_PRIVATE_KEY secret is not set"
+            exit 1
+          fi
+          echo "Private key loaded: ${#TAURI_PRIVATE_KEY} characters"
           
           # Function to sign a file and extract signature
           sign_file() {
@@ -267,25 +272,44 @@ jobs:
             local file_name=$2
             local temp_file="/tmp/$(basename $file_name)"
             local sig_file="${temp_file}.sig"
-            local original_dir=$(pwd)
             
+            echo "  Downloading $file_name..."
             # Download the file
             curl -sL -H "Authorization: token $GITHUB_TOKEN" "$file_url" -o "$temp_file"
             
             if [ ! -f "$temp_file" ] || [ ! -s "$temp_file" ]; then
-              echo "Failed to download $file_name" >&2
+              echo "  ✗ Failed to download $file_name" >&2
+              echo ""
+              return
+            fi
+            echo "  ✓ Downloaded $(du -h "$temp_file" | cut -f1)"
+            
+            echo "  Signing file with Tauri signer..."
+            # Sign the file using Tauri signer (creates .sig file)
+            # Use environment variable method which is more reliable
+            SIGN_OUTPUT=$(cargo tauri signer sign "$temp_file" -k "$TAURI_PRIVATE_KEY" 2>&1)
+            SIGN_EXIT_CODE=$?
+            
+            if [ $SIGN_EXIT_CODE -eq 0 ]; then
+              echo "  ✓ Signing command succeeded"
+            else
+              echo "  ✗ Signing failed with exit code $SIGN_EXIT_CODE" >&2
+              echo "  Error output: $SIGN_OUTPUT" >&2
               echo ""
               return
             fi
             
-            # Sign the file using Tauri signer (creates .sig file)
-            # Tauri signer needs to be run from the project root
-            cargo tauri signer sign "$temp_file" -f "$PRIVATE_KEY_PATH" 2>&1 >/dev/null
-            
             # Read the signature file and extract base64 content
             if [ -f "$sig_file" ]; then
+              SIG_SIZE=$(wc -c < "$sig_file")
+              echo "  ✓ Signature file created: $SIG_SIZE bytes"
+              # The .sig file is in minisign format, extract the base64 signature
+              # Minisign format has comments, we need the actual signature data
               cat "$sig_file" | tr -d '\n'
             else
+              echo "  ✗ Signature file not found at $sig_file" >&2
+              echo "  Current directory: $(pwd)" >&2
+              echo "  Files in /tmp: $(ls -la /tmp/*.sig 2>/dev/null || echo 'none')" >&2
               echo ""
             fi
           }
