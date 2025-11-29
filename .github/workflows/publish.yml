@@ -181,22 +181,22 @@ jobs:
         uses: dcarbone/install-jq-action@v2.0.1
       
       - name: Get release assets and generate latest.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ github.ref_name }}
         run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           VERSION="${TAG_NAME#v}"
           PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           
-          # Wait for release to be created with retry logic
+          # Wait for release to be available (with retry logic)
           MAX_RETRIES=10
           RETRY_COUNT=0
           RELEASE_ID=""
           
+          # Query all releases and filter by tag_name to include draft releases
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
-              jq -r '.id')
+              "https://api.github.com/repos/${{ github.repository }}/releases" | \
+              jq -r ".[] | select(.tag_name == \"$TAG_NAME\") | .id" | head -1)
             
             if [ "$RELEASE_ID" != "null" ] && [ -n "$RELEASE_ID" ]; then
               echo "Release found with ID: $RELEASE_ID"
@@ -208,12 +208,12 @@ jobs:
             sleep 5
           done
           
-          if [ "$RELEASE_ID" == "null" ] || [ -z "$RELEASE_ID" ]; then
+          if [ -z "$RELEASE_ID" ] || [ "$RELEASE_ID" == "null" ]; then
             echo "ERROR: Could not find release for tag $TAG_NAME after $MAX_RETRIES attempts"
             echo "Available releases:"
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
               "https://api.github.com/repos/${{ github.repository }}/releases" | \
-              jq -r '.[] | "\(.tag_name) - \(.draft // false)"'
+              jq -r '.[] | "\(.tag_name) - \(.draft)"'
             exit 1
           fi
           
@@ -314,29 +314,25 @@ jobs:
           
           cat latest.json
       
-      - name: Get release upload URL
-        id: get_upload_url
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ github.ref_name }}
+      - name: Upload latest.json to release
         run: |
-          UPLOAD_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
-            jq -r '.upload_url' | sed 's/{?name,label}//')
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           
-          if [ "$UPLOAD_URL" == "null" ] || [ -z "$UPLOAD_URL" ]; then
-            echo "ERROR: Could not get upload URL for release"
+          # Get upload URL from all releases (to support draft releases)
+          UPLOAD_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" | \
+            jq -r ".[] | select(.tag_name == \"$TAG_NAME\") | .upload_url" | \
+            sed 's/{?name,label}//' | head -1)
+          
+          if [ -z "$UPLOAD_URL" ]; then
+            echo "ERROR: Could not get upload URL for release $TAG_NAME"
             exit 1
           fi
           
-          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
-      
-      - name: Upload latest.json to release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: actions/upload-release-asset@v1.0.1
-        with:
-          upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
-          asset_path: ./latest.json
-          asset_name: latest.json
-          asset_content_type: application/json
+          # Upload latest.json
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @latest.json \
+            "$UPLOAD_URL?name=latest.json"
