@@ -188,26 +188,74 @@ jobs:
           VERSION="${TAG_NAME#v}"
           PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
           
-          RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
-            jq -r '.id')
+          # Wait for release to be created with retry logic
+          MAX_RETRIES=10
+          RETRY_COUNT=0
+          RELEASE_ID=""
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" | \
+              jq -r '.id')
+            
+            if [ "$RELEASE_ID" != "null" ] && [ -n "$RELEASE_ID" ]; then
+              echo "Release found with ID: $RELEASE_ID"
+              break
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Waiting for release to be created... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            sleep 5
+          done
           
           if [ "$RELEASE_ID" == "null" ] || [ -z "$RELEASE_ID" ]; then
-            echo "ERROR: Could not find release for tag $TAG_NAME"
+            echo "ERROR: Could not find release for tag $TAG_NAME after $MAX_RETRIES attempts"
+            echo "Available releases:"
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases" | \
+              jq -r '.[] | "\(.tag_name) - \(.draft // false)"'
             exit 1
           fi
           
-          ASSETS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
+          # Wait for assets to be uploaded
+          ASSET_RETRY_COUNT=0
+          ASSET_MAX_RETRIES=20
+          ASSETS="[]"
           
-          MACOS_APP=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz$")) | .name' | head -1)
-          MACOS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz\\.sig$")) | .name' | head -1)
+          while [ $ASSET_RETRY_COUNT -lt $ASSET_MAX_RETRIES ]; do
+            ASSETS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
+            
+            ASSET_COUNT=$(echo "$ASSETS" | jq '. | length')
+            if [ "$ASSET_COUNT" -gt 0 ]; then
+              echo "Found $ASSET_COUNT assets"
+              break
+            fi
+            
+            ASSET_RETRY_COUNT=$((ASSET_RETRY_COUNT + 1))
+            echo "Waiting for assets to be uploaded... (attempt $ASSET_RETRY_COUNT/$ASSET_MAX_RETRIES)"
+            sleep 10
+          done
           
-          WINDOWS_EXE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip$")) | .name' | head -1)
-          WINDOWS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip\\.sig$")) | .name' | head -1)
+          echo "Available assets:"
+          echo "$ASSETS" | jq -r '.[] | .name'
           
-          LINUX_APPIMAGE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz$")) | .name' | head -1)
-          LINUX_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz\\.sig$")) | .name' | head -1)
+          # Try multiple patterns for macOS
+          MACOS_APP=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz$|universal.*\\.app\\.tar\\.gz$")) | .name' | head -1)
+          MACOS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.app\\.tar\\.gz\\.sig$|universal.*\\.app\\.tar\\.gz\\.sig$")) | .name' | head -1)
+          
+          # Try multiple patterns for Windows
+          WINDOWS_EXE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip$|\\.exe$")) | .name' | head -1)
+          WINDOWS_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.nsis\\.zip\\.sig$|\\.exe\\.sig$")) | .name' | head -1)
+          
+          # Try multiple patterns for Linux
+          LINUX_APPIMAGE=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz$|\\.AppImage$")) | .name' | head -1)
+          LINUX_SIG=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage\\.tar\\.gz\\.sig$|\\.AppImage\\.sig$")) | .name' | head -1)
+          
+          echo "Found assets:"
+          echo "  macOS: $MACOS_APP (sig: $MACOS_SIG)"
+          echo "  windows: $WINDOWS_EXE (sig: $WINDOWS_SIG)"
+          echo "  linux: $LINUX_APPIMAGE (sig: $LINUX_SIG)"
           
           BASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG_NAME"
           
