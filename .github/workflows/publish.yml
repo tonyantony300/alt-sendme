@@ -262,12 +262,22 @@ jobs:
           
           # Setup private key for signing (use environment variable method)
           export TAURI_PRIVATE_KEY="${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}"
+          export TAURI_PRIVATE_KEY_PASSWORD="${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}"
           
           if [ -z "$TAURI_PRIVATE_KEY" ]; then
             echo "ERROR: TAURI_SIGNING_PRIVATE_KEY secret is not set"
             exit 1
           fi
+          
+          if [ -z "$TAURI_PRIVATE_KEY_PASSWORD" ]; then
+            echo "WARNING: TAURI_SIGNING_PRIVATE_KEY_PASSWORD secret is not set"
+            echo "If your private key is password-protected, signatures will fail"
+          fi
+          
           echo "Private key loaded: ${#TAURI_PRIVATE_KEY} characters"
+          if [ -n "$TAURI_PRIVATE_KEY_PASSWORD" ]; then
+            echo "Private key password loaded: ${#TAURI_PRIVATE_KEY_PASSWORD} characters"
+          fi
           
           # Function to sign a file and extract signature
           sign_file() {
@@ -291,6 +301,7 @@ jobs:
             echo "  Signing file with Tauri signer..." >&2
             # Sign the file using Tauri signer (creates .sig file)
             # Use environment variable method which is more reliable
+            # Password is passed via TAURI_PRIVATE_KEY_PASSWORD env var (set above)
             SIGN_OUTPUT=$(cargo tauri signer sign "$temp_file" -k "$TAURI_PRIVATE_KEY" 2>&1)
             SIGN_EXIT_CODE=$?
             
