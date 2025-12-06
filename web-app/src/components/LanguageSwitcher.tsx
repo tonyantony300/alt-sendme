@@ -23,6 +23,7 @@ const LANGUAGES = [
   { value: 'pl', label: 'Polski' },
   { value: 'uk', label: 'Українська' },
   { value: 'tr', label: 'Türkçe' },
+  { value: 'no', label: 'Norsk' },
 ]
 
 export function LanguageSwitcher() {
