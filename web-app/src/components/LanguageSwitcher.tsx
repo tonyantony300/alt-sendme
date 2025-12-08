@@ -5,7 +5,7 @@ import { ChevronDown } from 'lucide-react'
 const LANGUAGES = [
   { value: 'en', label: 'English' },
   { value: 'ru', label: 'Русский' },
-  { value: 'sr', label: 'Српски' }, 
+  { value: 'sr', label: 'Српски' },
   { value: 'fr', label: 'Français' },
   { value: 'zh-CN', label: '简体中文' },
   { value: 'zh-TW', label: '繁體中文' },
@@ -17,6 +17,7 @@ const LANGUAGES = [
   { value: 'es', label: 'Español' },
   { value: 'pt-BR', label: 'Português' },
   { value: 'ar', label: 'العربية' },
+  { value: 'am', label: 'አማርኛ' },
   { value: 'fa', label: 'فارسی' },
   { value: 'ko', label: '한국어' },
   { value: 'hi', label: 'हिन्दी' },
@@ -68,10 +69,10 @@ export function LanguageSwitcher() {
         }}
       >
         {currentLanguage.label}
-        <ChevronDown 
-          size={12} 
+        <ChevronDown
+          size={12}
           className="transition-transform"
-          style={{ 
+          style={{
             transform: isOpen ? 'rotate(0deg)' : 'rotate(180deg)',
           }}
         />
@@ -94,8 +95,8 @@ export function LanguageSwitcher() {
               className="w-full text-left px-3 py-2 text-xs transition-colors"
               style={{
                 color: 'var(--app-main-view-fg)',
-                backgroundColor: i18n.language === lang.value 
-                  ? 'rgba(255, 255, 255, 0.1)' 
+                backgroundColor: i18n.language === lang.value
+                  ? 'rgba(255, 255, 255, 0.1)'
                   : 'transparent',
                 border: 'none',
                 cursor: 'pointer',
@@ -104,9 +105,9 @@ export function LanguageSwitcher() {
                 e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 
-                  i18n.language === lang.value 
-                    ? 'rgba(255, 255, 255, 0.1)' 
+                e.currentTarget.style.backgroundColor =
+                  i18n.language === lang.value
+                    ? 'rgba(255, 255, 255, 0.1)'
                     : 'transparent'
               }}
             >
