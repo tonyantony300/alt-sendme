@@ -22,6 +22,15 @@ node_modules/
 dist/
 build/
 
+# Flutter / Dart
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.metadata
+mobile-app/build/
+mobile-app/android/app/src/main/jniLibs/**/*.so
+
 # Temporary files
 tmp/
 tmp2/
@@ -117,6 +126,8 @@ src-tauri/gen/*
 !**/README
 !PRIVACY.md
 !CONTRIBUTING.md
+!AGENTS.md
+!AGENTS.zh-CN.md
 
 .github-reference/
 .github-reference-readest/

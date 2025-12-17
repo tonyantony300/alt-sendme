@@ -1,4 +1,6 @@
 pub mod core;
+#[cfg(feature = "ffi")]
+pub mod ffi;
 
 pub use core::{
     send::{start_share},

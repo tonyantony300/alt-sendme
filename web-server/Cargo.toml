@@ -1,0 +1,21 @@
+[package]
+name = "altsendme-web-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sendme = { path = ".." }
+anyhow = "1.0"
+axum = { version = "0.7", features = ["multipart"] }
+bytes = "1.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4"] }
+walkdir = "2.5"
+zip = { version = "2.2", default-features = false, features = ["deflate"] }

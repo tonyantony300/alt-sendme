@@ -15,7 +15,7 @@ rust-version = "1.81"
 
 [lib]
 name = "sendme"
-crate-type = ["lib", "staticlib"]
+crate-type = ["lib", "staticlib", "cdylib"]
 
 [dependencies]
 anyhow = "1.0.75"
@@ -64,6 +64,7 @@ tempfile = "3.8.1"
 [features]
 clipboard = ["dep:crossterm", "dep:windows-sys", "dep:libc"]
 default = ["clipboard"]
+ffi = []
 
 [profile.release]
 panic = "abort"
