@@ -29,4 +29,4 @@ Environment variables (optional):
 - `BIND_ADDR` (default `0.0.0.0:8080`)
 - `STATIC_DIR` (default `/app/static` inside Docker)
 - `DATA_DIR` (default `/app/data` inside Docker)
-
+- `MAX_UPLOAD_BYTES` (default `536870912` = 512 MiB)

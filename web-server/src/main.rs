@@ -13,6 +13,7 @@ use axum::{
     body::Body,
     extract::{Multipart, Path as AxumPath, State},
     extract::multipart::MultipartRejection,
+    extract::DefaultBodyLimit,
     http::{header, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, post},
@@ -158,6 +159,11 @@ async fn main() -> anyhow::Result<()> {
     let static_dir =
         std::env::var("STATIC_DIR").unwrap_or_else(|_| "web-server/static".to_string());
     let base_dir = std::env::var("DATA_DIR").unwrap_or_else(|_| "web-server/data".to_string());
+    let max_upload_bytes = std::env::var("MAX_UPLOAD_BYTES")
+        .ok()
+        .and_then(|v| v.parse::<u64>().ok())
+        // 512 MiB default: enough for most cases, avoids accidental disk exhaustion.
+        .unwrap_or(512 * 1024 * 1024);
 
     let base_dir = PathBuf::from(base_dir);
     tokio::fs::create_dir_all(&base_dir)
@@ -181,7 +187,10 @@ async fn main() -> anyhow::Result<()> {
         .route("/receive", post(api_receive_start))
         .route("/receive/:id/status", get(api_receive_status))
         .route("/receive/:id/download", get(api_receive_download))
-        .route("/health", get(api_health));
+        .route("/health", get(api_health))
+        .layer(DefaultBodyLimit::max(
+            usize::try_from(max_upload_bytes).unwrap_or(usize::MAX),
+        ));
 
     let app = Router::new()
         .nest("/api", api)
@@ -303,7 +312,9 @@ async fn api_send(
 
     let options = sendme::SendOptions {
         relay_mode: sendme::RelayModeOption::Default,
-        ticket_type: sendme::AddrInfoOptions::RelayAndAddresses,
+        // Docker + cloud environments often don't have stable public direct addrs.
+        // Prefer relay-only tickets to avoid clients getting stuck trying private addrs.
+        ticket_type: sendme::AddrInfoOptions::Relay,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
