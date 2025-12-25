@@ -18,7 +18,6 @@
 ![Website][badge-website]
 ![Platforms][badge-platforms]
 [![Sponsor][badge-sponsor]](https://github.com/sponsors/tonyantony300)
-[![Hire developer][badge-hire]](mailto:tnyantny@protonmail.com?subject=Looking%20to%20hire)
 
 
 </div>
@@ -176,6 +175,5 @@ Thank you for checking out this project! If you find it useful, consider giving 
 [badge-version]: https://img.shields.io/badge/version-0.2.4-blue
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
-[badge-hire]: https://img.shields.io/badge/hire%20developer-8b5cf6
 
 
