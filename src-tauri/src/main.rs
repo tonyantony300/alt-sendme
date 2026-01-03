@@ -44,7 +44,7 @@ fn cleanup_orphaned_directories() {
 
 
 fn main() {
-    // Initialize tracing for better debugging
+
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
