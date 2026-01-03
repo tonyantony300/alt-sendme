@@ -32,7 +32,6 @@ fn emit_event(app_handle: &AppHandle, event_name: &str) {
 // Helper function to emit progress events with payload
 fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_bytes: u64, speed_bps: f64) {
     if let Some(handle) = app_handle {
-        // Use a consistent event name
         let event_name = "receive-progress";
         
         // Convert speed to integer (multiply by 1000 to preserve 3 decimal places)

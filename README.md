@@ -71,22 +71,57 @@ The easiest way to get started is by downloading one of the following versions f
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
 
+## How it works
+
+Users generate ephemeral tickets (compact, self-contained tokens embedding dialing information, node IDs, and transfer metadata) that recipients paste to initiate connections. Under the hood, AltSendme orchestrates NAT hole punching via QUIC's UDP transport, falling back to encrypted DERP relays only when direct paths fail, ensuring reliable end-to-end encrypted transfers with BLAKE3 integrity verification.
+
+### Core Flow
+
+#### 1. Ticket Generation
+
+When sender drags files into the UI, altsendme hash content with BLAKE3, create a content-addressed blob (keyed by multihash), and generate a ticket containing:
+
+- **node_id**: Sender's Iroh endpoint hash
+- **dial_info**: Temporary dialing addresses (QUIC/UDP endpoints)
+- **blob_key**: BLAKE3 hash of transfer payload
+- **TTL** and ephemeral session nonce
+
+#### 2. Peer Connection
+
+Receiver pastes ticket. AltSendme then:
+
+- Parses ticket to extract sender's dial_info
+- Initiates simultaneous outbound QUIC handshakes (UDP hole punching) to predicted public mappings
+- Uses 0-RTT resumption if prior connection exists (QUIC's session tickets)
+
+#### 3. Transfer Protocol
+
+```
+QUIC Stream Multiplexing:
+
+ Stream 0: Control (handshake, progress, integrity)
+ Stream 1-N: Payload chunks (resumable, prioritized)
+ Datagrams: Signaling (keepalive, NAT refresh)
+```
+
+#### 4. Fallback & Resilience
+
+- If direct UDP/QUIC fails (symmetric NATs, firewalls), Iroh routes via DERP (tailscale's relay protocol) with encrypted forwarding without payload decryption
+- Connection migration handles WiFi to mobile switches via QUIC's connection IDs
+- Streams avoid TCP's head-of-line blocking; lost packets affect only their stream
+
+## Comparison
+
+| Aspect        | Classic P2P         | AltSendme       |
+| ------------- | ------------------- | ---------------------- |
+| Discovery     | STUN/TURN broadcast | Private tickets        |
+| NAT Traversal | Manual port mapping | Auto hole punch + DERP |
+| Encryption    | Bolt-on TLS         | Native QUIC crypto     |
+| Resilience    | Single path         | Multipath + migration  |
+| Privacy       | IP exposed          | Cozy network          |
+
 ## Supported Languages
-
-
-- 🇫🇷 French
-- 🇹🇭 Thai
-- 🇩🇪 German
-- 🇨🇳 Chinese
-- 🇯🇵 Japanese
-- 🇷🇺 Russian
-- 🇨🇿 Czech
-- 🇮🇹 Italian
-- 🇸🇦 Arabic
-- 🇧🇷 Portuguese (Brazilian)
-- 🇰🇷 Korean
-- 🇪🇸 Spanish
-
+ 🇺🇸 🇷🇺 🇷🇸 🇫🇷 🇨🇳 🇹🇼 🇩🇪 🇯🇵 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷 🇮🇳 🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇪🇹
 
 
 ## Development
