@@ -40,7 +40,7 @@ fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_byt
         // Create payload data as colon-separated string
         let payload = format!("{}:{}:{}", bytes_transferred, total_bytes, speed_int);
         
-        // Emit the event with proper payload
+        // Emit the event with appropriate payload
         if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
             tracing::warn!("Failed to emit progress event: {}", e);
         }

@@ -56,12 +56,14 @@ try {
   process.exit(1);
 }
 
+
 try {
   execSync(`node "${validateVersionScript}"`, { stdio: 'inherit' });
 } catch (error) {
   console.error('Version validation failed');
   process.exit(1);
 }
+
 
 try {
   execSync('git status --short', { stdio: 'inherit' });

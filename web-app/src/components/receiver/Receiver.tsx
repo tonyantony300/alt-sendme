@@ -151,3 +151,4 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
     </div>
   )
 }
+
