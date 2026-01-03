@@ -13,6 +13,7 @@ readme = "README.md"
 # Sadly this also needs to be updated in .github/workflows/ci.yml
 rust-version = "1.81"
 
+
 [lib]
 name = "sendme"
 crate-type = ["lib", "staticlib"]

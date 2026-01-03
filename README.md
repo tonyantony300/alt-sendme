@@ -4,6 +4,7 @@
 
 </div>
 
+
 ![AltSendme Header](assets/header.png)
 
 <div align="center">
@@ -194,7 +195,7 @@ See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your da
 - [Sendme](https://www.iroh.computer/sendme)
 
 
-## Contact 
+## Contact
 
 Reach me [here](https://www.altsendme.com/en/contact) for suggestions, feedback or media related communication.
 

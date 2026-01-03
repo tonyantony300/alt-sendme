@@ -72,8 +72,8 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 
 This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respecting, open‑source analytics service.
 
-**What GoatCounter Records :**
-- Anonymous total transfer volume 
+**What GoatCounter Records:**
+- Anonymous total transfer volume
 
 
 **What Is Never Collected via GoatCounter:**
@@ -137,6 +137,7 @@ This privacy policy may be updated from time to time. The "Last Updated" date at
 If you have questions about this privacy policy or how AltSendme handles your data, please open an issue on [GitHub](https://github.com/tonyantony300/alt-sendme/issues).
 
 ## Disclaimer
+
 
 While AltSendme is designed with privacy and security in mind, no method of transmission over the internet is 100% secure. Users should:
 - Only share transfer tickets with trusted parties

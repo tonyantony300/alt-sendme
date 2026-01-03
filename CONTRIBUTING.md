@@ -1,6 +1,6 @@
 # Contributing to AltSendme
 
-Thank you for your interest in contributing to AltSendme! Your help is appreciated in making file sharing frictionless, fast, and private for everyone. 
+Thank you for your interest in contributing to AltSendme! Your help is appreciated in making file sharing frictionless, fast, and private for everyone.
 
 ## How You Can Help
 
@@ -133,4 +133,5 @@ Don't hesitate to ask questions! You can:
 - Comment on existing issues or pull requests
 
 Thank you for making AltSendme better! Every contribution, no matter how small, is greatly appreciated. 💚
+
 
