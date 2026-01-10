@@ -107,7 +107,7 @@ QUIC Stream Multiplexing:
 
 #### 4. Fallback & Resilience
 
-- If direct UDP/QUIC fails (symmetric NATs, firewalls), Iroh routes via DERP (tailscale's relay protocol) with encrypted forwarding without payload decryption
+- If direct UDP/QUIC fails (symmetric NATs, firewalls), Iroh routes via DERP with encrypted forwarding without payload decryption
 - Connection migration handles WiFi to mobile switches via QUIC's connection IDs
 - Streams avoid TCP's head-of-line blocking; lost packets affect only their stream
 
