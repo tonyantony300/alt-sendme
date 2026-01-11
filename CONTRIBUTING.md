@@ -100,12 +100,12 @@ Feel free to reach out with questions, ideas, or just to say hello. Discussion a
 
 3. **Run in development mode**:
    ```bash
-   npx tauri dev
+   npm run app:dev
    ```
 
 4. **Build for production** (optional):
    ```bash
-   npx tauri build --no-bundle
+   npm run app:build --no-bundle
    ```
 
 This will start the app with hot reload enabled for both frontend and backend changes.
