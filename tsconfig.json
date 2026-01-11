@@ -23,7 +23,7 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./web-app/src/*"]
     }
   },
   "include": ["src"],

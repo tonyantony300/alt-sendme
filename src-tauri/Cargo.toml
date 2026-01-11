@@ -23,7 +23,7 @@ serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 anyhow = "1.0"
 dirs = "6.0"
-sendme = { path = "../" }
+sendme = { path = "../sendme" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"

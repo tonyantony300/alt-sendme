@@ -1,18 +1,22 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 
-const tauriPackageJsonPath = path.join(__dirname, '../src-tauri/package.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const rootPackageJsonPath = path.join(__dirname, '../package.json');
 const syncVersionScript = path.join(__dirname, 'sync-version.js');
 const validateVersionScript = path.join(__dirname, 'validate-version.js');
 
-const tauriPackageJson = JSON.parse(fs.readFileSync(tauriPackageJsonPath, 'utf8'));
-const currentVersion = tauriPackageJson.version;
+const rootPackageJson = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf8'));
+const currentVersion = rootPackageJson.version;
 
 if (!currentVersion) {
-  console.error('Error: No version found in src-tauri/package.json');
+  console.error('Error: No version found in package.json');
   process.exit(1);
 }
 
@@ -46,8 +50,8 @@ if (versionArg === 'patch' || versionArg === 'minor' || versionArg === 'major') 
   newVersion = versionArg;
 }
 
-tauriPackageJson.version = newVersion;
-fs.writeFileSync(tauriPackageJsonPath, JSON.stringify(tauriPackageJson, null, 2) + '\n');
+rootPackageJson.version = newVersion;
+fs.writeFileSync(rootPackageJsonPath, JSON.stringify(rootPackageJson, null, 2) + '\n');
 
 try {
   execSync(`node "${syncVersionScript}"`, { stdio: 'inherit' });
