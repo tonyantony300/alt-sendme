@@ -1,25 +1,24 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const tauriPackageJsonPath = path.join(__dirname, '../src-tauri/package.json');
-const webAppPackageJsonPath = path.join(__dirname, '../web-app/package.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const rootPackageJsonPath = path.join(__dirname, '../package.json');
 const tauriConfigPath = path.join(__dirname, '../src-tauri/tauri.conf.json');
 const cargoTomlPath = path.join(__dirname, '../src-tauri/Cargo.toml');
 const readmePath = path.join(__dirname, '../README.md');
 
-const tauriPackageJson = JSON.parse(fs.readFileSync(tauriPackageJsonPath, 'utf8'));
-const version = tauriPackageJson.version;
+const rootPackageJson = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf8'));
+const version = rootPackageJson.version;
 
 if (!version) {
-  console.error('Error: No version found in src-tauri/package.json');
+  console.error('Error: No version found in package.json');
   process.exit(1);
 }
-
-const webAppPackageJson = JSON.parse(fs.readFileSync(webAppPackageJsonPath, 'utf8'));
-webAppPackageJson.version = version;
-fs.writeFileSync(webAppPackageJsonPath, JSON.stringify(webAppPackageJson, null, 2) + '\n');
 
 const tauriConfig = JSON.parse(fs.readFileSync(tauriConfigPath, 'utf8'));
 tauriConfig.version = version;
