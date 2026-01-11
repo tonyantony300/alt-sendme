@@ -24,6 +24,7 @@ const LANGUAGES = [
   { value: 'uk', label: 'Українська' },
   { value: 'tr', label: 'Türkçe' },
   { value: 'no', label: 'Norsk' },
+  { value: 'bn', label: 'বাংলা'},
 ]
 
 export function LanguageSwitcher() {
