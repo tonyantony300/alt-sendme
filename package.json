@@ -4,6 +4,8 @@
   "version": "0.2.4",
   "type": "module",
   "scripts": {
+    "app:dev": "npx tauri dev",
+    "app:build": "npx tauri build",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
