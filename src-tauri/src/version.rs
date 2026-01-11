@@ -21,7 +21,8 @@ pub fn get_app_version() -> String {
 
         return version;
     } else {
-        // Fallback to Cargo.toml version if package.json doesn't exist
+        // Panic when the version field has not been set.
+        // Might fallback to Cargo.toml version in the future if package.json doesn't exist
         // This should rarely happen, but provides a safety net
         panic!(
             "Error: application version not found in package.json. Please set the `version` field."
