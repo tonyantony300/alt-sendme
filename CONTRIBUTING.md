@@ -95,20 +95,17 @@ Feel free to reach out with questions, ideas, or just to say hello. Discussion a
 
 2. **Install frontend dependencies**:
    ```bash
-   cd web-app
    npm install
    ```
 
 3. **Run in development mode**:
    ```bash
-   cd src-tauri
-   cargo tauri dev
+   npx tauri dev
    ```
 
 4. **Build for production** (optional):
    ```bash
-   cd src-tauri
-   cargo tauri build --no-bundle
+   npx tauri build --no-bundle
    ```
 
 This will start the app with hot reload enabled for both frontend and backend changes.
