@@ -8,8 +8,6 @@ pub fn get_app_version() -> String {
 
     let package_json_path = PathBuf::from(manifest_dir).join("../package.json");
 
-    println!("{:?}", package_json_path);
-
     if package_json_path.exists() {
         let package_json_str =
             fs::read_to_string(&package_json_path).expect("Failed to read package.json");
