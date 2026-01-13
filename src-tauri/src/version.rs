@@ -15,7 +15,7 @@ pub fn get_app_version() -> String {
             serde_json::from_str(&package_json_str).expect("Failed to parse package.json");
 
         let version = match package_json.get("version") {
-            Some(v) => v.to_string(),
+            Some(v) => v.as_str().unwrap_or("").to_string(),
             None => panic!(""),
         };
 
