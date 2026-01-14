@@ -3,6 +3,7 @@
 
 mod commands;
 mod state;
+mod tray;
 mod version;
 
 use commands::{
@@ -59,7 +60,7 @@ fn main() {
         .init();
 
     tracing::info!(
-        "Starting Sendme Desktop application v{}",
+        "Starting AltSendMe Desktop application v{}",
         version::get_app_version()
     );
 
@@ -79,7 +80,7 @@ fn main() {
             get_transport_status,
             get_file_size,
         ])
-        .setup(|_app| {
+        .setup(|app| {
             // Clean up any orphaned .sendme-* directories from previous runs
             cleanup_orphaned_directories();
 
@@ -96,8 +97,17 @@ fn main() {
                     let _ = window.set_decorations(false);
                 }
             }
-
+            tray::setup_tray(&app.handle())?;
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                tracing::debug!("App closed to system tray");
+                if let Err(e) = window.hide() {
+                    tracing::warn!(error = %e, "failed to hide window");
+                }
+            }
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
