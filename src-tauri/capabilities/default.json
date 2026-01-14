@@ -1,21 +1,21 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "enables the default permissions",
-  "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "core:webview:allow-set-webview-zoom",
-    "core:window:allow-start-dragging",
-    "core:window:allow-minimize",
-    "core:window:allow-close",
-    "core:window:allow-set-theme",
-    "core:window:allow-set-focus",
-    "os:default",
-    "opener:default",
-    "dialog:default",
-    "shell:default",
-    "shell:allow-spawn",
-    "shell:allow-open"
-  ]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"description": "enables the default permissions",
+	"windows": ["main"],
+	"permissions": [
+		"core:default",
+		"core:webview:allow-set-webview-zoom",
+		"core:window:allow-start-dragging",
+		"core:window:allow-minimize",
+		"core:window:allow-close",
+		"core:window:allow-set-theme",
+		"core:window:allow-set-focus",
+		"os:default",
+		"opener:default",
+		"dialog:default",
+		"shell:default",
+		"shell:allow-spawn",
+		"shell:allow-open"
+	]
 }

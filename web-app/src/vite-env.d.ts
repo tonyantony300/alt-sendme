@@ -1,11 +1,13 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_APP_TITLE: string
+	readonly VITE_APP_TITLE: string
 }
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv
-  readonly glob: (pattern: string, options?: { eager?: boolean }) => Record<string, unknown>
+	readonly env: ImportMetaEnv
+	readonly glob: (
+		pattern: string,
+		options?: { eager?: boolean }
+	) => Record<string, unknown>
 }
-

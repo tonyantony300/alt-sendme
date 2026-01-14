@@ -6,4 +6,3 @@ export type { I18nInstance, TranslationResources } from './setup'
 
 export { useTranslation } from './react-i18next-compat'
 export { useAppTranslation } from './hooks'
-

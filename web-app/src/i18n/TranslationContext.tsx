@@ -1,15 +1,17 @@
-import React, { ReactNode, useEffect, useCallback, useState } from "react"
-import i18next, { loadTranslations } from "./setup"
-import { TranslationContext } from "./context"
+import type React from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
+import { TranslationContext } from './context'
+import i18next, { loadTranslations } from './setup'
 
-export const TranslationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
+	children,
+}) => {
 	const [language, setLanguage] = useState(i18next.language)
 
 	useEffect(() => {
 		try {
 			loadTranslations()
-		} catch (error) {
-		}
+		} catch (_error) {}
 	}, [])
 
 	useEffect(() => {
@@ -29,30 +31,23 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({ childre
 
 		window.addEventListener('languagechange', handleLanguageChange)
 		window.addEventListener('storage', handleStorageChange)
-		
+
 		return () => {
 			window.removeEventListener('languagechange', handleLanguageChange)
 			window.removeEventListener('storage', handleStorageChange)
 		}
 	}, [language])
 
-	const translate = useCallback(
-		(key: string, options?: Record<string, unknown>) => {
-			return i18next.t(key, options)
-		},
-		[language],
-	)
-
 	return (
 		<TranslationContext.Provider
 			value={{
-				t: translate,
+				t: i18next.t,
 				i18n: i18next,
-			}}>
+			}}
+		>
 			{children}
 		</TranslationContext.Provider>
 	)
 }
 
 export default TranslationProvider
-
