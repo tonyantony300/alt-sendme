@@ -3,218 +3,222 @@
 @tailwind utilities;
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  
-  --text-xs: calc(var(--font-size-base) * 0.75);
-  --text-sm: calc(var(--font-size-base) * 0.875);
-  --text-base: var(--font-size-base);
-  --text-lg: calc(var(--font-size-base) * 1.125);
-  --text-xl: calc(var(--font-size-base) * 1.25);
-  --text-2xl: calc(var(--font-size-base) * 1.5);
-  --text-3xl: calc(var(--font-size-base) * 1.875);
-  --text-4xl: calc(var(--font-size-base) * 2.25);
-  --text-5xl: calc(var(--font-size-base) * 3);
-  --text-6xl: calc(var(--font-size-base) * 3.75);
-  --text-7xl: calc(var(--font-size-base) * 4.5);
-  --text-8xl: calc(var(--font-size-base) * 6);
-  --text-9xl: calc(var(--font-size-base) * 8);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+
+	--text-xs: calc(var(--font-size-base) * 0.75);
+	--text-sm: calc(var(--font-size-base) * 0.875);
+	--text-base: var(--font-size-base);
+	--text-lg: calc(var(--font-size-base) * 1.125);
+	--text-xl: calc(var(--font-size-base) * 1.25);
+	--text-2xl: calc(var(--font-size-base) * 1.5);
+	--text-3xl: calc(var(--font-size-base) * 1.875);
+	--text-4xl: calc(var(--font-size-base) * 2.25);
+	--text-5xl: calc(var(--font-size-base) * 3);
+	--text-6xl: calc(var(--font-size-base) * 3.75);
+	--text-7xl: calc(var(--font-size-base) * 4.5);
+	--text-8xl: calc(var(--font-size-base) * 6);
+	--text-9xl: calc(var(--font-size-base) * 8);
 }
 
 :root {
-  --radius: 0.625rem;
-  --font-size-base: 15px;
-  
-  --app-bg: rgba(25, 25, 25, 1);
-  --app-main-view: rgba(25, 25, 25, 1);
-  --app-primary: rgba(37, 211, 101, 0.687);
-  --app-accent-light: rgb(45, 120, 220);
-  --app-accent: rgb(54 54 54);
-  --app-destructive: rgb(144, 60, 60);
-  
-  --body-bg: rgba(25, 25, 25, 1);
-  
-  --app-bg-fg: rgb(255, 255, 255);
-  --app-main-view-fg: rgb(255, 255, 255);
-  --app-primary-fg: rgb(255, 255, 255);
-  --app-accent-fg: rgb(255, 255, 255);
-  --app-destructive-fg: rgb(255, 255, 255);
+	--radius: 0.625rem;
+	--font-size-base: 15px;
+
+	--app-bg: rgba(25, 25, 25, 1);
+	--app-main-view: rgba(25, 25, 25, 1);
+	--app-primary: rgba(37, 211, 101, 0.687);
+	--app-accent-light: rgb(45, 120, 220);
+	--app-accent: rgb(54 54 54);
+	--app-destructive: rgb(144, 60, 60);
+
+	--body-bg: rgba(25, 25, 25, 1);
+
+	--app-bg-fg: rgb(255, 255, 255);
+	--app-main-view-fg: rgb(255, 255, 255);
+	--app-primary-fg: rgb(255, 255, 255);
+	--app-accent-fg: rgb(255, 255, 255);
+	--app-destructive-fg: rgb(255, 255, 255);
 }
 
 @layer base {
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background: var(--body-bg);
-    color: var(--app-bg-fg);
-    min-height: 100vh;
-    overflow: hidden;
-  }
-  
-  html {
-    background: var(--body-bg);
-  }
-  
-  #root {
-    background: var(--body-bg);
-    min-height: 100vh;
-  }
-  
-  svg {
-    stroke-width: 1.5;
-  }
-  
-  a {
-    color: var(--app-accent);
-  }
-  
-  * {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  
-  *::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-  }
-  
-  *::-webkit-scrollbar-track {
-    display: none;
-    background: transparent;
-  }
-  
-  *::-webkit-scrollbar-thumb {
-    display: none;
-    background: transparent;
-  }
-  
-  *::-webkit-scrollbar-corner {
-    display: none;
-    background: transparent;
-  }
+	body {
+		margin: 0;
+		padding: 0;
+		font-family:
+			-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+			"Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+			sans-serif;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		background: var(--body-bg);
+		color: var(--app-bg-fg);
+		min-height: 100vh;
+		overflow: hidden;
+	}
+
+	html {
+		background: var(--body-bg);
+	}
+
+	#root {
+		background: var(--body-bg);
+		min-height: 100vh;
+	}
+
+	svg {
+		stroke-width: 1.5;
+	}
+
+	a {
+		color: var(--app-accent);
+	}
+
+	* {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	*::-webkit-scrollbar {
+		display: none;
+		width: 0;
+		height: 0;
+	}
+
+	*::-webkit-scrollbar-track {
+		display: none;
+		background: transparent;
+	}
+
+	*::-webkit-scrollbar-thumb {
+		display: none;
+		background: transparent;
+	}
+
+	*::-webkit-scrollbar-corner {
+		display: none;
+		background: transparent;
+	}
 }
 
 @layer components {
-  .title-bar {
-    @apply h-10 flex items-center shrink-0;
-    @apply border-b border-white/5;
-    @apply px-4;
-    background-color: var(--app-bg);
-    color: var(--app-bg-fg);
-  }
-  
-  .title-bar-macos {
-    @apply pl-20;
-  }
-  
-  .drag-region {
-    @apply absolute w-full h-10 z-10;
-    background: transparent;
-  }
-  
-  .custom-title-bar {
-    @apply h-10 flex items-center justify-between shrink-0 px-4 select-none border-b border-white/5;
-    background-color: var(--app-bg);
-    color: var(--app-bg-fg);
-  }
-  
-  .window-controls {
-    @apply flex items-center gap-2;
-  }
-  
-  .window-control-btn {
-    @apply w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-200;
-  }
-  
-  .window-control-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .window-control-btn.close:hover {
-    background-color: rgba(239, 68, 68, 0.8);
-  }
-  
-  .glass-effect {
-    background: var(--app-main-view);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .glass-overlay {
-    background: var(--app-main-view);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  
-  .glass-panel {
-    background: var(--app-main-view);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .glass-background {
-    background: var(--app-bg);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  
-  .glass-card {
-    background: var(--app-main-view);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .language-dropdown {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-  }
-  
-  .language-dropdown::-webkit-scrollbar {
-    display: block;
-    width: 4px;
-  }
-  
-  .language-dropdown::-webkit-scrollbar-track {
-    display: block;
-    background: transparent;
-  }
-  
-  .language-dropdown::-webkit-scrollbar-thumb {
-    display: block;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-  }
-  
-  .language-dropdown::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-  }
+	.title-bar {
+		@apply h-10 flex items-center shrink-0;
+		@apply border-b border-white/5;
+		@apply px-4;
+		background-color: var(--app-bg);
+		color: var(--app-bg-fg);
+	}
+
+	.title-bar-macos {
+		@apply pl-20;
+	}
+
+	.drag-region {
+		@apply absolute w-full h-10 z-10;
+		background: transparent;
+	}
+
+	.custom-title-bar {
+		@apply h-10 flex items-center justify-between shrink-0 px-4 select-none border-b border-white/5;
+		background-color: var(--app-bg);
+		color: var(--app-bg-fg);
+	}
+
+	.window-controls {
+		@apply flex items-center gap-2;
+	}
+
+	.window-control-btn {
+		@apply w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-200;
+	}
+
+	.window-control-btn:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.window-control-btn.close:hover {
+		background-color: rgba(239, 68, 68, 0.8);
+	}
+
+	.glass-effect {
+		background: var(--app-main-view);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.glass-overlay {
+		background: var(--app-main-view);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.glass-panel {
+		background: var(--app-main-view);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.glass-background {
+		background: var(--app-bg);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.glass-card {
+		background: var(--app-main-view);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.language-dropdown {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+	}
+
+	.language-dropdown::-webkit-scrollbar {
+		display: block;
+		width: 4px;
+	}
+
+	.language-dropdown::-webkit-scrollbar-track {
+		display: block;
+		background: transparent;
+	}
+
+	.language-dropdown::-webkit-scrollbar-thumb {
+		display: block;
+		background: rgba(255, 255, 255, 0.3);
+		border-radius: 2px;
+	}
+
+	.language-dropdown::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.5);
+	}
 }
 
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
 }
 
-button, input, textarea {
-  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+button,
+input,
+textarea {
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+
+	html>*,
+	html>*::before,
+	html>*::after {
+		animation-duration: 0.01ms;
+		animation-iteration-count: 1;
+		transition-duration: 0.01ms;
+		scroll-behavior: auto;
+	}
 }
