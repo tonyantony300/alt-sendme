@@ -72,6 +72,17 @@ The easiest way to get started is by downloading one of the following versions f
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
 
+## Contributing & Community
+
+Join and hangout at our [discord](https://discord.gg/xwb7z22Eve) server.
+
+
+## Roadmap
+
+
+
+Check out our [roadmap](https://github.com/users/tonyantony300/projects/4) to stay updated on recently released features and learn about what's coming next.
+
 ## How it works
 
 Users generate ephemeral tickets (compact, self-contained tokens embedding dialing information, node IDs, and transfer metadata) that recipients paste to initiate connections. Under the hood, AltSendme orchestrates NAT hole punching via QUIC's UDP transport, falling back to encrypted DERP relays only when direct paths fail, ensuring reliable end-to-end encrypted transfers with BLAKE3 integrity verification.
@@ -125,9 +136,7 @@ QUIC Stream Multiplexing:
  🇺🇸 🇷🇺 🇷🇸 🇫🇷 🇨🇳 🇹🇼 🇩🇪 🇯🇵 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷 🇮🇳 🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇪🇹
 
 
-## Development
-
-If you want to contribute or run the app from source:
+## Development Setup
 
 ### Prerequisites
 
@@ -135,37 +144,27 @@ If you want to contribute or run the app from source:
 - Node.js 18+
 - npm or yarn
 
-### Running in Development
+### Getting Started
 
-1. **Install frontend dependencies**:
+1. **Fork and clone the repository**:
    ```bash
-   cd web-app
+   git clone https://github.com/your-username/alt-sendme.git
+   cd alt-sendme
+   ```
+
+2. **Install frontend dependencies**:
+   ```bash
    npm install
    ```
 
-2. **Run the desktop app**:
+3. **Run in development mode**:
    ```bash
-   cd src-tauri
-   cargo tauri dev
+   npm run app:dev
    ```
 
-This will start the app with hot reload enabled for both frontend and backend changes.
-
-
-### Building Locally
-
-
- 1. **Build stage**:
+4. **Build for production** (optional):
    ```bash
-   cd src-tauri
-   cargo tauri build --no-bundle
-   ```
- 2. **Run**:
-
-  ```bash
-   cd src-tauri/target/release
-   ./alt-sendme        # macOS or Linux
-   alt-sendme.exe      # Windows
+   npm run app:build --no-bundle
    ```
 
 
@@ -192,7 +191,6 @@ See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your da
 
 - [Iroh](https://www.iroh.computer)
 - [Tauri](https://v2.tauri.app)
-- [Sendme](https://www.iroh.computer/sendme)
 
 
 ## Contact

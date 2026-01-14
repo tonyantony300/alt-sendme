@@ -126,7 +126,7 @@ Please be respectful and considerate in all interactions. The goal is to maintai
 
 Don't hesitate to ask questions! You can:
 - Open an issue for discussion
-- Reach out on Discord: [`tny_antny`](https://discord.com/users/tny_antny)
+- Join our [discord](https://discord.gg/xwb7z22Eve) 
 - Comment on existing issues or pull requests
 
 Thank you for making AltSendme better! Every contribution, no matter how small, is greatly appreciated. 💚
