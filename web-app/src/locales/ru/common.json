@@ -31,7 +31,8 @@
 		"itemSelected": "Выбранный пункт",
 		"browseFile": "Выбрать файл",
 		"browseFolder": "Выбрать папку",
-		"copyToClipboard": "Скопировать"
+		"copyToClipboard": "Скопировать",
+		"broadcastMode": "Трансляция"
 	},
 	"receiver": {
 		"title": "Получить файлы",

@@ -31,7 +31,8 @@
 		"itemSelected": "Élément sélectionné",
 		"browseFile": "Parcourir fichier",
 		"browseFolder": "Parcourir dossier",
-		"copyToClipboard": "Copier dans le presse-papiers"
+		"copyToClipboard": "Copier dans le presse-papiers",
+		"broadcastMode": "Diffusion"
 	},
 	"receiver": {
 		"title": "Recevoir des fichiers",

@@ -31,7 +31,8 @@
 		"itemSelected": "Вибраний пункт",
 		"browseFile": "Вибрати файл",
 		"browseFolder": "Вибрати папку",
-		"copyToClipboard": "Скопіювати"
+		"copyToClipboard": "Скопіювати",
+		"broadcastMode": "Трансляція"
 	},
 	"receiver": {
 		"title": "Отримати файли",

@@ -31,7 +31,8 @@
 		"itemSelected": "アイテムを選択しました",
 		"browseFile": "ファイルを参照",
 		"browseFolder": "フォルダを参照",
-		"copyToClipboard": "クリップボードにコピー"
+		"copyToClipboard": "クリップボードにコピー",
+		"broadcastMode": "ブロードキャスト"
 	},
 	"receiver": {
 		"title": "ファイルを受信",

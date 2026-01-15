@@ -31,7 +31,8 @@
 		"itemSelected": "항목 선택됨",
 		"browseFile": "파일 찾아보기",
 		"browseFolder": "폴더 찾아보기",
-		"copyToClipboard": "클립보드에 복사"
+		"copyToClipboard": "클립보드에 복사",
+		"broadcastMode": "브로드캐스트"
 	},
 	"receiver": {
 		"title": "파일 받기",

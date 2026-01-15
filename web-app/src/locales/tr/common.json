@@ -31,7 +31,8 @@
 		"itemSelected": "Öğe seçildi",
 		"browseFile": "Dosyaya Gözat",
 		"browseFolder": "Klasöre Gözat",
-		"copyToClipboard": "Panoya kopyala"
+		"copyToClipboard": "Panoya kopyala",
+		"broadcastMode": "Yayın"
 	},
 	"receiver": {
 		"title": "Dosya Al",

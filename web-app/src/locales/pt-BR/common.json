@@ -31,7 +31,8 @@
 		"itemSelected": "Item selecionado",
 		"browseFile": "Navegar Arquivo",
 		"browseFolder": "Navegar Pasta",
-		"copyToClipboard": "Copiar para área de transferência"
+		"copyToClipboard": "Copiar para área de transferência",
+		"broadcastMode": "Transmissão"
 	},
 	"receiver": {
 		"title": "Receber Arquivos",

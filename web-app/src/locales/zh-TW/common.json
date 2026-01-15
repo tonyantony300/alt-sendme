@@ -31,7 +31,8 @@
 		"itemSelected": "已選擇項目",
 		"browseFile": "瀏覽檔案",
 		"browseFolder": "瀏覽資料夾",
-		"copyToClipboard": "複製到剪貼簿"
+		"copyToClipboard": "複製到剪貼簿",
+		"broadcastMode": "廣播"
 	},
 	"receiver": {
 		"title": "接收檔案",

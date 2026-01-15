@@ -31,7 +31,8 @@
 		"itemSelected": "Изабрана ставка",
 		"browseFile": "Изабери датотеку",
 		"browseFolder": "Изабери фасциклу",
-		"copyToClipboard": "Копирај у клипборд"
+		"copyToClipboard": "Копирај у клипборд",
+		"broadcastMode": "Емитовање"
 	},
 	"receiver": {
 		"title": "Прими датотеке",

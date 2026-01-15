@@ -31,7 +31,8 @@
 		"itemSelected": "Elemento selezionato",
 		"browseFile": "Sfoglia File",
 		"browseFolder": "Sfoglia Cartella",
-		"copyToClipboard": "Copia negli appunti"
+		"copyToClipboard": "Copia negli appunti",
+		"broadcastMode": "Trasmissione"
 	},
 	"receiver": {
 		"title": "Ricevi File",
