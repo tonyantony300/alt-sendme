@@ -5,12 +5,8 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import type {
-	AlertDialogState,
-	AlertType,
-	TransferMetadata,
-	TransferProgress,
-} from '../types/sender'
+import type { AlertDialogState, AlertType } from '../types/ui'
+import type { TransferMetadata, TransferProgress } from '../types/transfer'
 
 export interface UseReceiverReturn {
 	ticket: string

@@ -1,7 +1,7 @@
 import { CheckCircle, XCircle } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { trackTransferComplete } from '../../lib/analytics'
-import type { SuccessScreenProps } from '../../types/sender'
+import type { SuccessScreenProps } from '../../types/transfer'
 
 function formatFileSize(bytes: number): string {
 	if (bytes === 0) return 'NA'

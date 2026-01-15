@@ -1,6 +1,6 @@
 import { Download } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import type { TicketInputProps } from '../../types/sender'
+import type { TicketInputProps } from '../../types/receiver'
 
 export function TicketInput({
 	ticket,

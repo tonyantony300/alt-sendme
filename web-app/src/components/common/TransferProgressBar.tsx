@@ -1,5 +1,5 @@
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import type { TransferProgress } from '../../types/sender'
+import type { TransferProgress } from '../../types/transfer'
 
 interface TransferProgressBarProps {
 	progress: TransferProgress

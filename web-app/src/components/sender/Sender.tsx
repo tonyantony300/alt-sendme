@@ -3,8 +3,8 @@ import { Loader2 } from 'lucide-react'
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
-import { PulseAnimation } from './PulseAnimation'
-import { TransferSuccessScreen } from './TransferSuccessScreen'
+import { PulseAnimation } from '../common/PulseAnimation'
+import { TransferSuccessScreen } from '../common/TransferSuccessScreen'
 import {
 	AlertDialog,
 	AlertDialogAction,
