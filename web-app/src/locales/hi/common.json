@@ -31,7 +31,8 @@
 		"itemSelected": "आइटम चुना गया",
 		"browseFile": "फ़ाइल ब्राउज़ करें",
 		"browseFolder": "फ़ोल्डर ब्राउज़ करें",
-		"copyToClipboard": "क्लिपबोर्ड में कॉपी करें"
+		"copyToClipboard": "क्लिपबोर्ड में कॉपी करें",
+		"broadcastMode": "ब्रॉडकास्ट"
 	},
 	"receiver": {
 		"title": "फ़ाइलें प्राप्त करें",

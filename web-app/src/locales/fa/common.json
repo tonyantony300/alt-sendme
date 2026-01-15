@@ -31,7 +31,8 @@
 		"itemSelected": "آیتم انتخاب شد",
 		"browseFile": "انتخاب فایل",
 		"browseFolder": "انتخاب فولدر",
-		"copyToClipboard": "کپی در کلیپ‌بورد"
+		"copyToClipboard": "کپی در کلیپ‌بورد",
+		"broadcastMode": "پخش"
 	},
 	"receiver": {
 		"title": "دریافت فایل",

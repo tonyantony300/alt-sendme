@@ -31,7 +31,8 @@
 		"itemSelected": "Položka vybrána",
 		"browseFile": "Vybrat soubor",
 		"browseFolder": "Vybrat složku",
-		"copyToClipboard": "Kopírovat do schránky"
+		"copyToClipboard": "Kopírovat do schránky",
+		"broadcastMode": "Vysílání"
 	},
 	"receiver": {
 		"title": "Přijmout soubory",

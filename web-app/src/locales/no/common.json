@@ -31,7 +31,8 @@
 		"itemSelected": "Element valgt",
 		"browseFile": "Velg fil",
 		"browseFolder": "Velg mappe",
-		"copyToClipboard": "Kopier til utklippstavle"
+		"copyToClipboard": "Kopier til utklippstavle",
+		"broadcastMode": "Kringkasting"
 	},
 	"receiver": {
 		"title": "Motta filer",

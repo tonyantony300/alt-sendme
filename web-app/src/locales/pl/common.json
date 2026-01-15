@@ -31,7 +31,8 @@
 		"itemSelected": "Wybrano element",
 		"browseFile": "Przeglądaj plik",
 		"browseFolder": "Przeglądaj folder",
-		"copyToClipboard": "Kopiuj do schowka"
+		"copyToClipboard": "Kopiuj do schowka",
+		"broadcastMode": "Rozgłaszanie"
 	},
 	"receiver": {
 		"title": "Odbierz pliki",

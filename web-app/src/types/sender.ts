@@ -6,6 +6,7 @@ export interface SharingState {
 	ticket: string | null
 	selectedPath: string | null
 	isLoading: boolean
+	isBroadcastMode: boolean
 }
 
 export interface CopyState {
@@ -32,9 +33,11 @@ export interface SharingControlsProps {
 	ticket: string | null
 	copySuccess: boolean
 	transferProgress: TransferProgress | null
+	isBroadcastMode: boolean
 	onStartSharing: () => Promise<void>
 	onStopSharing: () => Promise<void>
 	onCopyTicket: () => Promise<void>
+	onToggleBroadcast: () => void
 }
 
 export interface TicketDisplayProps {

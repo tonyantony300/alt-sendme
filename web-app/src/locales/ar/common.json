@@ -31,7 +31,8 @@
 		"itemSelected": "تم اختيار العنصر",
 		"browseFile": "تصفح الملف",
 		"browseFolder": "تصفح المجلد",
-		"copyToClipboard": "نسخ إلى الحافظة"
+		"copyToClipboard": "نسخ إلى الحافظة",
+		"broadcastMode": "بث"
 	},
 	"receiver": {
 		"title": "استقبال الملفات",

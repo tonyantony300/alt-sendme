@@ -31,7 +31,8 @@
 		"itemSelected": "เลือกรายการแล้ว",
 		"browseFile": "เลือกไฟล์",
 		"browseFolder": "เลือกโฟลเดอร์",
-		"copyToClipboard": "คัดลอกไปยังคลิปบอร์ด"
+		"copyToClipboard": "คัดลอกไปยังคลิปบอร์ด",
+		"broadcastMode": "บรอดแคสต์"
 	},
 	"receiver": {
 		"title": "รับไฟล์",

@@ -18,6 +18,7 @@ export interface UseSenderReturn {
 	alertDialog: AlertDialogState
 	transferMetadata: TransferMetadata | null
 	transferProgress: TransferProgress | null
+	isBroadcastMode: boolean
 
 	handleFileSelect: (path: string) => void
 	startSharing: () => Promise<void>
@@ -26,6 +27,7 @@ export interface UseSenderReturn {
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
 	resetForNewTransfer: () => Promise<void>
+	toggleBroadcastMode: () => void
 }
 
 export function useSender(): UseSenderReturn {
@@ -43,6 +45,7 @@ export function useSender(): UseSenderReturn {
 	const [transferProgress, setTransferProgress] =
 		useState<TransferProgress | null>(null)
 	const [isStopping, setIsStopping] = useState(false)
+	const [isBroadcastMode, setIsBroadcastMode] = useState(false)
 	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
 		isOpen: false,
 		title: '',
@@ -161,6 +164,24 @@ export function useSender(): UseSenderReturn {
 					setIsTransporting(false)
 					setIsCompleted(true)
 					setTransferProgress(null)
+
+					// Check if broadcast mode is enabled
+					setIsBroadcastMode((currentBroadcastMode) => {
+						if (currentBroadcastMode) {
+							// In broadcast mode: reset to listening state after a brief delay
+							setTimeout(() => {
+								setIsCompleted(false)
+								setIsTransporting(false)
+								setTransferMetadata(null)
+								setTransferProgress(null)
+								isCompletedRef.current = false
+								latestProgressRef.current = null
+								transferStartTimeRef.current = null
+								// Keep isSharing, ticket, selectedPath, pathType intact
+							}, 2000)
+						}
+						return currentBroadcastMode
+					})
 
 					try {
 						const fileSize = await invoke<number>('get_file_size', {
@@ -405,6 +426,10 @@ export function useSender(): UseSenderReturn {
 		}
 	}
 
+	const toggleBroadcastMode = () => {
+		setIsBroadcastMode((prev) => !prev)
+	}
+
 	return {
 		isSharing,
 		isTransporting,
@@ -418,6 +443,7 @@ export function useSender(): UseSenderReturn {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
+		isBroadcastMode,
 
 		handleFileSelect,
 		startSharing,
@@ -426,5 +452,6 @@ export function useSender(): UseSenderReturn {
 		showAlert,
 		closeAlert,
 		resetForNewTransfer,
+		toggleBroadcastMode,
 	}
 }

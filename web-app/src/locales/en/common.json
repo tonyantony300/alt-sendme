@@ -31,7 +31,8 @@
 		"itemSelected": "Item selected",
 		"browseFile": "Browse File",
 		"browseFolder": "Browse Folder",
-		"copyToClipboard": "Copy to clipboard"
+		"copyToClipboard": "Copy to clipboard",
+		"broadcastMode": "Broadcast"
 	},
 	"receiver": {
 		"title": "Receive Files",

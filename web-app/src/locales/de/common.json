@@ -31,7 +31,8 @@
 		"itemSelected": "Element ausgewählt",
 		"browseFile": "Datei durchsuchen",
 		"browseFolder": "Ordner durchsuchen",
-		"copyToClipboard": "In Zwischenablage kopieren"
+		"copyToClipboard": "In Zwischenablage kopieren",
+		"broadcastMode": "Broadcast"
 	},
 	"receiver": {
 		"title": "Dateien empfangen",

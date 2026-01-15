@@ -31,7 +31,8 @@
 		"itemSelected": "已选择项目",
 		"browseFile": "浏览文件",
 		"browseFolder": "浏览文件夹",
-		"copyToClipboard": "复制到剪贴板"
+		"copyToClipboard": "复制到剪贴板",
+		"broadcastMode": "广播"
 	},
 	"receiver": {
 		"title": "接收文件",

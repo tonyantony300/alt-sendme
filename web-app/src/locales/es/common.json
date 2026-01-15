@@ -31,7 +31,8 @@
 		"itemSelected": "Elemento seleccionado",
 		"browseFile": "Buscar archivo",
 		"browseFolder": "Buscar carpeta",
-		"copyToClipboard": "Copiar al portapapeles"
+		"copyToClipboard": "Copiar al portapapeles",
+		"broadcastMode": "Difusión"
 	},
 	"receiver": {
 		"title": "Recibir archivos",
