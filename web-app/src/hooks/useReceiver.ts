@@ -26,6 +26,7 @@ export interface UseReceiverReturn {
 	handleTicketChange: (ticket: string) => void
 	handleBrowseFolder: () => Promise<void>
 	handleReceive: () => Promise<void>
+	handleOpenFolder: () => Promise<void>
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
 	resetForNewTransfer: () => Promise<void>
@@ -317,38 +318,29 @@ export function useReceiver(): UseReceiverReturn {
 		folderOpenTriggeredRef.current = false
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: `resolveRevealPath` is not a value that changes so ommiting it is fine
-	useEffect(() => {
-		if (!isCompleted) {
-			folderOpenTriggeredRef.current = false
-			return
-		}
+	const handleOpenFolder = async () => {
 		if (!savePath || folderOpenTriggeredRef.current) {
 			return
 		}
 
-		const revealDownloadFolder = async () => {
-			try {
-				folderOpenTriggeredRef.current = true
-				const targetPath = await resolveRevealPath(
-					savePath,
-					fileNamesRef.current
-				)
-				if (targetPath) {
-					await revealItemInDir(targetPath)
-				}
-			} catch (error) {
-				console.error('Failed to open download folder:', error)
-				showAlert(
-					t('common:errors.openFolderFailed'),
-					`${t('common:errors.openFolderFailedDesc')}: ${error}`,
-					'error'
-				)
+		try {
+			folderOpenTriggeredRef.current = true
+			const targetPath = await resolveRevealPath(
+				savePath,
+				fileNamesRef.current
+			)
+			if (targetPath) {
+				await revealItemInDir(targetPath)
 			}
+		} catch (error) {
+			console.error('Failed to open download folder:', error)
+			showAlert(
+				t('common:errors.openFolderFailed'),
+				`${t('common:errors.openFolderFailedDesc')}: ${error}`,
+				'error'
+			)
 		}
-
-		revealDownloadFolder()
-	}, [isCompleted, savePath, t])
+	}
 
 	return {
 		ticket,
@@ -364,6 +356,7 @@ export function useReceiver(): UseReceiverReturn {
 		handleTicketChange,
 		handleBrowseFolder,
 		handleReceive,
+		handleOpenFolder,
 		showAlert,
 		closeAlert,
 		resetForNewTransfer,

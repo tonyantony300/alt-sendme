@@ -61,6 +61,7 @@
 		"stopped": "전송 중지됨",
 		"newTransfer": "새 전송",
 		"done": "완료",
+		"open": "열기",
 		"wasStopped": "전송이 완료되기 전에 중지되었습니다.",
 		"successMessage": "전송이 성공적으로 완료되었습니다.",
 		"file": "파일",

@@ -20,6 +20,7 @@ export interface SuccessScreenProps {
 	metadata: TransferMetadata
 	onDone: () => void
 	wasStopped?: boolean
+	onOpenFolder?: () => Promise<void>
 }
 
 export interface AlertDialogState {
