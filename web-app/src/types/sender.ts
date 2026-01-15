@@ -1,34 +1,5 @@
-export interface TransferMetadata {
-	fileName: string
-	fileSize: number
-	duration: number
-	startTime: number
-	endTime: number
-	downloadPath?: string
-	wasStopped?: boolean
-	pathType?: 'file' | 'directory' | null
-}
-
-export interface TransferProgress {
-	bytesTransferred: number
-	totalBytes: number
-	speedBps: number
-	percentage: number
-}
-
-export interface SuccessScreenProps {
-	metadata: TransferMetadata
-	onDone: () => void
-	wasStopped?: boolean
-	onOpenFolder?: () => Promise<void>
-}
-
-export interface AlertDialogState {
-	isOpen: boolean
-	title: string
-	description: string
-	type: 'success' | 'error' | 'info'
-}
+import type { AlertDialogState } from './ui'
+import type { TransferProgress } from './transfer'
 
 export interface SharingState {
 	isSharing: boolean
@@ -44,8 +15,6 @@ export interface CopyState {
 export interface SenderState extends SharingState, CopyState {
 	alertDialog: AlertDialogState
 }
-
-export type AlertType = 'success' | 'error' | 'info'
 
 export interface ShareActionProps {
 	selectedPath: string | null
@@ -73,23 +42,6 @@ export interface TicketDisplayProps {
 	copySuccess: boolean
 	onCopyTicket: () => Promise<void>
 }
-
-export interface ReceiverState {
-	ticket: string
-	isReceiving: boolean
-	alertDialog: AlertDialogState
-}
-
-export interface TicketInputProps {
-	ticket: string
-	isReceiving: boolean
-	savePath: string
-	onTicketChange: (ticket: string) => void
-	onBrowseFolder: () => Promise<void>
-	onReceive: () => Promise<void>
-}
-
-export type InstructionsCardProps = {}
 
 export interface DragDropState {
 	isDragActive: boolean

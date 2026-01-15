@@ -2,12 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import type {
-	AlertDialogState,
-	AlertType,
-	TransferMetadata,
-	TransferProgress,
-} from '../types/sender'
+import type { AlertDialogState, AlertType } from '../types/ui'
+import type { TransferMetadata, TransferProgress } from '../types/transfer'
 
 export interface UseSenderReturn {
 	isSharing: boolean

@@ -1,4 +1,4 @@
-import type { InstructionsCardProps } from '../../types/sender'
+import type { InstructionsCardProps } from '../../types/ui'
 
 export function InstructionsCard(_props: InstructionsCardProps) {
 	return (

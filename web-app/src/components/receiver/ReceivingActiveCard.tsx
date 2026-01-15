@@ -1,6 +1,6 @@
 import { Square } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import type { TransferProgress } from '../../types/sender'
+import type { TransferProgress } from '../../types/transfer'
 import { TransferProgressBar } from '../common/TransferProgressBar'
 
 interface ReceivingActiveCardProps {
