@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
 import type { TransferMetadata, TransferProgress } from '../types/transfer'
+import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 
 export interface UseReceiverReturn {
 	ticket: string
@@ -49,6 +50,7 @@ export function useReceiver(): UseReceiverReturn {
 	const transferStartTimeRef = useRef<number | null>(null)
 	const savePathRef = useRef<string>('')
 	const folderOpenTriggeredRef = useRef(false)
+	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 
 	const isAbsolutePath = (path: string) => {
 		if (!path) return false
@@ -150,6 +152,7 @@ export function useReceiver(): UseReceiverReturn {
 				setIsCompleted(false)
 				setTransferStartTime(Date.now())
 				setTransferProgress(null)
+				speedAveragerRef.current.reset()
 			})
 
 			unlistenProgress = await listen('receive-progress', (event: any) => {
@@ -165,11 +168,18 @@ export function useReceiver(): UseReceiverReturn {
 						const percentage =
 							totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
 
+						// Add speed sample and calculate ETA
+						speedAveragerRef.current.addSample(speedBps)
+						const avgSpeed = speedAveragerRef.current.getAverage()
+						const bytesRemaining = totalBytes - bytesTransferred
+						const eta = calculateETA(bytesRemaining, avgSpeed)
+
 						setTransferProgress({
 							bytesTransferred,
 							totalBytes,
 							speedBps,
 							percentage,
+							etaSeconds: eta ?? undefined,
 						})
 					}
 				} catch (error) {

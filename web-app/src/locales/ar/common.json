@@ -56,6 +56,7 @@
 	"transfer": {
 		"progress": "تقدم النقل",
 		"speed": "السرعة",
+"eta": "ETA",
 		"timeRemaining": "الوقت المتبقي",
 		"calculating": "جارٍ الحساب...",
 		"complete": "اكتمل النقل!",
