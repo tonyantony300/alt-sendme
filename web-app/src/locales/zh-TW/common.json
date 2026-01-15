@@ -61,6 +61,7 @@
 		"stopped": "傳輸已停止",
 		"newTransfer": "新傳輸",
 		"done": "完成",
+		"open": "打開",
 		"wasStopped": "傳輸在完成前已停止。",
 		"successMessage": "您的傳輸已成功完成。",
 		"file": "檔案",

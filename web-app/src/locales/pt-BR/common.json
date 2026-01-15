@@ -61,6 +61,7 @@
 		"stopped": "Transmissão Parada",
 		"newTransfer": "Nova Transferência",
 		"done": "Concluído",
+		"open": "Abrir",
 		"wasStopped": "A transferência foi parada antes da conclusão.",
 		"successMessage": "Sua transferência foi concluída com sucesso.",
 		"file": "Arquivo",

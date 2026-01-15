@@ -61,6 +61,7 @@
 		"stopped": "転送が停止されました",
 		"newTransfer": "新しい転送",
 		"done": "完了",
+		"open": "開く",
 		"wasStopped": "転送は完了前に停止されました。",
 		"successMessage": "転送が正常に完了しました。",
 		"file": "ファイル",

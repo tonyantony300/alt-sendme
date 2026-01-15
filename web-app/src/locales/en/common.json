@@ -61,6 +61,7 @@
 		"stopped": "Transmission Stopped",
 		"newTransfer": "New Transfer",
 		"done": "Done",
+		"open": "Open",
 		"wasStopped": "The transfer was stopped before completion.",
 		"successMessage": "Your transfer has been completed successfully.",
 		"file": "File",

@@ -50,6 +50,7 @@ function calculateAverageSpeed(
 export function TransferSuccessScreen({
 	metadata,
 	onDone,
+	onOpenFolder,
 }: SuccessScreenProps) {
 	const wasStopped = metadata.wasStopped || false
 	const isReceiver = !!metadata.downloadPath
@@ -182,24 +183,51 @@ export function TransferSuccessScreen({
 							{wasStopped
 								? 'NA'
 								: formatSpeed(
-										calculateAverageSpeed(metadata.fileSize, metadata.duration)
-									)}
+									calculateAverageSpeed(metadata.fileSize, metadata.duration)
+								)}
 						</span>
 					</div>
 				</div>
 			</div>
 
-			<button
-				type="button"
-				onClick={handleDone}
-				className="w-full max-w-sm py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-				style={{
-					backgroundColor: 'var(--app-primary)',
-					color: 'var(--app-primary-fg)',
-				}}
-			>
-				{t('common:transfer.done')}
-			</button>
+			{isReceiver && onOpenFolder ? (
+				<div className="flex gap-3 w-full max-w-sm">
+					<button
+						type="button"
+						onClick={onOpenFolder}
+						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+						style={{
+							backgroundColor: 'rgba(255, 255, 255, 0.1)',
+							color: 'var(--app-main-view-fg)',
+						}}
+					>
+						{t('common:transfer.open')}
+					</button>
+					<button
+						type="button"
+						onClick={handleDone}
+						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+						style={{
+							backgroundColor: 'var(--app-primary)',
+							color: 'var(--app-primary-fg)',
+						}}
+					>
+						{t('common:transfer.done')}
+					</button>
+				</div>
+			) : (
+				<button
+					type="button"
+					onClick={handleDone}
+					className="w-full max-w-sm py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+					style={{
+						backgroundColor: 'var(--app-primary)',
+						color: 'var(--app-primary-fg)',
+					}}
+				>
+					{t('common:transfer.done')}
+				</button>
+			)}
 		</div>
 	)
 }

@@ -61,6 +61,7 @@
 		"stopped": "Trasferimento Interrotto",
 		"newTransfer": "Nuovo Trasferimento",
 		"done": "Fatto",
+		"open": "Apri",
 		"wasStopped": "Il trasferimento è stato interrotto prima del completamento.",
 		"successMessage": "Il trasferimento è stato completato con successo.",
 		"file": "File",

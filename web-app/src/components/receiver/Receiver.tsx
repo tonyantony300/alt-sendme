@@ -37,6 +37,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 		handleTicketChange,
 		handleBrowseFolder,
 		handleReceive,
+		handleOpenFolder,
 		closeAlert,
 		resetForNewTransfer,
 	} = useReceiver()
@@ -93,6 +94,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 					<TransferSuccessScreen
 						metadata={transferMetadata}
 						onDone={resetForNewTransfer}
+						onOpenFolder={handleOpenFolder}
 					/>
 				</div>
 			) : (
