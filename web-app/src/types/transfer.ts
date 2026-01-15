@@ -14,6 +14,7 @@ export interface TransferProgress {
     totalBytes: number
     speedBps: number
     percentage: number
+    etaSeconds?: number
 }
 
 export interface SuccessScreenProps {

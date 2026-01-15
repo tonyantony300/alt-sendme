@@ -4,6 +4,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
 import type { TransferMetadata, TransferProgress } from '../types/transfer'
+import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 
 export interface UseSenderReturn {
 	isSharing: boolean
@@ -60,6 +61,7 @@ export function useSender(): UseSenderReturn {
 	const wasManuallyStoppedRef = useRef(false)
 	const selectedPathRef = useRef<string | null>(null)
 	const pathTypeRef = useRef<'file' | 'directory' | null>(null)
+	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 
 	useEffect(() => {
 		selectedPathRef.current = selectedPath
@@ -80,6 +82,7 @@ export function useSender(): UseSenderReturn {
 				transferStartTimeRef.current = Date.now()
 				isCompletedRef.current = false
 				latestProgressRef.current = null
+				speedAveragerRef.current.reset()
 
 				setIsTransporting(true)
 				setIsCompleted(false)
@@ -111,11 +114,18 @@ export function useSender(): UseSenderReturn {
 						const percentage =
 							totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
 
+						// Add speed sample and calculate ETA
+						speedAveragerRef.current.addSample(speedBps)
+						const avgSpeed = speedAveragerRef.current.getAverage()
+						const bytesRemaining = totalBytes - bytesTransferred
+						const eta = calculateETA(bytesRemaining, avgSpeed)
+
 						latestProgressRef.current = {
 							bytesTransferred,
 							totalBytes,
 							speedBps,
 							percentage,
+							etaSeconds: eta ?? undefined,
 						}
 					}
 				} catch (error) {

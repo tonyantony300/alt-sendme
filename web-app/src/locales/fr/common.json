@@ -56,6 +56,7 @@
 	"transfer": {
 		"progress": "Progression du transfert",
 		"speed": "Vitesse",
+"eta": "ETA",
 		"timeRemaining": "Temps restant",
 		"calculating": "Calcul en cours...",
 		"complete": "Transfert terminé !",
