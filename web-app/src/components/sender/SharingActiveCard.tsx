@@ -5,7 +5,7 @@ import type {
 	SharingControlsProps,
 	TicketDisplayProps,
 } from '../../types/sender'
-import { TransferProgressBar } from './TransferProgressBar'
+import { TransferProgressBar } from '../common/TransferProgressBar'
 
 export function SharingActiveCard({
 	selectedPath,
@@ -123,14 +123,14 @@ export function SharingActiveCard({
 	const folderProgress =
 		isFolderTransfer && transferProgress
 			? {
-					bytesTransferred: totalTransferredBytes,
-					totalBytes: transferProgress.totalBytes,
-					speedBps: calculatedSpeed,
-					percentage:
-						transferProgress.totalBytes > 0
-							? (totalTransferredBytes / transferProgress.totalBytes) * 100
-							: 0,
-				}
+				bytesTransferred: totalTransferredBytes,
+				totalBytes: transferProgress.totalBytes,
+				speedBps: calculatedSpeed,
+				percentage:
+					transferProgress.totalBytes > 0
+						? (totalTransferredBytes / transferProgress.totalBytes) * 100
+						: 0,
+			}
 			: null
 
 	return (
