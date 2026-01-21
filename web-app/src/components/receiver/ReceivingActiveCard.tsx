@@ -48,10 +48,8 @@ export function ReceivingActiveCard({
               "relative size-2 rounded-full bg-gray-500 before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-gray-400 before:opacity-75 mr-2",
 
               {
-                "bg-emerald-500 before:bg-emerald-400": isTransporting,
-                "bg-blue-500 before:bg-blue-400":
-                  !isTransporting && !isCompleted,
-                "bg-green-500 before:bg-green-400": isCompleted,
+                "bg-emerald-500 before:bg-emerald-400": isCompleted,
+                "bg-blue-500 before:bg-blue-400": isTransporting,
               },
             )}
           ></div>
