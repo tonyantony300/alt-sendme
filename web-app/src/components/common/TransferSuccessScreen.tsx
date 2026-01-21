@@ -195,7 +195,7 @@ export function TransferSuccessScreen({
 					<button
 						type="button"
 						onClick={onOpenFolder}
-						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2"
 						style={{
 							backgroundColor: 'rgba(255, 255, 255, 0.1)',
 							color: 'var(--app-main-view-fg)',
@@ -206,7 +206,7 @@ export function TransferSuccessScreen({
 					<button
 						type="button"
 						onClick={handleDone}
-						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2"
 						style={{
 							backgroundColor: 'var(--app-primary)',
 							color: 'var(--app-primary-fg)',
@@ -219,7 +219,7 @@ export function TransferSuccessScreen({
 				<button
 					type="button"
 					onClick={handleDone}
-					className="w-full max-w-sm py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+					className="w-full max-w-sm py-3 px-6 rounded-md font-medium transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2"
 					style={{
 						backgroundColor: 'var(--app-primary)',
 						color: 'var(--app-primary-fg)',
