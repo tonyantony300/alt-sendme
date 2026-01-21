@@ -2,6 +2,8 @@ import { Square } from "lucide-react";
 import { useTranslation } from "../../i18n/react-i18next-compat";
 import type { TransferProgress } from "../../types/transfer";
 import { TransferProgressBar } from "../common/TransferProgressBar";
+import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 interface ReceivingActiveCardProps {
   isReceiving: boolean;
@@ -42,8 +44,16 @@ export function ReceivingActiveCard({
       <div className="p-4 rounded-lg absolute top-0 left-0">
         <div className="flex items-center mb-2">
           <div
-            className="relative size-2 rounded-full bg-emerald-500 before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-emerald-400 before:opacity-75"
-            style={{ backgroundColor: statusColor }}
+            className={cn(
+              "relative size-2 rounded-full bg-gray-500 before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-gray-400 before:opacity-75 mr-2",
+
+              {
+                "bg-emerald-500 before:bg-emerald-400": isTransporting,
+                "bg-blue-500 before:bg-blue-400":
+                  !isTransporting && !isCompleted,
+                "bg-green-500 before:bg-green-400": isCompleted,
+              },
+            )}
           ></div>
           <p className="text-sm font-medium" style={{ color: statusColor }}>
             {statusText}
@@ -62,18 +72,16 @@ export function ReceivingActiveCard({
         <TransferProgressBar progress={transferProgress} />
       )}
 
-      <button
+      <Button
+        variant={"destructive-outline"}
+        size="icon-lg"
         type="button"
         onClick={onStopReceiving}
-        className="absolute top-0 right-6 w-10 h-10 rounded-full font-medium transition-colors focus:outline-hidden focus:ring-2 focus:ring-offset-2 flex items-center justify-center p-0"
-        style={{
-          backgroundColor: "var(--app-destructive)",
-          color: "var(--app-destructive-fg)",
-        }}
+        className="absolute top-0 right-6 rounded-full"
         aria-label="Stop receiving"
       >
         <Square className="w-4 h-4" fill="currentColor" />
-      </button>
+      </Button>
     </div>
   );
 }
