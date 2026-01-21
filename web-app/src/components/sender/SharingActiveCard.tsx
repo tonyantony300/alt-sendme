@@ -15,6 +15,7 @@ import {
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { toastManager } from "../ui/toast";
+import { cn } from "@/lib/utils";
 
 export function SharingActiveCard({
   selectedPath,
@@ -181,8 +182,13 @@ export function SharingActiveCard({
 
         <div className="flex items-center mb-2">
           <div
-            className="h-2 w-2 rounded-full mr-2"
-            style={{ backgroundColor: statusColor }}
+            className={cn(
+              "relative size-2 rounded-full bg-gray-500 before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-gray-400 before:opacity-75 mr-2",
+              {
+                "bg-emerald-500 before:bg-emerald-400": isCompleted,
+                "bg-blue-500 before:bg-blue-400": isTransporting,
+              },
+            )}
           ></div>
           <p className="text-sm font-medium" style={{ color: statusColor }}>
             {statusText}
