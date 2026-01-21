@@ -31,7 +31,8 @@
 		"itemSelected": "Item selected",
 		"browseFile": "Browse File",
 		"browseFolder": "Browse Folder",
-		"copyToClipboard": "Copy to clipboard"
+		"copyToClipboard": "Copy to clipboard",
+		"broadcastMode": "Broadcast"
 	},
 	"receiver": {
 		"title": "Receive Files",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Transfer Progress",
 		"speed": "Speed",
+		"eta": "ETA",
 		"timeRemaining": "Time Remaining",
 		"calculating": "Calculating...",
 		"complete": "Transfer Complete!",
 		"stopped": "Transmission Stopped",
 		"newTransfer": "New Transfer",
 		"done": "Done",
+		"open": "Open",
 		"wasStopped": "The transfer was stopped before completion.",
 		"successMessage": "Your transfer has been completed successfully.",
 		"file": "File",

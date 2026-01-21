@@ -2,8 +2,8 @@ import { Info } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useReceiver } from '../../hooks/useReceiver'
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import { PulseAnimation } from '../sender/PulseAnimation'
-import { TransferSuccessScreen } from '../sender/TransferSuccessScreen'
+import { PulseAnimation } from '../common/PulseAnimation'
+import { TransferSuccessScreen } from '../common/TransferSuccessScreen'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -37,6 +37,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 		handleTicketChange,
 		handleBrowseFolder,
 		handleReceive,
+		handleOpenFolder,
 		closeAlert,
 		resetForNewTransfer,
 	} = useReceiver()
@@ -93,6 +94,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 					<TransferSuccessScreen
 						metadata={transferMetadata}
 						onDone={resetForNewTransfer}
+						onOpenFolder={handleOpenFolder}
 					/>
 				</div>
 			) : (

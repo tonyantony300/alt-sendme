@@ -31,7 +31,8 @@
 		"itemSelected": "Elemento seleccionado",
 		"browseFile": "Buscar archivo",
 		"browseFolder": "Buscar carpeta",
-		"copyToClipboard": "Copiar al portapapeles"
+		"copyToClipboard": "Copiar al portapapeles",
+		"broadcastMode": "Difusión"
 	},
 	"receiver": {
 		"title": "Recibir archivos",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Progreso de la transferencia",
 		"speed": "Velocidad",
+"eta": "ETA",
 		"timeRemaining": "Tiempo restante",
 		"calculating": "Calculando...",
 		"complete": "¡Transferencia completada!",
 		"stopped": "Transmisión detenida",
 		"newTransfer": "Nueva transferencia",
 		"done": "Hecho",
+		"open": "Abrir",
 		"wasStopped": "La transferencia se detuvo antes de completarse.",
 		"successMessage": "Tu transferencia se ha completado correctamente.",
 		"file": "Archivo",

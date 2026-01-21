@@ -2,12 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import type {
-	AlertDialogState,
-	AlertType,
-	TransferMetadata,
-	TransferProgress,
-} from '../types/sender'
+import type { AlertDialogState, AlertType } from '../types/ui'
+import type { TransferMetadata, TransferProgress } from '../types/transfer'
+import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 
 export interface UseSenderReturn {
 	isSharing: boolean
@@ -22,6 +19,7 @@ export interface UseSenderReturn {
 	alertDialog: AlertDialogState
 	transferMetadata: TransferMetadata | null
 	transferProgress: TransferProgress | null
+	isBroadcastMode: boolean
 
 	handleFileSelect: (path: string) => void
 	startSharing: () => Promise<void>
@@ -30,6 +28,7 @@ export interface UseSenderReturn {
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
 	resetForNewTransfer: () => Promise<void>
+	toggleBroadcastMode: () => void
 }
 
 export function useSender(): UseSenderReturn {
@@ -47,6 +46,7 @@ export function useSender(): UseSenderReturn {
 	const [transferProgress, setTransferProgress] =
 		useState<TransferProgress | null>(null)
 	const [isStopping, setIsStopping] = useState(false)
+	const [isBroadcastMode, setIsBroadcastMode] = useState(false)
 	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
 		isOpen: false,
 		title: '',
@@ -61,6 +61,7 @@ export function useSender(): UseSenderReturn {
 	const wasManuallyStoppedRef = useRef(false)
 	const selectedPathRef = useRef<string | null>(null)
 	const pathTypeRef = useRef<'file' | 'directory' | null>(null)
+	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 
 	useEffect(() => {
 		selectedPathRef.current = selectedPath
@@ -81,6 +82,7 @@ export function useSender(): UseSenderReturn {
 				transferStartTimeRef.current = Date.now()
 				isCompletedRef.current = false
 				latestProgressRef.current = null
+				speedAveragerRef.current.reset()
 
 				setIsTransporting(true)
 				setIsCompleted(false)
@@ -112,11 +114,18 @@ export function useSender(): UseSenderReturn {
 						const percentage =
 							totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
 
+						// Add speed sample and calculate ETA
+						speedAveragerRef.current.addSample(speedBps)
+						const avgSpeed = speedAveragerRef.current.getAverage()
+						const bytesRemaining = totalBytes - bytesTransferred
+						const eta = calculateETA(bytesRemaining, avgSpeed)
+
 						latestProgressRef.current = {
 							bytesTransferred,
 							totalBytes,
 							speedBps,
 							percentage,
+							etaSeconds: eta ?? undefined,
 						}
 					}
 				} catch (error) {
@@ -165,6 +174,24 @@ export function useSender(): UseSenderReturn {
 					setIsTransporting(false)
 					setIsCompleted(true)
 					setTransferProgress(null)
+
+					// Check if broadcast mode is enabled
+					setIsBroadcastMode((currentBroadcastMode) => {
+						if (currentBroadcastMode) {
+							// In broadcast mode: reset to listening state after a brief delay
+							setTimeout(() => {
+								setIsCompleted(false)
+								setIsTransporting(false)
+								setTransferMetadata(null)
+								setTransferProgress(null)
+								isCompletedRef.current = false
+								latestProgressRef.current = null
+								transferStartTimeRef.current = null
+								// Keep isSharing, ticket, selectedPath, pathType intact
+							}, 2000)
+						}
+						return currentBroadcastMode
+					})
 
 					try {
 						const fileSize = await invoke<number>('get_file_size', {
@@ -409,6 +436,10 @@ export function useSender(): UseSenderReturn {
 		}
 	}
 
+	const toggleBroadcastMode = () => {
+		setIsBroadcastMode((prev) => !prev)
+	}
+
 	return {
 		isSharing,
 		isTransporting,
@@ -422,6 +453,7 @@ export function useSender(): UseSenderReturn {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
+		isBroadcastMode,
 
 		handleFileSelect,
 		startSharing,
@@ -430,5 +462,6 @@ export function useSender(): UseSenderReturn {
 		showAlert,
 		closeAlert,
 		resetForNewTransfer,
+		toggleBroadcastMode,
 	}
 }

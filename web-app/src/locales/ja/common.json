@@ -31,7 +31,8 @@
 		"itemSelected": "アイテムを選択しました",
 		"browseFile": "ファイルを参照",
 		"browseFolder": "フォルダを参照",
-		"copyToClipboard": "クリップボードにコピー"
+		"copyToClipboard": "クリップボードにコピー",
+		"broadcastMode": "ブロードキャスト"
 	},
 	"receiver": {
 		"title": "ファイルを受信",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "転送の進行状況",
 		"speed": "速度",
+"eta": "ETA",
 		"timeRemaining": "残り時間",
 		"calculating": "計算中...",
 		"complete": "転送完了！",
 		"stopped": "転送が停止されました",
 		"newTransfer": "新しい転送",
 		"done": "完了",
+		"open": "開く",
 		"wasStopped": "転送は完了前に停止されました。",
 		"successMessage": "転送が正常に完了しました。",
 		"file": "ファイル",

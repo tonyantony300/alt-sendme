@@ -5,12 +5,9 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import type {
-	AlertDialogState,
-	AlertType,
-	TransferMetadata,
-	TransferProgress,
-} from '../types/sender'
+import type { AlertDialogState, AlertType } from '../types/ui'
+import type { TransferMetadata, TransferProgress } from '../types/transfer'
+import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 
 export interface UseReceiverReturn {
 	ticket: string
@@ -26,6 +23,7 @@ export interface UseReceiverReturn {
 	handleTicketChange: (ticket: string) => void
 	handleBrowseFolder: () => Promise<void>
 	handleReceive: () => Promise<void>
+	handleOpenFolder: () => Promise<void>
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
 	resetForNewTransfer: () => Promise<void>
@@ -52,6 +50,7 @@ export function useReceiver(): UseReceiverReturn {
 	const transferStartTimeRef = useRef<number | null>(null)
 	const savePathRef = useRef<string>('')
 	const folderOpenTriggeredRef = useRef(false)
+	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 
 	const isAbsolutePath = (path: string) => {
 		if (!path) return false
@@ -153,6 +152,7 @@ export function useReceiver(): UseReceiverReturn {
 				setIsCompleted(false)
 				setTransferStartTime(Date.now())
 				setTransferProgress(null)
+				speedAveragerRef.current.reset()
 			})
 
 			unlistenProgress = await listen('receive-progress', (event: any) => {
@@ -168,11 +168,18 @@ export function useReceiver(): UseReceiverReturn {
 						const percentage =
 							totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
 
+						// Add speed sample and calculate ETA
+						speedAveragerRef.current.addSample(speedBps)
+						const avgSpeed = speedAveragerRef.current.getAverage()
+						const bytesRemaining = totalBytes - bytesTransferred
+						const eta = calculateETA(bytesRemaining, avgSpeed)
+
 						setTransferProgress({
 							bytesTransferred,
 							totalBytes,
 							speedBps,
 							percentage,
+							etaSeconds: eta ?? undefined,
 						})
 					}
 				} catch (error) {
@@ -317,38 +324,29 @@ export function useReceiver(): UseReceiverReturn {
 		folderOpenTriggeredRef.current = false
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: `resolveRevealPath` is not a value that changes so ommiting it is fine
-	useEffect(() => {
-		if (!isCompleted) {
-			folderOpenTriggeredRef.current = false
-			return
-		}
+	const handleOpenFolder = async () => {
 		if (!savePath || folderOpenTriggeredRef.current) {
 			return
 		}
 
-		const revealDownloadFolder = async () => {
-			try {
-				folderOpenTriggeredRef.current = true
-				const targetPath = await resolveRevealPath(
-					savePath,
-					fileNamesRef.current
-				)
-				if (targetPath) {
-					await revealItemInDir(targetPath)
-				}
-			} catch (error) {
-				console.error('Failed to open download folder:', error)
-				showAlert(
-					t('common:errors.openFolderFailed'),
-					`${t('common:errors.openFolderFailedDesc')}: ${error}`,
-					'error'
-				)
+		try {
+			folderOpenTriggeredRef.current = true
+			const targetPath = await resolveRevealPath(
+				savePath,
+				fileNamesRef.current
+			)
+			if (targetPath) {
+				await revealItemInDir(targetPath)
 			}
+		} catch (error) {
+			console.error('Failed to open download folder:', error)
+			showAlert(
+				t('common:errors.openFolderFailed'),
+				`${t('common:errors.openFolderFailedDesc')}: ${error}`,
+				'error'
+			)
 		}
-
-		revealDownloadFolder()
-	}, [isCompleted, savePath, t])
+	}
 
 	return {
 		ticket,
@@ -364,6 +362,7 @@ export function useReceiver(): UseReceiverReturn {
 		handleTicketChange,
 		handleBrowseFolder,
 		handleReceive,
+		handleOpenFolder,
 		showAlert,
 		closeAlert,
 		resetForNewTransfer,

@@ -31,7 +31,8 @@
 		"itemSelected": "Выбранный пункт",
 		"browseFile": "Выбрать файл",
 		"browseFolder": "Выбрать папку",
-		"copyToClipboard": "Скопировать"
+		"copyToClipboard": "Скопировать",
+		"broadcastMode": "Трансляция"
 	},
 	"receiver": {
 		"title": "Получить файлы",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Прогресс Передачи",
 		"speed": "Скорость",
+"eta": "ETA",
 		"timeRemaining": "Осталось времени",
 		"calculating": "Расчёт...",
 		"complete": "Передача завершена!",
 		"stopped": "Передача Остановлена",
 		"newTransfer": "Новая передача",
 		"done": "Готово",
+		"open": "Открыть",
 		"wasStopped": "Передача была остановлена до завершения.",
 		"successMessage": "Ваша передача была успешно завершена.",
 		"file": "Файл",

@@ -31,7 +31,8 @@
 		"itemSelected": "Položka vybrána",
 		"browseFile": "Vybrat soubor",
 		"browseFolder": "Vybrat složku",
-		"copyToClipboard": "Kopírovat do schránky"
+		"copyToClipboard": "Kopírovat do schránky",
+		"broadcastMode": "Vysílání"
 	},
 	"receiver": {
 		"title": "Přijmout soubory",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Průběh přenosu",
 		"speed": "Rychlost",
+"eta": "ETA",
 		"timeRemaining": "Zbývající čas",
 		"calculating": "Počítá se...",
 		"complete": "Přenos dokončen!",
 		"stopped": "Přenos zastaven",
 		"newTransfer": "Nový přenos",
 		"done": "Hotovo",
+		"open": "Otevřít",
 		"wasStopped": "Přenos byl zastaven před dokončením.",
 		"successMessage": "Váš přenos byl úspěšně dokončen.",
 		"file": "Soubor",

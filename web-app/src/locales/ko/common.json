@@ -31,7 +31,8 @@
 		"itemSelected": "항목 선택됨",
 		"browseFile": "파일 찾아보기",
 		"browseFolder": "폴더 찾아보기",
-		"copyToClipboard": "클립보드에 복사"
+		"copyToClipboard": "클립보드에 복사",
+		"broadcastMode": "브로드캐스트"
 	},
 	"receiver": {
 		"title": "파일 받기",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "전송 진행률",
 		"speed": "속도",
+"eta": "ETA",
 		"timeRemaining": "남은 시간",
 		"calculating": "계산 중...",
 		"complete": "전송 완료!",
 		"stopped": "전송 중지됨",
 		"newTransfer": "새 전송",
 		"done": "완료",
+		"open": "열기",
 		"wasStopped": "전송이 완료되기 전에 중지되었습니다.",
 		"successMessage": "전송이 성공적으로 완료되었습니다.",
 		"file": "파일",

@@ -31,7 +31,8 @@
 		"itemSelected": "Element ausgewählt",
 		"browseFile": "Datei durchsuchen",
 		"browseFolder": "Ordner durchsuchen",
-		"copyToClipboard": "In Zwischenablage kopieren"
+		"copyToClipboard": "In Zwischenablage kopieren",
+		"broadcastMode": "Broadcast"
 	},
 	"receiver": {
 		"title": "Dateien empfangen",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Übertragungsfortschritt",
 		"speed": "Geschwindigkeit",
+"eta": "ETA",
 		"timeRemaining": "Verbleibende Zeit",
 		"calculating": "Wird berechnet...",
 		"complete": "Übertragung abgeschlossen!",
 		"stopped": "Übertragung gestoppt",
 		"newTransfer": "Neue Übertragung",
 		"done": "Fertig",
+		"open": "Öffnen",
 		"wasStopped": "Die Übertragung wurde vor Abschluss gestoppt.",
 		"successMessage": "Ihre Übertragung wurde erfolgreich abgeschlossen.",
 		"file": "Datei",

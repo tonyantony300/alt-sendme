@@ -31,7 +31,8 @@
 		"itemSelected": "Elemento selezionato",
 		"browseFile": "Sfoglia File",
 		"browseFolder": "Sfoglia Cartella",
-		"copyToClipboard": "Copia negli appunti"
+		"copyToClipboard": "Copia negli appunti",
+		"broadcastMode": "Trasmissione"
 	},
 	"receiver": {
 		"title": "Ricevi File",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Avanzamento Trasferimento",
 		"speed": "Velocità",
+"eta": "ETA",
 		"timeRemaining": "Tempo Rimasto",
 		"calculating": "Calcolo...",
 		"complete": "Trasferimento Completato!",
 		"stopped": "Trasferimento Interrotto",
 		"newTransfer": "Nuovo Trasferimento",
 		"done": "Fatto",
+		"open": "Apri",
 		"wasStopped": "Il trasferimento è stato interrotto prima del completamento.",
 		"successMessage": "Il trasferimento è stato completato con successo.",
 		"file": "File",

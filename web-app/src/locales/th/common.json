@@ -31,7 +31,8 @@
 		"itemSelected": "เลือกรายการแล้ว",
 		"browseFile": "เลือกไฟล์",
 		"browseFolder": "เลือกโฟลเดอร์",
-		"copyToClipboard": "คัดลอกไปยังคลิปบอร์ด"
+		"copyToClipboard": "คัดลอกไปยังคลิปบอร์ด",
+		"broadcastMode": "บรอดแคสต์"
 	},
 	"receiver": {
 		"title": "รับไฟล์",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "ความคืบหน้าการส่ง",
 		"speed": "ความเร็ว",
+"eta": "ETA",
 		"timeRemaining": "เวลาที่เหลือ",
 		"calculating": "กำลังคำนวณ...",
 		"complete": "การส่งเสร็จสมบูรณ์!",
 		"stopped": "หยุดการส่ง",
 		"newTransfer": "ส่งใหม่",
 		"done": "เสร็จสิ้น",
+		"open": "เปิด",
 		"wasStopped": "การส่งถูกหยุดก่อนที่จะเสร็จสมบูรณ์",
 		"successMessage": "การส่งของคุณเสร็จสมบูรณ์แล้ว",
 		"file": "ไฟล์",

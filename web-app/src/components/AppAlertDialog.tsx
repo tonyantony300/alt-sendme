@@ -7,7 +7,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from './ui/alert-dialog'
-import type { AlertType } from '../types/sender'
+import type { AlertType } from '../types/ui'
 
 interface AppAlertDialogProps {
 	isOpen: boolean

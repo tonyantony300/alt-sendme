@@ -31,7 +31,8 @@
 		"itemSelected": "Изабрана ставка",
 		"browseFile": "Изабери датотеку",
 		"browseFolder": "Изабери фасциклу",
-		"copyToClipboard": "Копирај у клипборд"
+		"copyToClipboard": "Копирај у клипборд",
+		"broadcastMode": "Емитовање"
 	},
 	"receiver": {
 		"title": "Прими датотеке",
@@ -55,13 +56,15 @@
 	"transfer": {
 		"progress": "Напредак преноса",
 		"speed": "Брзина",
+"eta": "ETA",
 		"timeRemaining": "Преостало време",
 		"calculating": "Рачунам...",
 		"complete": "Пренос је завршен!",
 		"stopped": "Пренос заустављен",
 		"newTransfer": "Нови пренос",
-		"done": "Готово",
-		"wasStopped": "Пренос је заустављен пре завршетка.",
+		"done": "Gotovo",
+		"open": "Otvori",
+		"wasStopped": "Prenos je zaustavljen pre završetka.",
 		"successMessage": "Твој пренос је успешно завршен.",
 		"file": "Датотека",
 		"folder": "Фасцикла",

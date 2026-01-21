@@ -31,7 +31,8 @@
 		"itemSelected": "تم اختيار العنصر",
 		"browseFile": "تصفح الملف",
 		"browseFolder": "تصفح المجلد",
-		"copyToClipboard": "نسخ إلى الحافظة"
+		"copyToClipboard": "نسخ إلى الحافظة",
+		"broadcastMode": "بث"
 	},
 	"receiver": {
 		"title": "استقبال الملفات",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "تقدم النقل",
 		"speed": "السرعة",
+"eta": "ETA",
 		"timeRemaining": "الوقت المتبقي",
 		"calculating": "جارٍ الحساب...",
 		"complete": "اكتمل النقل!",
 		"stopped": "تم إيقاف الإرسال",
 		"newTransfer": "نقل جديد",
 		"done": "تم",
+		"open": "فتح",
 		"wasStopped": "تم إيقاف النقل قبل اكتماله.",
 		"successMessage": "تم إكمال عملية النقل بنجاح.",
 		"file": "ملف",

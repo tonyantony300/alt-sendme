@@ -31,7 +31,8 @@
 		"itemSelected": "Öğe seçildi",
 		"browseFile": "Dosyaya Gözat",
 		"browseFolder": "Klasöre Gözat",
-		"copyToClipboard": "Panoya kopyala"
+		"copyToClipboard": "Panoya kopyala",
+		"broadcastMode": "Yayın"
 	},
 	"receiver": {
 		"title": "Dosya Al",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Transfer Süreci",
 		"speed": "Hız",
+"eta": "ETA",
 		"timeRemaining": "Kalan Süre",
 		"calculating": "Hesaplanıyor...",
 		"complete": "Transfer Tamamlandı!",
 		"stopped": "İletim Durduruldu",
 		"newTransfer": "Yeni Transfer",
-		"done": "Bitti",
+		"done": "Tamam",
+		"open": "Aç",
 		"wasStopped": "Transfer tamamlanmadan durduruldu.",
 		"successMessage": "Transferiniz başarıyla tamamlandı.",
 		"file": "Dosya",

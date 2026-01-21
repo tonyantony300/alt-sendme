@@ -3,8 +3,8 @@ import { Loader2 } from 'lucide-react'
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
-import { PulseAnimation } from './PulseAnimation'
-import { TransferSuccessScreen } from './TransferSuccessScreen'
+import { PulseAnimation } from '../common/PulseAnimation'
+import { TransferSuccessScreen } from '../common/TransferSuccessScreen'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -35,12 +35,14 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
+		isBroadcastMode,
 		handleFileSelect,
 		startSharing,
 		stopSharing,
 		copyTicket,
 		closeAlert,
 		resetForNewTransfer,
+		toggleBroadcastMode,
 	} = useSender()
 
 	const { t } = useTranslation()
@@ -95,7 +97,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 						{t('common:sender.stoppingTransmission')}
 					</p>
 				</div>
-			) : isCompleted && transferMetadata && !isTransporting ? (
+			) : isCompleted && transferMetadata && !isTransporting && !isBroadcastMode ? (
 				<div className="flex-1 flex flex-col">
 					<TransferSuccessScreen
 						metadata={transferMetadata}
@@ -122,9 +124,11 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							ticket={ticket}
 							copySuccess={copySuccess}
 							transferProgress={transferProgress}
+							isBroadcastMode={isBroadcastMode}
 							onStartSharing={startSharing}
 							onStopSharing={stopSharing}
 							onCopyTicket={copyTicket}
+							onToggleBroadcast={toggleBroadcastMode}
 						/>
 					</div>
 				</>

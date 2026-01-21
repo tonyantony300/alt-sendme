@@ -72,65 +72,79 @@ The easiest way to get started is by downloading one of the following versions f
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
 
-## Contributing & Community
+## How it works 
 
-Join and hangout at our [discord](https://discord.gg/xwb7z22Eve) server.
+1. Drop your file or folder - AltSendme creates a one-time share code (called a "ticket").
+2.  Share the ticket via chat, email, or text.
+3. Your friend pastes the ticket in their app, and the transfer begins.
 
 
+## Under the hood ⚙️🛠️
+
+AltSendme uses [Iroh](https://www.iroh.computer) under the hood to enable peer-to-peer file transfer. It is a modern modular alternative to technologies like WebRTC and libp2p.
+
+### Important concepts 
+
+- *Blobs*
+- *Tickets*
+- *Peer Discovery*
+- *Hole-punching* & *NAT traversal*
+- *QUIC* & *End-to-end encryption*
+- *Fallback Relays*
+
+
+### 1. Blobs
+
+Content-addressed blob storage and transfer. `iroh-blobs` implements request/response and streaming transfers of arbitrary-sized byte blobs, using BLAKE3-verified streams and content-addressed links.
+
+- Blob: an opaque sequence of bytes (no embedded metadata).
+- Link: a 32-byte BLAKE3 hash that identifies a blob.
+- HashSeq: a blob that contains a sequence of links (useful for chunking/trees).
+- Provider / Requester: provider serves data; requester fetches it. An endpoint can be both.
+
+### 2. Tickets
+
+Tickets are a way to share dialing information between iroh endpoints. They're a single token that contains everything needed to connect to another endpoint, or to fetch a blob in this case. Contains Ed25519 NodeIds: Your device's cryptographic identity for authentication.They're also very powerful. It's worth pointing out this setup is considerably better than full peer-2-peer systems, which broadcast your IP to peers. Instead in iroh, tickets are used to form a "cozy network" between peers you explicitly want to connect with. It's possible to go "full p2p" & configure your app to broadcast dialing details, but tickets represent a better middle-ground default.
+
+
+### 3. Peer Discovery, NAT Traversal & Hole Punching
+
+Peers register with an open-source public relay servers at startup to help traverse firewalls and NATs, enabling connection setup. Once connected, Iroh uses QUIC hole punching to try and establish a direct peer-to-peer connection, bypassing the relay. If direct connection is possible, communication happens directly between peers with end-to-end encryption; otherwise, the relay operates only temporarily as a fallback. This enables smooth reliable connections between peers within local-network and across the internet.
+
+###  4. QUIC & Encryption
+
+QUIC is a modern transport protocol built on UDP, designed to reduce latency and improve web performance over TCP. Developed originally by Google and now standardized by the IETF as HTTP/3's foundation, it integrates TLS 1.3 encryption directly into the protocol.
+
+QUIC allows following super-powers:
+* encryption & authentication
+* stream multiplexing
+    * no head-of-line blocking issues
+    * stream priorities
+    * one shared congestion controller
+* an encrypted, unreliable datagram transport
+* zero round trip time connection establishment if you've connected to another endpoint before
+
+
+### 5. Relays
+
+AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted. The relay is “just another UDP socket” for sending encrypted packets around.[Read more.](https://docs.iroh.computer/about/faq)
+
+
+## Contributing & Community ❤️
+
+We’d love to meet you! Before diving into code or opening a PR, join our [Discord](https://discord.gg/xwb7z22Eve) to hang out, ask questions, and discuss ideas.
+
+It’s the best place to get context, align on direction, and collaborate with the community.
+
+
+<!-- 
 ## Roadmap
 
 
+Check out our [roadmap](https://github.com/users/tonyantony300/projects/4) to stay updated on recently released features and learn about what's coming next. -->
 
-Check out our [roadmap](https://github.com/users/tonyantony300/projects/4) to stay updated on recently released features and learn about what's coming next.
 
-## How it works
 
-Users generate ephemeral tickets (compact, self-contained tokens embedding dialing information, node IDs, and transfer metadata) that recipients paste to initiate connections. Under the hood, AltSendme orchestrates NAT hole punching via QUIC's UDP transport, falling back to encrypted DERP relays only when direct paths fail, ensuring reliable end-to-end encrypted transfers with BLAKE3 integrity verification.
-
-### Core Flow
-
-#### 1. Ticket Generation
-
-When sender drags files into the UI, altsendme hash content with BLAKE3, create a content-addressed blob (keyed by multihash), and generate a ticket containing:
-
-- **node_id**: Sender's Iroh endpoint hash
-- **dial_info**: Temporary dialing addresses (QUIC/UDP endpoints)
-- **blob_key**: BLAKE3 hash of transfer payload
-- **TTL** and ephemeral session nonce
-
-#### 2. Peer Connection
-
-Receiver pastes ticket. AltSendme then:
-
-- Parses ticket to extract sender's dial_info
-- Initiates simultaneous outbound QUIC handshakes (UDP hole punching) to predicted public mappings
-- Uses 0-RTT resumption if prior connection exists (QUIC's session tickets)
-
-#### 3. Transfer Protocol
-
-```
-QUIC Stream Multiplexing:
-
- Stream 0: Control (handshake, progress, integrity)
- Stream 1-N: Payload chunks (resumable, prioritized)
- Datagrams: Signaling (keepalive, NAT refresh)
-```
-
-#### 4. Fallback & Resilience
-
-- If direct UDP/QUIC fails (symmetric NATs, firewalls), Iroh routes via DERP with encrypted forwarding without payload decryption
-- Connection migration handles WiFi to mobile switches via QUIC's connection IDs
-- Streams avoid TCP's head-of-line blocking; lost packets affect only their stream
-
-## Comparison
-
-| Aspect        | Classic P2P         | AltSendme       |
-| ------------- | ------------------- | ---------------------- |
-| Discovery     | STUN/TURN broadcast | Private tickets        |
-| NAT Traversal | Manual port mapping | Auto hole punch + DERP |
-| Encryption    | Bolt-on TLS         | Native QUIC crypto     |
-| Resilience    | Single path         | Multipath + migration  |
-| Privacy       | IP exposed          | Cozy network          |
 
 ## Supported Languages
  🇺🇸 🇷🇺 🇷🇸 🇫🇷 🇨🇳 🇹🇼 🇩🇪 🇯🇵 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷 🇮🇳 🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇪🇹

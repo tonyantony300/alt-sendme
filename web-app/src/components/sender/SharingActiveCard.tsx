@@ -5,7 +5,7 @@ import type {
 	SharingControlsProps,
 	TicketDisplayProps,
 } from '../../types/sender'
-import { TransferProgressBar } from './TransferProgressBar'
+import { TransferProgressBar } from '../common/TransferProgressBar'
 
 export function SharingActiveCard({
 	selectedPath,
@@ -15,8 +15,10 @@ export function SharingActiveCard({
 	transferProgress,
 	isTransporting,
 	isCompleted,
+	isBroadcastMode,
 	onCopyTicket,
 	onStopSharing,
+	onToggleBroadcast,
 }: SharingControlsProps) {
 	const { t } = useTranslation()
 
@@ -123,14 +125,14 @@ export function SharingActiveCard({
 	const folderProgress =
 		isFolderTransfer && transferProgress
 			? {
-					bytesTransferred: totalTransferredBytes,
-					totalBytes: transferProgress.totalBytes,
-					speedBps: calculatedSpeed,
-					percentage:
-						transferProgress.totalBytes > 0
-							? (totalTransferredBytes / transferProgress.totalBytes) * 100
-							: 0,
-				}
+				bytesTransferred: totalTransferredBytes,
+				totalBytes: transferProgress.totalBytes,
+				speedBps: calculatedSpeed,
+				percentage:
+					transferProgress.totalBytes > 0
+						? (totalTransferredBytes / transferProgress.totalBytes) * 100
+						: 0,
+			}
 			: null
 
 	return (
@@ -167,8 +169,11 @@ export function SharingActiveCard({
 					ticket={ticket}
 					copySuccess={copySuccess}
 					onCopyTicket={onCopyTicket}
+					isBroadcastMode={isBroadcastMode}
+					onToggleBroadcast={onToggleBroadcast}
 				/>
 			)}
+
 
 			{isTransporting &&
 				transferProgress &&
@@ -198,17 +203,55 @@ export function TicketDisplay({
 	ticket,
 	copySuccess,
 	onCopyTicket,
-}: TicketDisplayProps) {
+	isBroadcastMode,
+	onToggleBroadcast,
+}: TicketDisplayProps & {
+	isBroadcastMode?: boolean
+	onToggleBroadcast?: () => void
+}) {
 	const { t } = useTranslation()
 
 	return (
 		<div className="space-y-3">
-			<p
-				className="block text-sm font-medium"
-				style={{ color: 'var(--app-main-view-fg)' }}
-			>
-				{t('common:sender.shareThisTicket')}
-			</p>
+			<div className="flex items-center justify-between">
+				<p
+					className="block text-sm font-medium"
+					style={{ color: 'var(--app-main-view-fg)' }}
+				>
+					{t('common:sender.shareThisTicket')}
+				</p>
+				{isBroadcastMode !== undefined && onToggleBroadcast && (
+					<div className="flex items-center gap-2">
+						<label
+							htmlFor="broadcast-toggle"
+							className="text-sm font-medium cursor-pointer"
+							style={{ color: 'var(--app-main-view-fg)' }}
+						>
+							{t('common:sender.broadcastMode')}
+						</label>
+						<button
+							id="broadcast-toggle"
+							type="button"
+							role="switch"
+							aria-checked={isBroadcastMode}
+							onClick={onToggleBroadcast}
+							className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+							style={{
+								backgroundColor: isBroadcastMode
+									? 'var(--app-primary)'
+									: 'rgba(255, 255, 255, 0.2)',
+							}}
+						>
+							<span
+								className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+								style={{
+									transform: isBroadcastMode ? 'translateX(24px)' : 'translateX(4px)',
+								}}
+							/>
+						</button>
+					</div>
+				)}
+			</div>
 			<div className="flex gap-2">
 				<input
 					type="text"
@@ -246,6 +289,6 @@ export function TicketDisplay({
 			<p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
 				{t('common:sender.sendThisTicket')}
 			</p>
-		</div>
+		</div >
 	)
 }

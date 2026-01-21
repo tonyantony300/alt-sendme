@@ -73,7 +73,7 @@ One of the simplest yet most impactful ways to contribute is through word of mou
 
 Have ideas you want to discuss? Want to collaborate on a major feature? Need guidance on where to start?
 
-**Let's connect on Discord:** [`tny_antny`](https://discord.com/users/tny_antny)
+**Join our Discord:** [Discord](https://discord.gg/xwb7z22Eve)
 
 Feel free to reach out with questions, ideas, or just to say hello. Discussion about the project, guidance, and collaboration to make AltSendme better are always welcome!
 
@@ -126,7 +126,7 @@ Please be respectful and considerate in all interactions. The goal is to maintai
 
 Don't hesitate to ask questions! You can:
 - Open an issue for discussion
-- Join our [discord](https://discord.gg/xwb7z22Eve) 
+- Join our [discord](https://discord.gg/xwb7z22Eve) to hang out, ask questions, and discuss ideas
 - Comment on existing issues or pull requests
 
 Thank you for making AltSendme better! Every contribution, no matter how small, is greatly appreciated. 💚

@@ -3,7 +3,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import type { AlertDialogState, AlertType } from '../types/sender'
+import type { AlertDialogState, AlertType } from '../types/ui'
 
 export interface UseDragDropReturn {
 	isDragActive: boolean

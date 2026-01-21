@@ -1,5 +1,6 @@
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import type { TransferProgress } from '../../types/sender'
+import type { TransferProgress } from '../../types/transfer'
+import { formatETA } from '../../utils/etaUtils'
 
 interface TransferProgressBarProps {
 	progress: TransferProgress
@@ -84,6 +85,16 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 						{(progress.totalBytes / (1024 * 1024)).toFixed(2)} MB
 					</span>
 				</div>
+
+				{progress.etaSeconds !== undefined && (
+					<div
+						className="flex items-center justify-start text-xs"
+						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+					>
+						<span className="mr-1">{t('common:transfer.eta')}:</span>
+						<span>{formatETA(progress.etaSeconds)}</span>
+					</div>
+				)}
 			</div>
 		</div>
 	)

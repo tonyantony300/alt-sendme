@@ -31,7 +31,8 @@
 		"itemSelected": "已选择项目",
 		"browseFile": "浏览文件",
 		"browseFolder": "浏览文件夹",
-		"copyToClipboard": "复制到剪贴板"
+		"copyToClipboard": "复制到剪贴板",
+		"broadcastMode": "广播"
 	},
 	"receiver": {
 		"title": "接收文件",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "传输进度",
 		"speed": "速度",
+"eta": "ETA",
 		"timeRemaining": "剩余时间",
 		"calculating": "计算中...",
 		"complete": "传输完成！",
 		"stopped": "传输已停止",
 		"newTransfer": "新传输",
 		"done": "完成",
+		"open": "打开",
 		"wasStopped": "传输在完成前已停止。",
 		"successMessage": "您的传输已成功完成。",
 		"file": "文件",

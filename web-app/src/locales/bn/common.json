@@ -31,7 +31,8 @@
 		"itemSelected": "আইটেম নির্বাচন করা হয়েছে",
 		"browseFile": "ফাইল ব্রাউজ করুন",
 		"browseFolder": "ফোল্ডার ব্রাউজ করুন",
-		"copyToClipboard": "ক্লিপবোর্ডে কপি করুন"
+		"copyToClipboard": "ক্লিপবোর্ডে কপি করুন",
+		"broadcastMode": "ব্রডকাস্ট"
 	},
 	"receiver": {
 		"title": "ফাইল গ্রহণ করুন",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "স্থানান্তরের অগ্রগতি",
 		"speed": "গতি",
+"eta": "ETA",
 		"timeRemaining": "বাকি সময়",
 		"calculating": "গণনা করা হচ্ছে...",
 		"complete": "স্থানান্তর সম্পন্ন হয়েছে!",
 		"stopped": "প্রেরণ বন্ধ হয়েছে",
 		"newTransfer": "নতুন স্থানান্তর",
 		"done": "সম্পন্ন",
+		"open": "খুলুন",
 		"wasStopped": "স্থানান্তরটি সম্পূর্ণ হওয়ার আগে বন্ধ করা হয়েছিল।",
 		"successMessage": "আপনার স্থানান্তর সফলভাবে সম্পন্ন হয়েছে।",
 		"file": "ফাইল",

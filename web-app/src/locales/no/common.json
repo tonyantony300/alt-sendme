@@ -31,7 +31,8 @@
 		"itemSelected": "Element valgt",
 		"browseFile": "Velg fil",
 		"browseFolder": "Velg mappe",
-		"copyToClipboard": "Kopier til utklippstavle"
+		"copyToClipboard": "Kopier til utklippstavle",
+		"broadcastMode": "Kringkasting"
 	},
 	"receiver": {
 		"title": "Motta filer",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "Status",
 		"speed": "Hastighet",
+"eta": "ETA",
 		"timeRemaining": "Tid igjen",
 		"calculating": "Beregner...",
 		"complete": "Overføring fullført!",
 		"stopped": "Overføring stoppet",
 		"newTransfer": "Ny overføring",
 		"done": "Ferdig",
+		"open": "Åpne",
 		"wasStopped": "Overføringen ble stoppet før den var ferdig.",
 		"successMessage": "Overføringen din ble fullført.",
 		"file": "Fil",

@@ -31,7 +31,8 @@
 		"itemSelected": "آیتم انتخاب شد",
 		"browseFile": "انتخاب فایل",
 		"browseFolder": "انتخاب فولدر",
-		"copyToClipboard": "کپی در کلیپ‌بورد"
+		"copyToClipboard": "کپی در کلیپ‌بورد",
+		"broadcastMode": "پخش"
 	},
 	"receiver": {
 		"title": "دریافت فایل",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "پیشرفت انتقال",
 		"speed": "سرعت",
+"eta": "ETA",
 		"timeRemaining": "زمان باقی‌مانده",
 		"calculating": "در حال محاسبه...",
 		"complete": "انتقال کامل شد!",
 		"stopped": "انتقال متوقف شد",
 		"newTransfer": "انتقال جدید",
-		"done": "تمام شد",
+		"done": "انجام شد",
+		"open": "باز کردن",
 		"wasStopped": "انتقال قبل از اتمام متوقف شد.",
 		"successMessage": "فایل با موفقیت منتقل شد.",
 		"file": "فایل",

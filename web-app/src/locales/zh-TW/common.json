@@ -31,7 +31,8 @@
 		"itemSelected": "已選擇項目",
 		"browseFile": "瀏覽檔案",
 		"browseFolder": "瀏覽資料夾",
-		"copyToClipboard": "複製到剪貼簿"
+		"copyToClipboard": "複製到剪貼簿",
+		"broadcastMode": "廣播"
 	},
 	"receiver": {
 		"title": "接收檔案",
@@ -55,12 +56,14 @@
 	"transfer": {
 		"progress": "傳輸進度",
 		"speed": "速度",
+"eta": "ETA",
 		"timeRemaining": "剩餘時間",
 		"calculating": "計算中...",
 		"complete": "傳輸完成！",
 		"stopped": "傳輸已停止",
 		"newTransfer": "新傳輸",
 		"done": "完成",
+		"open": "打開",
 		"wasStopped": "傳輸在完成前已停止。",
 		"successMessage": "您的傳輸已成功完成。",
 		"file": "檔案",
