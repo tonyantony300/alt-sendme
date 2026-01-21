@@ -93,7 +93,7 @@ fn main() {
             // Disable window decorations only on Linux
             #[cfg(target_os = "linux")]
             {
-                if let Some(window) = _app.handle().get_webview_window("main") {
+                if let Some(window) = app.handle().get_webview_window("main") {
                     let _ = window.set_decorations(false);
                 }
             }
