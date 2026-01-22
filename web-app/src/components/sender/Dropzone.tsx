@@ -1,12 +1,7 @@
-import {
-	CheckCircle,
-	ChevronDown,
-	ChevronRight,
-	Loader2,
-	Upload,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, Loader2, Upload } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
+import { getFileIcon } from '../illustration'
 
 export function Dropzone({
 	isDragActive,
@@ -18,26 +13,12 @@ export function Dropzone({
 }: DropzoneProps) {
 	const { t } = useTranslation()
 	const getDropzoneStyles = () => {
-		const baseStyles = {
-			border: '2px dashed',
-			borderRadius: 'var(--radius-lg)',
-			padding: '4rem',
-			textAlign: 'center' as const,
-			cursor: 'pointer',
-			transition: 'border-color 0.2s ease, background-color 0.2s ease',
-			backgroundColor: 'var(--app-main-view)',
-			borderColor: 'rgba(255, 255, 255, 0.2)',
-			color: 'var(--app-main-view-fg)',
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'center',
-			minHeight: '12rem',
-		}
+		const baseStyles: React.CSSProperties = {}
 
 		if (isDragActive) {
 			return {
 				...baseStyles,
-				borderColor: 'var(--app-accent)',
+				borderColor: 'var(--accent)',
 				backgroundColor: 'rgba(45, 120, 220, 0.1)',
 			}
 		}
@@ -103,45 +84,43 @@ export function Dropzone({
 		return t('common:sender.orBrowse')
 	}
 
+	const renderSuccessIcon = () => {
+		const fileExtension = selectedPath
+			? selectedPath.split('.').pop()?.toLowerCase()
+			: null
+		if (!fileExtension) return null
+
+		const icon = getFileIcon(fileExtension)
+		if (!icon) return null
+
+		const IconComponent = icon
+		return <IconComponent />
+	}
+
 	return (
-		<div style={getDropzoneStyles()}>
+		<div
+			style={getDropzoneStyles()}
+			className="border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-(--accent-fg) flex items-center justify-center min-h-48  border-border"
+		>
 			<div className="space-y-4 w-full">
 				<div className="flex justify-center">
 					{isLoading ? (
-						<Loader2
-							className="h-12 w-12 animate-spin"
-							style={{ color: 'var(--app-accent-light)' }}
-						/>
+						<Loader2 className="h-12 w-12 animate-spin" />
 					) : selectedPath ? (
-						<CheckCircle
-							className="h-12 w-12"
-							style={{ color: 'var(--app-primary)' }}
-						/>
+						renderSuccessIcon()
 					) : (
 						<Upload
-							className="h-12 w-12"
-							style={{
-								color: isDragActive
-									? 'var(--app-accent-light)'
-									: 'rgba(255, 255, 255, 0.6)',
-							}}
+							className="h-12 w-12 text-foreground/60 data-active:text-accent-foreground transition-transform"
+							data-active={isDragActive ? 'true' : 'false'}
 						/>
 					)}
 				</div>
 
 				<div>
-					<p
-						className="text-lg font-medium mb-2"
-						style={{ color: 'var(--app-main-view-fg)' }}
-					>
+					<p className="text-lg font-medium mb-2 text-accent-foreground">
 						{getStatusText()}
 					</p>
-					<div
-						className="text-sm"
-						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-					>
-						{getSubText()}
-					</div>
+					<div className="text-sm text-muted-foreground">{getSubText()}</div>
 				</div>
 			</div>
 		</div>

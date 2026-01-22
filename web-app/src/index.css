@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import "tw-animate-css";
 /*
   ---break---
@@ -78,8 +78,8 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
   @keyframes skeleton {
-  to {
-    background-position: -200% 0;
+    to {
+      background-position: -200% 0;
     }
   }
 }
@@ -106,8 +106,8 @@
   @apply h-10 flex items-center shrink-0;
   @apply border-b border-white/5;
   @apply px-4;
-  background-color: var(--app-bg);
-  color: var(--app-bg-fg);
+  background-color: var(--background);
+  color: var(--background-fg);
 }
 
 @utility title-bar-macos {
@@ -121,8 +121,8 @@
 
 @utility custom-title-bar {
   @apply h-10 flex items-center justify-between shrink-0 px-4 select-none border-b border-white/5;
-  background-color: var(--app-bg);
-  color: var(--app-bg-fg);
+  background-color: var(--background);
+  color: var(--background-fg);
 }
 
 @utility window-controls {
@@ -148,27 +148,27 @@
 }
 
 @utility glass-effect {
-  background: var(--app-main-view);
+  background: var(--accent);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @utility glass-overlay {
-  background: var(--app-main-view);
+  background: var(--accent);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 @utility glass-panel {
-  background: var(--app-main-view);
+  background: var(--accent);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @utility glass-background {
-  background: var(--app-bg);
+  background: var(--background);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 @utility glass-card {
-  background: var(--app-main-view);
+  background: var(--accent);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -210,8 +210,8 @@
     --radius: 0.625rem;
     --font-size-base: 15px;
 
-    --app-bg: rgba(25, 25, 25, 1);
-    --app-main-view: rgba(25, 25, 25, 1);
+    --background: rgba(25, 25, 25, 1);
+    --accent: rgba(25, 25, 25, 1);
     --app-primary: rgba(37, 211, 101, 0.687);
     --app-accent-light: rgb(45, 120, 220);
     --app-accent: rgb(54 54 54);
@@ -219,8 +219,8 @@
 
     --body-bg: rgba(25, 25, 25, 1);
 
-    --app-bg-fg: rgb(255, 255, 255);
-    --app-main-view-fg: rgb(255, 255, 255);
+    --background-fg: rgb(255, 255, 255);
+    --accent-fg: rgb(255, 255, 255);
     --app-primary-fg: rgb(255, 255, 255);
     --app-accent-fg: rgb(255, 255, 255);
     --app-destructive-fg: rgb(255, 255, 255);
@@ -228,81 +228,75 @@
 }
 
 @layer base {
-	body {
-		margin: 0;
-		padding: 0;
-		font-family:
-			-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-			"Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-			sans-serif;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-		background: var(--body-bg);
-		color: var(--app-bg-fg);
-		min-height: 100vh;
-		overflow: hidden;
-	}
+  body {
+    margin: 0;
+    padding: 0;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--background);
+    color: var(--foreground);
+    min-height: 100vh;
+    overflow: hidden;
+  }
 
-	html {
-		background: var(--body-bg);
-	}
+  html {
+    background: var(--background);
+  }
 
-	#root {
-		background: var(--body-bg);
-		min-height: 100vh;
-	}
+  svg {
+    stroke-width: 1.5;
+  }
 
-	svg {
-		stroke-width: 1.5;
-	}
+  a {
+    color: var(--app-accent);
+  }
 
-	a {
-		color: var(--app-accent);
-	}
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
-	* {
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-	}
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
 
-	*::-webkit-scrollbar {
-		display: none;
-		width: 0;
-		height: 0;
-	}
+  *::-webkit-scrollbar-track {
+    display: none;
+    background: transparent;
+  }
 
-	*::-webkit-scrollbar-track {
-		display: none;
-		background: transparent;
-	}
+  *::-webkit-scrollbar-thumb {
+    display: none;
+    background: transparent;
+  }
 
-	*::-webkit-scrollbar-thumb {
-		display: none;
-		background: transparent;
-	}
-
-	*::-webkit-scrollbar-corner {
-		display: none;
-		background: transparent;
-	}
+  *::-webkit-scrollbar-corner {
+    display: none;
+    background: transparent;
+  }
 }
 
 button,
 input,
 textarea {
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-
-	html>*,
-	html>*::before,
-	html>*::after {
-		animation-duration: 0.01ms;
-		animation-iteration-count: 1;
-		transition-duration: 0.01ms;
-		scroll-behavior: auto;
-	}
+  html > *,
+  html > *::before,
+  html > *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
+  }
 }
 
 /*
@@ -322,7 +316,11 @@ textarea {
   --secondary: --alpha(var(--color-black) / 4%);
   --secondary-foreground: var(--color-neutral-800);
   --muted: --alpha(var(--color-black) / 4%);
-  --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-black));
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--color-neutral-500) 90%,
+    var(--color-black)
+  );
   --accent: --alpha(var(--color-black) / 4%);
   --accent-foreground: var(--color-neutral-800);
   --destructive: var(--color-red-500);
@@ -356,7 +354,11 @@ textarea {
 */
 
 .dark {
-  --background: color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white));
+  --background: color-mix(
+    in srgb,
+    var(--color-neutral-950) 95%,
+    var(--color-white)
+  );
   --foreground: var(--color-neutral-100);
   --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
   --card-foreground: var(--color-neutral-100);
@@ -367,10 +369,18 @@ textarea {
   --secondary: --alpha(var(--color-white) / 4%);
   --secondary-foreground: var(--color-neutral-100);
   --muted: --alpha(var(--color-white) / 4%);
-  --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-white));
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--color-neutral-500) 90%,
+    var(--color-white)
+  );
   --accent: --alpha(var(--color-white) / 4%);
   --accent-foreground: var(--color-neutral-100);
-  --destructive: color-mix(in srgb, var(--color-red-500) 90%, var(--color-white));
+  --destructive: color-mix(
+    in srgb,
+    var(--color-red-500) 90%,
+    var(--color-white)
+  );
   --border: --alpha(var(--color-white) / 6%);
   --input: --alpha(var(--color-white) / 8%);
   --ring: var(--color-neutral-500);
