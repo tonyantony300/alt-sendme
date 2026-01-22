@@ -27,10 +27,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 	return (
 		<div className="space-y-3">
 			<div className="space-y-2">
-				<div
-					className="flex items-center justify-between text-xs"
-					style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-				>
+				<div className="flex items-center justify-between text-xs">
 					<span>{t('common:transfer.progress')}</span>
 					<span>{percentage.toFixed(1)}%</span>
 				</div>
