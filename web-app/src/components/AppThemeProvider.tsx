@@ -1,22 +1,20 @@
-import { useEffect } from "react";
-import { useThemeStore } from "../store";
-import { toastManager } from "./ui/toast";
+import { useThemeStore } from '../store'
+import { useEffect } from 'react'
 type Props = {
-    children: React.ReactNode;
-};
+	children: React.ReactNode
+}
 export function AppThemeProvider({ children }: Props) {
-    const isDark = useThemeStore((state) => state.isDark);
-    const theme = useThemeStore((state) => state.activeTheme);
+	const theme = useThemeStore((state) => state.activeTheme)
 
-    useEffect(() => {
-        if (theme == "dark") {
-            document.documentElement.classList.add("dark");
-            document.documentElement.classList.remove("light");
-        } else {
-            document.documentElement.classList.add("light");
-            document.documentElement.classList.remove("dark");
-        }
-    }, [isDark, theme]);
+	useEffect(() => {
+		if (theme === 'dark') {
+			document.documentElement.classList.add('dark')
+			document.documentElement.classList.remove('light')
+		} else {
+			document.documentElement.classList.add('light')
+			document.documentElement.classList.remove('dark')
+		}
+	}, [theme])
 
-    return <>{children}</>;
+	return <>{children}</>
 }
