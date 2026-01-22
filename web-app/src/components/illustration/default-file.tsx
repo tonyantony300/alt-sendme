@@ -58,7 +58,6 @@ export default function DefaultFileIcon({
 					<div className="bg-border h-[3px] w-1/3 rounded-full" />
 				</div>
 			</div>
-			{/** biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="24"
@@ -71,6 +70,7 @@ export default function DefaultFileIcon({
 				strokeLinejoin="round"
 				className="lucide lucide-signature ml-auto size-3"
 			>
+				<title>file-signature</title>
 				<path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284" />
 				<path d="M3 21h18" />
 			</svg>
