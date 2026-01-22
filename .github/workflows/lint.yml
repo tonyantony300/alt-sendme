@@ -24,4 +24,4 @@ jobs:
       - name: Run lint script
         run: npm run lint
       - name: Run format script
-        run: nom run format
+        run: npm run format
