@@ -56,7 +56,7 @@
 	"transfer": {
 		"progress": "Transfer Süreci",
 		"speed": "Hız",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "Kalan Süre",
 		"calculating": "Hesaplanıyor...",
 		"complete": "Transfer Tamamlandı!",

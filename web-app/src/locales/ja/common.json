@@ -56,7 +56,7 @@
 	"transfer": {
 		"progress": "転送の進行状況",
 		"speed": "速度",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "残り時間",
 		"calculating": "計算中...",
 		"complete": "転送完了！",

@@ -1,1 +1,1 @@
-export type AppTheme = "auto" | "light" | "dark";
+export type AppTheme = 'auto' | 'light' | 'dark'

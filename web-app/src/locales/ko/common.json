@@ -56,7 +56,7 @@
 	"transfer": {
 		"progress": "전송 진행률",
 		"speed": "속도",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "남은 시간",
 		"calculating": "계산 중...",
 		"complete": "전송 완료!",
