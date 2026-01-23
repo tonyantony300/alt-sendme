@@ -2,7 +2,7 @@ import { Square } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { TransferProgress } from '../../types/transfer'
 import { TransferProgressBar } from '../common/TransferProgressBar'
-import { cn } from '@/lib/utils'
+import { StatusIndicator } from '../common/StatusIndicator'
 import { Button } from '../ui/button'
 
 interface ReceivingActiveCardProps {
@@ -24,39 +24,22 @@ export function ReceivingActiveCard({
 }: ReceivingActiveCardProps) {
 	const { t } = useTranslation()
 
-	const getStatusColor = () => {
-		if (isCompleted) return 'rgb(45, 120, 220)'
-		if (isTransporting) return 'rgba(37, 211, 101, 0.687)'
-		return '#B7B7B7'
-	}
-
 	const getStatusText = () => {
 		if (isCompleted) return t('common:receiver.downloadCompleted')
 		if (isTransporting) return t('common:receiver.downloadingInProgress')
 		return t('common:receiver.connectingToSender')
 	}
 
-	const statusColor = getStatusColor()
 	const statusText = getStatusText()
 
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
-				<div className="flex items-center mb-2">
-					<div
-						className={cn(
-							'relative size-2 rounded-full bg-gray-500 before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-gray-400 before:opacity-75 mr-2',
-
-							{
-								'bg-emerald-500 before:bg-emerald-400': isCompleted,
-								'bg-blue-500 before:bg-blue-400': isTransporting,
-							}
-						)}
-					></div>
-					<p className="text-sm font-medium" style={{ color: statusColor }}>
-						{statusText}
-					</p>
-				</div>
+				<StatusIndicator
+					isCompleted={isCompleted}
+					isTransporting={isTransporting}
+					statusText={statusText}
+				/>
 			</div>
 
 			<p className="text-xs text-center">{t('common:receiver.keepAppOpen')}</p>

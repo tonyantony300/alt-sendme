@@ -6,12 +6,12 @@ import type {
 	TicketDisplayProps,
 } from '../../types/sender'
 import { TransferProgressBar } from '../common/TransferProgressBar'
+import { StatusIndicator } from '../common/StatusIndicator'
 import { Button } from '../ui/button'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { toastManager } from '../ui/toast'
-import { cn } from '@/lib/utils'
 
 export function SharingActiveCard({
 	selectedPath,
@@ -52,19 +52,12 @@ export function SharingActiveCard({
 		}
 	}
 
-	const getStatusColor = () => {
-		if (isCompleted) return 'rgb(45, 120, 220)'
-		if (isTransporting) return 'rgba(37, 211, 101, 0.687)'
-		return '#B7B7B7'
-	}
-
 	const getStatusText = () => {
 		if (isCompleted) return t('common:sender.transferCompleted')
 		if (isTransporting) return t('common:sender.sharingInProgress')
 		return t('common:sender.listeningForConnection')
 	}
 
-	const statusColor = getStatusColor()
 	const statusText = getStatusText()
 
 	const [cumulativeBytesTransferred, setCumulativeBytesTransferred] =
@@ -173,20 +166,11 @@ export function SharingActiveCard({
 					{selectedPath?.split('/').pop()}
 				</p>
 
-				<div className="flex items-center mb-2">
-					<div
-						className={cn(
-							'relative size-2 rounded-full bg-gray-500 before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-gray-400 before:opacity-75 mr-2',
-							{
-								'bg-emerald-500 before:bg-emerald-400': isCompleted,
-								'bg-blue-500 before:bg-blue-400': isTransporting,
-							}
-						)}
-					></div>
-					<p className="text-sm font-medium" style={{ color: statusColor }}>
-						{statusText}
-					</p>
-				</div>
+				<StatusIndicator
+					isCompleted={isCompleted}
+					isTransporting={isTransporting}
+					statusText={statusText}
+				/>
 			</div>
 
 			<p className="text-xs text-center">{t('common:sender.keepAppOpen')}</p>
