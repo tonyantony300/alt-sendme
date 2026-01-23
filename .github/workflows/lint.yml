@@ -1,4 +1,4 @@
-name: Lint CI
+name: Lint & Format CI
 
 on:
   push:
@@ -23,3 +23,5 @@ jobs:
         run: npm install
       - name: Run lint script
         run: npm run lint
+      - name: Run format script
+        run: npm run lint:fix && npm run format
