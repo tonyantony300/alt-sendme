@@ -8,7 +8,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const xlsxVariants = cva(
-	'bg-background corner-tr-bevel ring-border-background z-1 shadow-black/6.5 relative rounded-md rounded-tr-[15%] shadow-md ring-1',
+	'bg-background corner-tr-bevel ring-border z-1 shadow-black/6.5 relative rounded-md rounded-tr-[15%] shadow-md ring-1',
 	{
 		variants: {
 			size: {

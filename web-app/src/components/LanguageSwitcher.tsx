@@ -58,7 +58,7 @@ export function LanguageSwitcher(props: ButtonProps) {
 			>
 				<SelectValue />
 			</RootSelect.Trigger>
-			<SelectContent>
+			<SelectContent sideOffset={10} className="max-h-[30vh]">
 				{LANGUAGES.map((lang) => (
 					<SelectItem value={lang} key={lang.value}>
 						{lang.label}

@@ -8,7 +8,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const defaultFileVariants = cva(
-	'bg-background ring-border-background shadow-black/6.5 space-y-2 rounded-md shadow-md ring-1 [--color-border:color-mix(in_oklab,var(--color-foreground)15%,transparent)]',
+	'bg-background ring-border shadow-black/6.5 space-y-2 rounded-md shadow-md ring-1 [--color-border:color-mix(in_oklab,var(--color-foreground)15%,transparent)]',
 	{
 		variants: {
 			size: {

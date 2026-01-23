@@ -8,7 +8,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const pdfVariants = cva(
-	'bg-background corner-tr-bevel ring-border-background z-1 shadow-black/6.5 relative space-y-3 rounded-md rounded-tr-[15%] shadow-md ring-1',
+	'bg-background corner-tr-bevel ring-border z-1 shadow-black/6.5 relative space-y-3 rounded-md rounded-tr-[15%] shadow-md ring-1',
 	{
 		variants: {
 			size: {

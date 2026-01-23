@@ -12,13 +12,18 @@ export function AppVersion(props: PopoverTriggerProps) {
 				{...props}
 				openOnHover
 				className={cn(
-					buttonVariants({ variant: 'outline', size: 'sm' }),
+					buttonVariants({ variant: 'outline', size: 'icon-sm' }),
 					props.className
 				)}
 			>
 				<InfoIcon />
 			</PopoverTrigger>
-			<PopoverContent className="text-sm space-y-4" tooltipStyle align="end">
+			<PopoverContent
+				sideOffset={10}
+				className="text-sm space-y-4"
+				tooltipStyle
+				align="end"
+			>
 				<p className="text-muted-foreground">Version</p>
 				<div className="text-sm flex items-center gap-1.5 cursor-default">
 					<span className="font-mono ml-1">{VERSION_DISPLAY}</span>

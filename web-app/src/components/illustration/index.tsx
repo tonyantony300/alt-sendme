@@ -8,6 +8,7 @@ import ZipIcon from './zip-file'
 import ImageIcon from './image-file'
 import DefaultFileIcon from './default-file'
 import PdfIcon from './pdf-file'
+import FolderIcon from './folder'
 
 export {
 	DocIcon,
@@ -19,6 +20,7 @@ export {
 	ImageIcon,
 	DefaultFileIcon,
 	PdfIcon,
+	FolderIcon,
 }
 
 interface IconProps {
@@ -63,6 +65,9 @@ const ICON_MAP: Record<string, FileIconComponent> = {
 
 	// PDF files
 	pdf: PdfIcon,
+
+	// Folder
+	folder: FolderIcon,
 }
 
 /**

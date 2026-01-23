@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight, Loader2, Upload } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
-import { getFileIcon } from '../illustration'
+import { FolderIcon, getFileIcon } from '../illustration'
 
 export function Dropzone({
 	isDragActive,
@@ -85,6 +85,8 @@ export function Dropzone({
 	}
 
 	const renderSuccessIcon = () => {
+		if (pathType === 'directory') return <FolderIcon />
+
 		const fileExtension = selectedPath
 			? selectedPath.split('.').pop()?.toLowerCase()
 			: null
