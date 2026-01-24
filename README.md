@@ -29,6 +29,7 @@ A free and open-source file transfer tool that harnesses the power of [cutting-e
 
 Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
 
+[Drop your Email for major project updates](https://tally.so/r/ob2Vkx)
 
 ## Features
 
@@ -87,10 +88,9 @@ AltSendme uses [Iroh](https://www.iroh.computer) under the hood to enable peer-t
 
 - *Blobs*
 - *Tickets*
-- *Peer Discovery*
-- *Hole-punching* & *NAT traversal*
+- *Peer Discovery*, *Hole-punching* & *NAT traversal*
 - *QUIC* & *End-to-end encryption*
-- *Fallback Relays*
+- *Relays*
 
 
 ### 1. Blobs
@@ -127,7 +127,7 @@ QUIC allows following super-powers:
 
 ### 5. Relays
 
-AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted. The relay is “just another UDP socket” for sending encrypted packets around.[Read more.](https://docs.iroh.computer/about/faq)
+AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted. The relay is “just another UDP socket” for sending encrypted packets around. [Read more.](https://docs.iroh.computer/about/faq)
 
 
 ## Contributing & Community ❤️
@@ -137,11 +137,18 @@ We’d love to meet you! Before diving into code or opening a PR, join our [Disc
 It’s the best place to get context, align on direction, and collaborate with the community.
 
 
-<!-- 
-## Roadmap
+
+## Roadmap 🚧
 
 
-Check out our [roadmap](https://github.com/users/tonyantony300/projects/4) to stay updated on recently released features and learn about what's coming next. -->
+1. Better support for Linux distros, Windows and mac.
+2. Mobile versions
+3. Better insights into transfer process and system/network info
+3. Faster transfers
+4. Easier transfers
+5. Advanced user interface for power users and simple functional UI for those who just want to share stuff.
+6. Features for those who needs better privacy
+7. Features for those who wants speed and convenience
 
 
 
