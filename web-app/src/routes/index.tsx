@@ -23,12 +23,6 @@ export function IndexPage() {
 	return (
 		<SingleLayoutPage>
 			<div className="max-w-2xl mx-auto w-full">
-				<h1
-					className="text-3xl font-bold font-mono text-center mb-8 select-none [@media(min-height:680px)]:block hidden"
-					style={{ color: 'var(--app-bg-fg)' }}
-				>
-					{t('common:appTitle')}
-				</h1>
 				<Frame>
 					<Tabs value={activeTab} onValueChange={setActiveTab}>
 						<FrameHeader>
