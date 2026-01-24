@@ -1,6 +1,7 @@
 import { Share2 } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { ShareActionProps } from '../../types/sender'
+import { Button } from '../ui/button'
 
 export function ShareActionCard({
 	selectedPath,
@@ -12,21 +13,17 @@ export function ShareActionCard({
 
 	return (
 		<div className="">
-			<button
+			<Button
 				type="button"
 				onClick={onStartSharing}
 				disabled={isLoading}
-				className="w-full py-2 px-4 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-default flex items-center justify-center"
-				style={{
-					backgroundColor: 'var(--app-primary)',
-					color: 'var(--app-primary-fg)',
-				}}
+				className="w-full"
 			>
 				<Share2 className="h-4 w-4 mr-2" />
 				{isLoading
 					? t('common:sender.startingShare')
 					: t('common:sender.startSharing')}
-			</button>
+			</Button>
 		</div>
 	)
 }

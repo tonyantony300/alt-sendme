@@ -56,7 +56,7 @@
 	"transfer": {
 		"progress": "Průběh přenosu",
 		"speed": "Rychlost",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "Zbývající čas",
 		"calculating": "Počítá se...",
 		"complete": "Přenos dokončen!",

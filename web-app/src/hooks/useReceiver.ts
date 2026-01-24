@@ -268,6 +268,7 @@ export function useReceiver(): UseReceiverReturn {
 	}
 
 	const handleBrowseFolder = async () => {
+		if (isReceiving) return
 		try {
 			const selected = await open({
 				multiple: false,
@@ -331,10 +332,7 @@ export function useReceiver(): UseReceiverReturn {
 
 		try {
 			folderOpenTriggeredRef.current = true
-			const targetPath = await resolveRevealPath(
-				savePath,
-				fileNamesRef.current
-			)
+			const targetPath = await resolveRevealPath(savePath, fileNamesRef.current)
 			if (targetPath) {
 				await revealItemInDir(targetPath)
 			}

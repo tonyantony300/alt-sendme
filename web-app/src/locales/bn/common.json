@@ -56,7 +56,7 @@
 	"transfer": {
 		"progress": "স্থানান্তরের অগ্রগতি",
 		"speed": "গতি",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "বাকি সময়",
 		"calculating": "গণনা করা হচ্ছে...",
 		"complete": "স্থানান্তর সম্পন্ন হয়েছে!",

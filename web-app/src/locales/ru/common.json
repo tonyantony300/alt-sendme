@@ -56,7 +56,7 @@
 	"transfer": {
 		"progress": "Прогресс Передачи",
 		"speed": "Скорость",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "Осталось времени",
 		"calculating": "Расчёт...",
 		"complete": "Передача завершена!",
