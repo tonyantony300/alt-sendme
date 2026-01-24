@@ -29,14 +29,14 @@ A free and open-source file transfer tool that harnesses the power of [cutting-e
 
 Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
 
-[Drop your Email for major project updates](https://tally.so/r/ob2Vkx)
+[Drop your Email for receiving major project updates 📫](https://tally.so/r/ob2Vkx)
 
 ## Features
 
 - **Send anywhere** – Works seamlessly on local networks or across continents.
 - **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud storage in between.
 - **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
-- **No accounts or personal info** – Transfer files without sign-ups or exposing private data.
+- **No accounts or personal info** – Transfer files without sign-ups or exposing personal info.
 - [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size or any format, verified with BLAKE3-based integrity checks.
 - **Resumable transfers** – Interrupted downloads automatically resume where they left off.
 - **Fast & reliable** – Capable of saturating multi-gigabit connections for lightning-fast transfers.
@@ -130,27 +130,23 @@ QUIC allows following super-powers:
 AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted. The relay is “just another UDP socket” for sending encrypted packets around. [Read more.](https://docs.iroh.computer/about/faq)
 
 
+## Roadmap 🚧
+
+-  Better support for Linux distros, Windows and mac.
+-  Mobile versions
+- Faster transfers
+-  Easier transfers
+-  Better insights into transfer process and system/network info
+- Advanced user interface for power users and simple functional UI for those who just want to share stuff.
+- Features for those who needs better privacy
+- Features for those who wants speed and convenience
+
+
 ## Contributing & Community ❤️
 
 We’d love to meet you! Before diving into code or opening a PR, join our [Discord](https://discord.gg/xwb7z22Eve) to hang out, ask questions, and discuss ideas.
 
 It’s the best place to get context, align on direction, and collaborate with the community.
-
-
-
-## Roadmap 🚧
-
-
-1. Better support for Linux distros, Windows and mac.
-2. Mobile versions
-3. Better insights into transfer process and system/network info
-3. Faster transfers
-4. Easier transfers
-5. Advanced user interface for power users and simple functional UI for those who just want to share stuff.
-6. Features for those who needs better privacy
-7. Features for those who wants speed and convenience
-
-
 
 
 ## Supported Languages
