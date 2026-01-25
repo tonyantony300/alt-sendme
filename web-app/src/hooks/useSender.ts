@@ -97,30 +97,50 @@ export function useSender(): UseSenderReturn {
 
 		const setupListeners = async () => {
 			unlistenStart = await listen('transfer-started', () => {
+				const storeState = useSenderStore.getState()
 				console.log('[useSender] transfer-started event received:', {
-					currentViewState: useSenderStore.getState().viewState,
+					currentViewState: storeState.viewState,
 					selectedPath: selectedPathRef.current,
+					isBroadcastMode: storeState.isBroadcastMode,
 				})
 
 				transferStartTimeRef.current = Date.now()
 				latestProgressRef.current = null
 				speedAveragerRef.current.reset()
 
-				console.log('[useSender] transfer-started: setting state to TRANSPORTING')
-				setViewState('TRANSPORTING')
-				setTransferProgress(null)
-				setTransferMetadata(null)
-				wasManuallyStoppedRef.current = false
+				// In broadcast mode, stay in SHARING state instead of transitioning to TRANSPORTING
+				if (storeState.isBroadcastMode) {
+					console.log('[useSender] transfer-started: broadcast mode - staying in SHARING state')
+					setTransferProgress(null)
+					setTransferMetadata(null)
+					wasManuallyStoppedRef.current = false
 
-				if (progressUpdateIntervalRef.current) {
-					clearInterval(progressUpdateIntervalRef.current)
-				}
-				progressUpdateIntervalRef.current = setInterval(() => {
-					const currentViewState = useSenderStore.getState().viewState
-					if (latestProgressRef.current && currentViewState === 'TRANSPORTING') {
-						setTransferProgress(latestProgressRef.current)
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
 					}
-				}, 50)
+					progressUpdateIntervalRef.current = setInterval(() => {
+						const currentViewState = useSenderStore.getState().viewState
+						if (latestProgressRef.current && currentViewState === 'SHARING') {
+							setTransferProgress(latestProgressRef.current)
+						}
+					}, 50)
+				} else {
+					console.log('[useSender] transfer-started: setting state to TRANSPORTING')
+					setViewState('TRANSPORTING')
+					setTransferProgress(null)
+					setTransferMetadata(null)
+					wasManuallyStoppedRef.current = false
+
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
+					}
+					progressUpdateIntervalRef.current = setInterval(() => {
+						const currentViewState = useSenderStore.getState().viewState
+						if (latestProgressRef.current && currentViewState === 'TRANSPORTING') {
+							setTransferProgress(latestProgressRef.current)
+						}
+					}, 50)
+				}
 			})
 
 			unlistenProgress = await listen('transfer-progress', (event: any) => {
@@ -293,6 +313,7 @@ export function useSender(): UseSenderReturn {
 					currentViewState: storeState.viewState,
 					selectedPath: selectedPathRef.current,
 					storeSelectedPath: storeState.selectedPath,
+					isBroadcastMode: storeState.isBroadcastMode,
 				})
 
 				// Guard: Skip if manually stopped
@@ -323,6 +344,15 @@ export function useSender(): UseSenderReturn {
 				const pathToUse = storeState.selectedPath || currentPath
 				const pathTypeToUse = storeState.pathType || currentPathType
 				
+				// In broadcast mode, reset to SHARING instead of showing SUCCESS
+				if (storeState.isBroadcastMode) {
+					console.log('[useSender] transfer-failed: broadcast mode - resetting to SHARING')
+					resetForBroadcast()
+					latestProgressRef.current = null
+					transferStartTimeRef.current = null
+					return
+				}
+
 				console.log('[useSender] transfer-failed: setting SUCCESS state:', {
 					currentPath,
 					pathToUse,
@@ -451,32 +481,48 @@ export function useSender(): UseSenderReturn {
 
 			const currentSelectedPath = selectedPathRef.current
 			const currentTransferStartTime = transferStartTimeRef.current
+			const storeState = useSenderStore.getState()
 
 			if (wasActiveTransfer && currentSelectedPath) {
-				console.log('[useSender] stopSharing: active transfer detected - setting SUCCESS with stopped metadata')
-				wasManuallyStoppedRef.current = true
+				// In broadcast mode, reset to SHARING instead of showing SUCCESS
+				if (storeState.isBroadcastMode) {
+					console.log('[useSender] stopSharing: active transfer in broadcast mode - resetting to SHARING')
+					wasManuallyStoppedRef.current = true
 
-				if (progressUpdateIntervalRef.current) {
-					clearInterval(progressUpdateIntervalRef.current)
-					progressUpdateIntervalRef.current = null
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
+						progressUpdateIntervalRef.current = null
+					}
+
+					resetForBroadcast()
+					latestProgressRef.current = null
+					transferStartTimeRef.current = null
+				} else {
+					console.log('[useSender] stopSharing: active transfer detected - setting SUCCESS with stopped metadata')
+					wasManuallyStoppedRef.current = true
+
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
+						progressUpdateIntervalRef.current = null
+					}
+
+					const endTime = Date.now()
+					const fileName = currentSelectedPath.split('/').pop() || 'Unknown'
+					const currentPathType = pathTypeRef.current
+
+					const stoppedMetadata: TransferMetadata = {
+						fileName,
+						fileSize: 0,
+						duration: 0,
+						startTime: currentTransferStartTime || endTime,
+						endTime,
+						wasStopped: true,
+						pathType: currentPathType,
+					}
+
+					setTransferMetadata(stoppedMetadata)
+					setViewState('SUCCESS')
 				}
-
-				const endTime = Date.now()
-				const fileName = currentSelectedPath.split('/').pop() || 'Unknown'
-				const currentPathType = pathTypeRef.current
-
-				const stoppedMetadata: TransferMetadata = {
-					fileName,
-					fileSize: 0,
-					duration: 0,
-					startTime: currentTransferStartTime || endTime,
-					endTime,
-					wasStopped: true,
-					pathType: currentPathType,
-				}
-
-				setTransferMetadata(stoppedMetadata)
-				setViewState('SUCCESS')
 			}
 
 			if (isCompletedTransfer) {

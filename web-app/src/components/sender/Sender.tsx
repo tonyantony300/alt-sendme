@@ -128,11 +128,12 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 			)}
 
 			{/* SHARING or TRANSPORTING state: Show active sharing UI */}
-			{(viewState === 'SHARING' || viewState === 'TRANSPORTING') && (
+			{/* In broadcast mode, only show SHARING state (skip TRANSPORTING) */}
+			{(((viewState === 'SHARING' || viewState === 'TRANSPORTING') && !isBroadcastMode) || (viewState === 'SHARING' && isBroadcastMode)) && (
 				<>
 					<div className="text-center">
 						<PulseAnimation
-							isTransporting={isTransporting}
+							isTransporting={isTransporting && !isBroadcastMode}
 							className="mx-auto my-4 flex items-center justify-center"
 						/>
 					</div>
@@ -140,7 +141,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 						<SharingActiveCard
 							isSharing={isSharing}
 							isLoading={isLoading}
-							isTransporting={isTransporting}
+							isTransporting={isTransporting && !isBroadcastMode}
 							isCompleted={false}
 							selectedPath={selectedPath}
 							pathType={pathType}
