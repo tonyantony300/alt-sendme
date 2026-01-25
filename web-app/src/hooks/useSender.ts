@@ -77,6 +77,11 @@ export function useSender(): UseSenderReturn {
 	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 
 	useEffect(() => {
+		console.log('[useSender] selectedPath changed, updating ref:', {
+			from: selectedPathRef.current,
+			to: selectedPath,
+			currentViewState: useSenderStore.getState().viewState,
+		})
 		selectedPathRef.current = selectedPath
 	}, [selectedPath])
 
@@ -92,10 +97,16 @@ export function useSender(): UseSenderReturn {
 
 		const setupListeners = async () => {
 			unlistenStart = await listen('transfer-started', () => {
+				console.log('[useSender] transfer-started event received:', {
+					currentViewState: useSenderStore.getState().viewState,
+					selectedPath: selectedPathRef.current,
+				})
+
 				transferStartTimeRef.current = Date.now()
 				latestProgressRef.current = null
 				speedAveragerRef.current.reset()
 
+				console.log('[useSender] transfer-started: setting state to TRANSPORTING')
 				setViewState('TRANSPORTING')
 				setTransferProgress(null)
 				setTransferMetadata(null)
@@ -144,7 +155,30 @@ export function useSender(): UseSenderReturn {
 			})
 
 			unlistenComplete = await listen('transfer-completed', async () => {
+				const storeState = useSenderStore.getState()
+				console.log('[useSender] transfer-completed event received:', {
+					wasManuallyStopped: wasManuallyStoppedRef.current,
+					currentViewState: storeState.viewState,
+					selectedPath: selectedPathRef.current,
+					storeSelectedPath: storeState.selectedPath,
+					hasLatestProgress: !!latestProgressRef.current,
+				})
+
+				// Guard: Skip if manually stopped
 				if (wasManuallyStoppedRef.current) {
+					console.log('[useSender] transfer-completed: skipping (was manually stopped)')
+					return
+				}
+
+				// Guard: Skip if already reset to IDLE (delayed event after reset)
+				if (storeState.viewState === 'IDLE') {
+					console.log('[useSender] transfer-completed: skipping (already in IDLE state - likely delayed event after reset)')
+					return
+				}
+
+				// Guard: Skip if selectedPath is null in store (already reset)
+				if (!storeState.selectedPath) {
+					console.log('[useSender] transfer-completed: skipping (selectedPath is null in store - already reset)')
 					return
 				}
 
@@ -166,9 +200,30 @@ export function useSender(): UseSenderReturn {
 
 				const currentPath = selectedPathRef.current
 				const currentPathType = pathTypeRef.current
-				if (currentPath) {
-					const fileName = currentPath.split('/').pop() || 'Unknown'
+				const currentBroadcastMode = storeState.isBroadcastMode
+				
+				console.log('[useSender] transfer-completed: processing:', {
+					currentPath,
+					currentPathType,
+					currentBroadcastMode,
+					duration,
+					storeSelectedPath: storeState.selectedPath,
+					storeViewState: storeState.viewState,
+					storeHasMetadata: !!storeState.transferMetadata,
+					refVsStoreMatch: currentPath === storeState.selectedPath,
+				})
+
+				// Use store's selectedPath as source of truth (not the ref)
+				const pathToUse = storeState.selectedPath || currentPath
+				if (pathToUse) {
+					const fileName = pathToUse.split('/').pop() || 'Unknown'
 					const estimatedFileSize = latestProgressRef.current?.totalBytes || 0
+					const pathTypeToUse = storeState.pathType || currentPathType
+
+					console.log('[useSender] transfer-completed: setting initial metadata:', {
+						fileName,
+						estimatedFileSize,
+					})
 
 					setTransferMetadata({
 						fileName,
@@ -176,19 +231,21 @@ export function useSender(): UseSenderReturn {
 						duration,
 						startTime: transferStartTimeRef.current || endTime,
 						endTime,
-						pathType: currentPathType,
+						pathType: pathTypeToUse,
 					})
 
 					// Check if broadcast mode is enabled
-					const currentBroadcastMode = useSenderStore.getState().isBroadcastMode
 					if (currentBroadcastMode) {
+						console.log('[useSender] transfer-completed: broadcast mode - will reset after delay')
 						// In broadcast mode: reset to listening state after a brief delay
 						setTimeout(() => {
+							console.log('[useSender] transfer-completed: broadcast mode timeout - resetting')
 							resetForBroadcast()
 							latestProgressRef.current = null
 							transferStartTimeRef.current = null
 						}, 2000)
 					} else {
+						console.log('[useSender] transfer-completed: normal mode - setting SUCCESS state')
 						// Normal mode: show success screen
 						setViewState('SUCCESS')
 						setTransferProgress(null)
@@ -196,7 +253,11 @@ export function useSender(): UseSenderReturn {
 
 					try {
 						const fileSize = await invoke<number>('get_file_size', {
-							path: currentPath,
+							path: pathToUse,
+						})
+						console.log('[useSender] transfer-completed: got file size, updating metadata:', {
+							fileSize,
+							currentViewState: useSenderStore.getState().viewState,
 						})
 						setTransferMetadata({
 							fileName,
@@ -204,19 +265,50 @@ export function useSender(): UseSenderReturn {
 							duration,
 							startTime: transferStartTimeRef.current || endTime,
 							endTime,
-							pathType: currentPathType,
+							pathType: pathTypeToUse,
 						})
 					} catch (error) {
-						console.error('Failed to get file size:', error)
+						console.error('[useSender] transfer-completed: failed to get file size:', error)
 					}
 				} else {
-					setViewState('SUCCESS')
-					setTransferProgress(null)
+					// This should never happen now due to guards above, but log if it does
+					console.error('[useSender] transfer-completed: ⚠️ NO PATH AVAILABLE - this should not happen due to guards!', {
+						selectedPathRef: selectedPathRef.current,
+						storeSelectedPath: storeState.selectedPath,
+						storeViewState: storeState.viewState,
+						storeHasMetadata: !!storeState.transferMetadata,
+						wasManuallyStopped: wasManuallyStoppedRef.current,
+						stackTrace: new Error().stack,
+					})
+					// Don't set SUCCESS without metadata - just log the error
+					// The guards above should prevent this path from being reached
 				}
 			})
 
 			unlistenFailed = await listen('transfer-failed', async () => {
+				const storeState = useSenderStore.getState()
+				console.log('[useSender] transfer-failed event received:', {
+					wasManuallyStopped: wasManuallyStoppedRef.current,
+					currentViewState: storeState.viewState,
+					selectedPath: selectedPathRef.current,
+					storeSelectedPath: storeState.selectedPath,
+				})
+
+				// Guard: Skip if manually stopped
 				if (wasManuallyStoppedRef.current) {
+					console.log('[useSender] transfer-failed: skipping (was manually stopped)')
+					return
+				}
+
+				// Guard: Skip if already reset to IDLE (delayed event after reset)
+				if (storeState.viewState === 'IDLE') {
+					console.log('[useSender] transfer-failed: skipping (already in IDLE state - likely delayed event after reset)')
+					return
+				}
+
+				// Guard: Skip if selectedPath is null in store (already reset)
+				if (!storeState.selectedPath) {
+					console.log('[useSender] transfer-failed: skipping (selectedPath is null in store - already reset)')
 					return
 				}
 
@@ -225,18 +317,28 @@ export function useSender(): UseSenderReturn {
 					progressUpdateIntervalRef.current = null
 				}
 
-				setViewState('SUCCESS')
-				setTransferProgress(null)
+				const currentPath = selectedPathRef.current
+				const currentPathType = pathTypeRef.current
+				const pathToUse = storeState.selectedPath || currentPath
+				const pathTypeToUse = storeState.pathType || currentPathType
+				
+				console.log('[useSender] transfer-failed: setting SUCCESS state:', {
+					currentPath,
+					pathToUse,
+					pathTypeToUse,
+				})
 
 				const endTime = Date.now()
 				const duration = transferStartTimeRef.current
 					? endTime - transferStartTimeRef.current
 					: 0
 
-				const currentPath = selectedPathRef.current
-				const currentPathType = pathTypeRef.current
-				if (currentPath) {
-					const fileName = currentPath.split('/').pop() || 'Unknown'
+				if (pathToUse) {
+					const fileName = pathToUse.split('/').pop() || 'Unknown'
+					console.log('[useSender] transfer-failed: setting metadata:', {
+						fileName,
+						wasStopped: true,
+					})
 					setTransferMetadata({
 						fileName,
 						fileSize: 0,
@@ -244,8 +346,13 @@ export function useSender(): UseSenderReturn {
 						startTime: transferStartTimeRef.current || endTime,
 						endTime,
 						wasStopped: true,
-						pathType: currentPathType,
+						pathType: pathTypeToUse,
 					})
+					setViewState('SUCCESS')
+					setTransferProgress(null)
+				} else {
+					console.warn('[useSender] transfer-failed: NO PATH AVAILABLE - this should not happen due to guards!')
+					// Don't set SUCCESS without metadata - guards should prevent this
 				}
 			})
 		}
@@ -277,9 +384,19 @@ export function useSender(): UseSenderReturn {
 	}
 
 	const startSharing = async () => {
-		if (!selectedPath) return
+		console.log('[useSender] startSharing called:', {
+			selectedPath,
+			currentViewState: viewState,
+			hasTransferMetadata: !!transferMetadata,
+		})
+
+		if (!selectedPath) {
+			console.warn('[useSender] startSharing: no selectedPath, returning early')
+			return
+		}
 
 		try {
+			console.log('[useSender] startSharing: resetting state to IDLE')
 			setViewState('IDLE')
 			setTransferMetadata(null)
 			setTransferProgress(null)
@@ -291,10 +408,11 @@ export function useSender(): UseSenderReturn {
 			const result = await invoke<string>('start_sharing', {
 				path: selectedPath,
 			})
+			console.log('[useSender] startSharing: got ticket, setting state to SHARING')
 			setTicket(result)
 			setViewState('SHARING')
 		} catch (error) {
-			console.error('Failed to start sharing:', error)
+			console.error('[useSender] startSharing: failed:', error)
 			showAlert(
 				t('common:errors.sharingFailed'),
 				`${t('common:errors.sharingFailedDesc')}: ${error}`,
@@ -306,16 +424,32 @@ export function useSender(): UseSenderReturn {
 	}
 
 	const stopSharing = async () => {
+		console.log('[useSender] stopSharing called:', {
+			currentViewState: viewState,
+			hasTransferMetadata: !!transferMetadata,
+			transferMetadataWasStopped: transferMetadata?.wasStopped,
+			selectedPath: selectedPathRef.current,
+			storeSelectedPath: selectedPath,
+		})
+
 		try {
 			const wasActiveTransfer =
 				viewState === 'TRANSPORTING' &&
 				(!transferMetadata || !transferMetadata.wasStopped)
 			const isCompletedTransfer = viewState === 'SUCCESS' && transferMetadata
 
+			console.log('[useSender] stopSharing: conditions:', {
+				wasActiveTransfer,
+				isCompletedTransfer,
+				viewState,
+				hasTransferMetadata: !!transferMetadata,
+			})
+
 			const currentSelectedPath = selectedPathRef.current
 			const currentTransferStartTime = transferStartTimeRef.current
 
 			if (wasActiveTransfer && currentSelectedPath) {
+				console.log('[useSender] stopSharing: active transfer detected - setting SUCCESS with stopped metadata')
 				wasManuallyStoppedRef.current = true
 
 				if (progressUpdateIntervalRef.current) {
@@ -342,6 +476,7 @@ export function useSender(): UseSenderReturn {
 			}
 
 			if (isCompletedTransfer) {
+				console.log('[useSender] stopSharing: completed transfer - resetting to idle')
 				wasManuallyStoppedRef.current = false
 				resetToIdle()
 				transferStartTimeRef.current = null
@@ -356,12 +491,14 @@ export function useSender(): UseSenderReturn {
 
 			// If no active transfer (just sharing, waiting for acceptance), reset to idle
 			if (!wasActiveTransfer || !currentSelectedPath) {
+				console.log('[useSender] stopSharing: no active transfer - resetting to idle')
 				wasManuallyStoppedRef.current = false
 				resetToIdle()
 				transferStartTimeRef.current = null
 				return
 			}
 
+			console.log('[useSender] stopSharing: clearing transfer state')
 			setTicket(null)
 			setSelectedPath(null)
 			setPathType(null)
@@ -378,6 +515,7 @@ export function useSender(): UseSenderReturn {
 	}
 
 	const resetForNewTransfer = async () => {
+		console.log('[useSender] resetForNewTransfer called')
 		await stopSharing()
 	}
 

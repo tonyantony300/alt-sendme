@@ -49,8 +49,29 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 
 	// Debug logging
 	useEffect(() => {
-		console.log('[Sender] viewState changed:', viewState, { isSharing, isTransporting, transferMetadata: !!transferMetadata, isBroadcastMode })
-	}, [viewState, isSharing, isTransporting, transferMetadata, isBroadcastMode])
+		console.log('[Sender] viewState changed:', viewState, {
+			isSharing,
+			isTransporting,
+			transferMetadata: !!transferMetadata,
+			transferMetadataDetails: transferMetadata ? {
+				fileName: transferMetadata.fileName,
+				wasStopped: transferMetadata.wasStopped,
+			} : null,
+			isBroadcastMode,
+			selectedPath,
+		})
+		
+		// Warn if SUCCESS state without metadata
+		if (viewState === 'SUCCESS' && !transferMetadata) {
+			console.error('[Sender] ⚠️ INVALID STATE: SUCCESS without transferMetadata!', {
+				viewState,
+				transferMetadata,
+				isSharing,
+				isTransporting,
+				selectedPath,
+			})
+		}
+	}, [viewState, isSharing, isTransporting, transferMetadata, isBroadcastMode, selectedPath])
 
 	useEffect(() => {
 		onTransferStateChange(isSharing)
