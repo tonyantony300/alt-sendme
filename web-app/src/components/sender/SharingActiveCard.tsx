@@ -281,7 +281,7 @@ export function TicketDisplay({
 					</Button>
 				</InputGroupAddon>
 			</InputGroup>
-			<p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+			<p className="text-xs text-muted-foreground">
 				{t('common:sender.sendThisTicket')}
 			</p>
 		</div>
