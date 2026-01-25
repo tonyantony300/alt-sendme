@@ -51,6 +51,17 @@ fn emit_progress_event(app_handle: &AppHandle, bytes_transferred: u64, total_byt
     }
 }
 
+fn emit_active_connection_count(app_handle: &AppHandle, count: usize) {
+    if let Some(handle) = app_handle {
+        let event_name = "active-connection-count";
+        let payload = count.to_string();
+        
+        if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
+            tracing::warn!("Failed to emit active connection count event: {}", e);
+        }
+    }
+}
+
 pub async fn start_share(path: PathBuf, options: SendOptions, app_handle: AppHandle) -> anyhow::Result<SendResult> {
     let secret_key = get_or_create_secret()?;
     
@@ -348,13 +359,19 @@ async fn show_provide_progress_with_logging(
                                 match update {
                                     iroh_blobs::provider::events::RequestUpdate::Started(_m) => {
                                         if !transfer_started {
-                                            transfer_states_task.lock().await.insert(
-                                                (connection_id, request_id),
-                                                TransferState {
-                                                    start_time: Instant::now(),
-                                                    total_size: total_file_size,
-                                                }
-                                            );
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.insert(
+                                                    (connection_id, request_id),
+                                                    TransferState {
+                                                        start_time: Instant::now(),
+                                                        total_size: total_file_size,
+                                                    }
+                                                );
+                                                states.len()
+                                            };
+                                            
+                                            emit_active_connection_count(&app_handle_task, active_count);
                                             
                                             if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
                                                 emit_event(&app_handle_task, "transfer-started");
@@ -366,6 +383,20 @@ async fn show_provide_progress_with_logging(
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
                                         if !transfer_started {
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.insert(
+                                                    (connection_id, request_id),
+                                                    TransferState {
+                                                        start_time: Instant::now(),
+                                                        total_size: total_file_size,
+                                                    }
+                                                );
+                                                states.len()
+                                            };
+                                            
+                                            emit_active_connection_count(&app_handle_task, active_count);
+                                            
                                             if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
                                                 emit_event(&app_handle_task, "transfer-started");
                                             }
@@ -386,7 +417,14 @@ async fn show_provide_progress_with_logging(
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         if transfer_started && !request_completed {
-                                            transfer_states_task.lock().await.remove(&(connection_id, request_id));
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.remove(&(connection_id, request_id));
+                                                states.len()
+                                            };
+                                            
+                                            emit_active_connection_count(&app_handle_task, active_count);
+                                            
                                             request_completed = true;
                                             
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
@@ -436,7 +474,14 @@ async fn show_provide_progress_with_logging(
                                         tracing::warn!("Request aborted: conn {} req {}", 
                                             connection_id, request_id);
                                         if transfer_started && !request_completed {
-                                            transfer_states_task.lock().await.remove(&(connection_id, request_id));
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.remove(&(connection_id, request_id));
+                                                states.len()
+                                            };
+                                            
+                                            emit_active_connection_count(&app_handle_task, active_count);
+                                            
                                             request_completed = true;
                                             
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;

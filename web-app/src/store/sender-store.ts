@@ -21,6 +21,7 @@ export interface SenderStore {
     copySuccess: boolean
     isBroadcastMode: boolean
     alertDialog: AlertDialogState
+    activeConnectionCount: number
 
     // Actions
     setViewState: (state: SenderViewState) => void
@@ -34,6 +35,7 @@ export interface SenderStore {
     setIsBroadcastMode: (enabled: boolean) => void
     toggleBroadcastMode: () => void
     setAlertDialog: (dialog: AlertDialogState) => void
+    setActiveConnectionCount: (count: number) => void
     showAlert: (title: string, description: string, type?: AlertType) => void
     closeAlert: () => void
 
@@ -53,6 +55,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
     isLoading: false,
     copySuccess: false,
     isBroadcastMode: false,
+    activeConnectionCount: 0,
     alertDialog: {
         isOpen: false,
         title: '',
@@ -97,6 +100,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
     setIsBroadcastMode: (isBroadcastMode) => set({ isBroadcastMode }),
     toggleBroadcastMode: () => set((state) => ({ isBroadcastMode: !state.isBroadcastMode })),
     setAlertDialog: (alertDialog) => set({ alertDialog }),
+    setActiveConnectionCount: (activeConnectionCount) => set({ activeConnectionCount }),
 
     showAlert: (title, description, type = 'info') =>
         set({
@@ -136,6 +140,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
             transferProgress: null,
             isLoading: false,
             isBroadcastMode: false,
+            activeConnectionCount: 0,
         })
     },
 
@@ -152,6 +157,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
             viewState: 'SHARING',
             transferMetadata: null,
             transferProgress: null,
+            activeConnectionCount: 0,
         })
     },
 }))

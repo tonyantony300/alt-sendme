@@ -22,6 +22,7 @@ export function SharingActiveCard({
 	isTransporting,
 	isCompleted,
 	isBroadcastMode,
+	activeConnectionCount = 0,
 	onCopyTicket,
 	onStopSharing,
 	onToggleBroadcast: _onToggleBroadcast,
@@ -190,6 +191,8 @@ export function SharingActiveCard({
 					isCompleted={isCompleted}
 					isTransporting={isTransporting}
 					statusText={statusText}
+					activeConnectionCount={activeConnectionCount}
+					isBroadcastMode={isBroadcastMode}
 				/>
 			</div>
 

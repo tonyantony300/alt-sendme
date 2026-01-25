@@ -37,6 +37,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		transferMetadata,
 		transferProgress,
 		isBroadcastMode,
+		activeConnectionCount,
 		handleFileSelect,
 		startSharing,
 		stopSharing,
@@ -134,6 +135,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 					<div className="text-center">
 						<PulseAnimation
 							isTransporting={isTransporting && !isBroadcastMode}
+							hasActiveConnections={isBroadcastMode && activeConnectionCount > 0}
 							className="mx-auto my-4 flex items-center justify-center"
 						/>
 					</div>
@@ -149,6 +151,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							copySuccess={copySuccess}
 							transferProgress={transferProgress}
 							isBroadcastMode={isBroadcastMode}
+							activeConnectionCount={activeConnectionCount}
 							onStartSharing={startSharing}
 							onStopSharing={stopSharing}
 							onCopyTicket={copyTicket}

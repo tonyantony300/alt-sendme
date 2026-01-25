@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 
 interface PulseAnimationProps {
 	isTransporting: boolean
+	hasActiveConnections?: boolean
 	className?: string
 }
 
@@ -31,13 +32,14 @@ function modifyAnimationColor(animationData: any, color: number[]) {
 
 export function PulseAnimation({
 	isTransporting,
+	hasActiveConnections = false,
 	className = '',
 }: PulseAnimationProps) {
 	const animationData = useMemo(() => {
 		let color: number[]
 
-		if (isTransporting) {
-			// Active transfer: green
+		if (isTransporting || hasActiveConnections) {
+			// Active transfer or active connections: green
 			color = [37 / 255, 211 / 255, 101 / 255, 0.687]
 		} else {
 			// Waiting/idle: gray
@@ -45,7 +47,7 @@ export function PulseAnimation({
 		}
 
 		return modifyAnimationColor(pulseAnimationOriginal, color)
-	}, [isTransporting])
+	}, [isTransporting, hasActiveConnections])
 
 	return (
 		<div className={className}>
