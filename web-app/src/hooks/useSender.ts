@@ -103,7 +103,7 @@ export function useSender(): UseSenderReturn {
 			unlistenActiveCount = await listen('active-connection-count', (event: any) => {
 				try {
 					const count = parseInt(event.payload as string, 10)
-					if (!isNaN(count)) {
+					if (!Number.isNaN(count)) {
 						// console.log('[useSender] active-connection-count event received:', count)
 						setActiveConnectionCount(count)
 					}
@@ -420,7 +420,7 @@ export function useSender(): UseSenderReturn {
 			if (unlistenFailed) unlistenFailed()
 			if (unlistenActiveCount) unlistenActiveCount()
 		}
-	}, [setViewState, setTransferMetadata, setTransferProgress, resetForBroadcast])
+	}, [setViewState, setTransferMetadata, setTransferProgress, resetForBroadcast, setActiveConnectionCount])
 
 	const handleFileSelect = async (path: string) => {
 		setSelectedPath(path)

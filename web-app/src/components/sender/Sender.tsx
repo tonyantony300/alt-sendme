@@ -74,7 +74,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 				selectedPath,
 			})
 		}
-	}, [viewState, isSharing, isTransporting, transferMetadata, isBroadcastMode, selectedPath])
+	}, [viewState, isSharing, isTransporting, transferMetadata, selectedPath])
 
 	useEffect(() => {
 		onTransferStateChange(isSharing)
