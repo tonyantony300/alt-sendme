@@ -1,22 +1,27 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import type { AlertDialogState, AlertType } from '../types/ui'
+import type { AlertType } from '../types/ui'
 import type { TransferMetadata, TransferProgress } from '../types/transfer'
 import { SpeedAverager, calculateETA } from '../utils/etaUtils'
+import { useSenderStore } from '../store/sender-store'
 
 export interface UseSenderReturn {
+	// View state (replaces isSharing, isTransporting, isCompleted)
+	viewState: 'IDLE' | 'SHARING' | 'TRANSPORTING' | 'SUCCESS'
+
+	// Derived states for backward compatibility
 	isSharing: boolean
 	isTransporting: boolean
 	isCompleted: boolean
+
 	ticket: string | null
 	selectedPath: string | null
 	pathType: 'file' | 'directory' | null
 	isLoading: boolean
-	isStopping: boolean
 	copySuccess: boolean
-	alertDialog: AlertDialogState
+	alertDialog: any
 	transferMetadata: TransferMetadata | null
 	transferProgress: TransferProgress | null
 	isBroadcastMode: boolean
@@ -33,31 +38,39 @@ export interface UseSenderReturn {
 
 export function useSender(): UseSenderReturn {
 	const { t } = useTranslation()
-	const [isSharing, setIsSharing] = useState(false)
-	const [isTransporting, setIsTransporting] = useState(false)
-	const [isCompleted, setIsCompleted] = useState(false)
-	const [ticket, setTicket] = useState<string | null>(null)
-	const [selectedPath, setSelectedPath] = useState<string | null>(null)
-	const [pathType, setPathType] = useState<'file' | 'directory' | null>(null)
-	const [isLoading, setIsLoading] = useState(false)
-	const [copySuccess, setCopySuccess] = useState(false)
-	const [transferMetadata, setTransferMetadata] =
-		useState<TransferMetadata | null>(null)
-	const [transferProgress, setTransferProgress] =
-		useState<TransferProgress | null>(null)
-	const [isStopping, setIsStopping] = useState(false)
-	const [isBroadcastMode, setIsBroadcastMode] = useState(false)
-	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
-		isOpen: false,
-		title: '',
-		description: '',
-		type: 'info',
-	})
 
+	// Get store state and actions
+	const {
+		viewState,
+		ticket,
+		selectedPath,
+		pathType,
+		isLoading,
+		copySuccess,
+		alertDialog,
+		transferMetadata,
+		transferProgress,
+		isBroadcastMode,
+		setViewState,
+		setTicket,
+		setSelectedPath,
+		setPathType,
+		setIsLoading,
+		setCopySuccess,
+		setTransferMetadata,
+		setTransferProgress,
+		setIsBroadcastMode,
+		toggleBroadcastMode,
+		showAlert,
+		closeAlert,
+		resetToIdle,
+		resetForBroadcast,
+	} = useSenderStore()
+
+	// Refs for event listeners
 	const latestProgressRef = useRef<TransferProgress | null>(null)
 	const transferStartTimeRef = useRef<number | null>(null)
 	const progressUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null)
-	const isCompletedRef = useRef(false)
 	const wasManuallyStoppedRef = useRef(false)
 	const selectedPathRef = useRef<string | null>(null)
 	const pathTypeRef = useRef<'file' | 'directory' | null>(null)
@@ -80,22 +93,19 @@ export function useSender(): UseSenderReturn {
 		const setupListeners = async () => {
 			unlistenStart = await listen('transfer-started', () => {
 				transferStartTimeRef.current = Date.now()
-				isCompletedRef.current = false
 				latestProgressRef.current = null
 				speedAveragerRef.current.reset()
 
-				setIsTransporting(true)
-				setIsCompleted(false)
+				setViewState('TRANSPORTING')
 				setTransferProgress(null)
 				setTransferMetadata(null)
 				wasManuallyStoppedRef.current = false
-				setIsStopping(false)
 
 				if (progressUpdateIntervalRef.current) {
 					clearInterval(progressUpdateIntervalRef.current)
 				}
 				progressUpdateIntervalRef.current = setInterval(() => {
-					if (latestProgressRef.current && !isCompletedRef.current) {
+					if (latestProgressRef.current && viewState === 'TRANSPORTING') {
 						setTransferProgress(latestProgressRef.current)
 					}
 				}, 50)
@@ -143,8 +153,6 @@ export function useSender(): UseSenderReturn {
 					progressUpdateIntervalRef.current = null
 				}
 
-				isCompletedRef.current = true
-
 				if (latestProgressRef.current) {
 					setTransferProgress(latestProgressRef.current)
 				}
@@ -171,27 +179,20 @@ export function useSender(): UseSenderReturn {
 						pathType: currentPathType,
 					})
 
-					setIsTransporting(false)
-					setIsCompleted(true)
-					setTransferProgress(null)
-
 					// Check if broadcast mode is enabled
-					setIsBroadcastMode((currentBroadcastMode) => {
-						if (currentBroadcastMode) {
-							// In broadcast mode: reset to listening state after a brief delay
-							setTimeout(() => {
-								setIsCompleted(false)
-								setIsTransporting(false)
-								setTransferMetadata(null)
-								setTransferProgress(null)
-								isCompletedRef.current = false
-								latestProgressRef.current = null
-								transferStartTimeRef.current = null
-								// Keep isSharing, ticket, selectedPath, pathType intact
-							}, 2000)
-						}
-						return currentBroadcastMode
-					})
+					const currentBroadcastMode = useSenderStore.getState().isBroadcastMode
+					if (currentBroadcastMode) {
+						// In broadcast mode: reset to listening state after a brief delay
+						setTimeout(() => {
+							resetForBroadcast()
+							latestProgressRef.current = null
+							transferStartTimeRef.current = null
+						}, 2000)
+					} else {
+						// Normal mode: show success screen
+						setViewState('SUCCESS')
+						setTransferProgress(null)
+					}
 
 					try {
 						const fileSize = await invoke<number>('get_file_size', {
@@ -209,8 +210,7 @@ export function useSender(): UseSenderReturn {
 						console.error('Failed to get file size:', error)
 					}
 				} else {
-					setIsTransporting(false)
-					setIsCompleted(true)
+					setViewState('SUCCESS')
 					setTransferProgress(null)
 				}
 			})
@@ -225,9 +225,7 @@ export function useSender(): UseSenderReturn {
 					progressUpdateIntervalRef.current = null
 				}
 
-				isCompletedRef.current = true
-				setIsTransporting(false)
-				setIsCompleted(true)
+				setViewState('SUCCESS')
 				setTransferProgress(null)
 
 				const endTime = Date.now()
@@ -265,19 +263,7 @@ export function useSender(): UseSenderReturn {
 			if (unlistenComplete) unlistenComplete()
 			if (unlistenFailed) unlistenFailed()
 		}
-	}, [])
-
-	const showAlert = (
-		title: string,
-		description: string,
-		type: AlertType = 'info'
-	) => {
-		setAlertDialog({ isOpen: true, title, description, type })
-	}
-
-	const closeAlert = () => {
-		setAlertDialog((prev) => ({ ...prev, isOpen: false }))
-	}
+	}, [setViewState, setTransferMetadata, setTransferProgress, resetForBroadcast])
 
 	const handleFileSelect = async (path: string) => {
 		setSelectedPath(path)
@@ -294,9 +280,7 @@ export function useSender(): UseSenderReturn {
 		if (!selectedPath) return
 
 		try {
-			isCompletedRef.current = false
-			setIsCompleted(false)
-			setIsTransporting(false)
+			setViewState('IDLE')
 			setTransferMetadata(null)
 			setTransferProgress(null)
 			transferStartTimeRef.current = null
@@ -308,7 +292,7 @@ export function useSender(): UseSenderReturn {
 				path: selectedPath,
 			})
 			setTicket(result)
-			setIsSharing(true)
+			setViewState('SHARING')
 		} catch (error) {
 			console.error('Failed to start sharing:', error)
 			showAlert(
@@ -324,10 +308,9 @@ export function useSender(): UseSenderReturn {
 	const stopSharing = async () => {
 		try {
 			const wasActiveTransfer =
-				isTransporting &&
-				!isCompleted &&
+				viewState === 'TRANSPORTING' &&
 				(!transferMetadata || !transferMetadata.wasStopped)
-			const isCompletedTransfer = isCompleted && transferMetadata
+			const isCompletedTransfer = viewState === 'SUCCESS' && transferMetadata
 
 			const currentSelectedPath = selectedPathRef.current
 			const currentTransferStartTime = transferStartTimeRef.current
@@ -355,25 +338,12 @@ export function useSender(): UseSenderReturn {
 				}
 
 				setTransferMetadata(stoppedMetadata)
-				setIsCompleted(true)
-				setIsTransporting(false)
-
-				setIsStopping(true)
-				requestAnimationFrame(() => {
-					requestAnimationFrame(() => setIsStopping(false))
-				})
+				setViewState('SUCCESS')
 			}
 
 			if (isCompletedTransfer) {
 				wasManuallyStoppedRef.current = false
-				setIsSharing(false)
-				setIsTransporting(false)
-				setIsCompleted(false)
-				setTransferMetadata(null)
-				setTicket(null)
-				setSelectedPath(null)
-				setPathType(null)
-				setTransferProgress(null)
+				resetToIdle()
 				transferStartTimeRef.current = null
 
 				invoke('stop_sharing').catch((error) => {
@@ -387,14 +357,7 @@ export function useSender(): UseSenderReturn {
 			// If no active transfer (just sharing, waiting for acceptance), reset to idle
 			if (!wasActiveTransfer || !currentSelectedPath) {
 				wasManuallyStoppedRef.current = false
-				setIsSharing(false)
-				setIsTransporting(false)
-				setIsCompleted(false)
-				setTransferMetadata(null)
-				setTicket(null)
-				setSelectedPath(null)
-				setPathType(null)
-				setTransferProgress(null)
+				resetToIdle()
 				transferStartTimeRef.current = null
 				return
 			}
@@ -406,7 +369,6 @@ export function useSender(): UseSenderReturn {
 			transferStartTimeRef.current = null
 		} catch (error) {
 			console.error('Failed to stop sharing:', error)
-			setIsStopping(false)
 			showAlert(
 				t('common:errors.stopSharingFailed'),
 				`${t('common:errors.stopSharingFailedDesc')}: ${error}`,
@@ -436,11 +398,13 @@ export function useSender(): UseSenderReturn {
 		}
 	}
 
-	const toggleBroadcastMode = () => {
-		setIsBroadcastMode((prev) => !prev)
-	}
+	// Derived states for backward compatibility
+	const isSharing = viewState === 'SHARING' || viewState === 'TRANSPORTING'
+	const isTransporting = viewState === 'TRANSPORTING'
+	const isCompleted = viewState === 'SUCCESS'
 
 	return {
+		viewState,
 		isSharing,
 		isTransporting,
 		isCompleted,
@@ -448,7 +412,6 @@ export function useSender(): UseSenderReturn {
 		selectedPath,
 		pathType,
 		isLoading,
-		isStopping,
 		copySuccess,
 		alertDialog,
 		transferMetadata,

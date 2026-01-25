@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Loader2, StopCircleIcon } from 'lucide-react'
+import { StopCircleIcon } from 'lucide-react'
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
@@ -24,14 +24,13 @@ interface SenderProps {
 
 export function Sender({ onTransferStateChange }: SenderProps) {
 	const {
+		viewState,
 		isSharing,
 		isTransporting,
-		isCompleted,
 		ticket,
 		selectedPath,
 		pathType,
 		isLoading,
-		isStopping,
 		copySuccess,
 		alertDialog,
 		transferMetadata,
@@ -48,6 +47,11 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 
 	const { t } = useTranslation()
 
+	// Debug logging
+	useEffect(() => {
+		console.log('[Sender] viewState changed:', viewState, { isSharing, isTransporting, transferMetadata: !!transferMetadata, isBroadcastMode })
+	}, [viewState, isSharing, isTransporting, transferMetadata, isBroadcastMode])
+
 	useEffect(() => {
 		onTransferStateChange(isSharing)
 	}, [isSharing, onTransferStateChange])
@@ -57,7 +61,8 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
 			style={{ color: 'var(--app-main-view-fg)' }}
 		>
-			{!isSharing ? (
+			{/* IDLE state: Show file selection UI */}
+			{viewState === 'IDLE' && (
 				<>
 					<div className="text-center">
 						<h2 className="text-xl font-semibold mb-2">
@@ -80,27 +85,24 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 						/>
 					</div>
 				</>
-			) : isStopping ? (
-				<div className="flex-1 flex flex-col items-center justify-center space-y-4">
-					<Loader2 className="h-12 w-12 animate-spin" />
-					<p className="text-sm">{t('common:sender.stoppingTransmission')}</p>
-				</div>
-			) : isCompleted &&
-				transferMetadata &&
-				!isTransporting &&
-				!isBroadcastMode ? (
+			)}
+
+			{/* SUCCESS state: Show transfer success screen (only in non-broadcast mode) */}
+			{viewState === 'SUCCESS' && transferMetadata && !isBroadcastMode && (
 				<div className="flex-1 flex flex-col">
 					<TransferSuccessScreen
 						metadata={transferMetadata}
 						onDone={resetForNewTransfer}
 					/>
 				</div>
-			) : (
+			)}
+
+			{/* SHARING or TRANSPORTING state: Show active sharing UI */}
+			{(viewState === 'SHARING' || viewState === 'TRANSPORTING') && (
 				<>
 					<div className="text-center">
 						<PulseAnimation
 							isTransporting={isTransporting}
-							isCompleted={isCompleted}
 							className="mx-auto my-4 flex items-center justify-center"
 						/>
 					</div>
@@ -109,7 +111,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							isSharing={isSharing}
 							isLoading={isLoading}
 							isTransporting={isTransporting}
-							isCompleted={isCompleted}
+							isCompleted={false}
 							selectedPath={selectedPath}
 							pathType={pathType}
 							ticket={ticket}
@@ -124,6 +126,17 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 					</div>
 				</>
 			)}
+
+			{/* Fallback: Show debug info if no view matches */}
+			{viewState !== 'IDLE' &&
+				viewState !== 'SUCCESS' &&
+				viewState !== 'SHARING' &&
+				viewState !== 'TRANSPORTING' && (
+					<div className="text-center p-4 border border-red-500">
+						<p className="text-red-500 font-bold">Unexpected view state: {viewState}</p>
+						<p className="text-sm">isSharing={String(isSharing)}, isTransporting={String(isTransporting)}</p>
+					</div>
+				)}
 
 			<AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
 				<AlertDialogContent>

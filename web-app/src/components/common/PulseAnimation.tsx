@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 
 interface PulseAnimationProps {
 	isTransporting: boolean
-	isCompleted?: boolean
 	className?: string
 }
 
@@ -32,22 +31,21 @@ function modifyAnimationColor(animationData: any, color: number[]) {
 
 export function PulseAnimation({
 	isTransporting,
-	isCompleted = false,
 	className = '',
 }: PulseAnimationProps) {
 	const animationData = useMemo(() => {
 		let color: number[]
 
-		if (isCompleted) {
-			color = [45 / 255, 120 / 255, 220 / 255, 1]
-		} else if (isTransporting) {
+		if (isTransporting) {
+			// Active transfer: green
 			color = [37 / 255, 211 / 255, 101 / 255, 0.687]
 		} else {
+			// Waiting/idle: gray
 			color = [183 / 255, 183 / 255, 183 / 255, 1]
 		}
 
 		return modifyAnimationColor(pulseAnimationOriginal, color)
-	}, [isTransporting, isCompleted])
+	}, [isTransporting])
 
 	return (
 		<div className={className}>
