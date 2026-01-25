@@ -32,7 +32,17 @@
 		"browseFile": "Navegar Arquivo",
 		"browseFolder": "Navegar Pasta",
 		"copyToClipboard": "Copiar para área de transferência",
-		"broadcastMode": "Transmissão"
+		"broadcastMode": {
+			"index": "Transmissão",
+			"on": {
+				"label": "Você está transmitindo",
+				"description": "Qualquer pessoa com o ticket pode baixar o arquivo."
+			},
+			"off": {
+				"label": "Compartilhamento privado",
+				"description": "Apenas a pessoa com quem você compartilha o ticket pode baixar o arquivo."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Receber Arquivos",

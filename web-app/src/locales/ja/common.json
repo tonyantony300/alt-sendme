@@ -32,7 +32,17 @@
 		"browseFile": "ファイルを参照",
 		"browseFolder": "フォルダを参照",
 		"copyToClipboard": "クリップボードにコピー",
-		"broadcastMode": "ブロードキャスト"
+		"broadcastMode": {
+			"index": "ブロードキャスト",
+			"on": {
+				"label": "ブロードキャスト中",
+				"description": "チケットを持っている人は誰でもファイルをダウンロードできます。"
+			},
+			"off": {
+				"label": "プライベート共有",
+				"description": "チケットを共有した相手のみがファイルをダウンロードできます。"
+			}
+		}
 	},
 	"receiver": {
 		"title": "ファイルを受信",

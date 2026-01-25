@@ -32,7 +32,17 @@
 		"browseFile": "تصفح الملف",
 		"browseFolder": "تصفح المجلد",
 		"copyToClipboard": "نسخ إلى الحافظة",
-		"broadcastMode": "بث"
+		"broadcastMode": {
+			"index": "بث",
+			"on": {
+				"label": "أنت تبث",
+				"description": "أي شخص لديه التذكرة يمكنه تنزيل الملف."
+			},
+			"off": {
+				"label": "مشاركة خاصة",
+				"description": "فقط الشخص الذي تشارك معه التذكرة يمكنه تنزيل الملف."
+			}
+		}
 	},
 	"receiver": {
 		"title": "استقبال الملفات",

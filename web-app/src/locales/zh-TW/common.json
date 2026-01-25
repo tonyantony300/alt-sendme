@@ -32,7 +32,17 @@
 		"browseFile": "瀏覽檔案",
 		"browseFolder": "瀏覽資料夾",
 		"copyToClipboard": "複製到剪貼簿",
-		"broadcastMode": "廣播"
+		"broadcastMode": {
+			"index": "廣播",
+			"on": {
+				"label": "您正在廣播",
+				"description": "任何擁有票券的人都可以下載檔案。"
+			},
+			"off": {
+				"label": "私人分享",
+				"description": "只有您與之分享票券的人才能下載檔案。"
+			}
+		}
 	},
 	"receiver": {
 		"title": "接收檔案",

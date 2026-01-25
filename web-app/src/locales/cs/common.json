@@ -32,7 +32,17 @@
 		"browseFile": "Vybrat soubor",
 		"browseFolder": "Vybrat složku",
 		"copyToClipboard": "Kopírovat do schránky",
-		"broadcastMode": "Vysílání"
+		"broadcastMode": {
+			"index": "Vysílání",
+			"on": {
+				"label": "Vysíláte",
+				"description": "Kdokoli s ticketem může stáhnout soubor."
+			},
+			"off": {
+				"label": "Soukromé sdílení",
+				"description": "Pouze osoba, se kterou sdílíte ticket, může stáhnout soubor."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Přijmout soubory",

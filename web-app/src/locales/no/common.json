@@ -32,7 +32,17 @@
 		"browseFile": "Velg fil",
 		"browseFolder": "Velg mappe",
 		"copyToClipboard": "Kopier til utklippstavle",
-		"broadcastMode": "Kringkasting"
+		"broadcastMode": {
+			"index": "Kringkasting",
+			"on": {
+				"label": "Du kringkaster",
+				"description": "Alle med nøkkelen kan laste ned filen."
+			},
+			"off": {
+				"label": "Privat deling",
+				"description": "Bare personen du deler nøkkelen med kan laste ned filen."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Motta filer",

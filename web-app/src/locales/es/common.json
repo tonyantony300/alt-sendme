@@ -32,7 +32,17 @@
 		"browseFile": "Buscar archivo",
 		"browseFolder": "Buscar carpeta",
 		"copyToClipboard": "Copiar al portapapeles",
-		"broadcastMode": "Difusión"
+		"broadcastMode": {
+			"index": "Difusión",
+			"on": {
+				"label": "Estás transmitiendo",
+				"description": "Cualquiera con el ticket puede descargar el archivo."
+			},
+			"off": {
+				"label": "Compartición privada",
+				"description": "Solo la persona con la que compartes el ticket puede descargar el archivo."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Recibir archivos",
