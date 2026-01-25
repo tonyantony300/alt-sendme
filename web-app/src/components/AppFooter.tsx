@@ -1,10 +1,10 @@
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { buttonVariants } from './ui/button'
-import { CoffeeIcon, GithubIcon, GlobeIcon, SettingsIcon } from 'lucide-react'
+import { CoffeeIcon, GithubIcon, GlobeIcon } from 'lucide-react'
 import { AppVersion } from './AppVersionPayload'
 import { ThemeSwitcher } from './ThemeSwitcher'
 import { Separator } from './ui/separator'
-import { Link } from 'react-router-dom'
+//import { Link } from 'react-router-dom'
 
 const CONTACTS = [
 	{
