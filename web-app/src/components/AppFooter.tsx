@@ -51,13 +51,13 @@ export function AppFooter() {
 				<LanguageSwitcher className="max-w-[200px]" />
 				<Separator className="h-6" orientation="vertical" />
 				<ThemeSwitcher />
-				<Link
+				{/* <Link
 					to="/settings"
 					className={buttonVariants({ size: 'icon-sm', variant: 'outline' })}
 					aria-label="Settings"
 				>
 					<SettingsIcon />
-				</Link>
+				</Link> */}
 			</div>
 		</div>
 	)
