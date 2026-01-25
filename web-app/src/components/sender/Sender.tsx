@@ -17,6 +17,7 @@ import {
 import { useSender } from '../../hooks/useSender'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { Button } from '../ui/button'
+import { useSenderStore } from '../../store/sender-store'
 
 interface SenderProps {
 	onTransferStateChange: (isSharing: boolean) => void
@@ -46,6 +47,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	} = useSender()
 
 	const { t } = useTranslation()
+	const setIsBroadcastMode = useSenderStore((state) => state.setIsBroadcastMode)
 
 	// Debug logging
 	useEffect(() => {
@@ -76,6 +78,13 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	useEffect(() => {
 		onTransferStateChange(isSharing)
 	}, [isSharing, onTransferStateChange])
+
+	// Reset broadcast mode to false when idle screen is shown
+	useEffect(() => {
+		if (viewState === 'IDLE' && isBroadcastMode) {
+			setIsBroadcastMode(false)
+		}
+	}, [viewState, isBroadcastMode, setIsBroadcastMode])
 
 	return (
 		<div

@@ -135,6 +135,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
             transferMetadata: null,
             transferProgress: null,
             isLoading: false,
+            isBroadcastMode: false,
         })
     },
 

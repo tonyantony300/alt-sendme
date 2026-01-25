@@ -433,6 +433,9 @@ export function useSender(): UseSenderReturn {
 			storeSelectedPath: selectedPath,
 		})
 
+		// Always disable broadcast mode when stopping
+		setIsBroadcastMode(false)
+
 		try {
 			const wasActiveTransfer =
 				viewState === 'TRANSPORTING' &&

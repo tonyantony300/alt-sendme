@@ -30,14 +30,15 @@ export function SharingActiveCard({
 	const onToggleBroadcast = () => {
 		if (_onToggleBroadcast) {
 			const toastId = crypto.randomUUID()
+			const isTurningOn = !isBroadcastMode
 			_onToggleBroadcast()
 			toastManager.add({
 				// Reverse `isBroadcastMode` because the state has already changed
-				title: !isBroadcastMode
+				title: isTurningOn
 					? t('common:sender.broadcastMode.on.label')
 					: t('common:sender.broadcastMode.off.label'),
 				id: toastId,
-				description: !isBroadcastMode
+				description: isTurningOn
 					? t('common:sender.broadcastMode.on.description')
 					: t('common:sender.broadcastMode.off.description'),
 				type: 'info',
@@ -49,6 +50,12 @@ export function SharingActiveCard({
 					},
 				},
 			})
+			// Auto-close "You are broadcasting" notification after 3 seconds
+			if (isTurningOn) {
+				setTimeout(() => {
+					toastManager.close(toastId)
+				}, 3000)
+			}
 		}
 	}
 
