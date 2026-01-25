@@ -32,7 +32,17 @@
 		"browseFile": "Изабери датотеку",
 		"browseFolder": "Изабери фасциклу",
 		"copyToClipboard": "Копирај у клипборд",
-		"broadcastMode": "Емитовање"
+		"broadcastMode": {
+			"index": "Емитовање",
+			"on": {
+				"label": "Емитујеш",
+				"description": "Свако са картом може преузети датотеку."
+			},
+			"off": {
+				"label": "Приватно дељење",
+				"description": "Само особа са којом делиш карту може преузети датотеку."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Прими датотеке",
@@ -51,7 +61,8 @@
 		"connectingToSender": "Повезујем се са пошиљаоцем",
 		"downloadingInProgress": "Преузимање у току",
 		"downloadCompleted": "Преузимање завршено",
-		"stopReceiving": "Прекини примање"
+		"stopReceiving": "Прекини примање",
+		"download": "Преузми"
 	},
 	"transfer": {
 		"progress": "Напредак преноса",

@@ -22,6 +22,7 @@ export function SharingActiveCard({
 	isTransporting,
 	isCompleted,
 	isBroadcastMode,
+	activeConnectionCount = 0,
 	onCopyTicket,
 	onStopSharing,
 	onToggleBroadcast: _onToggleBroadcast,
@@ -29,26 +30,29 @@ export function SharingActiveCard({
 	const { t } = useTranslation()
 	const onToggleBroadcast = () => {
 		if (_onToggleBroadcast) {
-			const toastId = crypto.randomUUID()
+			const isTurningOn = !isBroadcastMode
 			_onToggleBroadcast()
-			toastManager.add({
-				// Reverse `isBroadcastMode` because the state has already changed
-				title: !isBroadcastMode
-					? t('common:sender.broadcastMode.on.label')
-					: t('common:sender.broadcastMode.off.label'),
-				id: toastId,
-				description: !isBroadcastMode
-					? t('common:sender.broadcastMode.on.description')
-					: t('common:sender.broadcastMode.off.description'),
-				type: 'info',
-				actionProps: {
-					children: t('common:undo'),
-					onClick: () => {
-						_onToggleBroadcast?.()
-						toastManager.close(toastId)
+			// Only show toast notification when turning broadcast mode ON, not for private sharing
+			if (isTurningOn) {
+				const toastId = crypto.randomUUID()
+				toastManager.add({
+					title: t('common:sender.broadcastMode.on.label'),
+					id: toastId,
+					description: t('common:sender.broadcastMode.on.description'),
+					type: 'info',
+					actionProps: {
+						children: t('common:undo'),
+						onClick: () => {
+							_onToggleBroadcast?.()
+							toastManager.close(toastId)
+						},
 					},
-				},
-			})
+				})
+				// Auto-close "You are broadcasting" notification after 1 seconds
+				setTimeout(() => {
+					toastManager.close(toastId)
+				}, 1500)
+			}
 		}
 	}
 
@@ -158,6 +162,19 @@ export function SharingActiveCard({
 				}
 			: null
 
+	// Default progress object when transferProgress is not yet available
+	const defaultProgress = {
+		bytesTransferred: 0,
+		totalBytes: 0,
+		speedBps: 0,
+		percentage: 0,
+	}
+
+	// Determine which progress object to use
+	const progressToDisplay = isTransporting
+		? folderProgress || transferProgress || defaultProgress
+		: null
+
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
@@ -170,6 +187,8 @@ export function SharingActiveCard({
 					isCompleted={isCompleted}
 					isTransporting={isTransporting}
 					statusText={statusText}
+					activeConnectionCount={activeConnectionCount}
+					isBroadcastMode={isBroadcastMode}
 				/>
 			</div>
 
@@ -185,20 +204,16 @@ export function SharingActiveCard({
 				/>
 			)}
 
-			{isTransporting &&
-				transferProgress &&
-				(folderProgress ? (
-					<TransferProgressBar progress={folderProgress} />
-				) : (
-					<TransferProgressBar progress={transferProgress} />
-				))}
+			{isTransporting && progressToDisplay && (
+				<TransferProgressBar progress={progressToDisplay} />
+			)}
 
 			<Button
 				size="icon-lg"
 				type="button"
 				onClick={onStopSharing}
 				variant="destructive-outline"
-				className="absolute top-0 right-6 rounded-full font-medium transition-colors"
+				className="absolute top-0 right-6 rounded-full font-medium transition-colors not-disabled:not-active:not-data-pressed:before:shadow-none dark:not-disabled:before:shadow-none dark:not-disabled:not-active:not-data-pressed:before:shadow-none"
 				aria-label="Stop sharing"
 			>
 				<Square className="w-4 h-4" fill="currentColor" />

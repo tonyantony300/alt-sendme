@@ -32,7 +32,17 @@
 		"browseFile": "Sfoglia File",
 		"browseFolder": "Sfoglia Cartella",
 		"copyToClipboard": "Copia negli appunti",
-		"broadcastMode": "Trasmissione"
+		"broadcastMode": {
+			"index": "Trasmissione",
+			"on": {
+				"label": "Stai trasmettendo",
+				"description": "Chiunque abbia il ticket può scaricare il file."
+			},
+			"off": {
+				"label": "Condivisione privata",
+				"description": "Solo la persona con cui condividi il ticket può scaricare il file."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Ricevi File",
@@ -51,7 +61,8 @@
 		"connectingToSender": "Connessione al mittente",
 		"downloadingInProgress": "Download in corso",
 		"downloadCompleted": "Download completato",
-		"stopReceiving": "Ferma ricezione"
+		"stopReceiving": "Ferma ricezione",
+		"download": "Scarica"
 	},
 	"transfer": {
 		"progress": "Avanzamento Trasferimento",

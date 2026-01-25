@@ -32,7 +32,17 @@
 		"browseFile": "Выбрать файл",
 		"browseFolder": "Выбрать папку",
 		"copyToClipboard": "Скопировать",
-		"broadcastMode": "Трансляция"
+		"broadcastMode": {
+			"index": "Трансляция",
+			"on": {
+				"label": "Вы транслируете",
+				"description": "Любой, у кого есть тикет, может скачать файл."
+			},
+			"off": {
+				"label": "Приватная передача",
+				"description": "Только человек, с которым вы делитесь тикетом, может скачать файл."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Получить файлы",
@@ -51,7 +61,8 @@
 		"connectingToSender": "Подключение к отправителю",
 		"downloadingInProgress": "Скачивание в процессе",
 		"downloadCompleted": "Скачивание завершено",
-		"stopReceiving": "Прекратить скачивание"
+		"stopReceiving": "Прекратить скачивание",
+		"download": "Скачать"
 	},
 	"transfer": {
 		"progress": "Прогресс Передачи",

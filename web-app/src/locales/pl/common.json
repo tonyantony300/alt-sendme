@@ -32,7 +32,17 @@
 		"browseFile": "Przeglądaj plik",
 		"browseFolder": "Przeglądaj folder",
 		"copyToClipboard": "Kopiuj do schowka",
-		"broadcastMode": "Rozgłaszanie"
+		"broadcastMode": {
+			"index": "Rozgłaszanie",
+			"on": {
+				"label": "Rozgłaszasz",
+				"description": "Każdy z biletem może pobrać plik."
+			},
+			"off": {
+				"label": "Prywatne udostępnianie",
+				"description": "Tylko osoba, z którą udostępniasz bilet, może pobrać plik."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Odbierz pliki",
@@ -51,7 +61,8 @@
 		"connectingToSender": "Łączenie z nadawcą",
 		"downloadingInProgress": "Pobieranie w toku",
 		"downloadCompleted": "Pobieranie zakończone",
-		"stopReceiving": "Zatrzymaj odbieranie"
+		"stopReceiving": "Zatrzymaj odbieranie",
+		"download": "Pobierz"
 	},
 	"transfer": {
 		"progress": "Postęp transferu",

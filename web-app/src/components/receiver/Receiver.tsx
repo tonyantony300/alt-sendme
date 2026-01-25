@@ -104,7 +104,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 					<div className="text-center">
 						<PulseAnimation
 							isTransporting={isTransporting}
-							isCompleted={isCompleted}
 							className="mx-auto my-4 flex items-center justify-center"
 						/>
 					</div>
@@ -134,7 +133,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 					<AlertDialogFooter>
 						<AlertDialogClose
 							onClick={closeAlert}
-							render={<Button size="sm">{t('common:confirm')}</Button>}
+							render={<Button size="sm">{t('common:ok')}</Button>}
 						/>
 					</AlertDialogFooter>
 				</AlertDialogContent>
@@ -160,7 +159,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogClose
-							render={<Button size="sm">{t('common:confirm')}</Button>}
+							render={<Button size="sm">{t('common:ok')}</Button>}
 							onClick={() => setShowInstructionsDialog(false)}
 						></AlertDialogClose>
 					</AlertDialogFooter>

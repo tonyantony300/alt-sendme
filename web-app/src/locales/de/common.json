@@ -32,7 +32,17 @@
 		"browseFile": "Datei durchsuchen",
 		"browseFolder": "Ordner durchsuchen",
 		"copyToClipboard": "In Zwischenablage kopieren",
-		"broadcastMode": "Broadcast"
+		"broadcastMode": {
+			"index": "Broadcast",
+			"on": {
+				"label": "Sie senden",
+				"description": "Jeder mit dem Ticket kann die Datei herunterladen."
+			},
+			"off": {
+				"label": "Privates Teilen",
+				"description": "Nur die Person, mit der Sie das Ticket teilen, kann die Datei herunterladen."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Dateien empfangen",
@@ -51,7 +61,8 @@
 		"connectingToSender": "Verbindung zum Absender wird hergestellt",
 		"downloadingInProgress": "Download läuft",
 		"downloadCompleted": "Download abgeschlossen",
-		"stopReceiving": "Empfang beenden"
+		"stopReceiving": "Empfang beenden",
+		"download": "Herunterladen"
 	},
 	"transfer": {
 		"progress": "Übertragungsfortschritt",
