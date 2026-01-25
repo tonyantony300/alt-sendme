@@ -51,7 +51,8 @@
 		"connectingToSender": "보낸 사람에게 연결 중",
 		"downloadingInProgress": "다운로드 진행 중",
 		"downloadCompleted": "다운로드 완료",
-		"stopReceiving": "받기 중지"
+		"stopReceiving": "받기 중지",
+		"download": "다운로드"
 	},
 	"transfer": {
 		"progress": "전송 진행률",

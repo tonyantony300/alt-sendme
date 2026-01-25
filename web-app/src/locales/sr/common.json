@@ -51,7 +51,8 @@
 		"connectingToSender": "Повезујем се са пошиљаоцем",
 		"downloadingInProgress": "Преузимање у току",
 		"downloadCompleted": "Преузимање завршено",
-		"stopReceiving": "Прекини примање"
+		"stopReceiving": "Прекини примање",
+		"download": "Преузми"
 	},
 	"transfer": {
 		"progress": "Напредак преноса",

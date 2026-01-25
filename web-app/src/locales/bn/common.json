@@ -51,7 +51,8 @@
 		"connectingToSender": "প্রেরকের সাথে সংযোগ করা হচ্ছে",
 		"downloadingInProgress": "ডাউনলোড চলছে",
 		"downloadCompleted": "ডাউনলোড সম্পন্ন হয়েছে",
-		"stopReceiving": "গ্রহণ বন্ধ করুন"
+		"stopReceiving": "গ্রহণ বন্ধ করুন",
+		"download": "ডাউনলোড"
 	},
 	"transfer": {
 		"progress": "স্থানান্তরের অগ্রগতি",

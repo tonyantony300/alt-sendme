@@ -51,7 +51,8 @@
 		"connectingToSender": "الاتصال بالمرسل",
 		"downloadingInProgress": "التنزيل قيد التنفيذ",
 		"downloadCompleted": "اكتمل التنزيل",
-		"stopReceiving": "إيقاف الاستقبال"
+		"stopReceiving": "إيقاف الاستقبال",
+		"download": "تنزيل"
 	},
 	"transfer": {
 		"progress": "تقدم النقل",

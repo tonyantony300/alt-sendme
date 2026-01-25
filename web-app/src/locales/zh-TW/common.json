@@ -51,7 +51,8 @@
 		"connectingToSender": "正在連線至傳送者",
 		"downloadingInProgress": "正在下載",
 		"downloadCompleted": "下載完成",
-		"stopReceiving": "停止接收"
+		"stopReceiving": "停止接收",
+		"download": "下載"
 	},
 	"transfer": {
 		"progress": "傳輸進度",

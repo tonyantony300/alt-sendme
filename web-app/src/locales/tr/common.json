@@ -51,7 +51,8 @@
 		"connectingToSender": "Göndericiye bağlanılıyor",
 		"downloadingInProgress": "İndirme işlemi sürüyor",
 		"downloadCompleted": "İndirme tamamlandı",
-		"stopReceiving": "Alımı durdur"
+		"stopReceiving": "Alımı durdur",
+		"download": "İndir"
 	},
 	"transfer": {
 		"progress": "Transfer Süreci",

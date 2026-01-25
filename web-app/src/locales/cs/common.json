@@ -51,7 +51,8 @@
 		"connectingToSender": "Připojování k odesílateli",
 		"downloadingInProgress": "Probíhá stahování",
 		"downloadCompleted": "Stahování dokončeno",
-		"stopReceiving": "Zastavit příjem"
+		"stopReceiving": "Zastavit příjem",
+		"download": "Stáhnout"
 	},
 	"transfer": {
 		"progress": "Průběh přenosu",

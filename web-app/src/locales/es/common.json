@@ -51,7 +51,8 @@
 		"connectingToSender": "Conectando con el remitente",
 		"downloadingInProgress": "Descarga en curso",
 		"downloadCompleted": "Descarga completada",
-		"stopReceiving": "Detener recepción"
+		"stopReceiving": "Detener recepción",
+		"download": "Descargar"
 	},
 	"transfer": {
 		"progress": "Progreso de la transferencia",

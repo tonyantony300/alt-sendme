@@ -51,7 +51,8 @@
 		"connectingToSender": "Kobler til avsender",
 		"downloadingInProgress": "Nedlasting pågår",
 		"downloadCompleted": "Nedlasting fullført",
-		"stopReceiving": "Stopp overføring"
+		"stopReceiving": "Stopp overføring",
+		"download": "Last ned"
 	},
 	"transfer": {
 		"progress": "Status",

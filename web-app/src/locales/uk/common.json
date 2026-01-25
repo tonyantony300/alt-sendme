@@ -51,7 +51,8 @@
 		"connectingToSender": "Підключення до відправника",
 		"downloadingInProgress": "Завантаження в процесі",
 		"downloadCompleted": "Завантаження завершено",
-		"stopReceiving": "Припинити завантаження"
+		"stopReceiving": "Припинити завантаження",
+		"download": "Завантажити"
 	},
 	"transfer": {
 		"progress": "Прогрес передачі",

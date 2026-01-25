@@ -51,7 +51,8 @@
 		"connectingToSender": "در حال اتصال...",
 		"downloadingInProgress": "در حال دانلود...",
 		"downloadCompleted": "دانلود کامل شد",
-		"stopReceiving": "توقف دریافت"
+		"stopReceiving": "توقف دریافت",
+		"download": "دانلود"
 	},
 	"transfer": {
 		"progress": "پیشرفت انتقال",

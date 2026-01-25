@@ -51,7 +51,8 @@
 		"connectingToSender": "प्रेषक से कनेक्ट किया जा रहा है",
 		"downloadingInProgress": "डाउनलोड जारी है",
 		"downloadCompleted": "डाउनलोड पूरा हुआ",
-		"stopReceiving": "प्राप्त करना रोकें"
+		"stopReceiving": "प्राप्त करना रोकें",
+		"download": "डाउनलोड"
 	},
 	"transfer": {
 		"progress": "ट्रांसफ़र प्रगति",

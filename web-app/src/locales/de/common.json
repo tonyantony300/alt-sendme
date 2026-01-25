@@ -51,7 +51,8 @@
 		"connectingToSender": "Verbindung zum Absender wird hergestellt",
 		"downloadingInProgress": "Download läuft",
 		"downloadCompleted": "Download abgeschlossen",
-		"stopReceiving": "Empfang beenden"
+		"stopReceiving": "Empfang beenden",
+		"download": "Herunterladen"
 	},
 	"transfer": {
 		"progress": "Übertragungsfortschritt",

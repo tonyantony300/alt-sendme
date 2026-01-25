@@ -51,7 +51,8 @@
 		"connectingToSender": "送信者に接続中",
 		"downloadingInProgress": "ダウンロード中",
 		"downloadCompleted": "ダウンロード完了",
-		"stopReceiving": "受信を停止"
+		"stopReceiving": "受信を停止",
+		"download": "ダウンロード"
 	},
 	"transfer": {
 		"progress": "転送の進行状況",
