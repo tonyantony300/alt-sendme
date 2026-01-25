@@ -19,7 +19,7 @@ export function StatusIndicator({
 	// Use activeConnectionCount if available, otherwise show connection info if count > 0
 	const hasActiveConnections = isBroadcastMode && activeConnectionCount > 0
 	const displayStatusText = isBroadcastMode && activeConnectionCount > 0
-		? `(${activeConnectionCount} ${activeConnectionCount === 1 ? 'transfer' : 'transfers'} in progress)`
+		? `${activeConnectionCount} ${activeConnectionCount === 1 ? 'transfer' : 'transfers'} in progress`
 		: statusText
 
 	return (
