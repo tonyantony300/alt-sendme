@@ -60,19 +60,19 @@ export const useSenderStore = create<SenderStore>()((set) => ({
         type: 'info',
     },
 
+    // console.log('[Store] setViewState called:', {
+    //     from: currentState.viewState,
+    //     to: viewState,
+    //     caller,
+    //     hasTransferMetadata: !!currentState.transferMetadata,
+    //     selectedPath: currentState.selectedPath,
+    //     isBroadcastMode: currentState.isBroadcastMode,
+    // })
+    // const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+    // const currentState = useSenderStore.getState()
     // Simple setters
+    // const stack = new Error().stack
     setViewState: (viewState) => {
-        const stack = new Error().stack
-        const caller = stack?.split('\n')[2]?.trim() || 'unknown'
-        const currentState = useSenderStore.getState()
-        console.log('[Store] setViewState called:', {
-            from: currentState.viewState,
-            to: viewState,
-            caller,
-            hasTransferMetadata: !!currentState.transferMetadata,
-            selectedPath: currentState.selectedPath,
-            isBroadcastMode: currentState.isBroadcastMode,
-        })
         set({ viewState })
     },
     setTicket: (ticket) => set({ ticket }),

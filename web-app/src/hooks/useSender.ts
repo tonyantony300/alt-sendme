@@ -116,7 +116,8 @@ export function useSender(): UseSenderReturn {
 					clearInterval(progressUpdateIntervalRef.current)
 				}
 				progressUpdateIntervalRef.current = setInterval(() => {
-					if (latestProgressRef.current && viewState === 'TRANSPORTING') {
+					const currentViewState = useSenderStore.getState().viewState
+					if (latestProgressRef.current && currentViewState === 'TRANSPORTING') {
 						setTransferProgress(latestProgressRef.current)
 					}
 				}, 50)

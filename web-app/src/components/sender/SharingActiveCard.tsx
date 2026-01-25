@@ -158,6 +158,19 @@ export function SharingActiveCard({
 				}
 			: null
 
+	// Default progress object when transferProgress is not yet available
+	const defaultProgress = {
+		bytesTransferred: 0,
+		totalBytes: 0,
+		speedBps: 0,
+		percentage: 0,
+	}
+
+	// Determine which progress object to use
+	const progressToDisplay = isTransporting
+		? folderProgress || transferProgress || defaultProgress
+		: null
+
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
@@ -185,13 +198,9 @@ export function SharingActiveCard({
 				/>
 			)}
 
-			{isTransporting &&
-				transferProgress &&
-				(folderProgress ? (
-					<TransferProgressBar progress={folderProgress} />
-				) : (
-					<TransferProgressBar progress={transferProgress} />
-				))}
+			{isTransporting && progressToDisplay && (
+				<TransferProgressBar progress={progressToDisplay} />
+			)}
 
 			<Button
 				size="icon-lg"
