@@ -33,7 +33,7 @@ export function StatusIndicator({
 				)}
 			></div>
 			<p
-				className={cn('text-sm font-medium text-gray-600', {
+				className={cn('text-sm font-medium text-foreground', {
 					'text-emerald-600': isCompleted || hasActiveConnections || isTransporting,
 				})}
 			>

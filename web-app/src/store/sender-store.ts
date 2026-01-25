@@ -82,16 +82,16 @@ export const useSenderStore = create<SenderStore>()((set) => ({
     setSelectedPath: (selectedPath) => set({ selectedPath }),
     setPathType: (pathType) => set({ pathType }),
     setTransferMetadata: (transferMetadata) => {
-        const stack = new Error().stack
-        const caller = stack?.split('\n')[2]?.trim() || 'unknown'
-        const currentState = useSenderStore.getState()
-        console.log('[Store] setTransferMetadata called:', {
-            caller,
-            hasMetadata: !!transferMetadata,
-            metadata: transferMetadata ? { fileName: transferMetadata.fileName, wasStopped: transferMetadata.wasStopped } : null,
-            currentViewState: currentState.viewState,
-            selectedPath: currentState.selectedPath,
-        })
+        // const stack = new Error().stack
+        // const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+        // const currentState = useSenderStore.getState()
+        // console.log('[Store] setTransferMetadata called:', {
+        //     caller,
+        //     hasMetadata: !!transferMetadata,
+        //     metadata: transferMetadata ? { fileName: transferMetadata.fileName, wasStopped: transferMetadata.wasStopped } : null,
+        //     currentViewState: currentState.viewState,
+        //     selectedPath: currentState.selectedPath,
+        // })
         set({ transferMetadata })
     },
     setTransferProgress: (transferProgress) => set({ transferProgress }),
@@ -122,15 +122,15 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 
     // Complex state transitions
     resetToIdle: () => {
-        const stack = new Error().stack
-        const caller = stack?.split('\n')[2]?.trim() || 'unknown'
-        const currentState = useSenderStore.getState()
-        console.log('[Store] resetToIdle called:', {
-            caller,
-            previousViewState: currentState.viewState,
-            hadTransferMetadata: !!currentState.transferMetadata,
-            selectedPath: currentState.selectedPath,
-        })
+        // const stack = new Error().stack
+        // const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+        // const currentState = useSenderStore.getState()
+        // console.log('[Store] resetToIdle called:', {
+        //     caller,
+        //     previousViewState: currentState.viewState,
+        //     hadTransferMetadata: !!currentState.transferMetadata,
+        //     selectedPath: currentState.selectedPath,
+        // })
         set({
             viewState: 'IDLE',
             ticket: null,
@@ -145,14 +145,14 @@ export const useSenderStore = create<SenderStore>()((set) => ({
     },
 
     resetForBroadcast: () => {
-        const stack = new Error().stack
-        const caller = stack?.split('\n')[2]?.trim() || 'unknown'
-        const currentState = useSenderStore.getState()
-        console.log('[Store] resetForBroadcast called:', {
-            caller,
-            previousViewState: currentState.viewState,
-            hadTransferMetadata: !!currentState.transferMetadata,
-        })
+        // const stack = new Error().stack
+        // const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+        // const currentState = useSenderStore.getState()
+        // console.log('[Store] resetForBroadcast called:', {
+        //     caller,
+        //     previousViewState: currentState.viewState,
+        //     hadTransferMetadata: !!currentState.transferMetadata,
+        // })
         set({
             viewState: 'SHARING',
             transferMetadata: null,

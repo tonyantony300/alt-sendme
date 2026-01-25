@@ -277,7 +277,7 @@ export function useSender(): UseSenderReturn {
 					// In broadcast mode: reset to listening state after a brief delay
 					// Note: active connection count is now managed by active-connection-count event
 					setTimeout(() => {
-						console.log('[useSender] transfer-completed: broadcast mode timeout - resetting')
+						// console.log('[useSender] transfer-completed: broadcast mode timeout - resetting')
 						resetForBroadcast()
 						latestProgressRef.current = null
 						transferStartTimeRef.current = null

@@ -15,7 +15,9 @@ function formatFileSize(bytes: number): string {
 }
 
 function formatDuration(ms: number): string {
-	if (ms < 1000) {
+	if (ms === 0) {
+		return 'NA'
+	} else if (ms < 1000) {
 		return `${ms}ms`
 	} else if (ms < 60000) {
 		return `${(ms / 1000).toFixed(1)}s`
@@ -143,7 +145,7 @@ export function TransferSuccessScreen({
 							{t('common:transfer.duration')}:
 						</span>
 						<span className="text-sm">
-							{wasStopped ? '0ms' : formatDuration(metadata.duration)}
+							{wasStopped ? 'NA' : formatDuration(metadata.duration)}
 						</span>
 					</div>
 

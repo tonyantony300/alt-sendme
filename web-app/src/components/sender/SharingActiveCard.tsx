@@ -30,32 +30,28 @@ export function SharingActiveCard({
 	const { t } = useTranslation()
 	const onToggleBroadcast = () => {
 		if (_onToggleBroadcast) {
-			const toastId = crypto.randomUUID()
 			const isTurningOn = !isBroadcastMode
 			_onToggleBroadcast()
-			toastManager.add({
-				// Reverse `isBroadcastMode` because the state has already changed
-				title: isTurningOn
-					? t('common:sender.broadcastMode.on.label')
-					: t('common:sender.broadcastMode.off.label'),
-				id: toastId,
-				description: isTurningOn
-					? t('common:sender.broadcastMode.on.description')
-					: t('common:sender.broadcastMode.off.description'),
-				type: 'info',
-				actionProps: {
-					children: t('common:undo'),
-					onClick: () => {
-						_onToggleBroadcast?.()
-						toastManager.close(toastId)
-					},
-				},
-			})
-			// Auto-close "You are broadcasting" notification after 3 seconds
+			// Only show toast notification when turning broadcast mode ON, not for private sharing
 			if (isTurningOn) {
+				const toastId = crypto.randomUUID()
+				toastManager.add({
+					title: t('common:sender.broadcastMode.on.label'),
+					id: toastId,
+					description: t('common:sender.broadcastMode.on.description'),
+					type: 'info',
+					actionProps: {
+						children: t('common:undo'),
+						onClick: () => {
+							_onToggleBroadcast?.()
+							toastManager.close(toastId)
+						},
+					},
+				})
+				// Auto-close "You are broadcasting" notification after 1 seconds
 				setTimeout(() => {
 					toastManager.close(toastId)
-				}, 3000)
+				}, 1500)
 			}
 		}
 	}
@@ -217,7 +213,7 @@ export function SharingActiveCard({
 				type="button"
 				onClick={onStopSharing}
 				variant="destructive-outline"
-				className="absolute top-0 right-6 rounded-full font-medium transition-colors"
+				className="absolute top-0 right-6 rounded-full font-medium transition-colors not-disabled:not-active:not-data-pressed:before:shadow-none dark:not-disabled:before:shadow-none dark:not-disabled:not-active:not-data-pressed:before:shadow-none"
 				aria-label="Stop sharing"
 			>
 				<Square className="w-4 h-4" fill="currentColor" />
