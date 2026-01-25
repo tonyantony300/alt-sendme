@@ -2,13 +2,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod platform;
 mod state;
 mod tray;
 mod version;
 
 use commands::{
-    check_path_type, get_file_size, get_sharing_status, get_transport_status, receive_file,
-    start_sharing, stop_sharing,
+    check_launch_intent, check_path_type, get_file_size, get_sharing_status, get_transport_status,
+    receive_file, start_sharing, stop_sharing,
 };
 use state::AppState;
 use std::fs;
@@ -59,7 +60,7 @@ fn main() {
         .init();
 
     tracing::info!(
-        "Starting AltSendMe Desktop application v{}",
+        "Starting AltSendme Desktop application v{}",
         version::get_app_version()
     );
 
@@ -76,7 +77,26 @@ fn main() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
-        .manage(Arc::new(tokio::sync::Mutex::new(AppState::default())))
+        .plugin(tauri_plugin_shell::init())
+        .manage(Arc::new(tokio::sync::Mutex::new({
+            // Check for launch args (potential file path from context menu)
+            let args: Vec<String> = std::env::args().skip(1).collect();
+            let launch_intent = if !args.is_empty() {
+                // If the first argument doesn't start with -, treat it as a path
+                if !args[0].starts_with("-") {
+                    Some(args[0].clone())
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+            
+            AppState {
+                launch_intent,
+                ..Default::default()
+            }
+        })))
         .invoke_handler(tauri::generate_handler![
             start_sharing,
             stop_sharing,
@@ -85,6 +105,10 @@ fn main() {
             check_path_type,
             get_transport_status,
             get_file_size,
+            check_launch_intent,
+            // TODO: Unimplemented because settings route is WIP
+            // register_context_menu,
+            // unregister_context_menu,
         ])
         .setup(|app| {
             // Clean up any orphaned .sendme-* directories from previous runs
@@ -103,6 +127,18 @@ fn main() {
                     let _ = window.set_decorations(false);
                 }
             }
+            
+            // Auto-register context menu on Windows
+            #[cfg(target_os = "windows")]
+            {
+                // We do this in a separate thread/task to not block startup significantly, though reg operations are fast
+                std::thread::spawn(|| {
+                    if let Err(e) = crate::platform::windows::context_menu::register_context_menu() {
+                         tracing::warn!("Failed to auto-register context menu: {}", e);
+                    }
+                });
+            }
+
             tray::setup_tray(&app.handle())?;
             Ok(())
         })

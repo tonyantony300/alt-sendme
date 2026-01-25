@@ -5,6 +5,9 @@ import { FrameHeader, FramePanel, Frame } from '@/components/ui/frame'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { useTranslation } from '@/i18n'
 import { useState, useRef, useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import { useSenderStore } from '@/store/sender-store'
+
 export function IndexPage() {
 	const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
 	const [isSharing, setIsSharing] = useState(false)
@@ -12,9 +15,38 @@ export function IndexPage() {
 	const isInitialRender = useRef(false)
 	const { t } = useTranslation()
 
+	// Store actions
+	const setSelectedPath = useSenderStore((state) => state.setSelectedPath)
+	const setPathType = useSenderStore((state) => state.setPathType)
+
 	useEffect(() => {
 		isInitialRender.current = true
-	}, [])
+
+		// Check for launch intent (file passed via right-click context menu)
+		const checkIntent = async () => {
+			try {
+				const path = await invoke<string | null>('check_launch_intent')
+				if (path) {
+					console.log('Launch intent detected:', path)
+					setActiveTab('send')
+					setSelectedPath(path)
+
+					// Determine path type
+					try {
+						const type = await invoke<string>('check_path_type', { path })
+						setPathType(type as 'file' | 'directory')
+					} catch (e) {
+						console.error('Failed to check path type for intent:', e)
+						setPathType(null)
+					}
+				}
+			} catch (error) {
+				console.error('Failed to check launch intent:', error)
+			}
+		}
+
+		checkIntent()
+	}, [setSelectedPath, setPathType])
 
 	// Example: Routes can be accessed at different paths
 	// You can navigate using: import { useNavigate } from 'react-router-dom'

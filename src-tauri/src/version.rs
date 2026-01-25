@@ -1,7 +1,7 @@
+use std::env;
+
 pub fn get_app_version() -> String {
-    // APP_VERSION is set at compile time by build.rs from package.json
-    // Using env!() macro to read compile-time environment variable
-    env!("APP_VERSION").to_string()
+    env!("CARGO_PKG_VERSION").to_string()
 }
 
 #[cfg(test)]

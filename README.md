@@ -218,7 +218,7 @@ It’s the best place to get context, align on direction, and collaborate with t
 
 4. **Build for production** (optional):
    ```bash
-   npm run app:build --no-bundle
+   npm run app:build -- --no-bundle
    ```
 
 
