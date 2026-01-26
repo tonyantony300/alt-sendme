@@ -46,7 +46,7 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let mut builder = TrayIconBuilder::new()
         .menu(&menu)
         .show_menu_on_left_click(false)
-        .tooltip("AltSendMe")
+        .tooltip("AltSendme")
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "open" => {
                 open_and_focus(app);
@@ -59,7 +59,7 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
                 // let handle = app.clone();
                 // handle
                 //     .dialog()
-                //     .message("Are you sure you want to quit AltSendMe?")
+                //     .message("Are you sure you want to quit AltSendme?")
                 //     .title("Confirm exit")
                 //     .buttons(tauri_plugin_dialog::MessageDialogButtons::OkCancel)
                 //     .kind(tauri_plugin_dialog::MessageDialogKind::Warning)
