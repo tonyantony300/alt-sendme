@@ -132,11 +132,11 @@ AltSendme uses open-source public relay servers to support establishing direct c
 
 ## Roadmap 🚧
 
--  Better support for Linux distros, Windows and mac.
--  Mobile versions
+- Better support for Linux distros, Windows and mac.
+- Mobile versions
 - Faster transfers
--  Easier transfers
--  Better insights into transfer process and system/network info
+- Easier transfers
+- Better insights into transfer process and system/network info
 - Advanced user interface for power users and simple functional UI for those who just want to share stuff.
 - Features for those who needs better privacy
 - Features for those who wants speed and convenience
@@ -151,6 +151,43 @@ It’s the best place to get context, align on direction, and collaborate with t
 
 ## Supported Languages
  🇺🇸 🇷🇺 🇷🇸 🇫🇷 🇨🇳 🇹🇼 🇩🇪 🇯🇵 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷 🇮🇳 🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩
+
+## Troubleshooting
+
+### 1. AltSendme Won't Launch on Windows (Missing Edge WebView2 Runtime)
+
+#### Symptom
+
+- When you double-click `AltSendme.exe`, nothing happens. No window appears, and Task Manager does not show the process.
+- This can affect both the standard installer and the portable version.
+
+#### Cause
+
+- Microsoft Edge WebView2 Runtime is either missing, outdated, or improperly installed on your system.  
+  AltSendme depends on WebView2 to render the interface on Windows.
+
+#### How to Fix
+
+1. **Check if WebView2 is installed**
+   - Open **Add or Remove Programs** (a.k.a. *Apps & features*) on Windows.
+   - Look for **Microsoft Edge WebView2 Runtime**.
+
+2. **Install or Update WebView2**
+   - Download the WebView2 Runtime directly from Microsoft: [link](https://developer.microsoft.com/en-us/microsoft-edge/webview2?form=MA13LH).
+   - If you prefer an offline installer, download the offline package and run it as an Administrator.
+
+3. **Re-run AltSendme**
+   - After installing/updating WebView2, launch `AltSendme.exe` again.
+   - If you still encounter problems, reboot your PC and try again.
+
+#### Additional Tips
+
+- If reinstalling once doesn’t work, uninstall Edge WebView2 completely, then reinstall it with Administrator privileges.
+- Verify your Windows installation has the latest updates from Microsoft.
+
+#### Still Stuck?
+
+- Head over to our [Discord](https://discord.gg/xwb7z22Eve) server and open a support discussion with detailed logs of your environment and the steps you’ve taken.
 
 
 ## Development Setup
