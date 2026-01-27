@@ -1,5 +1,6 @@
 // TODO: Currently commands for unregistering the context menu is commented out, as it is not yet implemented when the settings route is built: create a toggle for context menu
 
+#[cfg(target_os = "windows")]
 use std::path::PathBuf;
 #[cfg(target_os = "windows")]
 use winreg::enums::*;
@@ -131,6 +132,7 @@ fn notify_icon_change() {
 
 // Stubs for non-Windows platforms
 #[cfg(not(target_os = "windows"))]
+#[allow(dead_code)] // Stub function for API consistency, may be used when settings route is implemented
 pub fn register_context_menu() -> anyhow::Result<()> {
     Ok(())
 }
