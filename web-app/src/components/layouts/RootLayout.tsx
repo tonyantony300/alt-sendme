@@ -3,11 +3,13 @@ import { AppProviders } from './AppProviders'
 import { AppFooter } from '../AppFooter'
 import { TitleBar } from '../TitleBar'
 import { useTranslation } from '@/i18n'
+import { AppUpdater } from '../common/AppUpdater'
 
 export function RootLayout() {
 	const { t } = useTranslation('common')
 	return (
 		<AppProviders>
+			<AppUpdater />
 			<main className="h-screen flex flex-col relative glass-background select-none bg-background">
 				{IS_LINUX && <TitleBar title={t('appTitle')} />}
 
