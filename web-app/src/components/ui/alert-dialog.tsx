@@ -50,14 +50,16 @@ function AlertDialogViewport({
 
 function AlertDialogPopup({
 	className,
+	backdropClassName,
 	bottomStickOnMobile = true,
 	...props
 }: AlertDialogPrimitive.Popup.Props & {
 	bottomStickOnMobile?: boolean
+	backdropClassName?: string
 }) {
 	return (
 		<AlertDialogPortal>
-			<AlertDialogBackdrop />
+			<AlertDialogBackdrop className={backdropClassName} />
 			<AlertDialogViewport
 				className={cn(
 					bottomStickOnMobile &&
