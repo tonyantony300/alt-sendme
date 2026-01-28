@@ -28,6 +28,7 @@ sendme = { path = "../sendme" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"
+tauri-plugin-updater = "2.9.0"
 
 [features]
 default = ["custom-protocol"]

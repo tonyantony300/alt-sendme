@@ -63,7 +63,14 @@
       }
     }
   },
-  "plugins": {},
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/tonyantony300/alt-sendme/releases/latest/download/latest.json"
+      ],
+      "pubkey": "ADD_PUBLIC_KEY_HERE"
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
