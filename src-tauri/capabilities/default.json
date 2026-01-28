@@ -2,7 +2,9 @@
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "default",
 	"description": "enables the default permissions",
-	"windows": ["main"],
+	"windows": [
+		"main"
+	],
 	"permissions": [
 		"core:default",
 		"core:webview:allow-set-webview-zoom",
@@ -16,6 +18,7 @@
 		"dialog:default",
 		"shell:default",
 		"shell:allow-spawn",
-		"shell:allow-open"
+		"shell:allow-open",
+		"updater:default"
 	]
 }
