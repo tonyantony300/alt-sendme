@@ -68,7 +68,7 @@
       "endpoints": [
         "https://github.com/tonyantony300/alt-sendme/releases/latest/download/latest.json"
       ],
-      "pubkey": "ADD_PUBLIC_KEY_HERE"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMzRTE3OEU4QjYyQkIzNzMKUldSenN5dTI2SGpoTS9PZ21kbmYzUkJ3Q1VKa2FtdEllVWJ4N3QwWnRGZmZId0RPM3BlQzdxVmQK"
     }
   },
   "bundle": {
