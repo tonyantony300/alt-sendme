@@ -6,7 +6,7 @@ import { PulseAnimation } from '../common/PulseAnimation'
 import { TransferSuccessScreen } from '../common/TransferSuccessScreen'
 import {
 	AlertDialog,
-	AlertDialogAction,
+	AlertDialogClose,
 	AlertDialogContent,
 	AlertDialogDescription,
 	AlertDialogFooter,
@@ -15,6 +15,7 @@ import {
 } from '../ui/alert-dialog'
 import { ReceivingActiveCard } from './ReceivingActiveCard'
 import { TicketInput } from './TicketInput'
+import { Button } from '../ui/button'
 
 interface ReceiverProps {
 	onTransferStateChange: (isReceiving: boolean) => void
@@ -48,7 +49,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 
 	return (
 		<div
-			className="p-6 space-y-6 relative h-[28rem] overflow-y-auto flex flex-col"
+			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
 			style={{ color: 'var(--app-main-view-fg)' }}
 		>
 			{!isReceiving ? (
@@ -61,14 +62,15 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 							>
 								{t('common:receiver.title')}
 							</h2>
-							<button
+							<Button
+								size="icon-sm"
 								type="button"
+								variant="ghost"
 								onClick={() => setShowInstructionsDialog(true)}
-								className="p-1 hover:bg-white/10 rounded-full transition-colors absolute top-6 right-6"
-								style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+								className="absolute top-6 right-6"
 							>
-								<Info size={24} />
-							</button>
+								<Info />
+							</Button>
 						</div>
 						<p
 							className="text-sm"
@@ -102,7 +104,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 					<div className="text-center">
 						<PulseAnimation
 							isTransporting={isTransporting}
-							isCompleted={isCompleted}
 							className="mx-auto my-4 flex items-center justify-center"
 						/>
 					</div>
@@ -130,9 +131,10 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogAction onClick={closeAlert}>
-							{t('common:ok')}
-						</AlertDialogAction>
+						<AlertDialogClose
+							onClick={closeAlert}
+							render={<Button size="sm">{t('common:ok')}</Button>}
+						/>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
@@ -147,10 +149,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 							{t('common:receiver.howToReceive')}
 						</AlertDialogTitle>
 						<AlertDialogDescription></AlertDialogDescription>
-						<ol
-							className="text-sm space-y-2 list-decimal list-inside mt-2"
-							style={{ color: 'rgba(255, 255, 255, 0.8)' }}
-						>
+						<ol className="text-sm space-y-2 list-decimal list-inside mt-2">
 							<li>{t('common:receiver.instruction1')}</li>
 							<li>{t('common:receiver.instruction2')}</li>
 							<li>{t('common:receiver.instruction3')}</li>
@@ -159,9 +158,10 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 						</ol>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogAction onClick={() => setShowInstructionsDialog(false)}>
-							{t('common:ok')}
-						</AlertDialogAction>
+						<AlertDialogClose
+							render={<Button size="sm">{t('common:ok')}</Button>}
+							onClick={() => setShowInstructionsDialog(false)}
+						></AlertDialogClose>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>

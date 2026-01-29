@@ -6,6 +6,12 @@ import type {
 	TicketDisplayProps,
 } from '../../types/sender'
 import { TransferProgressBar } from '../common/TransferProgressBar'
+import { StatusIndicator } from '../common/StatusIndicator'
+import { Button } from '../ui/button'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
+import { Label } from '../ui/label'
+import { Switch } from '../ui/switch'
+import { toastManager } from '../ui/toast'
 
 export function SharingActiveCard({
 	selectedPath,
@@ -16,16 +22,38 @@ export function SharingActiveCard({
 	isTransporting,
 	isCompleted,
 	isBroadcastMode,
+	activeConnectionCount = 0,
 	onCopyTicket,
 	onStopSharing,
-	onToggleBroadcast,
+	onToggleBroadcast: _onToggleBroadcast,
 }: SharingControlsProps) {
 	const { t } = useTranslation()
-
-	const getStatusColor = () => {
-		if (isCompleted) return 'rgb(45, 120, 220)'
-		if (isTransporting) return 'rgba(37, 211, 101, 0.687)'
-		return '#B7B7B7'
+	const onToggleBroadcast = () => {
+		if (_onToggleBroadcast) {
+			const isTurningOn = !isBroadcastMode
+			_onToggleBroadcast()
+			// Only show toast notification when turning broadcast mode ON, not for private sharing
+			if (isTurningOn) {
+				const toastId = crypto.randomUUID()
+				toastManager.add({
+					title: t('common:sender.broadcastMode.on.label'),
+					id: toastId,
+					description: t('common:sender.broadcastMode.on.description'),
+					type: 'info',
+					actionProps: {
+						children: t('common:undo'),
+						onClick: () => {
+							_onToggleBroadcast?.()
+							toastManager.close(toastId)
+						},
+					},
+				})
+				// Auto-close "You are broadcasting" notification after 1 seconds
+				setTimeout(() => {
+					toastManager.close(toastId)
+				}, 1500)
+			}
+		}
 	}
 
 	const getStatusText = () => {
@@ -34,7 +62,6 @@ export function SharingActiveCard({
 		return t('common:sender.listeningForConnection')
 	}
 
-	const statusColor = getStatusColor()
 	const statusText = getStatusText()
 
 	const [cumulativeBytesTransferred, setCumulativeBytesTransferred] =
@@ -125,44 +152,47 @@ export function SharingActiveCard({
 	const folderProgress =
 		isFolderTransfer && transferProgress
 			? {
-				bytesTransferred: totalTransferredBytes,
-				totalBytes: transferProgress.totalBytes,
-				speedBps: calculatedSpeed,
-				percentage:
-					transferProgress.totalBytes > 0
-						? (totalTransferredBytes / transferProgress.totalBytes) * 100
-						: 0,
-			}
+					bytesTransferred: totalTransferredBytes,
+					totalBytes: transferProgress.totalBytes,
+					speedBps: calculatedSpeed,
+					percentage:
+						transferProgress.totalBytes > 0
+							? (totalTransferredBytes / transferProgress.totalBytes) * 100
+							: 0,
+				}
 			: null
+
+	// Default progress object when transferProgress is not yet available
+	const defaultProgress = {
+		bytesTransferred: 0,
+		totalBytes: 0,
+		speedBps: 0,
+		percentage: 0,
+	}
+
+	// Determine which progress object to use
+	const progressToDisplay = isTransporting
+		? folderProgress || transferProgress || defaultProgress
+		: null
 
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
-				<p
-					className="text-xs mb-4 max-w-[30rem] truncate"
-					style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-				>
+				<p className="text-xs mb-4 max-w-120 truncate">
 					<strong className="mr-1">{t('common:sender.fileLabel')}</strong>{' '}
 					{selectedPath?.split('/').pop()}
 				</p>
 
-				<div className="flex items-center mb-2">
-					<div
-						className="h-2 w-2 rounded-full mr-2"
-						style={{ backgroundColor: statusColor }}
-					></div>
-					<p className="text-sm font-medium" style={{ color: statusColor }}>
-						{statusText}
-					</p>
-				</div>
+				<StatusIndicator
+					isCompleted={isCompleted}
+					isTransporting={isTransporting}
+					statusText={statusText}
+					activeConnectionCount={activeConnectionCount}
+					isBroadcastMode={isBroadcastMode}
+				/>
 			</div>
 
-			<p
-				className="text-xs text-center"
-				style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-			>
-				{t('common:sender.keepAppOpen')}
-			</p>
+			<p className="text-xs text-center">{t('common:sender.keepAppOpen')}</p>
 
 			{!isTransporting && ticket && (
 				<TicketDisplay
@@ -174,27 +204,20 @@ export function SharingActiveCard({
 				/>
 			)}
 
+			{isTransporting && progressToDisplay && (
+				<TransferProgressBar progress={progressToDisplay} />
+			)}
 
-			{isTransporting &&
-				transferProgress &&
-				(folderProgress ? (
-					<TransferProgressBar progress={folderProgress} />
-				) : (
-					<TransferProgressBar progress={transferProgress} />
-				))}
-
-			<button
+			<Button
+				size="icon-lg"
 				type="button"
 				onClick={onStopSharing}
-				className="absolute top-0 right-6 w-10 h-10 rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center p-0"
-				style={{
-					backgroundColor: 'var(--app-destructive)',
-					color: 'var(--app-destructive-fg)',
-				}}
+				variant="destructive-outline"
+				className="absolute top-0 right-6 rounded-full font-medium transition-colors not-disabled:not-active:not-data-pressed:before:shadow-none dark:not-disabled:before:shadow-none dark:not-disabled:not-active:not-data-pressed:before:shadow-none"
 				aria-label="Stop sharing"
 			>
 				<Square className="w-4 h-4" fill="currentColor" />
-			</button>
+			</Button>
 		</div>
 	)
 }
@@ -221,74 +244,46 @@ export function TicketDisplay({
 					{t('common:sender.shareThisTicket')}
 				</p>
 				{isBroadcastMode !== undefined && onToggleBroadcast && (
-					<div className="flex items-center gap-2">
-						<label
-							htmlFor="broadcast-toggle"
-							className="text-sm font-medium cursor-pointer"
-							style={{ color: 'var(--app-main-view-fg)' }}
-						>
-							{t('common:sender.broadcastMode')}
-						</label>
-						<button
-							id="broadcast-toggle"
-							type="button"
-							role="switch"
-							aria-checked={isBroadcastMode}
-							onClick={onToggleBroadcast}
-							className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-							style={{
-								backgroundColor: isBroadcastMode
-									? 'var(--app-primary)'
-									: 'rgba(255, 255, 255, 0.2)',
-							}}
-						>
-							<span
-								className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-								style={{
-									transform: isBroadcastMode ? 'translateX(24px)' : 'translateX(4px)',
-								}}
-							/>
-						</button>
+					<div className="flex items-start gap-2">
+						<Label htmlFor={'broadcast-toggle'}>
+							{t('common:sender.broadcastMode.index')}
+						</Label>
+						<Switch
+							checked={isBroadcastMode}
+							onCheckedChange={onToggleBroadcast}
+						/>
 					</div>
 				)}
 			</div>
-			<div className="flex gap-2">
-				<input
-					type="text"
-					value={ticket}
-					readOnly
-					className="flex-1 p-3 rounded-md text-xs font-mono"
-					style={{
-						backgroundColor: 'rgba(255, 255, 255, 0.1)',
-						border: '1px solid rgba(255, 255, 255, 0.2)',
-						color: 'var(--app-main-view-fg)',
-					}}
-				/>
-				<button
-					type="button"
-					onClick={onCopyTicket}
-					className="px-3 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-					style={{
-						backgroundColor: copySuccess
-							? 'var(--app-primary)'
-							: 'rgba(255, 255, 255, 0.1)',
-						border: '1px solid rgba(255, 255, 255, 0.2)',
-						color: copySuccess
-							? 'var(--app-primary-fg)'
-							: 'var(--app-main-view-fg)',
-					}}
-					title={t('common:sender.copyToClipboard')}
-				>
-					{copySuccess ? (
-						<CheckCircle className="h-4 w-4" />
-					) : (
-						<Copy className="h-4 w-4" />
-					)}
-				</button>
-			</div>
-			<p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+			<InputGroup>
+				<InputGroupInput type="text" value={ticket} readOnly />
+				<InputGroupAddon align="inline-end">
+					<Button
+						type="button"
+						size="icon-xs"
+						onClick={onCopyTicket}
+						style={{
+							backgroundColor: copySuccess
+								? 'var(--app-primary)'
+								: 'rgba(255, 255, 255, 0.1)',
+							border: '1px solid rgba(255, 255, 255, 0.2)',
+							color: copySuccess
+								? 'var(--app-primary-fg)'
+								: 'var(--app-main-view-fg)',
+						}}
+						title={t('common:sender.copyToClipboard')}
+					>
+						{copySuccess ? (
+							<CheckCircle className="h-4 w-4" />
+						) : (
+							<Copy className="h-4 w-4" />
+						)}
+					</Button>
+				</InputGroupAddon>
+			</InputGroup>
+			<p className="text-xs text-muted-foreground">
 				{t('common:sender.sendThisTicket')}
 			</p>
-		</div >
+		</div>
 	)
 }

@@ -1,13 +1,15 @@
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogContent,
 	AlertDialogDescription,
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
+	AlertDialogClose,
 } from './ui/alert-dialog'
 import type { AlertType } from '../types/ui'
+import { useTranslation } from '@/i18n'
+import { buttonVariants } from './ui/button'
 
 interface AppAlertDialogProps {
 	isOpen: boolean
@@ -23,6 +25,7 @@ export function AppAlertDialog({
 	description,
 	onClose,
 }: AppAlertDialogProps) {
+	const { t } = useTranslation()
 	return (
 		<AlertDialog open={isOpen} onOpenChange={onClose}>
 			<AlertDialogContent>
@@ -31,7 +34,12 @@ export function AppAlertDialog({
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogAction onClick={onClose}>OK</AlertDialogAction>
+					<AlertDialogClose
+						onClick={onClose}
+						className={buttonVariants({ variant: 'default', size: 'sm' })}
+					>
+						{t('common:close')}
+					</AlertDialogClose>
 				</AlertDialogFooter>
 			</AlertDialogContent>
 		</AlertDialog>

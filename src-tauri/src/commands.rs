@@ -198,3 +198,37 @@ pub async fn get_transport_status(
     let app_state = state.lock().await;
     Ok(app_state.is_transporting)
 }
+
+/// Check if there was a launch intent (file path passed via CLI)
+/// Returns the path if present and clears it from state
+#[tauri::command]
+pub async fn check_launch_intent(state: State<'_, AppStateMutex>) -> Result<Option<String>, String> {
+    let mut app_state = state.lock().await;
+    Ok(app_state.launch_intent.take())
+}
+
+// TODO: Unimplemented because settings route is WIP
+/*
+/// Register Windows Context Menu
+#[tauri::command]
+pub async fn register_context_menu() -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        crate::platform::windows::context_menu::register_context_menu().map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "windows"))]
+    Ok(())
+}
+
+/// Unregister Windows Context Menu
+#[tauri::command]
+pub async fn unregister_context_menu() -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        // crate::platform::windows::context_menu::unregister_context_menu().map_err(|e| e.to_string())
+        Ok(())
+    }
+    #[cfg(not(target_os = "windows"))]
+    Ok(())
+}
+*/

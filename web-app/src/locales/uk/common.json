@@ -32,7 +32,17 @@
 		"browseFile": "Вибрати файл",
 		"browseFolder": "Вибрати папку",
 		"copyToClipboard": "Скопіювати",
-		"broadcastMode": "Трансляція"
+		"broadcastMode": {
+			"index": "Трансляція",
+			"on": {
+				"label": "Ви транслюєте",
+				"description": "Будь-хто з тікетом може завантажити файл."
+			},
+			"off": {
+				"label": "Приватна передача",
+				"description": "Тільки людина, з якою ви ділитесь тікетом, може завантажити файл."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Отримати файли",
@@ -51,12 +61,13 @@
 		"connectingToSender": "Підключення до відправника",
 		"downloadingInProgress": "Завантаження в процесі",
 		"downloadCompleted": "Завантаження завершено",
-		"stopReceiving": "Припинити завантаження"
+		"stopReceiving": "Припинити завантаження",
+		"download": "Завантажити"
 	},
 	"transfer": {
 		"progress": "Прогрес передачі",
 		"speed": "Швидкість",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "Залишилося часу",
 		"calculating": "Розрахунок...",
 		"complete": "Передача завершена!",

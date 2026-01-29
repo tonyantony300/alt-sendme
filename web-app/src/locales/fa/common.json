@@ -32,7 +32,17 @@
 		"browseFile": "انتخاب فایل",
 		"browseFolder": "انتخاب فولدر",
 		"copyToClipboard": "کپی در کلیپ‌بورد",
-		"broadcastMode": "پخش"
+		"broadcastMode": {
+			"index": "پخش",
+			"on": {
+				"label": "شما در حال پخش هستید",
+				"description": "هر کسی که تیکت را داشته باشد می‌تواند فایل را دانلود کند."
+			},
+			"off": {
+				"label": "اشتراک‌گذاری خصوصی",
+				"description": "فقط کسی که تیکت را با او به اشتراک گذاشته‌اید می‌تواند فایل را دانلود کند."
+			}
+		}
 	},
 	"receiver": {
 		"title": "دریافت فایل",
@@ -51,12 +61,13 @@
 		"connectingToSender": "در حال اتصال...",
 		"downloadingInProgress": "در حال دانلود...",
 		"downloadCompleted": "دانلود کامل شد",
-		"stopReceiving": "توقف دریافت"
+		"stopReceiving": "توقف دریافت",
+		"download": "دانلود"
 	},
 	"transfer": {
 		"progress": "پیشرفت انتقال",
 		"speed": "سرعت",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "زمان باقی‌مانده",
 		"calculating": "در حال محاسبه...",
 		"complete": "انتقال کامل شد!",

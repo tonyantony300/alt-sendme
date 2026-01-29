@@ -32,7 +32,17 @@
 		"browseFile": "浏览文件",
 		"browseFolder": "浏览文件夹",
 		"copyToClipboard": "复制到剪贴板",
-		"broadcastMode": "广播"
+		"broadcastMode": {
+			"index": "广播",
+			"on": {
+				"label": "您正在广播",
+				"description": "任何拥有票据的人都可以下载文件。"
+			},
+			"off": {
+				"label": "私人共享",
+				"description": "只有您与之共享票据的人才能下载文件。"
+			}
+		}
 	},
 	"receiver": {
 		"title": "接收文件",
@@ -51,12 +61,13 @@
 		"connectingToSender": "正在连接到发送者",
 		"downloadingInProgress": "正在下载",
 		"downloadCompleted": "下载完成",
-		"stopReceiving": "停止接收"
+		"stopReceiving": "停止接收",
+		"download": "下载"
 	},
 	"transfer": {
 		"progress": "传输进度",
 		"speed": "速度",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "剩余时间",
 		"calculating": "计算中...",
 		"complete": "传输完成！",

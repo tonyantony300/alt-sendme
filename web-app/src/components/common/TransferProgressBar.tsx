@@ -27,10 +27,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 	return (
 		<div className="space-y-3">
 			<div className="space-y-2">
-				<div
-					className="flex items-center justify-between text-xs"
-					style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-				>
+				<div className="flex items-center justify-between text-xs">
 					<span>{t('common:transfer.progress')}</span>
 					<span>{percentage.toFixed(1)}%</span>
 				</div>
@@ -54,9 +51,8 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 							<div
 								// biome-ignore lint/suspicious/noArrayIndexKey: The values are always static so it is okay
 								key={index}
-								className="relative flex-1 rounded-sm transition-all duration-300 ease-in-out"
+								className="relative flex-1 rounded-sm bg-input transition-all duration-300 ease-in-out"
 								style={{
-									backgroundColor: 'rgba(255, 255, 255, 0.1)',
 									minWidth: '3px',
 									height: '100%',
 								}}
@@ -73,10 +69,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 					})}
 				</div>
 
-				<div
-					className="flex items-center justify-between text-xs"
-					style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-				>
+				<div className="flex items-center justify-between text-xs text-muted-foreground">
 					<span>
 						{t('common:transfer.speed')}: {formatSpeed(progress.speedBps)}
 					</span>
@@ -87,10 +80,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 				</div>
 
 				{progress.etaSeconds !== undefined && (
-					<div
-						className="flex items-center justify-start text-xs"
-						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-					>
+					<div className="flex items-center justify-start text-xs text-muted-foreground">
 						<span className="mr-1">{t('common:transfer.eta')}:</span>
 						<span>{formatETA(progress.etaSeconds)}</span>
 					</div>

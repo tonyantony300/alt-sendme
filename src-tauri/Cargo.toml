@@ -1,6 +1,6 @@
 [package]
 name = "alt-sendme"
-version = "0.2.4"
+version = "0.3.2"
 description = "P2P file sharing with NAT hole punching"
 authors = ["Tony Antony"]
 license = "AGPL 3.0"
@@ -16,6 +16,7 @@ tauri = { version = "2.0", features = ["protocol-asset", "macos-private-api", "t
 tauri-plugin-dialog = "2.0"
 tauri-plugin-opener = "2.0"
 tauri-plugin-os = "2.0"
+tauri-plugin-single-instance = "2.0"
 tauri-plugin-http = "2.0"
 tauri-plugin-shell = "2.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -27,7 +28,12 @@ sendme = { path = "../sendme" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"
+tauri-plugin-updater = "2.9.0"
 
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.52"
+dunce = "1.0"

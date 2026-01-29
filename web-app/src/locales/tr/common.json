@@ -32,7 +32,17 @@
 		"browseFile": "Dosyaya Gözat",
 		"browseFolder": "Klasöre Gözat",
 		"copyToClipboard": "Panoya kopyala",
-		"broadcastMode": "Yayın"
+		"broadcastMode": {
+			"index": "Yayın",
+			"on": {
+				"label": "Yayın yapıyorsunuz",
+				"description": "Anahtara sahip herkes dosyayı indirebilir."
+			},
+			"off": {
+				"label": "Özel paylaşım",
+				"description": "Yalnızca anahtarı paylaştığınız kişi dosyayı indirebilir."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Dosya Al",
@@ -51,12 +61,13 @@
 		"connectingToSender": "Göndericiye bağlanılıyor",
 		"downloadingInProgress": "İndirme işlemi sürüyor",
 		"downloadCompleted": "İndirme tamamlandı",
-		"stopReceiving": "Alımı durdur"
+		"stopReceiving": "Alımı durdur",
+		"download": "İndir"
 	},
 	"transfer": {
 		"progress": "Transfer Süreci",
 		"speed": "Hız",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "Kalan Süre",
 		"calculating": "Hesaplanıyor...",
 		"complete": "Transfer Tamamlandı!",

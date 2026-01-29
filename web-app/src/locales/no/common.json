@@ -32,7 +32,17 @@
 		"browseFile": "Velg fil",
 		"browseFolder": "Velg mappe",
 		"copyToClipboard": "Kopier til utklippstavle",
-		"broadcastMode": "Kringkasting"
+		"broadcastMode": {
+			"index": "Kringkasting",
+			"on": {
+				"label": "Du kringkaster",
+				"description": "Alle med nøkkelen kan laste ned filen."
+			},
+			"off": {
+				"label": "Privat deling",
+				"description": "Bare personen du deler nøkkelen med kan laste ned filen."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Motta filer",
@@ -51,12 +61,13 @@
 		"connectingToSender": "Kobler til avsender",
 		"downloadingInProgress": "Nedlasting pågår",
 		"downloadCompleted": "Nedlasting fullført",
-		"stopReceiving": "Stopp overføring"
+		"stopReceiving": "Stopp overføring",
+		"download": "Last ned"
 	},
 	"transfer": {
 		"progress": "Status",
 		"speed": "Hastighet",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "Tid igjen",
 		"calculating": "Beregner...",
 		"complete": "Overføring fullført!",

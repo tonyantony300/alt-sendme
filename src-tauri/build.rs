@@ -18,10 +18,14 @@ fn main() {
         if let Some(version) = package_json.get("version").and_then(|v| v.as_str()) {
             println!("cargo:rustc-env=APP_VERSION={}", version);
             println!("cargo:rerun-if-changed=package.json");
+        } else {
+            // Fallback to Cargo.toml version if version field is missing
+            println!("cargo:rustc-env=APP_VERSION={}", env!("CARGO_PKG_VERSION"));
+            eprintln!("Warning: version not found in package.json, using Cargo.toml version");
         }
     } else {
         // Fallback to Cargo.toml version if package.json doesn't exist
-        // This should rarely happen, but provides a safety net
+        println!("cargo:rustc-env=APP_VERSION={}", env!("CARGO_PKG_VERSION"));
         eprintln!("Warning: package.json not found, using Cargo.toml version");
     }
 

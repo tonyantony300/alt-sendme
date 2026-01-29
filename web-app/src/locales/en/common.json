@@ -3,6 +3,9 @@
 	"send": "Send",
 	"receive": "Receive",
 	"ok": "OK",
+	"undo": "Undo",
+	"cancel": "Cancel",
+	"confirm": "Confirm",
 	"loading": "Loading...",
 	"browse": "Browse",
 	"donate": "Donate",
@@ -32,7 +35,17 @@
 		"browseFile": "Browse File",
 		"browseFolder": "Browse Folder",
 		"copyToClipboard": "Copy to clipboard",
-		"broadcastMode": "Broadcast"
+		"broadcastMode": {
+			"index": "Broadcast",
+			"on": {
+				"label": "You are broadcasting",
+				"description": "Anyone with the ticket can download the file."
+			},
+			"off": {
+				"label": "Private sharing",
+				"description": "Only the person you share the ticket with can download the file."
+			}
+		}
 	},
 	"receiver": {
 		"title": "Receive Files",
@@ -51,7 +64,8 @@
 		"connectingToSender": "Connecting to sender",
 		"downloadingInProgress": "Downloading in progress",
 		"downloadCompleted": "Download completed",
-		"stopReceiving": "Stop receiving"
+		"stopReceiving": "Stop receiving",
+		"download": "Download"
 	},
 	"transfer": {
 		"progress": "Transfer Progress",

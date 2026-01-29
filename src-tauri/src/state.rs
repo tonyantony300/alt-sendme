@@ -8,6 +8,7 @@ use sendme::SendResult;
 pub struct AppState {
     pub current_share: Option<ShareHandle>,
     pub is_transporting: bool, // True when actual data transfer is happening
+    pub launch_intent: Option<String>, // Path to file/folder passed via CLI (e.g. context menu)
 }
 
 /// Handle for an active sharing session

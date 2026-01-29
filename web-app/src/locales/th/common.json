@@ -32,7 +32,17 @@
 		"browseFile": "เลือกไฟล์",
 		"browseFolder": "เลือกโฟลเดอร์",
 		"copyToClipboard": "คัดลอกไปยังคลิปบอร์ด",
-		"broadcastMode": "บรอดแคสต์"
+		"broadcastMode": {
+			"index": "บรอดแคสต์",
+			"on": {
+				"label": "คุณกำลังบรอดแคสต์",
+				"description": "ใครก็ตามที่มีตั๋วสามารถดาวน์โหลดไฟล์ได้"
+			},
+			"off": {
+				"label": "การแชร์แบบส่วนตัว",
+				"description": "เฉพาะคนที่คุณแชร์ตั๋วด้วยเท่านั้นที่สามารถดาวน์โหลดไฟล์ได้"
+			}
+		}
 	},
 	"receiver": {
 		"title": "รับไฟล์",
@@ -51,12 +61,13 @@
 		"connectingToSender": "กำลังเชื่อมต่อกับผู้ส่ง",
 		"downloadingInProgress": "กำลังดาวน์โหลด",
 		"downloadCompleted": "ดาวน์โหลดเสร็จสมบูรณ์",
-		"stopReceiving": "หยุดรับ"
+		"stopReceiving": "หยุดรับ",
+		"download": "ดาวน์โหลด"
 	},
 	"transfer": {
 		"progress": "ความคืบหน้าการส่ง",
 		"speed": "ความเร็ว",
-"eta": "ETA",
+		"eta": "ETA",
 		"timeRemaining": "เวลาที่เหลือ",
 		"calculating": "กำลังคำนวณ...",
 		"complete": "การส่งเสร็จสมบูรณ์!",

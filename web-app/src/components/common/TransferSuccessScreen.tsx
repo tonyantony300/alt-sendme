@@ -1,7 +1,8 @@
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, ExternalLinkIcon, XCircle } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { trackTransferComplete } from '../../lib/analytics'
 import type { SuccessScreenProps } from '../../types/transfer'
+import { Button } from '../ui/button'
 
 function formatFileSize(bytes: number): string {
 	if (bytes === 0) return 'NA'
@@ -14,7 +15,9 @@ function formatFileSize(bytes: number): string {
 }
 
 function formatDuration(ms: number): string {
-	if (ms < 1000) {
+	if (ms === 0) {
+		return 'NA'
+	} else if (ms < 1000) {
 		return `${ms}ms`
 	} else if (ms < 60000) {
 		return `${(ms / 1000).toFixed(1)}s`
@@ -94,16 +97,10 @@ export function TransferSuccessScreen({
 				</p>
 			</div>
 
-			<div
-				className="bg-opacity-10 rounded-lg p-4 w-full max-w-full"
-				style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-			>
+			<div className="bg-opacity-10 rounded-lg p-4 w-full max-w-full">
 				<div className="space-y-2">
 					<div className="flex justify-between items-center">
-						<span
-							className="text-sm font-medium mr-2"
-							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-						>
+						<span className="text-sm font-medium mr-2">
 							{isDirectory
 								? t('common:transfer.folder')
 								: t('common:transfer.file')}
@@ -111,7 +108,6 @@ export function TransferSuccessScreen({
 						</span>
 						<span
 							className="text-sm truncate max-w-full"
-							style={{ color: 'var(--app-main-view-fg)' }}
 							title={metadata.fileName}
 						>
 							{metadata.fileName}
@@ -120,15 +116,11 @@ export function TransferSuccessScreen({
 
 					{metadata.downloadPath && (
 						<div className="flex justify-between items-center">
-							<span
-								className="text-sm font-medium mr-2"
-								style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-							>
+							<span className="text-sm font-medium mr-2">
 								{t('common:transfer.downloadPath')}:
 							</span>
 							<span
 								className="text-sm truncate max-w-full"
-								style={{ color: 'var(--app-main-view-fg)' }}
 								title={metadata.downloadPath}
 							>
 								{metadata.downloadPath}
@@ -137,54 +129,36 @@ export function TransferSuccessScreen({
 					)}
 
 					<div className="flex justify-between items-center">
-						<span
-							className="text-sm font-medium mr-2"
-							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-						>
+						<span className="text-sm font-medium mr-2">
 							{isDirectory
 								? t('common:transfer.folderSize')
 								: t('common:transfer.fileSize')}
 							:
 						</span>
-						<span
-							className="text-sm"
-							style={{ color: 'var(--app-main-view-fg)' }}
-						>
+						<span className="text-sm">
 							{wasStopped ? 'NA' : formatFileSize(metadata.fileSize)}
 						</span>
 					</div>
 
 					<div className="flex justify-between items-center">
-						<span
-							className="text-sm font-medium mr-2"
-							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-						>
+						<span className="text-sm font-medium mr-2">
 							{t('common:transfer.duration')}:
 						</span>
-						<span
-							className="text-sm"
-							style={{ color: 'var(--app-main-view-fg)' }}
-						>
-							{wasStopped ? '0ms' : formatDuration(metadata.duration)}
+						<span className="text-sm">
+							{wasStopped ? 'NA' : formatDuration(metadata.duration)}
 						</span>
 					</div>
 
 					<div className="flex justify-between items-center">
-						<span
-							className="text-sm font-medium mr-2"
-							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-						>
+						<span className="text-sm font-medium mr-2">
 							{t('common:transfer.avgSpeed')}:
 						</span>
-						<span
-							className="text-sm"
-							style={{ color: 'var(--app-main-view-fg)' }}
-						>
+						<span className="text-sm">
 							{wasStopped
 								? 'NA'
 								: formatSpeed(
-									calculateAverageSpeed(metadata.fileSize, metadata.duration)
-								)}
+										calculateAverageSpeed(metadata.fileSize, metadata.duration)
+									)}
 						</span>
 					</div>
 				</div>
@@ -192,41 +166,23 @@ export function TransferSuccessScreen({
 
 			{isReceiver && onOpenFolder ? (
 				<div className="flex gap-3 w-full max-w-sm">
-					<button
+					<Button
 						type="button"
+						variant="secondary"
 						onClick={onOpenFolder}
-						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-						style={{
-							backgroundColor: 'rgba(255, 255, 255, 0.1)',
-							color: 'var(--app-main-view-fg)',
-						}}
+						className="flex-1 "
 					>
+						<ExternalLinkIcon size={12} />
 						{t('common:transfer.open')}
-					</button>
-					<button
-						type="button"
-						onClick={handleDone}
-						className="flex-1 py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-						style={{
-							backgroundColor: 'var(--app-primary)',
-							color: 'var(--app-primary-fg)',
-						}}
-					>
+					</Button>
+					<Button type="button" className="flex-1" onClick={handleDone}>
 						{t('common:transfer.done')}
-					</button>
+					</Button>
 				</div>
 			) : (
-				<button
-					type="button"
-					onClick={handleDone}
-					className="w-full max-w-sm py-3 px-6 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-					style={{
-						backgroundColor: 'var(--app-primary)',
-						color: 'var(--app-primary-fg)',
-					}}
-				>
+				<Button type="button" className="w-full" onClick={handleDone}>
 					{t('common:transfer.done')}
-				</button>
+				</Button>
 			)}
 		</div>
 	)

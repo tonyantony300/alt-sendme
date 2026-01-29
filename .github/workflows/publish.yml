@@ -29,6 +29,10 @@ jobs:
         with:
           node-version: lts/*
 
+      - name: Set Rust toolchain
+        shell: bash
+        run: echo "toolchain=stable" >> $GITHUB_ENV
+
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -114,7 +118,7 @@ jobs:
           git fetch --tags --force --prune origin
           
           CURRENT_TAG="${{ github.ref_name }}"
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1)
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1 || true)
           
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "No previous tag found, showing all commits"
@@ -157,6 +161,9 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: ./src-tauri
           tagName: ${{ github.ref_name }}
