@@ -213,12 +213,12 @@ It’s the best place to get context, align on direction, and collaborate with t
 
 3. **Run in development mode**:
    ```bash
-   npm run app:dev
+   cargo tauri dev
    ```
 
 4. **Build for production** (optional):
    ```bash
-   npm run app:build -- --no-bundle
+   cargo tauri build
    ```
 
 
