@@ -173,12 +173,12 @@ Check out our [roadmap](https://github.com/users/tonyantony300/projects/4) to st
 
 3. **Run in development mode**:
    ```bash
-   npm run app:dev
+   cargo tauri dev
    ```
 
 4. **Build for production** (optional):
    ```bash
-   npm run app:build --no-bundle
+   cargo tauri build
    ```
 
 

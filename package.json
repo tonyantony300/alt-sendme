@@ -4,8 +4,6 @@
 	"version": "0.2.4",
 	"type": "module",
 	"scripts": {
-		"app:dev": "npx tauri dev",
-		"app:build": "npx tauri build",
 		"dev": "vite",
 		"build": "tsc -b && vite build",
 		"preview": "vite preview",
@@ -19,7 +17,6 @@
 	"dependencies": {
 		"@radix-ui/react-alert-dialog": "^1.1.15",
 		"@tauri-apps/api": "^2.0.0",
-		"@tauri-apps/cli": "^2.9.6",
 		"@tauri-apps/plugin-dialog": "^2.0.0",
 		"@tauri-apps/plugin-opener": "^2.5.2",
 		"clsx": "^2.1.1",
