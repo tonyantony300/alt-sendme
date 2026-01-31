@@ -29,7 +29,7 @@ A free and open-source file transfer tool that harnesses the power of [cutting-e
 
 Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
 
-[Drop your Email for receiving major project updates 📫](https://tally.so/r/ob2Vkx)
+[Receive major project updates 📫](https://tally.so/r/ob2Vkx)
 
 ## Features
 
@@ -69,6 +69,13 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
 </table>
 
+**Windows (Scoop)**  
+
+
+```bash
+scoop bucket add extras
+scoop install extras/altsendme
+```
 
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
@@ -141,12 +148,7 @@ AltSendme uses open-source public relay servers to support establishing direct c
 - Features for those who needs better privacy
 - Features for those who wants speed and convenience
 
-
-## Contributing & Community ❤️
-
-We’d love to meet you! Before diving into code or opening a PR, join our [Discord](https://discord.gg/xwb7z22Eve) to hang out, ask questions, and discuss ideas.
-
-It’s the best place to get context, align on direction, and collaborate with the community.
+[Receive updates 📫](https://tally.so/r/ob2Vkx)
 
 
 ## Supported Languages
@@ -220,11 +222,16 @@ It’s the best place to get context, align on direction, and collaborate with t
    cargo tauri dev
    ```
 
-5. **Build for production** (optional):
+5. **Build locally** :
    ```bash
-   cargo tauri build
+    cargo tauri build --no-bundle
    ```
 
+## Join our [Discord](https://discord.gg/xwb7z22Eve)
+
+The best way to contribute is to join our Discord and say hi. Introduce yourself and share what skills or interests you have - whether that’s coding, testing, design, or something else. You can also raise issues, suggest fixes, or pitch ideas. Maintainers are there to guide you every step of the way.
+
+It’s the best place to get context, align on direction, and collaborate with the [community](https://discord.gg/xwb7z22Eve).
 
 ## License
 

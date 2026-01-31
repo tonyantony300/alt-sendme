@@ -2,6 +2,10 @@
 
 Thank you for your interest in contributing to AltSendme! Your help is appreciated in making file sharing frictionless, fast, and private for everyone.
 
+## Join our [Discord](https://discord.gg/xwb7z22Eve)
+
+The best way to get started is to join our Discord and say hi. Introduce yourself and share what skills or interests you have - whether that’s coding, testing, design, or something else. You can also raise issues, suggest fixes, or pitch ideas. Maintainers are there to guide you every step of the way.
+
 ## How You Can Help
 
 This project welcomes contributions in several key areas:
@@ -98,15 +102,20 @@ Feel free to reach out with questions, ideas, or just to say hello. Discussion a
    npm install
    ```
 
-3. **Run in development mode**:
+3. **Install Tauri**:
    ```bash
-   npm run app:dev
+   cargo install tauri-cli
+
+4. **Run in development mode**:
+   ```bash
+   cargo tauri dev
    ```
 
-4. **Build for production** (optional):
+5. **Build locally** :
    ```bash
-   npm run app:build --no-bundle
+    cargo tauri build --no-bundle
    ```
+
 
 This will start the app with hot reload enabled for both frontend and backend changes.
 
