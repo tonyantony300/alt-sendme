@@ -211,14 +211,18 @@ It’s the best place to get context, align on direction, and collaborate with t
    npm install
    ```
 
-3. **Run in development mode**:
+3. **Install Tauri**:
    ```bash
-   npm run app:dev
+   cargo install tauri-cli
+
+4. **Run in development mode**:
+   ```bash
+   cargo tauri dev
    ```
 
-4. **Build for production** (optional):
+5. **Build for production** (optional):
    ```bash
-   npm run app:build -- --no-bundle
+   cargo tauri build
    ```
 
 
