@@ -59,6 +59,13 @@ fn main() {
         .with_line_number(true)
         .init();
 
+    // Only disable hardware acceleration if running specifically as an AppImage
+    #[cfg(target_os = "linux")]
+    if std::env::var("APPIMAGE").is_ok() {
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+        tracing::debug!("AppImage detected: Disabling DMABUF for stability.");
+    }
+
     tracing::info!(
         "Starting AltSendme Desktop application v{}",
         version::get_app_version()
@@ -77,7 +84,6 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_http::init())
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_shell::init())
         .manage(Arc::new(tokio::sync::Mutex::new({
             // Check for launch args (potential file path from context menu)
