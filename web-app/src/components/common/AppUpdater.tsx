@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { check } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Gift } from 'lucide-react'
 import {
     AlertDialog,
     AlertDialogContent,
@@ -56,8 +56,9 @@ export function AppUpdater() {
     return (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen} >
             <AlertDialogContent backdropClassName="!bg-transparent !backdrop-blur-none"
-  className="fixed bottom-1 left-2 translate-x-0 translate-y-0">
-                <div className="flex p-6">
+  className="fixed bottom-1 left-2 translate-x-0 translate-y-0 w-md">
+                <div className="flex px-5 py-4 items-center gap-2">
+                    <Gift className="w-4 h-4 text-muted-foreground" />
                     <p className="text-sm flex items-center text-muted-foreground">
                         A new version is available - {newVersion}
                     </p>
@@ -71,6 +72,7 @@ export function AppUpdater() {
                         </Button>
                         <Button
                             size="sm"
+                            className="w-24"
                             onClick={handleUpdate}
                             disabled={isUpdating}
                             aria-busy={isUpdating}
