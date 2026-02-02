@@ -7,17 +7,19 @@ import {
     AlertDialogContent,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { IS_ANDROID, IS_TAURI } from '@/lib/platform'
 
 // import { useTranslation } from '@/i18n'
 
 export function AppUpdater() {
     const [isOpen, setIsOpen] = useState(false)
     const [isUpdating, setIsUpdating] = useState(false)
-     const [newVersion, setNewVersion] = useState<string>('') // kept for now in case used elsewhere
+    const [newVersion, setNewVersion] = useState<string>('') // kept for now in case used elsewhere
     // TODO: translation support to be implemented
     // const { t } = useTranslation()
 
     useEffect(() => {
+        if (!IS_TAURI || IS_ANDROID) return
         const checkUpdate = async () => {
             try {
                 const update = await check()
@@ -36,6 +38,8 @@ export function AppUpdater() {
 
         checkUpdate()
     }, [])
+
+    if (!IS_TAURI || IS_ANDROID) return null
 
     const handleUpdate = async () => {
         setIsUpdating(true)

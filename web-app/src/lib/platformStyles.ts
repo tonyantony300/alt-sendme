@@ -1,3 +1,5 @@
+import { IS_LINUX, IS_MACOS, IS_TAURI, IS_WINDOWS } from './platform'
+
 export function getPlatformAlpha(): number {
 	if (!IS_TAURI) return 1
 

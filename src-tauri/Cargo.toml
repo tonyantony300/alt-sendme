@@ -7,12 +7,16 @@ license = "AGPL 3.0"
 edition = "2021"
 rust-version = "1.81"
 
+[lib]
+name = "alt_sendme_lib"
+crate-type = ["cdylib", "rlib", "staticlib"]
+
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
 serde_json = "1.0"
 
 [dependencies]
-tauri = { version = "2.0", features = ["protocol-asset", "macos-private-api", "tray-icon"] }
+tauri = { version = "2.0", features = ["protocol-asset", "tray-icon"] }
 tauri-plugin-dialog = "2.0"
 tauri-plugin-opener = "2.0"
 tauri-plugin-os = "2.0"

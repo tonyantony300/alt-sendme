@@ -14,15 +14,9 @@ export default defineConfig({
 		},
 	},
 	define: {
-		IS_TAURI: JSON.stringify(!!process.env.TAURI_ENV_PLATFORM),
-		IS_MACOS: JSON.stringify(
-			process.env.TAURI_ENV_PLATFORM?.includes('darwin') ?? false
-		),
-		IS_WINDOWS: JSON.stringify(
-			process.env.TAURI_ENV_PLATFORM?.includes('windows') ?? false
-		),
-		IS_LINUX: JSON.stringify(
-			process.env.TAURI_ENV_PLATFORM?.includes('linux') ?? false
+		// Single string so platform.ts can derive flags; Vite replaces import.meta.env reliably
+		'import.meta.env.TAURI_PLATFORM': JSON.stringify(
+			process.env.TAURI_ENV_PLATFORM ?? ''
 		),
 	},
 	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

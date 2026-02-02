@@ -56,6 +56,19 @@ fn emit_event_with_payload(app_handle: &AppHandle, event_name: &str, payload: &s
     }
 }
 
+/// Default directory for saving received files. On Android, dirs::download_dir() may not
+/// be suitable; the frontend should prefer passing a path from the save dialog.
+fn default_output_dir() -> PathBuf {
+    #[cfg(target_os = "android")]
+    {
+        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        dirs::download_dir().unwrap_or_else(|| std::env::current_dir().unwrap())
+    }
+}
+
 pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: AppHandle) -> anyhow::Result<ReceiveResult> {
     let ticket = BlobTicket::from_str(&ticket_str)?;
     
@@ -202,9 +215,7 @@ pub async fn download(ticket_str: String, options: ReceiveOptions, app_handle: A
         }
         
         // Determine output directory
-        let output_dir = options.output_dir.unwrap_or_else(|| {
-            dirs::download_dir().unwrap_or_else(|| std::env::current_dir().unwrap())
-        });
+        let output_dir = options.output_dir.unwrap_or_else(|| default_output_dir());
         
         export(&db, collection, &output_dir).await?;
         

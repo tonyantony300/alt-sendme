@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "tauri": "tauri",
+    "android:dev": "tauri android dev",
+    "android:build": "tauri android build",
     "release": "node ./scripts/release.js",
     "sync-version": "node ./scripts/sync-version.js",
     "validate-version": "node ./scripts/validate-version.js",
@@ -35,6 +38,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
     "@biomejs/biome": "^2.3.11",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^20.0.0",
