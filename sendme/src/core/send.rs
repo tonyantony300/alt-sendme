@@ -186,19 +186,37 @@ async fn import(
     let root = path.parent().context("context get parent")?;
     let files = WalkDir::new(path.clone()).into_iter();
     let data_sources: Vec<(String, PathBuf)> = files
-        .map(|entry| {
-            let entry = entry?;
+        .filter_map(|entry| {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(e) => {
+                    tracing::warn!("skipping inaccessible entry: {}", e);
+                    return None;
+                }
+            };
             if !entry.file_type().is_file() {
-                return Ok(None);
+                return None;
             }
             let path = entry.into_path();
-            let relative = path.strip_prefix(root)?;
-            let name = canonicalized_path_to_string(relative, true)?;
-            anyhow::Ok(Some((name, path)))
+            let relative = match path.strip_prefix(root) {
+                Ok(r) => r,
+                Err(e) => {
+                    tracing::warn!("skipping {}: {}", path.display(), e);
+                    return None;
+                }
+            };
+            match canonicalized_path_to_string(relative, true) {
+                Ok(name) => Some((name, path)),
+                Err(e) => {
+                    tracing::warn!("skipping {}: {}", path.display(), e);
+                    None
+                }
+            }
         })
-        .filter_map(Result::transpose)
-        .collect::<anyhow::Result<Vec<_>>>()?;
-    
+        .collect();
+
+    anyhow::ensure!(!data_sources.is_empty(), "no valid files to share");
+
     let mut names_and_tags = n0_future::stream::iter(data_sources)
         .map(|(name, path)| {
             let db = db.clone();
