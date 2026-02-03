@@ -28,6 +28,7 @@ const LANGUAGES = [
 	{ value: 'tr', label: 'Türkçe' },
 	{ value: 'no', label: 'Norsk' },
 	{ value: 'bn', label: 'বাংলা' },
+	{ value: 'hu', label: 'Magyar' },
 ]
 
 export function LanguageSwitcher(props: ButtonProps) {
