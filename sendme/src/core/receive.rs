@@ -285,10 +285,12 @@ fn get_export_path(root: &Path, name: &str) -> anyhow::Result<PathBuf> {
 }
 
 fn validate_path_component(component: &str) -> anyhow::Result<()> {
-    anyhow::ensure!(
-        !component.contains('/'),
-        "path components must not contain the only correct path separator, /"
-    );
+    anyhow::ensure!(!component.is_empty(), "empty path component");
+    anyhow::ensure!(!component.contains('/'), "contains /");
+    anyhow::ensure!(!component.contains('\\'), "contains \\");
+    anyhow::ensure!(component != "..", "parent directory traversal");
+    anyhow::ensure!(component != ".", "current directory reference");
+    anyhow::ensure!(!component.contains('\0'), "contains null byte");
     Ok(())
 }
 
