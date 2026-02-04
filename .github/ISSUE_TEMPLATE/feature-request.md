@@ -1,29 +1,20 @@
 ---
 name: Feature request
-about: Suggest improvements or new capabilities for AltSendme
-title: 'FR: <short summary>'
+about: Suggest an improvement or new capability
+title: 'Feature request: '
 labels:
   - enhancement
 assignees: ''
 ---
-## Problem Statement
 
-> What workflow or experience in AltSendme is currently painful or missing? Describe the scenario (sender, receiver, ticket-based transfers, etc.)
+## What do you want?
 
-## Proposed Solution
+A clear, short description of the feature or change.
 
-> Outline the feature or change you are suggesting. Include UI/UX details (mockups welcome), CLI interoperability expectations, or network considerations (e.g., relay vs. direct connections).
+## Why?
 
-## Key Use Cases
+Brief reason it would be useful (optional).
 
-> List representative scenario that highlight why this matters (platforms involved, file sizes, languages, accessibility needs, etc.).
+## Anything else?
 
-
-## Dependencies / Risks
-
-> Call out assumptions, related features, security/privacy implications, or potential regressions.
-
-## Additional Context
-
-> Attach screenshots, logs, metrics, or links to relevant discussions/documentation.
-
+Screenshots, mockups, or links (optional).
