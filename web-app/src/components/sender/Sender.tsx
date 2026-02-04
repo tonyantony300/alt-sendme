@@ -63,16 +63,19 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		// 	isBroadcastMode,
 		// 	selectedPath,
 		// })
-		
+
 		// Warn if SUCCESS state without metadata
 		if (viewState === 'SUCCESS' && !transferMetadata) {
-			console.error('[Sender] ⚠️ INVALID STATE: SUCCESS without transferMetadata!', {
-				viewState,
-				transferMetadata,
-				isSharing,
-				isTransporting,
-				selectedPath,
-			})
+			console.error(
+				'[Sender] ⚠️ INVALID STATE: SUCCESS without transferMetadata!',
+				{
+					viewState,
+					transferMetadata,
+					isSharing,
+					isTransporting,
+					selectedPath,
+				}
+			)
 		}
 	}, [viewState, isSharing, isTransporting, transferMetadata, selectedPath])
 
@@ -130,12 +133,16 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 
 			{/* SHARING or TRANSPORTING state: Show active sharing UI */}
 			{/* In broadcast mode, only show SHARING state (skip TRANSPORTING) */}
-			{(((viewState === 'SHARING' || viewState === 'TRANSPORTING') && !isBroadcastMode) || (viewState === 'SHARING' && isBroadcastMode)) && (
+			{(((viewState === 'SHARING' || viewState === 'TRANSPORTING') &&
+				!isBroadcastMode) ||
+				(viewState === 'SHARING' && isBroadcastMode)) && (
 				<>
 					<div className="text-center">
 						<PulseAnimation
 							isTransporting={isTransporting && !isBroadcastMode}
-							hasActiveConnections={isBroadcastMode && activeConnectionCount > 0}
+							hasActiveConnections={
+								isBroadcastMode && activeConnectionCount > 0
+							}
 							className="mx-auto my-4 flex items-center justify-center"
 						/>
 					</div>
@@ -167,8 +174,13 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 				viewState !== 'SHARING' &&
 				viewState !== 'TRANSPORTING' && (
 					<div className="text-center p-4 border border-red-500">
-						<p className="text-red-500 font-bold">Unexpected view state: {viewState}</p>
-						<p className="text-sm">isSharing={String(isSharing)}, isTransporting={String(isTransporting)}</p>
+						<p className="text-red-500 font-bold">
+							Unexpected view state: {viewState}
+						</p>
+						<p className="text-sm">
+							isSharing={String(isSharing)}, isTransporting=
+							{String(isTransporting)}
+						</p>
 					</div>
 				)}
 
