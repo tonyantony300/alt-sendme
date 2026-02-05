@@ -72,10 +72,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 								<Info />
 							</Button>
 						</div>
-						<p
-							className="text-sm"
-							style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-						>
+						<p className="text-sm text-muted-foreground">
 							{t('common:receiver.subtitle')}
 						</p>
 					</div>

@@ -102,7 +102,9 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 						<h2 className="text-xl font-semibold mb-2">
 							{t('common:sender.title')}
 						</h2>
-						<p className="text-sm">{t('common:sender.subtitle')}</p>
+						<p className="text-sm text-muted-foreground">
+							{t('common:sender.subtitle')}
+						</p>
 					</div>
 					<div className="space-y-4 flex-1 flex flex-col">
 						<DragDrop
