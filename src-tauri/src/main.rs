@@ -98,7 +98,7 @@ fn main() {
             } else {
                 None
             };
-            
+
             AppState {
                 launch_intent,
                 ..Default::default()
@@ -134,14 +134,15 @@ fn main() {
                     let _ = window.set_decorations(false);
                 }
             }
-            
+
             // Auto-register context menu on Windows
             #[cfg(target_os = "windows")]
             {
                 // We do this in a separate thread/task to not block startup significantly, though reg operations are fast
                 std::thread::spawn(|| {
-                    if let Err(e) = crate::platform::windows::context_menu::register_context_menu() {
-                         tracing::warn!("Failed to auto-register context menu: {}", e);
+                    if let Err(e) = crate::platform::windows::context_menu::register_context_menu()
+                    {
+                        tracing::warn!("Failed to auto-register context menu: {}", e);
                     }
                 });
             }

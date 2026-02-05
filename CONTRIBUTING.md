@@ -127,6 +127,17 @@ This will start the app with hot reload enabled for both frontend and backend ch
 - Document everything properly in PR
 - Write clear commit messages
 
+**Do not commit lockfile-only changes.** Only change lockfiles when you have intentionally added or updated dependencies in the corresponding manifest. Lockfile-only changes inflate PR size and are rejected by CI.
+
+- **`package-lock.json`** — only when you changed `package.json` (e.g. after `npm install` with no dependency changes, discard the lockfile).
+- **`Cargo.lock`** — only when you changed `Cargo.toml` in `src-tauri/` or `sendme/` (e.g. after `cargo build` with no dependency changes, discard the lockfile).
+
+To discard accidental lockfile changes before committing:
+
+```bash
+git checkout origin/main -- package-lock.json src-tauri/Cargo.lock sendme/Cargo.lock
+```
+
 ## Code of Conduct
 
 Please be respectful and considerate in all interactions. The goal is to maintain a welcoming and inclusive environment for everyone.
