@@ -89,20 +89,21 @@ pub enum AddrInfoOptions {
     Addresses,
 }
 
-pub fn apply_options(addr: &mut iroh::NodeAddr, opts: AddrInfoOptions) {
+pub fn apply_options(addr: &mut iroh::EndpointAddr, opts: AddrInfoOptions) {
     match opts {
         AddrInfoOptions::Id => {
-            addr.direct_addresses.clear();
-            addr.relay_url = None;
+            addr.addrs.clear();
         }
         AddrInfoOptions::RelayAndAddresses => {
             // nothing to do
         }
         AddrInfoOptions::Relay => {
-            addr.direct_addresses.clear();
+            addr.addrs
+                .retain(|transport_addr| matches!(transport_addr, TransportAddr::Relay(_)));
         }
         AddrInfoOptions::Addresses => {
-            addr.relay_url = None;
+            addr.addrs
+                .retain(|transport_addr| matches!(transport_addr, TransportAddr::Ip(_)));
         }
     }
 }
@@ -118,4 +119,5 @@ pub fn get_or_create_secret() -> anyhow::Result<iroh::SecretKey> {
 }
 
 use anyhow::Context;
+use iroh::TransportAddr;
 use std::str::FromStr;

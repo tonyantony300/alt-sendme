@@ -65,7 +65,7 @@ pub async fn download(
 ) -> anyhow::Result<ReceiveResult> {
     let ticket = BlobTicket::from_str(&ticket_str)?;
 
-    let addr = ticket.node_addr().clone();
+    let addr = ticket.addr().clone();
 
     let secret_key = get_or_create_secret()?;
 
@@ -74,8 +74,8 @@ pub async fn download(
         .secret_key(secret_key)
         .relay_mode(options.relay_mode.clone().into());
 
-    if ticket.node_addr().relay_url.is_none() && ticket.node_addr().direct_addresses.is_empty() {
-        builder = builder.add_discovery(DnsDiscovery::n0_dns());
+    if ticket.addr().relay_urls().count() == 0 && ticket.addr().ip_addrs().count() == 0 {
+        builder = builder.discovery(DnsDiscovery::n0_dns());
     }
     if let Some(addr) = options.magic_ipv4_addr {
         builder = builder.bind_addr_v4(addr);
@@ -110,9 +110,12 @@ pub async fn download(
                 Err(e) => {
                     tracing::error!("Connection failed: {}", e);
                     tracing::error!("Error details: {:?}", e);
-                    tracing::error!("Tried to connect to node: {}", addr.node_id);
-                    tracing::error!("With relay: {:?}", addr.relay_url);
-                    tracing::error!("With direct addrs: {:?}", addr.direct_addresses);
+                    tracing::error!("Tried to connect to node: {}", addr.id);
+                    tracing::error!("With relay: {:?}", addr.relay_urls().collect::<Vec<_>>());
+                    tracing::error!(
+                        "With direct addrs: {:?}",
+                        addr.ip_addrs().collect::<Vec<_>>()
+                    );
                     return Err(anyhow::anyhow!("Connection failed: {}", e));
                 }
             };
