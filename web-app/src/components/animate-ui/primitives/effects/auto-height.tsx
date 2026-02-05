@@ -1,21 +1,17 @@
 'use client'
 
-import * as React from 'react'
 import {
-	motion,
 	type HTMLMotionProps,
 	type LegacyAnimationControls,
+	motion,
 	type TargetAndTransition,
 	type Transition,
 } from 'motion/react'
-
+import type * as React from 'react'
+import * as slot from '@/components/animate-ui/primitives/animate/slot'
 import { useAutoHeight } from '@/hooks/use-auto-height'
-import {
-	Slot,
-	WithAsChild,
-} from '@/components/animate-ui/primitives/animate/slot'
 
-type AutoHeightProps = WithAsChild<
+type AutoHeightProps = slot.WithAsChild<
 	{
 		children: React.ReactNode
 		deps?: React.DependencyList
@@ -41,9 +37,10 @@ function AutoHeight({
 }: AutoHeightProps) {
 	const { ref, height } = useAutoHeight<HTMLDivElement>(deps)
 
-	const Comp = asChild ? Slot : motion.div
+	const Comp = asChild ? slot.Slot : motion.div
 
 	return (
+		// @ts-ignore lib-thingy doesn't understand motion.div
 		<Comp
 			style={{ overflow: 'hidden', ...style }}
 			animate={{ height, ...animate }}

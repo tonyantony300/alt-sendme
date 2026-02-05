@@ -1,26 +1,25 @@
 'use client'
 
-import * as React from 'react'
-import { Tabs as TabsPrimitive } from 'radix-ui'
 import {
-	motion,
 	AnimatePresence,
 	type HTMLMotionProps,
+	motion,
 	type Transition,
 } from 'motion/react'
-
-import {
-	Highlight,
-	HighlightItem,
-	type HighlightProps,
-	type HighlightItemProps,
-} from '@/components/animate-ui/primitives/effects/highlight'
-import { getStrictContext } from '@/lib/get-strict-context'
-import { useControlledState } from '@/hooks/use-controlled-state'
+import { Tabs as TabsPrimitive } from 'radix-ui'
+import type * as React from 'react'
 import {
 	AutoHeight,
 	type AutoHeightProps,
 } from '@/components/animate-ui/primitives/effects/auto-height'
+import {
+	Highlight,
+	HighlightItem,
+	type HighlightItemProps,
+	type HighlightProps,
+} from '@/components/animate-ui/primitives/effects/highlight'
+import { useControlledState } from '@/hooks/use-controlled-state'
+import { getStrictContext } from '@/lib/get-strict-context'
 
 type TabsContextType = {
 	value: string | undefined

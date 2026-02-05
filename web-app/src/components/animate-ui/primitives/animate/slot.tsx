@@ -29,6 +29,7 @@ function mergeRefs<T>(
 			if (typeof ref === 'function') {
 				ref(node)
 			} else {
+				// @ts-ignore ignore ts-migrate error
 				;(ref as React.RefObject<T | null>).current = node
 			}
 		})

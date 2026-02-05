@@ -322,6 +322,7 @@ function Highlight<T extends React.ElementType = 'div'>({
 					? render(children)
 					: render(
 							React.Children.map(children, (child, index) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: no change from index
 								<HighlightItem key={index} className={props?.itemsClassName}>
 									{child}
 								</HighlightItem>
@@ -421,6 +422,7 @@ function HighlightItem<T extends React.ElementType>({
 	React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement)
 
 	const refCallback = React.useCallback((node: HTMLElement | null) => {
+		// @ts-ignore ignore ts-migrate error
 		localRef.current = node as HTMLDivElement
 	}, [])
 
