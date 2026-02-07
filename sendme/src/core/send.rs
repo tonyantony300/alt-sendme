@@ -316,6 +316,63 @@ pub fn canonicalized_path_to_string(
     Ok(path_str)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn canonicalized_path_rejects_backslash() {
+        let path = Path::new("system-systemd\\x2dcryptsetup.slice");
+        assert!(canonicalized_path_to_string(path, true).is_err());
+    }
+
+    #[test]
+    fn canonicalized_path_accepts_normal() {
+        let result = canonicalized_path_to_string(Path::new("subdir/file.txt"), true);
+        assert_eq!(result.unwrap(), "subdir/file.txt");
+    }
+
+    #[test]
+    fn canonicalized_path_rejects_parent_traversal() {
+        assert!(canonicalized_path_to_string(Path::new("../etc/passwd"), true).is_err());
+    }
+
+    #[test]
+    fn canonicalized_path_rejects_absolute_when_relative() {
+        assert!(canonicalized_path_to_string(Path::new("/etc/passwd"), true).is_err());
+    }
+
+    #[tokio::test]
+    async fn import_skips_invalid_files() {
+        use tempfile::TempDir;
+
+        let td = TempDir::new().unwrap();
+        let dir = td.path().join("testdir");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("good.txt"), "hello").unwrap();
+        std::fs::write(dir.join(format!("bad{}file.txt", '\\')), "bad").unwrap();
+
+        let path = dir.canonicalize().unwrap();
+        let root = path.parent().unwrap();
+        let data_sources: Vec<(String, PathBuf)> = WalkDir::new(path.clone())
+            .into_iter()
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                if !entry.file_type().is_file() {
+                    return None;
+                }
+                let path = entry.into_path();
+                let relative = path.strip_prefix(root).ok()?;
+                canonicalized_path_to_string(relative, true).ok().map(|name| (name, path))
+            })
+            .collect();
+
+        assert_eq!(data_sources.len(), 1, "should skip file with backslash");
+        assert!(data_sources[0].0.contains("good.txt"));
+    }
+}
+
 async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
     app_handle: AppHandle,
