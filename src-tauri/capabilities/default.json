@@ -14,7 +14,6 @@
 		"os:default",
 		"opener:default",
 		"dialog:default",
-		"shell:default",
 		"shell:allow-spawn",
 		"updater:default"
 	]

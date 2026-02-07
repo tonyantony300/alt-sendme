@@ -14,7 +14,6 @@
 		"dialog:default",
 		"dialog:allow-open",
 		"dialog:allow-save",
-		"shell:default",
 		"shell:allow-spawn",
 		{
 			"identifier": "http:default",
