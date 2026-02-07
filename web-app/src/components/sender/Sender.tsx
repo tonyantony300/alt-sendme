@@ -93,7 +93,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	return (
 		<div
 			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
-			style={{ color: 'var(--app-main-view-fg)' }}
 		>
 			{/* IDLE state: Show file selection UI */}
 			{viewState === 'IDLE' && (
