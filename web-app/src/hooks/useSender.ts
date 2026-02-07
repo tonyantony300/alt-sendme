@@ -184,7 +184,7 @@ export function useSender(): UseSenderReturn {
 						// Add speed sample and calculate ETA
 						speedAveragerRef.current.addSample(speedBps)
 						const avgSpeed = speedAveragerRef.current.getAverage()
-						const bytesRemaining = totalBytes - bytesTransferred
+						const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0)
 						const eta = calculateETA(bytesRemaining, avgSpeed)
 
 						latestProgressRef.current = {
