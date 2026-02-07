@@ -50,7 +50,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 	return (
 		<div
 			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
-			style={{ color: 'var(--app-main-view-fg)' }}
 		>
 			{!isReceiving ? (
 				<>
@@ -58,7 +57,6 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 						<div className="flex items-center justify-center gap-2 mb-2">
 							<h2
 								className="text-xl font-semibold"
-								style={{ color: 'var(--app-main-view-fg)' }}
 							>
 								{t('common:receiver.title')}
 							</h2>

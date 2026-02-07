@@ -14,15 +14,14 @@ const CustomTitleBar: React.FC<CustomTitleBarProps> = ({
 	return (
 		<div
 			className={cn(
-				'h-10 text-foreground flex items-center shrink-0 border-b border-white/5',
+				'h-10 text-foreground flex items-center shrink-0 border-b border-border',
 				'px-4',
 				IS_MACOS ? 'pl-20' : '',
 				children === undefined && 'border-none',
 				className
 			)}
 			style={{
-				backgroundColor: 'var(--app-bg)',
-				color: 'var(--app-bg-fg)',
+				backgroundColor: 'var(--background)',
 				backdropFilter: 'blur(10px)',
 			}}
 		>

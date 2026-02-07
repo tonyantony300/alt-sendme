@@ -5,7 +5,6 @@ export function InstructionsCard(_props: InstructionsCardProps) {
 		<div className="p-4 rounded-lg border">
 			<h3
 				className="text-sm font-medium mb-2"
-				style={{ color: 'var(--app-main-view-fg)' }}
 			>
 				How to receive files:
 			</h3>

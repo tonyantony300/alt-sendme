@@ -71,12 +71,11 @@ export function TransferSuccessScreen({
 		<div className="flex flex-col items-center justify-center space-y-6 ">
 			<div className="flex items-center justify-center">
 				{wasStopped ? (
-					<XCircle size={44} style={{ color: 'rgba(239, 68, 68, 1)' }} />
+					<XCircle size={44} className="text-destructive" />
 				) : (
 					<CheckCircle
 						size={44}
-						className="text-green-500"
-						style={{ color: 'rgba(37, 211, 101, 1)' }}
+						className="text-success"
 					/>
 				)}
 			</div>
@@ -84,13 +83,12 @@ export function TransferSuccessScreen({
 			<div className="text-center">
 				<h2
 					className="text-2xl font-semibold mb-2"
-					style={{ color: 'var(--app-main-view-fg)' }}
 				>
 					{wasStopped
 						? t('common:transfer.stopped')
 						: t('common:transfer.complete')}
 				</h2>
-				<p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+				<p className="text-sm text-muted-foreground">
 					{wasStopped
 						? t('common:transfer.wasStopped')
 						: t('common:transfer.successMessage')}

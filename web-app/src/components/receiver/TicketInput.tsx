@@ -20,7 +20,6 @@ export function TicketInput({
 			<div>
 				<p
 					className="block text-sm font-medium mb-2"
-					style={{ color: 'var(--app-main-view-fg)' }}
 				>
 					{t('common:receiver.saveToFolder')}
 				</p>
@@ -40,7 +39,6 @@ export function TicketInput({
 			<div>
 				<p
 					className="block text-sm font-medium mb-2"
-					style={{ color: 'var(--app-main-view-fg)' }}
 				>
 					{t('common:receiver.pasteTicket')}
 				</p>
