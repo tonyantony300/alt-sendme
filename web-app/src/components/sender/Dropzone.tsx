@@ -18,8 +18,8 @@ export function Dropzone({
 		if (isDragActive) {
 			return {
 				...baseStyles,
-				borderColor: 'var(--accent)',
-				backgroundColor: 'rgba(45, 120, 220, 0.1)',
+				borderColor: 'var(--info)',
+				backgroundColor: 'color-mix(in srgb, var(--info) 10%, transparent)',
 			}
 		}
 
