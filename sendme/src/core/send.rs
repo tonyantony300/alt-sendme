@@ -321,6 +321,7 @@ mod tests {
     use super::*;
     use std::path::Path;
 
+    #[cfg(unix)]
     #[test]
     fn canonicalized_path_rejects_backslash() {
         let path = Path::new("system-systemd\\x2dcryptsetup.slice");
@@ -343,6 +344,7 @@ mod tests {
         assert!(canonicalized_path_to_string(Path::new("/etc/passwd"), true).is_err());
     }
 
+    #[cfg(unix)]
     #[tokio::test]
     async fn import_skips_invalid_files() {
         use tempfile::TempDir;

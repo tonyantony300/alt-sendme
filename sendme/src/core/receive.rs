@@ -299,6 +299,7 @@ fn validate_path_component(component: &str) -> anyhow::Result<()> {
     anyhow::ensure!(!component.is_empty(), "empty path component");
     anyhow::ensure!(!component.contains('/'), "contains /");
     anyhow::ensure!(!component.contains('\\'), "contains \\");
+    anyhow::ensure!(!component.contains(':'), "contains colon");
     anyhow::ensure!(component != "..", "parent directory traversal");
     anyhow::ensure!(component != ".", "current directory reference");
     anyhow::ensure!(!component.contains('\0'), "contains null byte");
@@ -340,9 +341,20 @@ mod tests {
     }
 
     #[test]
+    fn validate_rejects_colon() {
+        assert!(validate_path_component("C:foo").is_err());
+    }
+
+    #[test]
     fn validate_accepts_normal() {
         assert!(validate_path_component("file.txt").is_ok());
         assert!(validate_path_component("my-file_v2.tar.gz").is_ok());
+    }
+
+    #[test]
+    fn get_export_path_blocks_drive_prefix() {
+        let root = Path::new("/tmp/test");
+        assert!(get_export_path(root, "C:foo").is_err());
     }
 
     #[test]
