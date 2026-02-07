@@ -9,17 +9,9 @@ export function getPlatformAlpha(): number {
 }
 
 export function initializePlatformStyles(): void {
-	const alpha = getPlatformAlpha()
-
 	const root = document.documentElement
-
-	root.style.setProperty('--app-bg', `rgba(25, 25, 25, ${alpha})`)
-
-	root.style.setProperty('--app-main-view', 'rgba(25, 25, 25, 1)')
 
 	if (IS_TAURI && IS_MACOS) {
 		root.style.setProperty('--body-bg', 'transparent')
-	} else {
-		root.style.setProperty('--body-bg', 'var(--app-bg)')
 	}
 }

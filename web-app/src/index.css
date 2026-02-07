@@ -104,10 +104,10 @@
 
 @utility title-bar {
 	@apply h-10 flex items-center shrink-0;
-	@apply border-b border-white/5;
+	@apply border-b border-border;
 	@apply px-4;
 	background-color: var(--background);
-	color: var(--background-fg);
+	color: var(--foreground);
 }
 
 @utility title-bar-macos {
@@ -120,9 +120,9 @@
 }
 
 @utility custom-title-bar {
-	@apply h-10 flex items-center justify-between shrink-0 px-4 select-none border-b border-white/5;
+	@apply h-10 flex items-center justify-between shrink-0 px-4 select-none border-b border-border;
 	background-color: var(--background);
-	color: var(--background-fg);
+	color: var(--foreground);
 }
 
 @utility window-controls {
@@ -133,7 +133,7 @@
 	@apply w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-200;
 
 	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
+		background-color: var(--accent);
 	}
 
 	&.close:hover {
@@ -149,32 +149,32 @@
 
 @utility glass-effect {
 	background: var(--accent);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid var(--border);
 }
 
 @utility glass-overlay {
 	background: var(--accent);
-	border: 1px solid rgba(255, 255, 255, 0.05);
+	border: 1px solid var(--border);
 }
 
 @utility glass-panel {
 	background: var(--accent);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid var(--border);
 }
 
 @utility glass-background {
 	background: var(--background);
-	border: 1px solid rgba(255, 255, 255, 0.05);
+	border: 1px solid var(--border);
 }
 
 @utility glass-card {
 	background: var(--accent);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid var(--border);
 }
 
 @utility language-dropdown {
 	scrollbar-width: thin;
-	scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+	scrollbar-color: var(--muted-foreground) transparent;
 
 	&::-webkit-scrollbar {
 		display: block;
@@ -188,12 +188,13 @@
 
 	&::-webkit-scrollbar-thumb {
 		display: block;
-		background: rgba(255, 255, 255, 0.3);
+		background: var(--muted-foreground);
 		border-radius: 2px;
+		opacity: 0.5;
 	}
 
 	&::-webkit-scrollbar-thumb:hover {
-		background: rgba(255, 255, 255, 0.5);
+		opacity: 0.8;
 	}
 }
 
@@ -210,20 +211,12 @@
 		--radius: 0.625rem;
 		--font-size-base: 15px;
 
-		--background: rgba(25, 25, 25, 1);
-		--accent: rgba(25, 25, 25, 1);
 		--app-primary: rgba(37, 211, 101, 0.687);
 		--app-accent-light: rgb(45, 120, 220);
 		--app-accent: rgb(54 54 54);
 		--app-destructive: rgb(144, 60, 60);
 
-		--body-bg: rgba(25, 25, 25, 1);
-
-		--background-fg: rgb(255, 255, 255);
-		--accent-fg: rgb(255, 255, 255);
-		--app-primary-fg: rgb(255, 255, 255);
-		--app-accent-fg: rgb(255, 255, 255);
-		--app-destructive-fg: rgb(255, 255, 255);
+		--body-bg: var(--background);
 	}
 }
 
