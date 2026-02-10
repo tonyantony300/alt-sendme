@@ -497,7 +497,7 @@ async fn show_provide_progress_with_logging(
                                                 0.0
                                             };
 
-                                            emit_progress_event(&app_handle_task, m.end_offset, state.total_size, speed_bps);
+                                            emit_progress_event(&app_handle_task, m.end_offset.min(state.total_size), state.total_size, speed_bps);
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
