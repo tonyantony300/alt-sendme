@@ -51,7 +51,7 @@ export function SharingActiveCard({
 				// Auto-close "You are broadcasting" notification after 1 seconds
 				setTimeout(() => {
 					toastManager.close(toastId)
-				}, 1500)
+				}, 5000)
 			}
 		}
 	}
@@ -255,7 +255,7 @@ export function TicketDisplay({
 				)}
 			</div>
 			<InputGroup>
-				<InputGroupInput type="text" value={ticket} readOnly />
+				<InputGroupInput type="text" value={ticket} className="overflow-ellipsis" readOnly />
 				<InputGroupAddon align="inline-end">
 					<Button
 						type="button"
@@ -264,7 +264,7 @@ export function TicketDisplay({
 						style={{
 							backgroundColor: copySuccess
 								? 'var(--app-primary)'
-								: 'var(--accent)',
+								: 'var(--color-foreground)',
 							border: '1px solid var(--border)',
 						}}
 						title={t('common:sender.copyToClipboard')}
