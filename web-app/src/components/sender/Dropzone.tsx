@@ -18,8 +18,8 @@ export function Dropzone({
 		if (isDragActive) {
 			return {
 				...baseStyles,
-				borderColor: 'var(--accent)',
-				backgroundColor: 'rgba(45, 120, 220, 0.1)',
+				borderColor: 'var(--info)',
+				backgroundColor: 'color-mix(in srgb, var(--info) 10%, transparent)',
 			}
 		}
 
@@ -102,7 +102,7 @@ export function Dropzone({
 	return (
 		<div
 			style={getDropzoneStyles()}
-			className="border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-(--accent-fg) flex items-center justify-center min-h-48  border-border"
+			className="border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground flex items-center justify-center min-h-48 border-border"
 		>
 			<div className="space-y-4 w-full">
 				<div className="flex justify-center">

@@ -239,7 +239,6 @@ export function TicketDisplay({
 			<div className="flex items-center justify-between">
 				<p
 					className="block text-sm font-medium"
-					style={{ color: 'var(--app-main-view-fg)' }}
 				>
 					{t('common:sender.shareThisTicket')}
 				</p>
@@ -265,11 +264,8 @@ export function TicketDisplay({
 						style={{
 							backgroundColor: copySuccess
 								? 'var(--app-primary)'
-								: 'rgba(255, 255, 255, 0.1)',
-							border: '1px solid rgba(255, 255, 255, 0.2)',
-							color: copySuccess
-								? 'var(--app-primary-fg)'
-								: 'var(--app-main-view-fg)',
+								: 'var(--accent)',
+							border: '1px solid var(--border)',
 						}}
 						title={t('common:sender.copyToClipboard')}
 					>
