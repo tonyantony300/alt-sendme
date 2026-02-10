@@ -299,11 +299,84 @@ fn get_export_path(root: &Path, name: &str) -> anyhow::Result<PathBuf> {
 }
 
 fn validate_path_component(component: &str) -> anyhow::Result<()> {
-    anyhow::ensure!(
-        !component.contains('/'),
-        "path components must not contain the only correct path separator, /"
-    );
+    anyhow::ensure!(!component.is_empty(), "empty path component");
+    anyhow::ensure!(!component.contains('/'), "contains /");
+    anyhow::ensure!(!component.contains('\\'), "contains \\");
+    anyhow::ensure!(!component.contains(':'), "contains colon");
+    anyhow::ensure!(component != "..", "parent directory traversal");
+    anyhow::ensure!(component != ".", "current directory reference");
+    anyhow::ensure!(!component.contains('\0'), "contains null byte");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_rejects_empty() {
+        assert!(validate_path_component("").is_err());
+    }
+
+    #[test]
+    fn validate_rejects_slash() {
+        assert!(validate_path_component("a/b").is_err());
+    }
+
+    #[test]
+    fn validate_rejects_backslash() {
+        assert!(validate_path_component("a\\b").is_err());
+    }
+
+    #[test]
+    fn validate_rejects_parent_traversal() {
+        assert!(validate_path_component("..").is_err());
+    }
+
+    #[test]
+    fn validate_rejects_dot() {
+        assert!(validate_path_component(".").is_err());
+    }
+
+    #[test]
+    fn validate_rejects_null_byte() {
+        assert!(validate_path_component("a\0b").is_err());
+    }
+
+    #[test]
+    fn validate_rejects_colon() {
+        assert!(validate_path_component("C:foo").is_err());
+    }
+
+    #[test]
+    fn validate_accepts_normal() {
+        assert!(validate_path_component("file.txt").is_ok());
+        assert!(validate_path_component("my-file_v2.tar.gz").is_ok());
+    }
+
+    #[test]
+    fn get_export_path_blocks_drive_prefix() {
+        let root = Path::new("/tmp/test");
+        assert!(get_export_path(root, "C:foo").is_err());
+    }
+
+    #[test]
+    fn get_export_path_blocks_traversal() {
+        let root = Path::new("/tmp/test");
+        assert!(get_export_path(root, "../etc/passwd").is_err());
+        assert!(get_export_path(root, "subdir/../../etc/passwd").is_err());
+    }
+
+    #[test]
+    fn get_export_path_blocks_backslash() {
+        assert!(get_export_path(Path::new("/tmp/test"), "file\\name").is_err());
+    }
+
+    #[test]
+    fn get_export_path_allows_normal() {
+        let p = get_export_path(Path::new("/tmp/test"), "subdir/file.txt").unwrap();
+        assert_eq!(p, PathBuf::from("/tmp/test/subdir/file.txt"));
+    }
 }
 
 fn show_get_error(e: GetError) -> GetError {

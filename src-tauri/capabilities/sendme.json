@@ -14,20 +14,14 @@
 		"dialog:default",
 		"dialog:allow-open",
 		"dialog:allow-save",
-		"shell:default",
 		"shell:allow-spawn",
-		"shell:allow-open",
 		{
 			"identifier": "http:default",
 			"allow": [
 				{
-					"url": "https://*:*"
-				},
-				{
-					"url": "http://*:*"
+					"url": "https://github.com/**"
 				}
-			],
-			"deny": []
+			]
 		}
 	]
 }
