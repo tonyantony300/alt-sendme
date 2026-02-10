@@ -1,6 +1,6 @@
 [package]
 name = "alt-sendme"
-version = "0.3.3"
+version = "0.3.4"
 description = "P2P file sharing with NAT hole punching"
 authors = ["Tony Antony"]
 license = "AGPL 3.0"
