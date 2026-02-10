@@ -20,6 +20,12 @@
 			"allow": [
 				{
 					"url": "https://github.com/**"
+				},
+				{
+					"url": "https://gc.zgo.at/**"
+				},
+				{
+					"url": "https://alt-sendme.goatcounter.com/**"
 				}
 			]
 		}
