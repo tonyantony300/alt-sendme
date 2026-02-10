@@ -18,9 +18,7 @@ export function TicketInput({
 	return (
 		<div className="space-y-4">
 			<div>
-				<p
-					className="block text-sm font-medium mb-2"
-				>
+				<p className="block text-sm font-medium mb-2">
 					{t('common:receiver.saveToFolder')}
 				</p>
 				<InputGroup onClick={onBrowseFolder}>
@@ -37,9 +35,7 @@ export function TicketInput({
 			</div>
 
 			<div>
-				<p
-					className="block text-sm font-medium mb-2"
-				>
+				<p className="block text-sm font-medium mb-2">
 					{t('common:receiver.pasteTicket')}
 				</p>
 				<div className="flex gap-2 p-0.5">

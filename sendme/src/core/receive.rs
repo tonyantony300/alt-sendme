@@ -164,7 +164,12 @@ pub async fn download(
                                 0.0
                             };
 
-                            emit_progress_event(&app_handle, offset.min(payload_size), payload_size, speed_bps);
+                            emit_progress_event(
+                                &app_handle,
+                                offset.min(payload_size),
+                                payload_size,
+                                speed_bps,
+                            );
                         }
                     }
                     GetProgressItem::Done(value) => {

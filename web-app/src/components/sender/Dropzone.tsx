@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Loader2, Upload } from 'lucide-react'
+import { ChevronDown, ChevronRight, Loader2, Upload, X } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
 import { FolderIcon, getFileIcon } from '../illustration'
@@ -10,6 +10,7 @@ export function Dropzone({
 	showFullPath,
 	isLoading,
 	onToggleFullPath,
+	onClearSelection,
 }: DropzoneProps) {
 	const { t } = useTranslation()
 	const getDropzoneStyles = () => {
@@ -102,8 +103,21 @@ export function Dropzone({
 	return (
 		<div
 			style={getDropzoneStyles()}
-			className="border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground flex items-center justify-center min-h-48 border-border"
+			className="relative border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground flex items-center justify-center min-h-48 border-border"
 		>
+			{selectedPath && !isLoading && (
+				<button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation()
+						onClearSelection()
+					}}
+					className="absolute top-3 right-3 p-1.5 rounded-md text-muted-foreground cursor-pointer"
+					aria-label="Clear selection"
+				>
+					<X className="h-6 w-6" />
+				</button>
+			)}
 			<div className="space-y-4 w-full">
 				<div className="flex justify-center">
 					{isLoading ? (

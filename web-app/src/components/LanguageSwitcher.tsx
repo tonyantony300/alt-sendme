@@ -29,7 +29,7 @@ const LANGUAGES = [
 	{ value: 'uk', label: 'Українська' },
 	{ value: 'zh-CN', label: '简体中文' },
 	{ value: 'zh-TW', label: '繁體中文' },
-  ]
+]
 
 export function LanguageSwitcher(props: ButtonProps) {
 	const { i18n } = useAppTranslation()

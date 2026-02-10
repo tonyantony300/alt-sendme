@@ -39,6 +39,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		isBroadcastMode,
 		activeConnectionCount,
 		handleFileSelect,
+		clearSelectedPath,
 		startSharing,
 		stopSharing,
 		copyTicket,
@@ -91,9 +92,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	}, [viewState, isBroadcastMode, setIsBroadcastMode])
 
 	return (
-		<div
-			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
-		>
+		<div className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col">
 			{/* IDLE state: Show file selection UI */}
 			{viewState === 'IDLE' && (
 				<>
@@ -110,6 +109,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							onFileSelect={handleFileSelect}
 							selectedPath={selectedPath}
 							isLoading={isLoading}
+							onClearSelection={clearSelectedPath}
 						/>
 
 						<ShareActionCard
