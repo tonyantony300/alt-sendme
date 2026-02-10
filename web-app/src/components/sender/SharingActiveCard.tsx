@@ -237,9 +237,7 @@ export function TicketDisplay({
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
-				<p
-					className="block text-sm font-medium"
-				>
+				<p className="block text-sm font-medium">
 					{t('common:sender.shareThisTicket')}
 				</p>
 				{isBroadcastMode !== undefined && onToggleBroadcast && (
@@ -255,7 +253,12 @@ export function TicketDisplay({
 				)}
 			</div>
 			<InputGroup>
-				<InputGroupInput type="text" value={ticket} className="overflow-ellipsis" readOnly />
+				<InputGroupInput
+					type="text"
+					value={ticket}
+					className="overflow-ellipsis"
+					readOnly
+				/>
 				<InputGroupAddon align="inline-end">
 					<Button
 						type="button"

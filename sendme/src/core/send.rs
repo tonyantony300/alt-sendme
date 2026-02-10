@@ -366,7 +366,9 @@ mod tests {
                 }
                 let path = entry.into_path();
                 let relative = path.strip_prefix(root).ok()?;
-                canonicalized_path_to_string(relative, true).ok().map(|name| (name, path))
+                canonicalized_path_to_string(relative, true)
+                    .ok()
+                    .map(|name| (name, path))
             })
             .collect();
 

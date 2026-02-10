@@ -48,16 +48,12 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 	}, [isReceiving, onTransferStateChange])
 
 	return (
-		<div
-			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
-		>
+		<div className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col">
 			{!isReceiving ? (
 				<>
 					<div className="text-center">
 						<div className="flex items-center justify-center gap-2 mb-2">
-							<h2
-								className="text-xl font-semibold"
-							>
+							<h2 className="text-xl font-semibold">
 								{t('common:receiver.title')}
 							</h2>
 							<Button

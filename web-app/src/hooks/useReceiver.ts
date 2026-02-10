@@ -166,7 +166,9 @@ export function useReceiver(): UseReceiverReturn {
 						const speedInt = parseInt(parts[2], 10)
 						const speedBps = speedInt / 1000.0
 						const percentage =
-							totalBytes > 0 ? Math.min((bytesTransferred / totalBytes) * 100, 100) : 0
+							totalBytes > 0
+								? Math.min((bytesTransferred / totalBytes) * 100, 100)
+								: 0
 
 						// Add speed sample and calculate ETA
 						speedAveragerRef.current.addSample(speedBps)

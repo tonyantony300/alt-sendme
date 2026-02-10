@@ -73,17 +73,12 @@ export function TransferSuccessScreen({
 				{wasStopped ? (
 					<XCircle size={44} className="text-destructive" />
 				) : (
-					<CheckCircle
-						size={44}
-						className="text-success"
-					/>
+					<CheckCircle size={44} className="text-success" />
 				)}
 			</div>
 
 			<div className="text-center">
-				<h2
-					className="text-2xl font-semibold mb-2"
-				>
+				<h2 className="text-2xl font-semibold mb-2">
 					{wasStopped
 						? t('common:transfer.stopped')
 						: t('common:transfer.complete')}
