@@ -1,4 +1,4 @@
-import { IconName } from "../components/icons";
+import type { IconName } from "../components/icons";
 
 export type NavItemType = "core" | "integration";
 

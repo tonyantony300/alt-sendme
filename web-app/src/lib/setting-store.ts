@@ -1,6 +1,6 @@
 import { LazyStore } from "@tauri-apps/plugin-store";
-import { StateStorage } from "zustand/middleware";
-import { AppSettingsState } from "../store/app-setting";
+import type { StateStorage } from "zustand/middleware";
+import type { AppSettingsState } from "../store/app-setting";
 
 export const SETTING_FILE = "settings.json";
 

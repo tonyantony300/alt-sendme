@@ -1,8 +1,8 @@
-import React from "react";
+import type React from "react";
 import { motion } from "framer-motion";
 import { cn } from "../../../lib/utils";
 import { LazyIcon } from "../../icons";
-import { AppTheme } from "../../../types/app";
+import type { AppTheme } from "../../../types/app";
 import { AnimatePresence } from "framer-motion";
 
 export type Props = {
@@ -62,6 +62,7 @@ export function ThemeSelectRadioItem(props: Props) {
                             <div className="divide-y divide-border">
                                 {Array.from({ length: 5 }).map((_, i) => (
                                     <div
+                                        // biome-ignore lint/suspicious/noArrayIndexKey: no better key available
                                         key={i}
                                         className="flex items-center gap-2 p-3"
                                     >

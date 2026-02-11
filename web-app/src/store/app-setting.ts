@@ -1,4 +1,4 @@
-import { createStore, create } from "zustand";
+import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import {
     defaultAppSettings,

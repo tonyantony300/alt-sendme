@@ -10,7 +10,7 @@ import {
     ComboboxTrigger,
     ComboboxValue,
 } from "@/components/ui/combobox";
-import { Button, buttonVariants } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import type { ButtonProps } from "@base-ui/react";
 import { LazyIcon } from "./icons";
 import { cn } from "../lib/utils";

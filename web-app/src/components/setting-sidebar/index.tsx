@@ -1,5 +1,4 @@
-import { VERSION_DISPLAY } from "../../lib/version";
-import { SidebarSeparator } from "../ui/sidebar";
+
 import {
     SettingSidebarContent,
     SettingSidebarCore,

@@ -1,4 +1,4 @@
-import { type IconProps } from "@phosphor-icons/react";
+import type { IconProps } from "@phosphor-icons/react";
 import * as P from "@phosphor-icons/react";
 // There is no way to get icon name of @phosphor icons
 export type IconName =

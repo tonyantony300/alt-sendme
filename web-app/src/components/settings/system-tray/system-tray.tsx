@@ -1,7 +1,6 @@
 import { useTranslation } from "../../../i18n";
 import {
     Frame,
-    FrameDescription,
     FrameHeader,
     FramePanel,
     FrameTitle,

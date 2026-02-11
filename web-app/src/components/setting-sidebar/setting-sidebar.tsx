@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react";
-import { INavItem } from "../../types/nav-item";
 import {
     Sidebar,
     SidebarContent,
@@ -19,15 +18,12 @@ import { LICENSE_LINK, PRIVACY_LINK, VERSION_DISPLAY } from "../../lib/version";
 import { Badge } from "../ui/badge";
 
 function SettingSidebarRoot(props: React.ComponentProps<typeof Sidebar>) {
-    const {} = props;
-
     return <Sidebar {...props} />;
 }
 
 function SettingSidebarHeader(
     props: React.ComponentProps<typeof SidebarHeader>,
 ) {
-    const {} = props;
     return <SidebarHeader {...props} />;
 }
 

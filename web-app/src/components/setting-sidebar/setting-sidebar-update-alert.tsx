@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { check } from "@tauri-apps/plugin-updater";
 import { useAppSettingStore } from "../../store/app-setting";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "../ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { LazyIcon } from "../icons";
 import { Button } from "../ui/button";
 import { relaunch } from "@tauri-apps/plugin-process";

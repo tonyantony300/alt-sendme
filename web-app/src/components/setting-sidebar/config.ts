@@ -1,4 +1,4 @@
-import { INavItem } from "../../types/nav-item";
+import type { INavItem } from "../../types/nav-item";
 
 export const settingSidebarConfig: Record<string, INavItem[]> = {
     core: [
