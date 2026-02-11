@@ -1,15 +1,14 @@
-import { SingleLayoutPage } from '@/components/common/SingleLayoutPage'
-import { buttonVariants } from '@/components/ui/button'
-import { ChevronLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import SettingSidebar from "../components/setting-sidebar";
+import { SidebarInset, SidebarProvider } from "../components/ui/sidebar";
+import { ThemeSelectRadio } from "../components/settings/theme-select-radio/theme-select-radio";
 
 export function SettingsPage() {
-	return (
-		<SingleLayoutPage>
-			<Link className={buttonVariants({ className: 'max-w-24' })} to="/">
-				<ChevronLeft />
-				Go back
-			</Link>
-		</SingleLayoutPage>
-	)
+    return (
+        <SidebarProvider>
+            <SettingSidebar />
+            <SidebarInset className="p-4 pt-2">
+                <ThemeSelectRadio />
+            </SidebarInset>
+        </SidebarProvider>
+    );
 }
