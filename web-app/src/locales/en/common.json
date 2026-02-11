@@ -110,10 +110,15 @@
     "settings": {
         "title": "Settings",
         "theme": {
-            "title": "Theme Settings",
+            "title": "Appearance",
             "light": "Light",
             "dark": "Dark",
             "auto": "System"
+        },
+        "language": {
+            "title": "Language",
+            "description": "Select your preferred language",
+            "noResults": "No languages found"
         }
     }
 }

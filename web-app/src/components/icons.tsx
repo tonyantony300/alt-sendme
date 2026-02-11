@@ -8,7 +8,17 @@ export type IconName =
     | "BellRinging"
     | "Network"
     | "House"
-    | "CheckCircle";
+    | "CheckCircle"
+    | "XCircle"
+    | "User"
+    | "Users"
+    | "MagnifyingGlass"
+    | "CaretDown"
+    | "CaretUp"
+    | "CaretLeft"
+    | "Hexagon"
+    | "FunnelSimpleX"
+    | "CaretRight";
 
 export function LazyIcon(props: IconProps & { name: IconName }) {
     const Icon = P[props.name];
