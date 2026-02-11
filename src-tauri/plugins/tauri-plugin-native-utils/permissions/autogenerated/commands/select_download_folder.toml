@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-select-download-folder"
+description = "Enables the select_download_folder command without any pre-configured scope."
+commands.allow = ["select_download_folder"]
+
+[[permission]]
+identifier = "deny-select-download-folder"
+description = "Denies the select_download_folder command without any pre-configured scope."
+commands.deny = ["select_download_folder"]

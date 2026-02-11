@@ -3,11 +3,13 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { downloadDir, join } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
+import { selectDownloadFolder } from 'tauri-plugin-native-utils-api';
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
 import type { TransferMetadata, TransferProgress } from '../types/transfer'
 import { SpeedAverager, calculateETA } from '../utils/etaUtils'
+import { IS_ANDROID } from '@/lib/platform'
 
 export interface UseReceiverReturn {
 	ticket: string
@@ -270,10 +272,17 @@ export function useReceiver(): UseReceiverReturn {
 	const handleBrowseFolder = async () => {
 		if (isReceiving) return
 		try {
-			const selected = await open({
-				multiple: false,
-				directory: true,
-			})
+			let selected;
+			if (IS_ANDROID) {
+				let response = await selectDownloadFolder();
+				if(!response) return;
+				selected = response.path.toString();
+			} else {
+				selected = await open({
+					multiple: false,
+					directory: true,
+				})
+			}
 
 			if (selected) {
 				setSavePath(selected)

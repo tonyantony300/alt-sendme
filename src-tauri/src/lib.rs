@@ -42,28 +42,27 @@ fn cleanup_orphaned_directories() {
 /// Entry point for both desktop (from main.rs) and mobile (from native app via mobile_entry_point).
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    #[cfg(not(target_os = "android"))]
-    run_desktop();
-    #[cfg(target_os = "android")]
-    run_android();
-}
+    let builder = tauri::Builder::default();
 
-#[cfg(not(target_os = "android"))]
-fn run_desktop() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
-                let _ = window.unminimize();
-                let _ = window.set_focus();
-            }
-        }))
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.show();
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+        }
+    }));
+
+    let builder = builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_native_utils::init())
         .manage(Arc::new(tokio::sync::Mutex::new(app_state_initial())))
         .invoke_handler(tauri::generate_handler![
             start_sharing,
@@ -77,45 +76,23 @@ fn run_desktop() {
         ])
         .setup(|app| {
             setup_common(app);
+            #[cfg(desktop)]
             tray::setup_tray(&app.handle())?;
             Ok(())
-        })
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                api.prevent_close();
-                tracing::debug!("App closed to system tray");
-                if let Err(e) = window.hide() {
-                    tracing::warn!(error = %e, "failed to hide window");
-                }
-            }
-        })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
+        });
 
-#[cfg(target_os = "android")]
-fn run_android() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_http::init())
-        .plugin(tauri_plugin_shell::init())
-        .manage(Arc::new(tokio::sync::Mutex::new(app_state_initial())))
-        .invoke_handler(tauri::generate_handler![
-            start_sharing,
-            stop_sharing,
-            receive_file,
-            get_sharing_status,
-            check_path_type,
-            get_transport_status,
-            get_file_size,
-            check_launch_intent,
-        ])
-        .setup(|app| {
-            setup_common(app);
-            Ok(())
-        })
+    #[cfg(desktop)]
+    let builder = builder.on_window_event(|window, event| {
+        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            api.prevent_close();
+            tracing::debug!("App closed to system tray");
+            if let Err(e) = window.hide() {
+                tracing::warn!(error = %e, "failed to hide window");
+            }
+        }
+    });
+
+    builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
