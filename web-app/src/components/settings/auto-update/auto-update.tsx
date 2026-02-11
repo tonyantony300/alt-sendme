@@ -1,17 +1,56 @@
+import { useState } from "react";
 import { useTranslation } from "../../../i18n";
 import { useAppSettingStore } from "../../../store/app-setting";
+import { Button } from "../../ui/button";
 import {
     FrameTitle,
     FrameDescription,
     Frame,
     FramePanel,
+    FrameFooter,
 } from "../../ui/frame";
 import { Switch } from "../../ui/switch";
+import { AlertDialog, AlertDialogContent } from "../../ui/alert-dialog";
+import { Gift, Loader2 } from "lucide-react";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { useMutation } from "@tanstack/react-query";
+import { toastManager } from "../../ui/toast";
 
 export function AutoUpdate() {
     const { t } = useTranslation();
     const value = useAppSettingStore((r) => r.autoUpdate);
     const toggle = useAppSettingStore((r) => r.setAutoUpdate);
+    const [isOpen, setIsOpen] = useState(false);
+    const checkForUpdates = useMutation({
+        mutationFn: async () => {
+            const update = await check();
+            return update;
+        },
+        onSuccess: (update) => {
+            if (update) {
+                setIsOpen(true);
+            } else {
+                toastManager.add({
+                    title: "No updates available",
+                    description: "You are already using the latest version",
+                    type: "info",
+                });
+            }
+        },
+    });
+    const handleUpdate = useMutation({
+        mutationFn: async () => {
+            const update = await check();
+            if (update) {
+                await update.downloadAndInstall();
+                await relaunch();
+            }
+        },
+        onSuccess: () => {
+            setIsOpen(false);
+        },
+    });
 
     return (
         <Frame>
@@ -26,6 +65,55 @@ export function AutoUpdate() {
                 </div>
                 <Switch checked={value} onCheckedChange={toggle} />
             </FramePanel>
+            {value === false && (
+                <FrameFooter className="flex-row justify-end">
+                    <Button
+                        className="w-48"
+                        variant="secondary"
+                        onClick={() => checkForUpdates.mutate()}
+                        disabled={checkForUpdates.isPending}
+                    >
+                        {checkForUpdates.isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : null}
+                        Check for updates
+                    </Button>
+                </FrameFooter>
+            )}
+            <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+                <AlertDialogContent
+                    backdropClassName="!bg-transparent !backdrop-blur-none"
+                    className="fixed bottom-1 left-2 translate-x-0 translate-y-0 w-md"
+                >
+                    <div className="flex px-5 py-4 items-center gap-2">
+                        <Gift className="w-4 h-4 text-muted-foreground" />
+                        <p className="text-sm flex items-center text-muted-foreground">
+                            A new version is available -{" "}
+                            {checkForUpdates.data?.version}
+                        </p>
+                        <div className="flex gap-2 ml-auto">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Later
+                            </Button>
+                            <Button
+                                size="sm"
+                                disabled={handleUpdate.isPending}
+                                onClick={() => handleUpdate.mutate()}
+                            >
+                                {handleUpdate.isPending ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    "Update now"
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
         </Frame>
     );
 }
