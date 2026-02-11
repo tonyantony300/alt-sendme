@@ -8,6 +8,7 @@ import {
     SettingSidebarRoot,
     SettingSidebarTitle,
 } from "./setting-sidebar";
+import { SettingSidebarUpdateAlert } from "./setting-sidebar-update-alert";
 
 export default function SettingSidebar() {
     return (
@@ -21,6 +22,7 @@ export default function SettingSidebar() {
             <SettingSidebarContent>
                 <SettingSidebarCore />
             </SettingSidebarContent>
+            <SettingSidebarUpdateAlert />
             <SettingSidebarFooter />
         </SettingSidebarRoot>
     );

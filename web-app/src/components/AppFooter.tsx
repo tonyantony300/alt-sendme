@@ -49,9 +49,6 @@ export function AppFooter() {
                 ))}
             </div>
             <div className="flex items-center gap-2">
-                <LanguageSwitcher className="max-w-[200px]" />
-                <Separator className="h-6" orientation="vertical" />
-                <ThemeSwitcher />
                 <Link
                     to="/settings"
                     className={buttonVariants({

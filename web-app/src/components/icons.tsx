@@ -19,6 +19,7 @@ export type IconName =
     | "CaretLeft"
     | "Hexagon"
     | "FunnelSimpleX"
+    | "Info"
     | "CaretRight";
 
 export function LazyIcon(props: IconProps & { name: IconName }) {

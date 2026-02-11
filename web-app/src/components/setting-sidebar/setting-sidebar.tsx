@@ -117,6 +117,7 @@ function SettingSidebarCore() {
 
 function SettingSidebarFooter({
     className,
+    children,
     ...props
 }: React.ComponentProps<typeof SidebarFooter>) {
     const { t } = useTranslation();
