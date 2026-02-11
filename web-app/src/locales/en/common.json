@@ -1,6 +1,7 @@
 {
     "appTitle": "AltSendme",
     "send": "Send",
+    "comingSoon": "Coming Soon",
     "receive": "Receive",
     "ok": "OK",
     "undo": "Undo",
@@ -109,6 +110,12 @@
     },
     "settings": {
         "title": "Settings",
+        "navItems": {
+            "appearance": "Theme & Language",
+            "general": "General",
+            "network": "Network",
+            "notification": "Notifications"
+        },
         "theme": {
             "title": "Appearance",
             "light": "Light",
@@ -119,6 +126,29 @@
             "title": "Language",
             "description": "Select your preferred language",
             "noResults": "No languages found"
+        },
+        "general": {
+            "title": "General",
+            "autoCheckUpdates": {
+                "label": "Automatically check for updates",
+                "description": "The app will automatically check for updates on startup"
+            },
+            "systembar": {
+                "title": "System Tray",
+                "minimizeToTray": {
+                    "label": "Minimize to system tray",
+                    "description": "When close dialog, minimize the app instead of terminate"
+                },
+
+                "showProgressOnIcon": {
+                    "label": "Show transfer progress on app icon",
+                    "description": "Using a progress bar overlay on the app icon to indicate transfer progress"
+                },
+                "runOnSystemStartup": {
+                    "label": "Run on system startup",
+                    "description": "Automatically launch the app when the system starts"
+                }
+            }
         }
     }
 }

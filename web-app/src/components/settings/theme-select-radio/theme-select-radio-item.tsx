@@ -25,7 +25,7 @@ export function ThemeSelectRadioItem(props: Props) {
         >
             <div
                 className={cn(
-                    "relative bg-card shadow-sm size-56 border rounded-2xl border-border p-4 transition-all",
+                    "bg-card shadow-sm lg:size-52 size-40 overflow-hidden xl:size-56 border rounded-2xl border-border p-4 transition-all",
                     "hover:border-input outline-2 outline-transparent",
                     isSelected && "outline-success outline-offset-2",
                     theme === "dark" && "dark",
@@ -39,13 +39,6 @@ export function ThemeSelectRadioItem(props: Props) {
                         : {}
                 }
             >
-                {theme === "auto" && (
-                    <div className="absolute inset-0 flex rounded-2xl overflow-hidden">
-                        <div className="w-1/2 h-full bg-white" />
-                        <div className="w-1/2 h-full bg-neutral-900 dark" />
-                    </div>
-                )}
-
                 <div
                     className={cn(
                         "relative flex h-full flex-1 gap-2",
@@ -53,7 +46,18 @@ export function ThemeSelectRadioItem(props: Props) {
                     )}
                 >
                     {/* Left Panel Preview */}
-                    <div className="relative flex w-full max-w-72 flex-col rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div
+                        className="relative flex w-full max-w-72 flex-col rounded-xl border border-border bg-card text-card-foreground shadow-sm"
+                        style={
+                            theme === "auto"
+                                ? ({
+                                      "--card": "#f5f5f5",
+                                      "--card-foreground": "#0f172a",
+                                      "--primary": "#0f172a",
+                                  } as React.CSSProperties)
+                                : {}
+                        }
+                    >
                         <div className="flex-1 p-0">
                             <div className="divide-y divide-border">
                                 {Array.from({ length: 5 }).map((_, i) => (
@@ -70,7 +74,18 @@ export function ThemeSelectRadioItem(props: Props) {
                         </div>
                     </div>
                     {/* Right Panel Preview */}
-                    <div className="relative flex w-full flex-col rounded-xl border border-border bg-card text-card-foreground shadow-sm h-full max-w-1/3">
+                    <div
+                        className="relative flex w-full flex-col rounded-xl border border-border bg-card text-card-foreground shadow-sm h-full max-w-1/3"
+                        style={
+                            theme === "auto"
+                                ? ({
+                                      "--card": "#161616",
+                                      "--card-foreground": "#f8f8f8",
+                                      "--primary": "white",
+                                  } as React.CSSProperties)
+                                : {}
+                        }
+                    >
                         <div className="flex-1 flex flex-col gap-3 p-3">
                             <div className="flex flex-1 flex-col gap-2">
                                 <div className="h-1 rounded-full bg-muted-foreground/40 w-[60%]"></div>
@@ -102,7 +117,7 @@ export function ThemeSelectRadioItem(props: Props) {
                                 filter: "blur(4px)",
                             }}
                             transition={{ duration: 0.325, ease: "easeInOut" }}
-                            className="absolute -bottom-3 -right-3 rounded-full border-card border-2 bg-card"
+                            className="absolute -top-3 -right-3 rounded-full border-card border-2 bg-card"
                         >
                             <LazyIcon
                                 name="CheckCircle"

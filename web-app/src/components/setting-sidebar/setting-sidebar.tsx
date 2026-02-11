@@ -16,6 +16,7 @@ import { LazyIcon } from "../icons";
 import { useTranslation } from "../../i18n";
 import { cn } from "../../lib/utils";
 import { LICENSE_LINK, PRIVACY_LINK, VERSION_DISPLAY } from "../../lib/version";
+import { Badge } from "../ui/badge";
 
 function SettingSidebarRoot(props: React.ComponentProps<typeof Sidebar>) {
     const {} = props;
@@ -67,11 +68,22 @@ function SettingSidebarCore() {
                     <SidebarMenuItem key={item.label}>
                         <SidebarMenuItem>
                             <NavLink
-                                className="flex item-center gap-2"
+                                className="flex item-center gap-2 data-disabled:pointer-events-none"
                                 to={item.to}
+                                data-disabled={item.disable}
+                                onClick={(e) => {
+                                    if (item.disable) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }
+                                }}
+                                end
                             >
                                 {({ isActive }) => (
-                                    <SidebarMenuButton isActive={isActive}>
+                                    <SidebarMenuButton
+                                        isActive={isActive}
+                                        disabled={item.disable}
+                                    >
                                         {item.icon && (
                                             <LazyIcon
                                                 weight={
@@ -87,6 +99,11 @@ function SettingSidebarCore() {
                                                 ? t(item.translationNs)
                                                 : item.label}
                                         </span>
+                                        {item.comingSoon && (
+                                            <Badge size="sm" variant="info">
+                                                {t("comingSoon")}
+                                            </Badge>
+                                        )}
                                     </SidebarMenuButton>
                                 )}
                             </NavLink>

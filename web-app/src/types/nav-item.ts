@@ -17,4 +17,7 @@ export type INavItem = {
     from?: string;
     nested?: string;
     translationNs?: string;
+    disable?: boolean;
+    beta?: boolean;
+    comingSoon?: boolean;
 };
