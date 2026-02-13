@@ -7,8 +7,8 @@ import {
 } from "@tanstack/react-query";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
-import { useTranslation } from "../i18n";
 import { toastManager } from "../components/ui/toast";
+import { useTranslation } from "../i18n/react-i18next-compat";
 
 type UpdateInfo = Awaited<ReturnType<typeof check>>;
 
