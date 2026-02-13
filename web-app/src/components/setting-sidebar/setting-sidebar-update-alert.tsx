@@ -1,9 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "../../i18n";
 import { useAppSettingStore } from "../../store/app-setting";
+import { useCheckUpdateQuery, useInstallUpdateMutation } from "../../hooks/use-updater";
 import { LazyIcon } from "../icons";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
@@ -12,28 +10,8 @@ export function SettingSidebarUpdateAlert() {
     const { t } = useTranslation();
     const autoUpdate = useAppSettingStore((r) => r.autoUpdate);
 
-    const queryClient = useQueryClient();
-    const updateVersion = useQuery({
-        queryKey: ["setting-sidebar-update-alert"],
-        queryFn: async () => {
-            return check();
-        },
-        enabled: autoUpdate,
-    });
-    const handleUpdate = useMutation({
-        mutationFn: async () => {
-            const update = await check();
-            if (update) {
-                await update.downloadAndInstall();
-                await relaunch();
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["setting-sidebar-update-alert"],
-            });
-        },
-    });
+    const updateVersion = useCheckUpdateQuery({ enabled: autoUpdate });
+    const handleUpdate = useInstallUpdateMutation();
 
     if (updateVersion.isLoading || !updateVersion.data) {
         return null;

@@ -12,9 +12,7 @@ import {
 import { Switch } from "../../ui/switch";
 import { AlertDialog, AlertDialogContent } from "../../ui/alert-dialog";
 import { Gift, Loader2 } from "lucide-react";
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
-import { useMutation } from "@tanstack/react-query";
+import { useCheckForUpdatesMutation, useInstallUpdateMutation } from "../../../hooks/use-updater";
 import { toastManager } from "../../ui/toast";
 
 export function AutoUpdate() {
@@ -22,35 +20,33 @@ export function AutoUpdate() {
     const value = useAppSettingStore((r) => r.autoUpdate);
     const toggle = useAppSettingStore((r) => r.setAutoUpdate);
     const [isOpen, setIsOpen] = useState(false);
-    const checkForUpdates = useMutation({
-        mutationFn: async () => {
-            const update = await check();
-            return update;
-        },
-        onSuccess: (update) => {
-            if (update) {
-                setIsOpen(true);
-            } else {
-                toastManager.add({
-                    title: t("updater.noUpdatesTitle"),
-                    description: t("updater.noUpdatesDescription"),
-                    type: "info",
-                });
-            }
-        },
-    });
-    const handleUpdate = useMutation({
-        mutationFn: async () => {
-            const update = await check();
-            if (update) {
-                await update.downloadAndInstall();
-                await relaunch();
-            }
-        },
-        onSuccess: () => {
-            setIsOpen(false);
-        },
-    });
+    
+    const checkForUpdates = useCheckForUpdatesMutation();
+    const handleUpdate = useInstallUpdateMutation();
+    
+    const handleCheckForUpdates = () => {
+        checkForUpdates.mutate(undefined, {
+            onSuccess: (update) => {
+                if (update) {
+                    setIsOpen(true);
+                } else {
+                    toastManager.add({
+                        title: t("updater.noUpdatesTitle"),
+                        description: t("updater.noUpdatesDescription"),
+                        type: "info",
+                    });
+                }
+            },
+        });
+    };
+    
+    const handleInstallUpdate = () => {
+        handleUpdate.mutate(undefined, {
+            onSuccess: () => {
+                setIsOpen(false);
+            },
+        });
+    };
 
     return (
         <Frame>
@@ -70,7 +66,7 @@ export function AutoUpdate() {
                     <Button
                         className="w-48"
                         variant="secondary"
-                        onClick={() => checkForUpdates.mutate()}
+                        onClick={handleCheckForUpdates}
                         disabled={checkForUpdates.isPending}
                     >
                         {checkForUpdates.isPending ? (
@@ -103,7 +99,7 @@ export function AutoUpdate() {
                             <Button
                                 size="sm"
                                 disabled={handleUpdate.isPending}
-                                onClick={() => handleUpdate.mutate()}
+                                onClick={handleInstallUpdate}
                             >
                                 {handleUpdate.isPending ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
