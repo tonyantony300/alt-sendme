@@ -150,5 +150,15 @@
                 }
             }
         }
+    },
+    "updater": {
+        "newUpdateTitle": "New update!",
+        "newVersionAvailable": "New version {{version}} is available.",
+        "newVersionAvailableInline": "A new version is available - {{version}}",
+        "updateNow": "Update now",
+        "later": "Later",
+        "checkForUpdates": "Check for updates",
+        "noUpdatesTitle": "No updates available",
+        "noUpdatesDescription": "You are already using the latest version"
     }
 }

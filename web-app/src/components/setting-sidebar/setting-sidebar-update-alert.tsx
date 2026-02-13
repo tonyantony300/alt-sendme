@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { check } from "@tauri-apps/plugin-updater";
-import { useAppSettingStore } from "../../store/app-setting";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { LazyIcon } from "../icons";
-import { Button } from "../ui/button";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "../../i18n";
+import { useAppSettingStore } from "../../store/app-setting";
+import { LazyIcon } from "../icons";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Button } from "../ui/button";
 
 export function SettingSidebarUpdateAlert() {
+    const { t } = useTranslation();
     const autoUpdate = useAppSettingStore((r) => r.autoUpdate);
 
     const queryClient = useQueryClient();
@@ -41,9 +43,11 @@ export function SettingSidebarUpdateAlert() {
         <div className="px-2 mb-4">
             <Alert variant="success">
                 <LazyIcon name="Info" />
-                <AlertTitle>New update!</AlertTitle>
+                <AlertTitle>{t("updater.newUpdateTitle")}</AlertTitle>
                 <AlertDescription>
-                    New version {updateVersion.data?.version} is available.
+                    {t("updater.newVersionAvailable", {
+                        version: updateVersion.data?.version ?? "",
+                    })}
                 </AlertDescription>
                 <div className="col-span-full pt-2 flex-1 flex justify-end">
                     <Button
@@ -55,7 +59,7 @@ export function SettingSidebarUpdateAlert() {
                         {handleUpdate.isPending ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
-                            "Update now"
+                            t("updater.updateNow")
                         )}
                     </Button>
                 </div>

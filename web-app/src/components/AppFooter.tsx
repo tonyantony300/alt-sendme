@@ -1,6 +1,7 @@
 
 import { buttonVariants } from "./ui/button";
 import { CoffeeIcon, GithubIcon, GlobeIcon, SettingsIcon } from "lucide-react";
+import { useTranslation } from "@/i18n";
 import { AppVersion } from "./AppVersionPayload";
 import { Separator } from "./ui/separator";
 import { Link } from "react-router-dom";
@@ -25,6 +26,7 @@ const CONTACTS = [
 ];
 
 export function AppFooter() {
+    const { t } = useTranslation();
     return (
         <div className="w-full h-10 items-center justify-between  bottom-0 flex px-4 bg-background/50 border-t border-border backdrop-blur-md py-4">
             <div className="space-x-2 flex-1 w-full flex items-center relative">
@@ -54,7 +56,7 @@ export function AppFooter() {
                         size: "icon-sm",
                         variant: "outline",
                     })}
-                    aria-label="Settings"
+                    aria-label={t("settings.title")}
                 >
                     <SettingsIcon />
                 </Link>

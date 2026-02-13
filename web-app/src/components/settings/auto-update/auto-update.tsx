@@ -32,8 +32,8 @@ export function AutoUpdate() {
                 setIsOpen(true);
             } else {
                 toastManager.add({
-                    title: "No updates available",
-                    description: "You are already using the latest version",
+                    title: t("updater.noUpdatesTitle"),
+                    description: t("updater.noUpdatesDescription"),
                     type: "info",
                 });
             }
@@ -76,7 +76,7 @@ export function AutoUpdate() {
                         {checkForUpdates.isPending ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : null}
-                        Check for updates
+                        {t("updater.checkForUpdates")}
                     </Button>
                 </FrameFooter>
             )}
@@ -88,8 +88,9 @@ export function AutoUpdate() {
                     <div className="flex px-5 py-4 items-center gap-2">
                         <Gift className="w-4 h-4 text-muted-foreground" />
                         <p className="text-sm flex items-center text-muted-foreground">
-                            A new version is available -{" "}
-                            {checkForUpdates.data?.version}
+                            {t("updater.newVersionAvailableInline", {
+                                version: checkForUpdates.data?.version ?? "",
+                            })}
                         </p>
                         <div className="flex gap-2 ml-auto">
                             <Button
@@ -97,7 +98,7 @@ export function AutoUpdate() {
                                 size="sm"
                                 onClick={() => setIsOpen(false)}
                             >
-                                Later
+                                {t("updater.later")}
                             </Button>
                             <Button
                                 size="sm"
@@ -107,7 +108,7 @@ export function AutoUpdate() {
                                 {handleUpdate.isPending ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
-                                    "Update now"
+                                    t("updater.updateNow")
                                 )}
                             </Button>
                         </div>

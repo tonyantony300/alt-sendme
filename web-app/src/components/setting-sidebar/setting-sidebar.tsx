@@ -32,6 +32,7 @@ function SettingSidebarTitle({
     prev,
     ...props
 }: React.ComponentProps<"div"> & { prev: string }) {
+    const { t } = useTranslation();
     return (
         <Link to={prev}>
             <div
@@ -42,7 +43,7 @@ function SettingSidebarTitle({
                 )}
             >
                 <ArrowLeft size="18" className="" />
-                <h3 className="text-lg font-medium">Settings</h3>
+                <h3 className="text-lg font-medium">{t("settings.title")}</h3>
             </div>
         </Link>
     );

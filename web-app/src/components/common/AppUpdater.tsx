@@ -4,15 +4,13 @@ import { relaunch } from '@tauri-apps/plugin-process'
 import { Loader2, Gift } from 'lucide-react'
 import { AlertDialog, AlertDialogContent } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-
-// import { useTranslation } from '@/i18n'
+import { useTranslation } from '@/i18n/hooks'
 
 export function AppUpdater() {
 	const [isOpen, setIsOpen] = useState(false)
 	const [isUpdating, setIsUpdating] = useState(false)
 	const [newVersion, setNewVersion] = useState<string>('') // kept for now in case used elsewhere
-	// TODO: translation support to be implemented
-	// const { t } = useTranslation()
+	const { t } = useTranslation()
 
 	useEffect(() => {
 		const checkUpdate = async () => {
@@ -59,7 +57,9 @@ export function AppUpdater() {
 				<div className="flex px-5 py-4 items-center gap-2">
 					<Gift className="w-4 h-4 text-muted-foreground" />
 					<p className="text-sm flex items-center text-muted-foreground">
-						A new version is available - {newVersion}
+						{t('updater.newVersionAvailableInline', {
+							version: newVersion,
+						})}
 					</p>
 					<div className="flex gap-2 ml-auto">
 						<Button
@@ -67,7 +67,7 @@ export function AppUpdater() {
 							size="sm"
 							onClick={() => setIsOpen(false)}
 						>
-							Later
+							{t('updater.later')}
 						</Button>
 						<Button
 							size="sm"
@@ -79,7 +79,7 @@ export function AppUpdater() {
 							{isUpdating ? (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							) : (
-								'Update now'
+								t('updater.updateNow')
 							)}
 						</Button>
 					</div>
