@@ -12,6 +12,12 @@
     "donate": "Donate",
     "privacyPolicy": "Privacy Policy",
     "license": "License",
+    "notFound": {
+        "title": "Page Not Found",
+        "subtitle": "The page you're looking for doesn't exist or has been moved.",
+        "goBack": "Go Back",
+        "goHome": "Go Home"
+    },
     "sender": {
         "title": "Send",
         "subtitle": "Share files or folders via encrypted peer-to-peer connections.",
