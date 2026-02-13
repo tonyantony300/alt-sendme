@@ -63,48 +63,46 @@ function SettingSidebarCore() {
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.label}>
-                        <SidebarMenuItem>
-                            <NavLink
-                                className="flex item-center gap-2 data-disabled:pointer-events-none"
-                                to={item.to}
-                                data-disabled={item.disable}
-                                onClick={(e) => {
-                                    if (item.disable) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    }
-                                }}
-                                end
-                            >
-                                {({ isActive }) => (
-                                    <SidebarMenuButton
-                                        isActive={isActive}
-                                        disabled={item.disable}
-                                    >
-                                        {item.icon && (
-                                            <LazyIcon
-                                                weight={
-                                                    isActive
-                                                        ? "duotone"
-                                                        : "regular"
-                                                }
-                                                name={item.icon}
-                                            />
-                                        )}
-                                        <span>
-                                            {item.translationNs
-                                                ? t(item.translationNs)
-                                                : item.label}
-                                        </span>
-                                        {item.comingSoon && (
-                                            <Badge size="sm" variant="info">
-                                                {t("comingSoon")}
-                                            </Badge>
-                                        )}
-                                    </SidebarMenuButton>
-                                )}
-                            </NavLink>
-                        </SidebarMenuItem>
+                        <NavLink
+                            className="flex items-center gap-2 data-disabled:pointer-events-none"
+                            to={item.to}
+                            data-disabled={item.disable}
+                            onClick={(e) => {
+                                if (item.disable) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }
+                            }}
+                            end
+                        >
+                            {({ isActive }) => (
+                                <SidebarMenuButton
+                                    isActive={isActive}
+                                    disabled={item.disable}
+                                >
+                                    {item.icon && (
+                                        <LazyIcon
+                                            weight={
+                                                isActive
+                                                    ? "duotone"
+                                                    : "regular"
+                                            }
+                                            name={item.icon}
+                                        />
+                                    )}
+                                    <span>
+                                        {item.translationNs
+                                            ? t(item.translationNs)
+                                            : item.label}
+                                    </span>
+                                    {item.comingSoon && (
+                                        <Badge size="sm" variant="info">
+                                            {t("comingSoon")}
+                                        </Badge>
+                                    )}
+                                </SidebarMenuButton>
+                            )}
+                        </NavLink>
                     </SidebarMenuItem>
                 ))}
             </SidebarMenu>
