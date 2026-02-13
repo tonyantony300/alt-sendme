@@ -165,6 +165,10 @@
         "later": "Later",
         "checkForUpdates": "Check for updates",
         "noUpdatesTitle": "No updates available",
-        "noUpdatesDescription": "You are already using the latest version"
+        "noUpdatesDescription": "You are already using the latest version",
+        "checkFailed": "Check Failed",
+        "checkFailedDesc": "Failed to check for updates",
+        "installFailed": "Installation Failed",
+        "installFailedDesc": "Failed to install update"
     }
 }

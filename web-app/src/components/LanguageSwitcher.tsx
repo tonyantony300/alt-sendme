@@ -1,4 +1,4 @@
-import { useAppTranslation } from "../i18n/hooks";
+import type { ButtonProps } from "@base-ui/react";
 import ReactCountryFlag from "react-country-flag";
 import {
     Combobox,
@@ -10,11 +10,11 @@ import {
     ComboboxTrigger,
     ComboboxValue,
 } from "@/components/ui/combobox";
-import { buttonVariants } from "./ui/button";
-import type { ButtonProps } from "@base-ui/react";
-import { LazyIcon } from "./icons";
-import { cn } from "../lib/utils";
 import { useTranslation } from "../i18n";
+import { useAppTranslation } from "../i18n/hooks";
+import { cn } from "../lib/utils";
+import { LazyIcon } from "./icons";
+import { buttonVariants } from "./ui/button";
 
 const LANGUAGES = [
     { value: "ar", label: "العربية", countryCode: "SA" },
