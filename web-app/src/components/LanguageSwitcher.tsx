@@ -63,20 +63,20 @@ export function LanguageSwitcher(props: ButtonProps) {
                 return item && changeLanguage(item?.value);
             }}
         >
-            <ComboboxTrigger aria-label="Select an item" {...props}>
-                <div
-                    className={cn(
-                        buttonVariants({ variant: "outline" }),
-                        "justify-between",
-                        props.className,
-                    )}
-                >
-                    <ComboboxValue />
-                    <LazyIcon
-                        name="CaretDown"
-                        className="-me-1 text-muted-foreground"
-                    />
-                </div>
+            <ComboboxTrigger
+                aria-label="Select an item"
+                {...props}
+                className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "justify-between",
+                    props.className,
+                )}
+            >
+                <ComboboxValue />
+                <LazyIcon
+                    name="CaretDown"
+                    className="-me-1 text-muted-foreground"
+                />
             </ComboboxTrigger>
             <ComboboxPopup>
                 <div className="border-b p-2">
