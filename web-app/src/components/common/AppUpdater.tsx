@@ -1,51 +1,34 @@
 import { useEffect, useState } from "react";
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
 import { Loader2, Gift } from "lucide-react";
 import { AlertDialog, AlertDialogContent } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n";
+import { useAppSettingStore } from "@/store/app-setting";
+import {
+    useCheckUpdateQuery,
+    useInstallUpdateMutation,
+} from "@/hooks/use-updater";
 
 export function AppUpdater() {
     const [isOpen, setIsOpen] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [newVersion, setNewVersion] = useState<string>(""); // kept for now in case used elsewhere
+    const [newVersion, setNewVersion] = useState<string>("");
     const { t } = useTranslation();
+    const autoUpdate = useAppSettingStore((state) => state.autoUpdate);
+    const { data: updateData } = useCheckUpdateQuery({
+        enabled: autoUpdate,
+    });
+    const installUpdateMutation = useInstallUpdateMutation();
 
     useEffect(() => {
-        const checkUpdate = async () => {
-            try {
-                const update = await check();
-                if (update?.available) {
-                    // console.log(
-                    //     `Update to ${update.version} available! Date: ${update.date}`
-                    // )
-                    // console.log(`Release notes: ${update.body}`)
-                    setNewVersion(update.version);
-                    setIsOpen(true);
-                }
-            } catch (error) {
-                console.error("Failed to check for updates:", error);
-            }
-        };
-
-        checkUpdate();
-    }, []);
-
-    const handleUpdate = async () => {
-        setIsUpdating(true);
-        try {
-            const update = await check();
-            if (update?.available) {
-                await update.downloadAndInstall();
-                await relaunch();
-            }
-        } catch (error) {
-            console.error("Failed to install update:", error);
-            setIsOpen(false);
-        } finally {
-            setIsUpdating(false);
+        if (autoUpdate && updateData) {
+            setNewVersion(updateData.version);
+            setIsOpen(true);
         }
+    }, [autoUpdate, updateData]);
+
+    const handleUpdate = () => {
+        installUpdateMutation.mutate();
+        setIsOpen(false);
     };
 
     return (
@@ -73,10 +56,10 @@ export function AppUpdater() {
                             size="sm"
                             className="w-24"
                             onClick={handleUpdate}
-                            disabled={isUpdating}
-                            aria-busy={isUpdating}
+                            disabled={installUpdateMutation.isPending}
+                            aria-busy={installUpdateMutation.isPending}
                         >
-                            {isUpdating ? (
+                            {installUpdateMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
                                 t("updater.updateNow")
