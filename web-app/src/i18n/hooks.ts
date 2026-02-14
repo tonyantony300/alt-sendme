@@ -1,4 +1,4 @@
-import { useContext } from "react";
-import { TranslationContext } from "./context";
+import { useContext } from 'react'
+import { TranslationContext } from './context'
 
-export const useAppTranslation = () => useContext(TranslationContext);
+export const useAppTranslation = () => useContext(TranslationContext)

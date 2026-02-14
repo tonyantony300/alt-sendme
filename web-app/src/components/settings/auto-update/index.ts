@@ -1,1 +1,1 @@
-export * from "./auto-update";
+export * from './auto-update'

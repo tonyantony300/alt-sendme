@@ -1,8 +1,8 @@
-export { default as i18n, loadTranslations } from "./setup";
+export { default as i18n, loadTranslations } from './setup'
 
-export { TranslationProvider } from "./TranslationContext";
+export { TranslationProvider } from './TranslationContext'
 
-export type { I18nInstance, TranslationResources } from "./setup";
+export type { I18nInstance, TranslationResources } from './setup'
 
-export { useAppTranslation } from "./hooks";
-export { useTranslation } from "./react-i18next-compat";
+export { useAppTranslation } from './hooks'
+export { useTranslation } from './react-i18next-compat'
