@@ -8,6 +8,7 @@ import {
     useCheckUpdateQuery,
     useInstallUpdateMutation,
 } from "@/hooks/use-updater";
+import { toastManager } from "../ui/toast";
 
 export function AppUpdater() {
     const [isOpen, setIsOpen] = useState(false);
@@ -27,8 +28,21 @@ export function AppUpdater() {
     }, [autoUpdate, updateData]);
 
     const handleUpdate = () => {
-        installUpdateMutation.mutate();
-        setIsOpen(false);
+        installUpdateMutation
+            .mutateAsync()
+            .then(() => {
+                // Optionally, you can show a success message here
+                setIsOpen(false);
+            })
+            .catch((error) => {
+                // Optionally, handle errors here
+                console.error("Failed to install update:", error);
+                toastManager.add({
+                    title: t("updater.installFailed"),
+                    description: t("updater.installFailedDesc"),
+                    type: "error",
+                });
+            });
     };
 
     return (

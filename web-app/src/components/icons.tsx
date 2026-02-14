@@ -23,6 +23,7 @@ export type IconName =
     | "CaretRight";
 
 export function LazyIcon(props: IconProps & { name: IconName }) {
+    // biome-ignore lint/performance/noDynamicNamespaceImportAccess: No way to get icon name of @phosphor icons
     const Icon = P[props.name];
 
     if (Icon) return <Icon weight="regular" size="14" {...props} />;
