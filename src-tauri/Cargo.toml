@@ -16,13 +16,15 @@ tauri-build = { version = "2.0", features = [] }
 serde_json = "1.0"
 
 [dependencies]
-tauri = { version = "2.0", features = ["protocol-asset", "tray-icon"] }
+tauri = { version = "2.0", features = [ "protocol-asset", "tray-icon"] }
 tauri-plugin-dialog = "2.0"
 tauri-plugin-opener = "2.0"
 tauri-plugin-os = "2.0"
 tauri-plugin-single-instance = "2.0"
 tauri-plugin-http = "2.0"
 tauri-plugin-shell = "2.0"
+tauri-plugin-updater = "2.9.0"
+tauri-plugin-native-utils = { path = "./plugins/tauri-plugin-native-utils" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
@@ -32,7 +34,6 @@ sendme = { path = "../sendme" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"
-tauri-plugin-updater = "2.9.0"
 
 [features]
 default = ["custom-protocol"]

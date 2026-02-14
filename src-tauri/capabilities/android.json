@@ -2,8 +2,12 @@
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "sendme:android",
 	"description": "enables permissions for sendme on Android",
-	"platforms": ["android"],
-	"windows": ["main"],
+	"platforms": [
+		"android"
+	],
+	"windows": [
+		"main"
+	],
 	"permissions": [
 		"core:default",
 		"core:webview:allow-set-webview-zoom",
@@ -21,10 +25,15 @@
 		{
 			"identifier": "http:default",
 			"allow": [
-				{ "url": "https://*:*" },
-				{ "url": "http://*:*" }
+				{
+					"url": "https://*:*"
+				},
+				{
+					"url": "http://*:*"
+				}
 			],
 			"deny": []
-		}
+		},
+		"native-utils:default"
 	]
 }
