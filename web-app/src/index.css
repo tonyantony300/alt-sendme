@@ -242,10 +242,6 @@
 		stroke-width: 1.5;
 	}
 
-	a {
-		color: var(--app-accent);
-	}
-
 	* {
 		scrollbar-width: none;
 		-ms-overflow-style: none;

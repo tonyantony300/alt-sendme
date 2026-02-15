@@ -1,9 +1,9 @@
-import { LanguageSwitcher } from './LanguageSwitcher'
 import { buttonVariants } from './ui/button'
-import { CoffeeIcon, GithubIcon, GlobeIcon } from 'lucide-react'
+import { CoffeeIcon, GithubIcon, GlobeIcon, SettingsIcon } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { AppVersion } from './AppVersionPayload'
-import { ThemeSwitcher } from './ThemeSwitcher'
 import { Separator } from './ui/separator'
+import { Link } from 'react-router-dom'
 //import { Link } from 'react-router-dom'
 
 const CONTACTS = [
@@ -25,6 +25,7 @@ const CONTACTS = [
 ]
 
 export function AppFooter() {
+	const { t } = useTranslation()
 	return (
 		<div className="w-full h-10 items-center justify-between  bottom-0 flex px-4 bg-background/50 border-t border-border backdrop-blur-md py-4">
 			<div className="space-x-2 flex-1 w-full flex items-center relative">
@@ -48,16 +49,16 @@ export function AppFooter() {
 				))}
 			</div>
 			<div className="flex items-center gap-2">
-				<LanguageSwitcher className="max-w-[200px]" />
-				<Separator className="h-6" orientation="vertical" />
-				<ThemeSwitcher />
-				{/* <Link
+				<Link
 					to="/settings"
-					className={buttonVariants({ size: 'icon-sm', variant: 'outline' })}
-					aria-label="Settings"
+					className={buttonVariants({
+						size: 'icon-sm',
+						variant: 'outline',
+					})}
+					aria-label={t('settings.title')}
 				>
 					<SettingsIcon />
-				</Link> */}
+				</Link>
 			</div>
 		</div>
 	)

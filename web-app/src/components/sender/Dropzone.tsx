@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronRight, Loader2, Upload, X } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ChevronDown, ChevronRight, Upload, X } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
 import { FolderIcon, getFileIcon } from '../illustration'
@@ -101,13 +102,18 @@ export function Dropzone({
 	}
 
 	return (
-		<div
+		<motion.div
+			layout
+			transition={{ duration: 0.3, ease: 'easeInOut' }}
 			style={getDropzoneStyles()}
-			className="relative border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground flex items-center justify-center min-h-48 border-border"
+			className="relative border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground flex items-center justify-center h-64 border-border"
 		>
 			{selectedPath && !isLoading && (
-				<button
+				<motion.button
+					key="clear-button"
 					type="button"
+					initial={{ opacity: 0, filter: 'blur(4px)' }}
+					animate={{ opacity: 1, filter: 'blur(0px)' }}
 					onClick={(e) => {
 						e.stopPropagation()
 						onClearSelection()
@@ -116,13 +122,18 @@ export function Dropzone({
 					aria-label="Clear selection"
 				>
 					<X className="h-6 w-6" />
-				</button>
+				</motion.button>
 			)}
-			<div className="space-y-4 w-full">
-				<div className="flex justify-center">
-					{isLoading ? (
-						<Loader2 className="h-12 w-12 animate-spin" />
-					) : selectedPath ? (
+			<motion.div
+				key={selectedPath ? 'selected' : 'empty'}
+				initial={{ opacity: 0, filter: 'blur(4px)' }}
+				animate={{ opacity: 1, filter: 'blur(0px)' }}
+				exit={{ opacity: 0, filter: 'blur(4px)' }}
+				transition={{ duration: 0.25 }}
+				className="space-y-4 w-full"
+			>
+				<div className="flex justify-center items-center h-16">
+					{selectedPath ? (
 						renderSuccessIcon()
 					) : (
 						<Upload
@@ -138,7 +149,7 @@ export function Dropzone({
 					</p>
 					<div className="text-sm text-muted-foreground">{getSubText()}</div>
 				</div>
-			</div>
-		</div>
+			</motion.div>
+		</motion.div>
 	)
 }

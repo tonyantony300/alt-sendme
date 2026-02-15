@@ -1,53 +1,48 @@
 import { useEffect, useState } from 'react'
-import { check } from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
 import { Loader2, Gift } from 'lucide-react'
 import { AlertDialog, AlertDialogContent } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-
-// import { useTranslation } from '@/i18n'
+import { useTranslation } from '@/i18n'
+import { useAppSettingStore } from '@/store/app-setting'
+import {
+	useCheckUpdateQuery,
+	useInstallUpdateMutation,
+} from '@/hooks/use-updater'
+import { toastManager } from '../ui/toast'
 
 export function AppUpdater() {
 	const [isOpen, setIsOpen] = useState(false)
-	const [isUpdating, setIsUpdating] = useState(false)
-	const [newVersion, setNewVersion] = useState<string>('') // kept for now in case used elsewhere
-	// TODO: translation support to be implemented
-	// const { t } = useTranslation()
+	const [newVersion, setNewVersion] = useState<string>('')
+	const { t } = useTranslation()
+	const autoUpdate = useAppSettingStore((state) => state.autoUpdate)
+	const { data: updateData } = useCheckUpdateQuery({
+		enabled: autoUpdate,
+	})
+	const installUpdateMutation = useInstallUpdateMutation()
 
 	useEffect(() => {
-		const checkUpdate = async () => {
-			try {
-				const update = await check()
-				if (update?.available) {
-					// console.log(
-					//     `Update to ${update.version} available! Date: ${update.date}`
-					// )
-					// console.log(`Release notes: ${update.body}`)
-					setNewVersion(update.version)
-					setIsOpen(true)
-				}
-			} catch (error) {
-				console.error('Failed to check for updates:', error)
-			}
+		if (autoUpdate && updateData) {
+			setNewVersion(updateData.version)
+			setIsOpen(true)
 		}
+	}, [autoUpdate, updateData])
 
-		checkUpdate()
-	}, [])
-
-	const handleUpdate = async () => {
-		setIsUpdating(true)
-		try {
-			const update = await check()
-			if (update?.available) {
-				await update.downloadAndInstall()
-				await relaunch()
-			}
-		} catch (error) {
-			console.error('Failed to install update:', error)
-			setIsOpen(false)
-		} finally {
-			setIsUpdating(false)
-		}
+	const handleUpdate = () => {
+		installUpdateMutation
+			.mutateAsync()
+			.then(() => {
+				// Optionally, you can show a success message here
+				setIsOpen(false)
+			})
+			.catch((error) => {
+				// Optionally, handle errors here
+				console.error('Failed to install update:', error)
+				toastManager.add({
+					title: t('updater.installFailed'),
+					description: t('updater.installFailedDesc'),
+					type: 'error',
+				})
+			})
 	}
 
 	return (
@@ -59,7 +54,9 @@ export function AppUpdater() {
 				<div className="flex px-5 py-4 items-center gap-2">
 					<Gift className="w-4 h-4 text-muted-foreground" />
 					<p className="text-sm flex items-center text-muted-foreground">
-						A new version is available - {newVersion}
+						{t('updater.newVersionAvailableInline', {
+							version: newVersion,
+						})}
 					</p>
 					<div className="flex gap-2 ml-auto">
 						<Button
@@ -67,19 +64,19 @@ export function AppUpdater() {
 							size="sm"
 							onClick={() => setIsOpen(false)}
 						>
-							Later
+							{t('updater.later')}
 						</Button>
 						<Button
 							size="sm"
 							className="w-24"
 							onClick={handleUpdate}
-							disabled={isUpdating}
-							aria-busy={isUpdating}
+							disabled={installUpdateMutation.isPending}
+							aria-busy={installUpdateMutation.isPending}
 						>
-							{isUpdating ? (
+							{installUpdateMutation.isPending ? (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							) : (
-								'Update now'
+								t('updater.updateNow')
 							)}
 						</Button>
 					</div>
