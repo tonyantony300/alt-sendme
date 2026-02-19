@@ -1,12 +1,24 @@
 import { invoke } from '@tauri-apps/api/core'
 
-export type SelectPathResponse = {
+export type SelectDonwloadFolderResponse = {
 	uri: String
 	path: String
 }
 
-export async function selectDownloadFolder(): Promise<SelectPathResponse | null> {
-	return await invoke<SelectPathResponse>(
+export type SelectedSendItemResponse = {
+	uri: String
+	path: String
+	cachedPath: String
+}
+
+export async function selectDownloadFolder(): Promise<SelectDonwloadFolderResponse | null> {
+	return await invoke<SelectDonwloadFolderResponse>(
 		'plugin:native-utils|select_download_folder'
+	)
+}
+
+export async function selectSendDocument(): Promise<SelectedSendItemResponse | null> {
+	return await invoke<SelectedSendItemResponse>(
+		'plugin:native-utils|select_send_document'
 	)
 }

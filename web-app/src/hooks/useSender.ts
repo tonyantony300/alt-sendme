@@ -27,7 +27,7 @@ export interface UseSenderReturn {
 	isBroadcastMode: boolean
 	activeConnectionCount: number
 
-	handleFileSelect: (path: string) => void
+	handleFileSelect: (path: string, pathType?: 'file' | 'directory') => void
 	startSharing: () => Promise<void>
 	stopSharing: () => Promise<void>
 	copyTicket: () => Promise<void>
@@ -445,8 +445,12 @@ export function useSender(): UseSenderReturn {
 		setActiveConnectionCount,
 	])
 
-	const handleFileSelect = async (path: string) => {
+	const handleFileSelect = async (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => {
 		setSelectedPath(path)
+		if (pathType) return setPathType(pathType)
 		try {
 			const type = await invoke<string>('check_path_type', { path })
 			setPathType(type as 'file' | 'directory')

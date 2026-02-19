@@ -9,12 +9,15 @@ import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import java.io.File
+import java.io.FileOutputStream
 
 @TauriPlugin
 class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
     companion object {
-        private const val RW_PERMISSION_FLAGS = Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        private const val RW_PERMISSION_FLAGS =
+            Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
     }
 
     @Command
@@ -24,9 +27,18 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         this::handleDownloadFolderSelection.name
     )
 
+    @Command
+    fun select_send_document(invoke: Invoke) = startActivityForResult(
+        invoke,
+        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            type = "*/*"
+        },
+        this::handleSendFileSelection.name
+    )
+
     @ActivityCallback
     fun handleDownloadFolderSelection(invoke: Invoke, result: ActivityResult) {
-        if(Activity.RESULT_OK != result.resultCode) return invoke.resolve(null)
+        if (Activity.RESULT_OK != result.resultCode) return invoke.resolve(null)
 
         val uri = result.data?.data ?: return invoke.resolve(null)
 
@@ -35,7 +47,7 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
             invoke.resolve(JSObject().apply {
                 put("uri", uri.toString())
-                put("path", uri.extractOsPath())
+                put("path", uri.extractFolderOsPath())
             })
 
             activity.contentResolver.persistedUriPermissions.stream()
@@ -46,6 +58,42 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
                         RW_PERMISSION_FLAGS
                     )
                 }
+        } catch (e: Exception) {
+            invoke.reject(e.message)
+        }
+    }
+
+    @ActivityCallback
+    fun handleSendFileSelection(invoke: Invoke, result: ActivityResult) {
+        if (Activity.RESULT_OK != result.resultCode) return invoke.resolve(null)
+
+        val uri = result.data?.data ?: return invoke.resolve(null)
+
+        try {
+            val fileName = FileUtils.getFileName(uri, activity)
+
+            val path = listOf(
+                activity.cacheDir.absolutePath,
+                "file_cache",
+                System.currentTimeMillis().toString(),
+                fileName ?: "unknown"
+            ).joinToString(File.separator)
+
+            val tempFile = File(path).apply {
+                parentFile?.mkdirs()
+            }
+
+            activity.contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(tempFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            invoke.resolve(JSObject().apply {
+                put("uri", uri.toString())
+                put("path", fileName ?: "Unknown")
+                put("cachedPath", tempFile.absolutePath)
+            })
         } catch (e: Exception) {
             invoke.reject(e.message)
         }

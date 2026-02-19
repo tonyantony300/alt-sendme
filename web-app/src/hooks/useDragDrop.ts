@@ -1,9 +1,11 @@
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-dialog'
+import { selectSendDocument } from 'tauri-plugin-native-utils-api'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
+import { IS_ANDROID } from '@/lib/platform'
 
 export interface UseDragDropReturn {
 	isDragActive: boolean
@@ -16,11 +18,14 @@ export interface UseDragDropReturn {
 	browseFolder: () => Promise<void>
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
-	checkPathType: (path: string) => Promise<void>
+	checkPathType: (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => Promise<void>
 }
 
 export function useDragDrop(
-	onFileSelect: (path: string) => void
+	onFileSelect: (path: string, pathType?: 'file' | 'directory') => void
 ): UseDragDropReturn {
 	const { t } = useTranslation()
 	const [isDragActive, setIsDragActive] = useState(false)
@@ -33,7 +38,12 @@ export function useDragDrop(
 		type: 'info',
 	})
 
-	const checkPathType = async (path: string) => {
+	const checkPathType = async (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => {
+		if (pathType) return setPathType(pathType)
+
 		try {
 			const type = await invoke<string>('check_path_type', { path })
 			setPathType(type as 'file' | 'directory')
@@ -61,13 +71,21 @@ export function useDragDrop(
 
 	const browseFile = async () => {
 		try {
-			const selected = await open({
-				multiple: false,
-				directory: false,
-			})
+			if (IS_ANDROID) {
+				const selected = await selectSendDocument()
 
-			if (selected) {
-				onFileSelect(selected)
+				if (selected) {
+					onFileSelect(selected.cachedPath.toString(), 'file')
+				}
+			} else {
+				const selected = await open({
+					multiple: false,
+					directory: false,
+				})
+
+				if (selected) {
+					onFileSelect(selected)
+				}
 			}
 		} catch (error) {
 			console.error('Failed to open file dialog:', error)

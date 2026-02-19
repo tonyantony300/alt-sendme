@@ -31,3 +31,11 @@ impl<R: Runtime> NativeUtils<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn select_send_document(&self) -> crate::Result<SelectedSendItemResponse> {
+        self.0
+            .run_mobile_plugin("select_send_document", ())
+            .map_err(Into::into)
+    }
+}
