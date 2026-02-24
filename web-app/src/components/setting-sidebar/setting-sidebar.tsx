@@ -14,8 +14,10 @@ import { Link, NavLink } from 'react-router-dom'
 import { LazyIcon } from '../icons'
 import { useTranslation } from '../../i18n'
 import { cn } from '../../lib/utils'
-import { LICENSE_LINK, PRIVACY_LINK, VERSION_DISPLAY } from '../../lib/version'
+import { LICENSE_LINK, PRIVACY_LINK } from '../../lib/version'
 import { Badge } from '../ui/badge'
+import { AppVersionInline } from '../app-version'
+import { openUrl } from '@tauri-apps/plugin-opener'
 
 function SettingSidebarRoot(props: React.ComponentProps<typeof Sidebar>) {
 	return <Sidebar {...props} />
@@ -113,25 +115,23 @@ function SettingSidebarFooter({
 			{...props}
 		>
 			{/*TODO: Add link*/}
-			<span>{VERSION_DISPLAY}</span>
+			<AppVersionInline className="text-muted-foreground hover:text-foreground" />
 			<div className="size-1 rounded-full bg-muted-foreground" />
-			<a
-				className="hover:underline hover:text-foreground transition-color"
-				href={PRIVACY_LINK}
-				target="_blank"
-				rel="noopener noreferrer"
+			<button
+				className="hover:underline underline-offset-4 hover:text-foreground transition-color"
+				type="button"
+				onClick={() => openUrl(PRIVACY_LINK)}
 			>
 				{t('privacyPolicy')}
-			</a>
+			</button>
 			<div className="size-1 rounded-full bg-muted-foreground" />
-			<a
-				className="hover:underline hover:text-foreground transition-color"
-				href={LICENSE_LINK}
-				target="_blank"
-				rel="noopener noreferrer"
+			<button
+				className="hover:underline underline-offset-4 hover:text-foreground transition-color"
+				type="button"
+				onClick={() => openUrl(LICENSE_LINK)}
 			>
 				{t('license')}
-			</a>
+			</button>
 		</SidebarFooter>
 	)
 }

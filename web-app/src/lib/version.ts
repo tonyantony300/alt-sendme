@@ -6,3 +6,7 @@ export const PRIVACY_LINK =
 	'https://github.com/tonyantony300/alt-sendme/blob/main/PRIVACY'
 export const LICENSE_LINK =
 	'https://github.com/tonyantony300/alt-sendme/blob/main/LICENSE'
+
+export function getVersionLink(version?: string) {
+	return `https://github.com/octocat/Hello-World/releases/v${version || VERSION}`
+}

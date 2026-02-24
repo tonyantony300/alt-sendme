@@ -1,8 +1,8 @@
 import type { PopoverTriggerProps } from '@base-ui/react'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { InfoIcon } from 'lucide-react'
 import { VERSION_DISPLAY } from '@/lib/version'
-import { buttonVariants } from './ui/button'
+import { buttonVariants } from '../ui/button'
 import { cn } from '@/lib/utils'
 
 export function AppVersion(props: PopoverTriggerProps) {

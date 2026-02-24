@@ -1,9 +1,10 @@
-import { buttonVariants } from './ui/button'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import { CoffeeIcon, GithubIcon, GlobeIcon, SettingsIcon } from 'lucide-react'
-import { useTranslation } from '@/i18n'
-import { AppVersion } from './AppVersionPayload'
-import { Separator } from './ui/separator'
 import { Link } from 'react-router-dom'
+import { useTranslation } from '@/i18n'
+import { AppVersionInline } from './app-version'
+import { buttonVariants } from './ui/button'
+
 //import { Link } from 'react-router-dom'
 
 const CONTACTS = [
@@ -27,17 +28,14 @@ const CONTACTS = [
 export function AppFooter() {
 	const { t } = useTranslation()
 	return (
-		<div className="w-full h-10 items-center justify-between  bottom-0 flex px-4 bg-background/50 border-t border-border backdrop-blur-md py-4">
-			<div className="space-x-2 flex-1 w-full flex items-center relative">
-				<AppVersion />
-				<Separator className="h-6" orientation="vertical" />
-
+		<div className="w-full h-10 items-center justify-between bottom-0 flex px-4 bg-background/50 border-t border-border backdrop-blur-md py-4">
+			<div className="gap-2 flex items-center relative">
 				{CONTACTS.map((contact) => (
-					<a
+					<button
+						type="button"
 						key={contact.link}
-						href={contact.link}
-						target="_blank"
-						rel="noopener noreferrer"
+						onClick={() => openUrl(contact.link)}
+						title={contact['aria-label']}
 						aria-label={contact['aria-label']}
 						className={buttonVariants({
 							size: 'icon-sm',
@@ -45,8 +43,11 @@ export function AppFooter() {
 						})}
 					>
 						{contact.icon}
-					</a>
+					</button>
 				))}
+			</div>
+			<div>
+				<AppVersionInline className="text-muted-foreground !no-underline" />
 			</div>
 			<div className="flex items-center gap-2">
 				<Link
