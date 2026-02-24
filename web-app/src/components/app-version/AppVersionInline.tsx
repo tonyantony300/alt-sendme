@@ -13,7 +13,8 @@ export function AppVersionInline({
 			variant={variant}
 			{...props}
 			onClick={() => {
-				const url = getVersionLink(VERSION_DISPLAY)
+				const rawVersion = VERSION_DISPLAY.startsWith('v') ? VERSION_DISPLAY.slice(1) : VERSION_DISPLAY
+				const url = getVersionLink(rawVersion)
 				openUrl(url)
 			}}
 		>
