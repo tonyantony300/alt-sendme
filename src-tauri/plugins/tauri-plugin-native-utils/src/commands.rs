@@ -17,3 +17,10 @@ pub(crate) async fn select_send_document<R: Runtime>(
 ) -> Result<SelectedSendItemResponse> {
     app.native_utils().select_send_document()
 }
+
+#[command]
+pub(crate) async fn select_send_folder<R: Runtime>(
+    app: AppHandle<R>,
+) -> Result<SelectedSendItemResponse> {
+    app.native_utils().select_send_folder()
+}

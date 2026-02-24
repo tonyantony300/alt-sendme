@@ -22,3 +22,9 @@ export async function selectSendDocument(): Promise<SelectedSendItemResponse | n
 		'plugin:native-utils|select_send_document'
 	)
 }
+
+export async function selectSendFolder(): Promise<SelectedSendItemResponse | null> {
+	return await invoke<SelectedSendItemResponse>(
+		'plugin:native-utils|select_send_folder'
+	)
+}

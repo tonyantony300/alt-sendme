@@ -38,6 +38,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![
             commands::select_download_folder,
             commands::select_send_document,
+            commands::select_send_folder
         ])
         .setup(|app, api| {
             #[cfg(mobile)]

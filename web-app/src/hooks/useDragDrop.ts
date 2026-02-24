@@ -1,7 +1,10 @@
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-dialog'
-import { selectSendDocument } from 'tauri-plugin-native-utils-api'
+import {
+	selectSendDocument,
+	selectSendFolder,
+} from 'tauri-plugin-native-utils-api'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
@@ -99,13 +102,21 @@ export function useDragDrop(
 
 	const browseFolder = async () => {
 		try {
-			const selected = await open({
-				multiple: false,
-				directory: true,
-			})
+			if (IS_ANDROID) {
+				const selected = await selectSendFolder()
 
-			if (selected) {
-				onFileSelect(selected)
+				if (selected) {
+					onFileSelect(selected.cachedPath.toString(), 'directory')
+				}
+			} else {
+				const selected = await open({
+					multiple: false,
+					directory: true,
+				})
+
+				if (selected) {
+					onFileSelect(selected)
+				}
 			}
 		} catch (error) {
 			console.error('Failed to open folder dialog:', error)
