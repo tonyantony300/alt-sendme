@@ -1,10 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-dialog'
-import {
-	selectSendDocument,
-	selectSendFolder,
-} from 'tauri-plugin-native-utils-api'
+import { selectSendDocument, selectSendFolder } from '@/plugins/nativeUtils'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'

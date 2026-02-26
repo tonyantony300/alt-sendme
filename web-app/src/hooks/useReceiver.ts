@@ -3,7 +3,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { downloadDir, join } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
-import { selectDownloadFolder } from 'tauri-plugin-native-utils-api'
+import { selectDownloadFolder } from '@/plugins/nativeUtils'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
@@ -272,9 +272,9 @@ export function useReceiver(): UseReceiverReturn {
 	const handleBrowseFolder = async () => {
 		if (isReceiving) return
 		try {
-			let selected
+			let selected: string | null
 			if (IS_ANDROID) {
-				let response = await selectDownloadFolder()
+				const response = await selectDownloadFolder()
 				if (!response) return
 				selected = response.path.toString()
 			} else {
