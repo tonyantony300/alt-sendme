@@ -121,3 +121,6 @@ src-tauri/gen/*
 
 .github-reference/
 .github-reference-readest/
+.gitignore
+src-tauri/tauri.conf.json
+vite.config.ts

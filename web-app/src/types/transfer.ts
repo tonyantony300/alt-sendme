@@ -7,6 +7,8 @@ export interface TransferMetadata {
 	downloadPath?: string
 	wasStopped?: boolean
 	pathType?: 'file' | 'directory' | null
+	// Add thumbnail
+	thumbnailUrl?: string
 }
 
 export interface TransferProgress {
@@ -15,6 +17,13 @@ export interface TransferProgress {
 	speedBps: number
 	percentage: number
 	etaSeconds?: number
+}
+
+export interface TicketPreviewMetadata {
+	fileName: string
+	size: number
+	thumbnail?: string
+	description?: string
 }
 
 export interface SuccessScreenProps {

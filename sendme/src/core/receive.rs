@@ -1,4 +1,7 @@
-use crate::core::types::{get_or_create_secret, AppHandle, ReceiveOptions, ReceiveResult};
+use crate::core::send::METADATA_ALPN;
+use crate::core::types::{
+    get_or_create_secret, AppHandle, FileMetadata, ReceiveOptions, ReceiveResult,
+};
 use iroh::{discovery::dns::DnsDiscovery, Endpoint};
 use iroh_blobs::{
     api::{
@@ -15,7 +18,7 @@ use n0_future::StreamExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::time::Instant;
-use tokio::select;
+use tokio::{io::AsyncReadExt, select};
 
 // Helper function to emit events through the app handle
 fn emit_event(app_handle: &AppHandle, event_name: &str) {
@@ -56,6 +59,41 @@ fn emit_event_with_payload(app_handle: &AppHandle, event_name: &str, payload: &s
             tracing::warn!("Failed to emit event {} with payload: {}", event_name, e);
         }
     }
+}
+
+/// # Description
+/// Receives metadata. This function will connect to the sender, request metadata, and return it without downloading
+/// the file data.
+/// # Returns
+/// A `FileMetadata` struct containing the file name, size, thumbnail URL (if any), and description (if any).
+async fn receive_metadata<S: AsyncReadExt + Unpin>(
+    stream: &mut S,
+    app_handle: &AppHandle,
+) -> anyhow::Result<FileMetadata> {
+    // Read the length of the metadata (first 4 bytes)
+    let mut len_buf = [0u8; 4];
+    stream.read_exact(&mut len_buf).await?;
+    let meta_len = u32::from_be_bytes(len_buf) as usize;
+
+    // Read the metadata JSON based on the length
+    let mut meta_buf = vec![0u8; meta_len];
+    stream.read_exact(&mut meta_buf).await?;
+
+    // Deserialize the metadata from JSON
+    let metadata: FileMetadata = serde_json::from_slice(&meta_buf)?;
+
+    // Emit event with file metadata
+    if let Some(emitter) = app_handle {
+        if let Ok(payload) = serde_json::to_string(&metadata) {
+            if let Err(e) = emitter.emit_event_with_payload("receive-file-metadata", &payload) {
+                tracing::warn!("Failed to emit file metadata event: {}", e);
+            }
+        } else {
+            tracing::warn!("Failed to serialize file metadata for event payload");
+        }
+    }
+
+    Ok(metadata)
 }
 
 pub async fn download(
@@ -256,6 +294,53 @@ pub async fn download(
         message: format!("Downloaded {} files, {} bytes", total_files, payload_size),
         file_path: output_dir,
     })
+}
+
+/// # Description
+/// Fetches metadata for a given ticket without downloading the file data. This is used to display file information (name, size, thumbnail, description) in the UI before the user decides to download.
+/// # Returns
+/// A `FileMetadata` struct containing the file name, size, thumbnail URL (if any), and description (if any).
+pub async fn fetch_metadata(
+    ticket_str: String,
+    options: ReceiveOptions,
+) -> anyhow::Result<FileMetadata> {
+    // parse ticket and extract address
+    let ticket = BlobTicket::from_str(&ticket_str)?;
+    let addr = ticket.addr().clone();
+
+    // Create a temporary endpoint to connect and fetch metadata
+    let secret_key = get_or_create_secret()?;
+
+    let mut builder = Endpoint::builder()
+        // METADATA_ALPN only to indicate a metadata fetch
+        .alpns(vec![METADATA_ALPN.to_vec()])
+        .secret_key(secret_key)
+        .relay_mode(options.relay_mode.into());
+
+    if ticket.addr().relay_urls().count() == 0 && ticket.addr().ip_addrs().count() == 0 {
+        builder = builder.discovery(DnsDiscovery::n0_dns());
+    }
+    if let Some(addr) = options.magic_ipv4_addr {
+        builder = builder.bind_addr_v4(addr);
+    }
+    if let Some(addr) = options.magic_ipv6_addr {
+        builder = builder.bind_addr_v6(addr);
+    }
+
+    // Connect to the sender and fetch metadata
+    let endpoint = builder.bind().await?;
+    let connection = endpoint.connect(addr, METADATA_ALPN).await?;
+    let (mut send_stream, mut recv_stream) = connection.open_bi().await?;
+
+    // Send 1 byte to indicate metadata request
+    send_stream.write_all(&[1]).await?;
+    send_stream.finish()?;
+
+    let metadata = receive_metadata(&mut recv_stream, &None).await?;
+
+    endpoint.close().await;
+
+    Ok(metadata)
 }
 
 async fn export(db: &Store, collection: Collection, output_dir: &Path) -> anyhow::Result<()> {

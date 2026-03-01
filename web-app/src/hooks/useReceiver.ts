@@ -7,8 +7,19 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import { sendSystemNotification } from '../lib/systemNotification'
 import type { AlertDialogState, AlertType } from '../types/ui'
-import type { TransferMetadata, TransferProgress } from '../types/transfer'
+import type {
+	TicketPreviewMetadata,
+	TransferMetadata,
+	TransferProgress,
+} from '../types/transfer'
 import { SpeedAverager, calculateETA } from '../utils/etaUtils'
+
+interface BackendFileMetadata {
+	file_name: string
+	size: number
+	thumbnail?: string | null
+	description?: string | null
+}
 
 export interface UseReceiverReturn {
 	ticket: string
@@ -19,6 +30,8 @@ export interface UseReceiverReturn {
 	alertDialog: AlertDialogState
 	transferMetadata: TransferMetadata | null
 	transferProgress: TransferProgress | null
+	previewMetadata: TicketPreviewMetadata | null
+	isPreviewLoading: boolean
 	fileNames: string[]
 
 	handleTicketChange: (ticket: string) => void
@@ -45,6 +58,9 @@ export function useReceiver(): UseReceiverReturn {
 		null
 	)
 	const [fileNames, setFileNames] = useState<string[]>([])
+	const [previewMetadata, setPreviewMetadata] =
+		useState<TicketPreviewMetadata | null>(null)
+	const [isPreviewLoading, setIsPreviewLoading] = useState(false)
 
 	const fileNamesRef = useRef<string[]>([])
 	const transferProgressRef = useRef<TransferProgress | null>(null)
@@ -52,6 +68,7 @@ export function useReceiver(): UseReceiverReturn {
 	const savePathRef = useRef<string>('')
 	const folderOpenTriggeredRef = useRef(false)
 	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
+	const previewRequestSeqRef = useRef(0)
 
 	const isAbsolutePath = (path: string) => {
 		if (!path) return false
@@ -120,6 +137,54 @@ export function useReceiver(): UseReceiverReturn {
 	useEffect(() => {
 		savePathRef.current = savePath
 	}, [savePath])
+
+	useEffect(() => {
+		if (isReceiving) {
+			return
+		}
+
+		const trimmed = ticket.trim()
+		if (!trimmed) {
+			setPreviewMetadata(null)
+			setIsPreviewLoading(false)
+			return
+		}
+
+		const seq = ++previewRequestSeqRef.current
+		setIsPreviewLoading(true)
+
+		const timer = window.setTimeout(async () => {
+			try {
+				const payload = await invoke<BackendFileMetadata>('fetch_ticket_metadata', {
+					ticket: trimmed,
+				})
+
+				if (previewRequestSeqRef.current !== seq) {
+					return
+				}
+
+				setPreviewMetadata({
+					fileName: payload.file_name,
+					size: payload.size,
+					thumbnail: payload.thumbnail ?? undefined,
+					description: payload.description ?? undefined,
+				})
+			} catch {
+				if (previewRequestSeqRef.current !== seq) {
+					return
+				}
+				setPreviewMetadata(null)
+			} finally {
+				if (previewRequestSeqRef.current === seq) {
+					setIsPreviewLoading(false)
+				}
+			}
+		}, 300)
+
+		return () => {
+			window.clearTimeout(timer)
+		}
+	}, [ticket, isReceiving])
 
 	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
 		isOpen: false,
@@ -316,6 +381,7 @@ export function useReceiver(): UseReceiverReturn {
 			setTransferMetadata(null)
 			setTransferProgress(null)
 			setTransferStartTime(null)
+			setPreviewMetadata(null)
 			folderOpenTriggeredRef.current = false
 
 			await invoke<string>('receive_file', {
@@ -340,6 +406,8 @@ export function useReceiver(): UseReceiverReturn {
 		setTransferProgress(null)
 		setTransferStartTime(null)
 		setFileNames([])
+		setPreviewMetadata(null)
+		setIsPreviewLoading(false)
 		folderOpenTriggeredRef.current = false
 	}
 
@@ -373,7 +441,10 @@ export function useReceiver(): UseReceiverReturn {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
+		previewMetadata,
+		isPreviewLoading,
 		fileNames,
+
 
 		handleTicketChange,
 		handleBrowseFolder,

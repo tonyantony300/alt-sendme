@@ -9,11 +9,21 @@ export function TicketInput({
 	ticket,
 	isReceiving,
 	savePath,
+	previewMetadata,
+	isPreviewLoading,
 	onTicketChange,
 	onBrowseFolder,
 	onReceive,
 }: TicketInputProps) {
 	const { t } = useTranslation()
+
+	const formatFileSize = (bytes: number) => {
+		if (bytes <= 0) return '0 B'
+		const units = ['B', 'KB', 'MB', 'GB', 'TB']
+		const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+		const size = bytes / 1024 ** exponent
+		return `${size.toFixed(size < 10 && exponent > 0 ? 1 : 0)} ${units[exponent]}`
+	}
 
 	return (
 		<div className="space-y-4">
@@ -56,6 +66,40 @@ export function TicketInput({
 					/>
 				</div>
 			</div>
+
+			{isPreviewLoading && ticket.trim() && !previewMetadata ? (
+				<div className="p-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
+					{t('common:receiver.connectingToSender')}
+				</div>
+			) : null}
+
+			{previewMetadata ? (
+				<div className="p-3 rounded-md border bg-card flex gap-3 items-center">
+					<div className="w-14 h-14 rounded-md overflow-hidden border bg-muted shrink-0 flex items-center justify-center">
+						{previewMetadata.thumbnail ? (
+							<img
+								src={`data:image/jpeg;base64,${previewMetadata.thumbnail}`}
+								alt={previewMetadata.fileName}
+								className="w-full h-full object-cover"
+							/>
+						) : (
+							<Download className="h-5 w-5 text-muted-foreground" />
+						)}
+					</div>
+					<div className="min-w-0 flex-1">
+						<p className="text-sm font-medium truncate">{previewMetadata.fileName}</p>
+						<p className="text-xs text-muted-foreground">
+							{formatFileSize(previewMetadata.size)}
+						</p>
+						{previewMetadata.description ? (
+							<p className="text-xs text-muted-foreground truncate">
+								{previewMetadata.description}
+							</p>
+						) : null}
+					</div>
+				</div>
+			) : null}
+
 			<Button
 				type="button"
 				onClick={onReceive}

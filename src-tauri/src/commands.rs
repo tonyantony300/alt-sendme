@@ -1,8 +1,11 @@
 use crate::state::{AppStateMutex, ShareHandle};
+use base64::{engine::general_purpose, Engine as _};
 use sendme::{
-    download, start_share, AddrInfoOptions, AppHandle, EventEmitter, ReceiveOptions,
-    RelayModeOption, SendOptions,
+    core::types::FileMetadata, download, fetch_metadata, start_share, AddrInfoOptions, AppHandle,
+    EventEmitter, ReceiveOptions, RelayModeOption, SendOptions,
 };
+use std::io::Cursor;
+use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{Emitter, State};
@@ -87,6 +90,23 @@ pub async fn start_sharing(
         return Err(format!("Path does not exist: {}", path.display()));
     }
 
+    // Generate thumbnail and build metadata
+    let file_name = path
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .into_owned();
+    let size = get_total_size(&path).unwrap_or(0);
+    let thumbnail = generate_thumbnail(&path);
+    let description = build_description(&path);
+
+    let metadata = FileMetadata {
+        file_name,
+        size,
+        thumbnail,
+        description,
+    };
+
     // Create send options with defaults
     let options = SendOptions {
         relay_mode: RelayModeOption::Default,
@@ -102,7 +122,7 @@ pub async fn start_sharing(
     let boxed_handle: AppHandle = Some(emitter);
 
     // Start sharing using the core library
-    match start_share(path.clone(), options, boxed_handle).await {
+    match start_share(path.clone(), options, boxed_handle, Some(metadata)).await {
         Ok(result) => {
             let ticket = result.ticket.clone();
             // CRITICAL: Store the entire SendResult to keep router and temp_tag alive!
@@ -111,6 +131,21 @@ pub async fn start_sharing(
         }
         Err(e) => Err(format!("Failed to start sharing: {}", e)),
     }
+}
+
+/// Fetch metadata from sender by ticket, without starting file download.
+#[tauri::command]
+pub async fn fetch_ticket_metadata(ticket: String) -> Result<FileMetadata, String> {
+    let options = ReceiveOptions {
+        output_dir: None,
+        relay_mode: RelayModeOption::Default,
+        magic_ipv4_addr: None,
+        magic_ipv6_addr: None,
+    };
+
+    fetch_metadata(ticket, options)
+        .await
+        .map_err(|e| format!("Failed to fetch metadata: {}", e))
 }
 
 /// Stop the current sharing session
@@ -230,3 +265,79 @@ pub async fn unregister_context_menu() -> Result<(), String> {
     Ok(())
 }
 */
+
+/// Generate a thumbnail for an image file.
+/// # Description
+/// Generate thumbnails that maintain aspect ratio and have a maximum size of 128x128 to save on network overhead.
+/// # Arguments
+/// * `file_path` - The path to the image file for which to generate a thumbnail
+/// # Returns
+/// An Option containing the base64-encoded thumbnail image if successful, or None if thumbnail generation failed (e.g., if the file is not an image or if there was an error processing it).
+pub fn generate_thumbnail(file_path: &Path) -> Option<String> {
+    if !file_path.is_file() {
+        return None;
+    }
+
+    let mime = mime_guess::from_path(file_path).first_or_octet_stream();
+    if mime.type_().as_str() != "image" {
+        return None;
+    }
+
+    if let Ok(img) = image::open(file_path) {
+        let thumb = img.thumbnail(128, 128);
+
+        let mut buf = Cursor::new(Vec::new());
+        // Use JpegEncoder for compression
+        let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut buf, 70);
+        encoder.encode_image(&thumb).ok()?;
+
+        let encoded = general_purpose::STANDARD.encode(buf.into_inner());
+        Some(encoded)
+    } else {
+        None
+    }
+}
+/// Helper function to calculate total size of a file or directory
+fn get_total_size(path: &Path) -> Option<u64> {
+    if path.is_file() {
+        return std::fs::metadata(path).ok().map(|m| m.len());
+    }
+
+    if path.is_dir() {
+        let mut total_size = 0u64;
+        for entry in walkdir::WalkDir::new(path) {
+            let Ok(entry) = entry else {
+                continue;
+            };
+            if entry.file_type().is_file() {
+                if let Ok(metadata) = entry.metadata() {
+                    total_size = total_size.saturating_add(metadata.len());
+                }
+            }
+        }
+        return Some(total_size);
+    }
+
+    None
+}
+
+fn build_description(path: &Path) -> Option<String> {
+    if !path.is_file() {
+        return None;
+    }
+
+    let mime = mime_guess::from_path(path).first_or_octet_stream();
+
+    if mime.type_().as_str() == "image" {
+        if let Ok(img) = image::open(path) {
+            return Some(format!(
+                "{} · {}×{}",
+                mime.essence_str(),
+                img.width(),
+                img.height()
+            ));
+        }
+    }
+
+    Some(mime.essence_str().to_string())
+}

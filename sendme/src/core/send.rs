@@ -1,8 +1,10 @@
 use crate::core::types::{
-    apply_options, get_or_create_secret, AddrInfoOptions, AppHandle, SendOptions, SendResult,
+    apply_options, get_or_create_secret, AddrInfoOptions, AppHandle, FileMetadata, SendOptions,
+    SendResult,
 };
 use anyhow::Context;
 use data_encoding::HEXLOWER;
+use iroh::protocol::{AcceptError, ProtocolHandler};
 use iroh::{discovery::pkarr::PkarrPublisher, Endpoint, RelayMode};
 use iroh_blobs::{
     api::{
@@ -25,6 +27,53 @@ use std::{
 use tokio::{select, sync::mpsc};
 use tracing::trace;
 use walkdir::WalkDir;
+
+// To avoid encoding thumbnail into ticket causing excessively long tickets, we use a custom metadata protocol to
+// send metadata seprately from the file data. After the receive end sticks the ticket, a seprate connection will
+// be made to fetch the metadata.
+pub const METADATA_ALPN: &[u8] = b"sendme/metadata/1";
+
+#[derive(Debug, Clone)]
+struct MetadataProtocol {
+    metadata: Option<FileMetadata>,
+}
+
+impl ProtocolHandler for MetadataProtocol {
+    async fn accept(&self, connection: iroh::endpoint::Connection) -> Result<(), AcceptError> {
+        let (mut send_stream, mut recv_stream) = connection.accept_bi().await?;
+
+        // a 1 byte request is expected to trigger the metadata response
+        let mut req = [0u8; 1];
+        recv_stream
+            .read_exact(&mut req)
+            .await
+            .map_err(AcceptError::from_err)?;
+
+        let payload = self.metadata.clone().unwrap_or(FileMetadata {
+            file_name: "Unknown file".to_string(),
+            size: 0,
+            thumbnail: None,
+            description: None,
+        });
+
+        let meta_json = serde_json::to_string(&payload).map_err(AcceptError::from_err)?;
+        let meta_bytes = meta_json.as_bytes();
+        let len_prefix = (meta_bytes.len() as u32).to_be_bytes();
+
+        // Send 4 bytes of length prefix followed by the JSON metadata
+        send_stream
+            .write_all(&len_prefix)
+            .await
+            .map_err(AcceptError::from_err)?;
+        send_stream
+            .write_all(meta_bytes)
+            .await
+            .map_err(AcceptError::from_err)?;
+        send_stream.finish().map_err(AcceptError::from_err)?;
+
+        Ok(())
+    }
+}
 
 fn emit_event(app_handle: &AppHandle, event_name: &str) {
     if let Some(handle) = app_handle {
@@ -68,13 +117,17 @@ pub async fn start_share(
     path: PathBuf,
     options: SendOptions,
     app_handle: AppHandle,
+    metadata: Option<FileMetadata>,
 ) -> anyhow::Result<SendResult> {
     let secret_key = get_or_create_secret()?;
 
     let relay_mode: RelayMode = options.relay_mode.clone().into();
 
     let mut builder = Endpoint::builder()
-        .alpns(vec![iroh_blobs::protocol::ALPN.to_vec()])
+        .alpns(vec![
+            iroh_blobs::protocol::ALPN.to_vec(),
+            METADATA_ALPN.to_vec(),
+        ])
         .secret_key(secret_key)
         .relay_mode(relay_mode.clone());
 
@@ -142,6 +195,7 @@ pub async fn start_share(
 
         let router = iroh::protocol::Router::builder(endpoint)
             .accept(iroh_blobs::ALPN, blobs.clone())
+            .accept(METADATA_ALPN, MetadataProtocol { metadata })
             .spawn();
 
         let ep = router.endpoint();

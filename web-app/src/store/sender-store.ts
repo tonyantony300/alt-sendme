@@ -13,6 +13,7 @@ export interface SenderStore {
 	ticket: string | null
 	selectedPath: string | null
 	pathType: 'file' | 'directory' | null
+	thumbnailUrl: string | null
 	transferMetadata: TransferMetadata | null
 	transferProgress: TransferProgress | null
 
@@ -28,6 +29,7 @@ export interface SenderStore {
 	setTicket: (ticket: string | null) => void
 	setSelectedPath: (path: string | null) => void
 	setPathType: (type: 'file' | 'directory' | null) => void
+	setThumbnailUrl: (url: string | null) => void
 	setTransferMetadata: (metadata: TransferMetadata | null) => void
 	setTransferProgress: (progress: TransferProgress | null) => void
 	setIsLoading: (loading: boolean) => void
@@ -50,6 +52,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 	ticket: null,
 	selectedPath: null,
 	pathType: null,
+	thumbnailUrl: null,
 	transferMetadata: null,
 	transferProgress: null,
 	isLoading: false,
@@ -81,6 +84,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 	setTicket: (ticket) => set({ ticket }),
 	setSelectedPath: (selectedPath) => set({ selectedPath }),
 	setPathType: (pathType) => set({ pathType }),
+	setThumbnailUrl: (thumbnailUrl) => set({ thumbnailUrl }),
 	setTransferMetadata: (transferMetadata) => {
 		// const stack = new Error().stack
 		// const caller = stack?.split('\n')[2]?.trim() || 'unknown'
@@ -138,6 +142,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 			ticket: null,
 			selectedPath: null,
 			pathType: null,
+			thumbnailUrl: null,
 			transferMetadata: null,
 			transferProgress: null,
 			isLoading: false,
@@ -159,6 +164,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 			viewState: 'SHARING',
 			transferMetadata: null,
 			transferProgress: null,
+			thumbnailUrl: null,
 			activeConnectionCount: 0,
 		})
 	},
