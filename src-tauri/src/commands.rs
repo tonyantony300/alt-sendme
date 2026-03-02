@@ -99,7 +99,12 @@ pub async fn start_sharing(
     let size = get_total_size(&path).unwrap_or(0);
     let thumbnail = generate_thumbnail(&path);
     let mime_type = if path.is_file() {
-        Some(mime_guess::from_path(&path).first_or_octet_stream().essence_str().to_string())
+        Some(
+            mime_guess::from_path(&path)
+                .first_or_octet_stream()
+                .essence_str()
+                .to_string(),
+        )
     } else {
         Some("inode/directory".to_string())
     };
@@ -357,9 +362,14 @@ mod tests {
             magic_ipv6_addr: None,
         };
 
-        let share = start_share(temp_path.clone(), options, None, Some(expected_metadata.clone()))
-            .await
-            .expect("start_share should succeed");
+        let share = start_share(
+            temp_path.clone(),
+            options,
+            None,
+            Some(expected_metadata.clone()),
+        )
+        .await
+        .expect("start_share should succeed");
 
         let fetched = fetch_ticket_metadata(share.ticket.clone())
             .await

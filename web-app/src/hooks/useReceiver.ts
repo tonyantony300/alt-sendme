@@ -156,9 +156,12 @@ export function useReceiver(): UseReceiverReturn {
 
 		const timer = window.setTimeout(async () => {
 			try {
-				const payload = await invoke<BackendFileMetadata>('fetch_ticket_metadata', {
-					ticket: trimmed,
-				})
+				const payload = await invoke<BackendFileMetadata>(
+					'fetch_ticket_metadata',
+					{
+						ticket: trimmed,
+					}
+				)
 
 				if (previewRequestSeqRef.current !== seq) {
 					return
@@ -446,7 +449,6 @@ export function useReceiver(): UseReceiverReturn {
 		previewMetadata,
 		isPreviewLoading,
 		fileNames,
-
 
 		handleTicketChange,
 		handleBrowseFolder,
