@@ -1,20 +1,17 @@
-import {
-	Download,
-	File,
-	Image as ImageIcon,
-	Film,
-	Music,
-	Archive,
-	Code,
-	FileText,
-	FileSearch,
-	Folder,
-} from 'lucide-react'
+import { Download } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { TicketInputProps } from '../../types/receiver'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
+import {
+	FolderIcon,
+	ImageIcon,
+	ZipIcon,
+	DefaultFileIcon,
+	TxtIcon,
+	JsonIcon,
+} from '../illustration'
 
 export function TicketInput({
 	ticket,
@@ -29,17 +26,15 @@ export function TicketInput({
 	const { t } = useTranslation()
 
 	const getFileIcon = (mimeType?: string) => {
-		if (!mimeType) return <File className="h-6 w-6 text-muted-foreground" />
+		if (!mimeType) return <DefaultFileIcon className="h-6 w-6" />
 		if (mimeType === 'inode/directory')
-			return <Folder className="h-6 w-6 text-muted-foreground" />
-		if (mimeType.startsWith('image/'))
-			return <ImageIcon className="h-6 w-6 text-muted-foreground" />
+			return <FolderIcon className="h-6 w-6" />
+		if (mimeType.startsWith('image/')) return <ImageIcon className="h-6 w-6" />
 		if (mimeType.startsWith('video/'))
-			return <Film className="h-6 w-6 text-muted-foreground" />
+			return <DefaultFileIcon className="h-6 w-6" /> // fallback
 		if (mimeType.startsWith('audio/'))
-			return <Music className="h-6 w-6 text-muted-foreground" />
-		if (mimeType.startsWith('text/'))
-			return <FileText className="h-6 w-6 text-muted-foreground" />
+			return <DefaultFileIcon className="h-6 w-6" /> // fallback
+		if (mimeType.startsWith('text/')) return <TxtIcon className="h-6 w-6" />
 		if (
 			mimeType.includes('zip') ||
 			mimeType.includes('tar') ||
@@ -47,17 +42,15 @@ export function TicketInput({
 			mimeType.includes('7z') ||
 			mimeType.includes('gzip')
 		)
-			return <Archive className="h-6 w-6 text-muted-foreground" />
+			return <ZipIcon className="h-6 w-6" />
 		if (
 			mimeType.includes('json') ||
 			mimeType.includes('javascript') ||
 			mimeType.includes('html') ||
 			mimeType.includes('css')
 		)
-			return <Code className="h-6 w-6 text-muted-foreground" />
-		if (mimeType === 'application/octet-stream')
-			return <FileSearch className="h-6 w-6 text-muted-foreground" />
-		return <File className="h-6 w-6 text-muted-foreground" />
+			return <JsonIcon className="h-6 w-6" />
+		return <DefaultFileIcon className="h-6 w-6" />
 	}
 
 	/**
