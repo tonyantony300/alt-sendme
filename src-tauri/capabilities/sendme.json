@@ -10,25 +10,26 @@
 		"core:window:allow-start-dragging",
 		"core:window:allow-set-theme",
 		"core:window:allow-set-focus",
+		"store:default",
 		"os:default",
 		"opener:default",
 		"dialog:default",
 		"dialog:allow-open",
 		"dialog:allow-save",
-		"shell:default",
 		"shell:allow-spawn",
-		"shell:allow-open",
 		{
 			"identifier": "http:default",
 			"allow": [
 				{
-					"url": "https://*:*"
+					"url": "https://github.com/**"
 				},
 				{
-					"url": "http://*:*"
+					"url": "https://gc.zgo.at/**"
+				},
+				{
+					"url": "https://alt-sendme.goatcounter.com/**"
 				}
-			],
-			"deny": []
+			]
 		}
 	]
 }

@@ -1,11 +1,16 @@
-import { SingleLayoutPage } from '@/components/common/SingleLayoutPage'
+import { invoke } from '@tauri-apps/api/core'
+import { useEffect, useRef, useState } from 'react'
+import * as SingleLayoutPage from '@/components/common/SingleLayoutPage'
 import { Receiver } from '@/components/receiver/Receiver'
 import { Sender } from '@/components/sender/Sender'
-import { FrameHeader, FramePanel, Frame } from '@/components/ui/frame'
-import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
+import { Frame, FrameHeader, FramePanel } from '@/components/ui/frame'
+import {
+	Tabs,
+	TabsList,
+	TabsContent,
+	TabsTrigger,
+} from '@/components/animate-ui/components/tabs'
 import { useTranslation } from '@/i18n'
-import { useState, useRef, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { useSenderStore } from '@/store/sender-store'
 
 export function IndexPage() {
@@ -53,31 +58,34 @@ export function IndexPage() {
 	// const navigate = useNavigate(); navigate('/send') or navigate('/receive')
 
 	return (
-		<SingleLayoutPage>
+		<SingleLayoutPage.SingleLayoutPage>
 			<div className="max-w-2xl mx-auto w-full">
 				<Frame>
-					<Tabs value={activeTab} onValueChange={setActiveTab}>
+					<Tabs
+						value={activeTab}
+						onValueChange={(v) => setActiveTab(v as 'send' | 'receive')}
+					>
 						<FrameHeader>
 							<TabsList className="w-full">
-								<TabsTab disabled={isReceiving} value="send">
+								<TabsTrigger disabled={isReceiving} value="send">
 									{t('common:send')}
-								</TabsTab>
-								<TabsTab disabled={isSharing} value="receive">
+								</TabsTrigger>
+								<TabsTrigger disabled={isSharing} value="receive">
 									{t('common:receive')}
-								</TabsTab>
+								</TabsTrigger>
 							</TabsList>
 						</FrameHeader>
 						<FramePanel>
-							<TabsPanel value="send">
+							<TabsContent value="send">
 								<Sender onTransferStateChange={setIsSharing} />
-							</TabsPanel>
-							<TabsPanel value="receive">
+							</TabsContent>
+							<TabsContent value="receive">
 								<Receiver onTransferStateChange={setIsReceiving} />
-							</TabsPanel>
+							</TabsContent>
 						</FramePanel>
 					</Tabs>
 				</Frame>
 			</div>
-		</SingleLayoutPage>
+		</SingleLayoutPage.SingleLayoutPage>
 	)
 }

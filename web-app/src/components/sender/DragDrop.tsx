@@ -8,12 +8,14 @@ interface DragDropProps {
 	onFileSelect: (path: string) => void
 	selectedPath?: string | null
 	isLoading?: boolean
+	onClearSelection: () => void
 }
 
 export function DragDrop({
 	onFileSelect,
 	selectedPath,
 	isLoading,
+	onClearSelection,
 }: DragDropProps) {
 	const {
 		isDragActive,
@@ -42,6 +44,7 @@ export function DragDrop({
 				showFullPath={showFullPath}
 				isLoading={isLoading || false}
 				onToggleFullPath={toggleFullPath}
+				onClearSelection={onClearSelection}
 			/>
 
 			{!selectedPath && (

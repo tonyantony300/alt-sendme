@@ -61,6 +61,7 @@ export interface DropzoneProps {
 	showFullPath: boolean
 	isLoading: boolean
 	onToggleFullPath: () => void
+	onClearSelection: () => void
 }
 
 export interface BrowseButtonsProps {

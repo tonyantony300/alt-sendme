@@ -39,6 +39,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		isBroadcastMode,
 		activeConnectionCount,
 		handleFileSelect,
+		clearSelectedPath,
 		startSharing,
 		stopSharing,
 		copyTicket,
@@ -91,10 +92,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	}, [viewState, isBroadcastMode, setIsBroadcastMode])
 
 	return (
-		<div
-			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
-			style={{ color: 'var(--app-main-view-fg)' }}
-		>
+		<div className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col">
 			{/* IDLE state: Show file selection UI */}
 			{viewState === 'IDLE' && (
 				<>
@@ -102,13 +100,16 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 						<h2 className="text-xl font-semibold mb-2">
 							{t('common:sender.title')}
 						</h2>
-						<p className="text-sm">{t('common:sender.subtitle')}</p>
+						<p className="text-sm text-muted-foreground">
+							{t('common:sender.subtitle')}
+						</p>
 					</div>
 					<div className="space-y-4 flex-1 flex flex-col">
 						<DragDrop
 							onFileSelect={handleFileSelect}
 							selectedPath={selectedPath}
 							isLoading={isLoading}
+							onClearSelection={clearSelectedPath}
 						/>
 
 						<ShareActionCard

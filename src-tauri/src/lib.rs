@@ -42,7 +42,7 @@ fn cleanup_orphaned_directories() {
 /// Entry point for both desktop (from main.rs) and mobile (from native app via mobile_entry_point).
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = tauri::Builder::default();
+    let builder = tauri::Builder::default().plugin(tauri_plugin_store::Builder::new().build());
 
     #[cfg(desktop)]
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());

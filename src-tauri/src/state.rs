@@ -1,7 +1,7 @@
+use sendme::SendResult;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use sendme::SendResult;
 
 /// Application state for managing sharing sessions
 #[derive(Default)]
@@ -15,7 +15,7 @@ pub struct AppState {
 /// CRITICAL: This struct holds the router and temp_tag which keeps the server alive
 pub struct ShareHandle {
     pub ticket: String,
-    pub _path: PathBuf, // Keep path for potential future use
+    pub _path: PathBuf,          // Keep path for potential future use
     pub send_result: SendResult, // This keeps router and temp_tag alive!
 }
 
@@ -30,7 +30,11 @@ impl Drop for ShareHandle {
             match std::fs::remove_dir_all(&blobs_dir) {
                 Ok(_) => {}
                 Err(e) => {
-                    tracing::warn!("Failed to clean up blobs directory {}: {}", blobs_dir.display(), e);
+                    tracing::warn!(
+                        "Failed to clean up blobs directory {}: {}",
+                        blobs_dir.display(),
+                        e
+                    );
                 }
             }
         });
@@ -45,14 +49,15 @@ impl ShareHandle {
             send_result,
         }
     }
-    
+
     /// Explicitly stop the sharing session and clean up resources
     /// The actual cleanup will happen in Drop when the struct is destroyed
     pub async fn stop(&mut self) -> Result<(), String> {
         use std::time::Duration;
-        
+
         // Gracefully shutdown the router with timeout (same as CLI implementation)
-        match tokio::time::timeout(Duration::from_secs(2), self.send_result.router.shutdown()).await {
+        match tokio::time::timeout(Duration::from_secs(2), self.send_result.router.shutdown()).await
+        {
             Ok(Ok(())) => {}
             Ok(Err(e)) => {
                 tracing::warn!("Router shutdown error: {}", e);
@@ -61,10 +66,10 @@ impl ShareHandle {
                 tracing::warn!("Router shutdown timeout after 2 seconds");
             }
         }
-        
+
         // temp_tag, _store, and _progress_handle will be dropped automatically when the method ends
         // Cleanup of blobs directory will happen in Drop trait
-        
+
         Ok(())
     }
 }
