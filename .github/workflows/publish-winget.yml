@@ -26,11 +26,11 @@ jobs:
         uses: vedantmgoyal2009/winget-releaser@v2
         with:
           identifier: TonyAntony.AltSendme
-          installers-regex: 'AltSendme_.*_x64-setup\\.exe'
+          installers-regex: 'AltSendme_.*_x64_.*\\.msi'
           version: ${{ steps.version.outputs.value }}
           release-tag: ${{ steps.version.outputs.tag }}
           token: ${{ secrets.WINGET_TOKEN }}
-          installer-type: nullsoft
+          installer-type: wix
           root-locale: en-US
           locale: en-US
           publisher: Tony Antony

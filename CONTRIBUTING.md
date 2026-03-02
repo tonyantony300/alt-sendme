@@ -146,7 +146,7 @@ AltSendme publishes Windows packages to WinGet automatically when a GitHub Relea
 - Trigger: `release.published` (skips draft and prerelease releases)
 - Secret required: `WINGET_TOKEN` (GitHub token with permission to create PRs against `microsoft/winget-pkgs`)
 
-The WinGet package identifier is set to `TonyAntony.AltSendme`, and it picks the NSIS installer asset (`AltSendme_*_x64-setup.exe`) from the published release.
+The WinGet package identifier is set to `TonyAntony.AltSendme`, and it picks the MSI installer asset (`AltSendme_*_x64_*.msi`) from the published release (preferred over NSIS for WinGet reliability and enterprise deployment compatibility).
 
 ## Code of Conduct
 
