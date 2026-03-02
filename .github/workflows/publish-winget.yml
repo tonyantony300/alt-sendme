@@ -26,7 +26,7 @@ jobs:
         uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
         with:
           identifier: TonyAntony.AltSendme
-          installers-regex: 'AltSendme_.*_x64_.*\\.msi'
+          installers-regex: '^AltSendme_.*_x64_.*\.msi$'
           version: ${{ steps.version.outputs.value }}
           release-tag: ${{ steps.version.outputs.tag }}
           token: ${{ secrets.WINGET_TOKEN }}
