@@ -23,7 +23,7 @@ jobs:
           echo "value=${TAG#v}" >> "$GITHUB_OUTPUT"
 
       - name: Publish package to WinGet
-        uses: vedantmgoyal2009/winget-releaser@v2
+        uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
         with:
           identifier: TonyAntony.AltSendme
           installers-regex: 'AltSendme_.*_x64_.*\\.msi'
