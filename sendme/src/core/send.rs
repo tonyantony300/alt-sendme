@@ -20,6 +20,7 @@ use iroh_blobs::{
 use n0_future::StreamExt;
 use n0_future::{task::AbortOnDropHandle, BufferedStreamExt};
 use rand::Rng;
+use std::io::ErrorKind;
 use std::{
     path::{Component, Path, PathBuf},
     time::{Duration, Instant},
@@ -39,37 +40,82 @@ struct MetadataProtocol {
 }
 
 impl ProtocolHandler for MetadataProtocol {
+    /// # Description
+    /// Handles incoming connections on the metadata protocol.
+    /// It reads a metadata request marker (1 byte) from client, responds with a length-prefixed JSON metadata payload, and waits for the client to close the connection before finishing.
     async fn accept(&self, connection: iroh::endpoint::Connection) -> Result<(), AcceptError> {
-        let (mut send_stream, mut recv_stream) = connection.accept_bi().await?;
+        let (mut send_stream, mut recv_stream) =
+            match tokio::time::timeout(Duration::from_secs(30), connection.accept_bi()).await {
+                Ok(Ok(streams)) => streams,
+                Ok(Err(err)) => return Err(err.into()),
+                Err(_) => {
+                    tracing::debug!("metadata accept_bi timeout (benign)");
+                    return Ok(());
+                }
+            };
 
-        // a 1 byte request is expected to trigger the metadata response
+        tracing::info!("metadata protocol bi stream accepted");
+
         let mut req = [0u8; 1];
-        recv_stream
-            .read_exact(&mut req)
+        tokio::time::timeout(Duration::from_secs(10), recv_stream.read_exact(&mut req))
             .await
+            .map_err(|_| {
+                AcceptError::from_err(std::io::Error::new(
+                    ErrorKind::TimedOut,
+                    "metadata request read timeout",
+                ))
+            })?
             .map_err(AcceptError::from_err)?;
+
+        tracing::debug!("metadata request marker received");
 
         let payload = self.metadata.clone().unwrap_or(FileMetadata {
             file_name: "Unknown file".to_string(),
             size: 0,
             thumbnail: None,
             description: None,
+            mime_type: None,
         });
 
-        let meta_json = serde_json::to_string(&payload).map_err(AcceptError::from_err)?;
-        let meta_bytes = meta_json.as_bytes();
+        let meta_bytes = serde_json::to_vec(&payload).map_err(AcceptError::from_err)?;
+        const MAX_METADATA_BYTES: usize = 8 * 1024 * 1024;
+        if meta_bytes.len() > MAX_METADATA_BYTES {
+            return Err(AcceptError::from_err(std::io::Error::new(
+                ErrorKind::InvalidData,
+                format!("metadata payload too large: {} bytes", meta_bytes.len()),
+            )));
+        }
         let len_prefix = (meta_bytes.len() as u32).to_be_bytes();
 
         // Send 4 bytes of length prefix followed by the JSON metadata
-        send_stream
-            .write_all(&len_prefix)
+        tokio::time::timeout(Duration::from_secs(10), send_stream.write_all(&len_prefix))
             .await
+            .map_err(|_| {
+                AcceptError::from_err(std::io::Error::new(
+                    ErrorKind::TimedOut,
+                    "metadata length write timeout",
+                ))
+            })?
             .map_err(AcceptError::from_err)?;
-        send_stream
-            .write_all(meta_bytes)
+        tokio::time::timeout(Duration::from_secs(20), send_stream.write_all(&meta_bytes))
             .await
+            .map_err(|_| {
+                AcceptError::from_err(std::io::Error::new(
+                    ErrorKind::TimedOut,
+                    "metadata body write timeout",
+                ))
+            })?
             .map_err(AcceptError::from_err)?;
+
         send_stream.finish().map_err(AcceptError::from_err)?;
+
+        // Wait for the client to close its receive stream (which means it got the data).
+        // This prevents tearing down the QUIC connection before the data buffers are flushed.
+        // We give it 30s which is more than the client's read timeout.
+        let mut eof_buf = [0u8; 1];
+        let _ = tokio::time::timeout(Duration::from_secs(30), recv_stream.read(&mut eof_buf)).await;
+
+        tracing::info!(bytes = meta_bytes.len(), "metadata sent");
 
         Ok(())
     }

@@ -1,10 +1,9 @@
+use crate::features::thumbnail::generate_thumbnail;
 use crate::state::{AppStateMutex, ShareHandle};
-use base64::{engine::general_purpose, Engine as _};
 use sendme::{
     core::types::FileMetadata, download, fetch_metadata, start_share, AddrInfoOptions, AppHandle,
     EventEmitter, ReceiveOptions, RelayModeOption, SendOptions,
 };
-use std::io::Cursor;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -74,6 +73,7 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
 #[tauri::command]
 pub async fn start_sharing(
     path: String,
+    description: Option<String>,
     state: State<'_, AppStateMutex>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
@@ -98,14 +98,28 @@ pub async fn start_sharing(
         .into_owned();
     let size = get_total_size(&path).unwrap_or(0);
     let thumbnail = generate_thumbnail(&path);
-    let description = build_description(&path);
+    let mime_type = if path.is_file() {
+        Some(mime_guess::from_path(&path).first_or_octet_stream().essence_str().to_string())
+    } else {
+        Some("inode/directory".to_string())
+    };
 
     let metadata = FileMetadata {
         file_name,
         size,
         thumbnail,
         description,
+        mime_type,
     };
+
+    tracing::info!(
+        path = %path.display(),
+        file_name = %metadata.file_name,
+        size = metadata.size,
+        has_thumbnail = metadata.thumbnail.is_some(),
+        description = ?metadata.description,
+        "share metadata prepared"
+    );
 
     // Create send options with defaults
     let options = SendOptions {
@@ -136,6 +150,9 @@ pub async fn start_sharing(
 /// Fetch metadata from sender by ticket, without starting file download.
 #[tauri::command]
 pub async fn fetch_ticket_metadata(ticket: String) -> Result<FileMetadata, String> {
+    let ticket_len = ticket.len();
+    tracing::info!(ticket_len, "fetch_ticket_metadata called");
+
     let options = ReceiveOptions {
         output_dir: None,
         relay_mode: RelayModeOption::Default,
@@ -143,9 +160,22 @@ pub async fn fetch_ticket_metadata(ticket: String) -> Result<FileMetadata, Strin
         magic_ipv6_addr: None,
     };
 
-    fetch_metadata(ticket, options)
-        .await
-        .map_err(|e| format!("Failed to fetch metadata: {}", e))
+    match fetch_metadata(ticket, options).await {
+        Ok(metadata) => {
+            tracing::info!(
+                file_name = %metadata.file_name,
+                size = metadata.size,
+                has_thumbnail = metadata.thumbnail.is_some(),
+                description = ?metadata.description,
+                "fetch_ticket_metadata succeeded"
+            );
+            Ok(metadata)
+        }
+        Err(e) => {
+            tracing::warn!(error = %e, "fetch_ticket_metadata failed");
+            Err(format!("Failed to fetch metadata: {}", e))
+        }
+    }
 }
 
 /// Stop the current sharing session
@@ -266,37 +296,6 @@ pub async fn unregister_context_menu() -> Result<(), String> {
 }
 */
 
-/// Generate a thumbnail for an image file.
-/// # Description
-/// Generate thumbnails that maintain aspect ratio and have a maximum size of 128x128 to save on network overhead.
-/// # Arguments
-/// * `file_path` - The path to the image file for which to generate a thumbnail
-/// # Returns
-/// An Option containing the base64-encoded thumbnail image if successful, or None if thumbnail generation failed (e.g., if the file is not an image or if there was an error processing it).
-pub fn generate_thumbnail(file_path: &Path) -> Option<String> {
-    if !file_path.is_file() {
-        return None;
-    }
-
-    let mime = mime_guess::from_path(file_path).first_or_octet_stream();
-    if mime.type_().as_str() != "image" {
-        return None;
-    }
-
-    if let Ok(img) = image::open(file_path) {
-        let thumb = img.thumbnail(128, 128);
-
-        let mut buf = Cursor::new(Vec::new());
-        // Use JpegEncoder for compression
-        let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut buf, 70);
-        encoder.encode_image(&thumb).ok()?;
-
-        let encoded = general_purpose::STANDARD.encode(buf.into_inner());
-        Some(encoded)
-    } else {
-        None
-    }
-}
 /// Helper function to calculate total size of a file or directory
 fn get_total_size(path: &Path) -> Option<u64> {
     if path.is_file() {
@@ -321,23 +320,58 @@ fn get_total_size(path: &Path) -> Option<u64> {
     None
 }
 
-fn build_description(path: &Path) -> Option<String> {
-    if !path.is_file() {
-        return None;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sendme::start_share;
+    use std::fs;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn unique_temp_file(name_prefix: &str) -> PathBuf {
+        let ts = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be after unix epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("{}-{}-{}.txt", name_prefix, std::process::id(), ts))
     }
 
-    let mime = mime_guess::from_path(path).first_or_octet_stream();
+    #[tokio::test]
+    async fn fetch_ticket_metadata_command_e2e() {
+        let temp_path = unique_temp_file("sendme-tauri-meta");
+        fs::write(&temp_path, b"tauri metadata preview test payload")
+            .expect("should create temp payload file");
 
-    if mime.type_().as_str() == "image" {
-        if let Ok(img) = image::open(path) {
-            return Some(format!(
-                "{} · {}×{}",
-                mime.essence_str(),
-                img.width(),
-                img.height()
-            ));
-        }
+        let expected_metadata = FileMetadata {
+            file_name: "preview-source.txt".to_string(),
+            size: 123,
+            thumbnail: Some("data:image/jpeg;base64,ZmFrZS10aHVtYg==".to_string()),
+            description: Some("metadata from tauri command test".to_string()),
+            mime_type: Some("text/plain".to_string()),
+        };
+
+        let options = SendOptions {
+            relay_mode: RelayModeOption::Default,
+            ticket_type: AddrInfoOptions::RelayAndAddresses,
+            magic_ipv4_addr: None,
+            magic_ipv6_addr: None,
+        };
+
+        let share = start_share(temp_path.clone(), options, None, Some(expected_metadata.clone()))
+            .await
+            .expect("start_share should succeed");
+
+        let fetched = fetch_ticket_metadata(share.ticket.clone())
+            .await
+            .expect("fetch_ticket_metadata command should succeed");
+
+        assert_eq!(fetched.file_name, expected_metadata.file_name);
+        assert_eq!(fetched.size, expected_metadata.size);
+        assert_eq!(fetched.thumbnail, expected_metadata.thumbnail);
+        assert_eq!(fetched.description, expected_metadata.description);
+        assert_eq!(fetched.mime_type, expected_metadata.mime_type);
+
+        drop(share);
+        let _ = fs::remove_file(temp_path);
     }
-
-    Some(mime.essence_str().to_string())
 }

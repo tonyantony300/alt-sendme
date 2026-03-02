@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { Download, File, Image as ImageIcon, Film, Music, Archive, Code, FileText, FileSearch, Folder } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { TicketInputProps } from '../../types/receiver'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
@@ -17,6 +17,24 @@ export function TicketInput({
 }: TicketInputProps) {
 	const { t } = useTranslation()
 
+	const getFileIcon = (mimeType?: string) => {
+		if (!mimeType) return <File className="h-6 w-6 text-muted-foreground" />
+		if (mimeType === 'inode/directory') return <Folder className="h-6 w-6 text-muted-foreground" />
+		if (mimeType.startsWith('image/')) return <ImageIcon className="h-6 w-6 text-muted-foreground" />
+		if (mimeType.startsWith('video/')) return <Film className="h-6 w-6 text-muted-foreground" />
+		if (mimeType.startsWith('audio/')) return <Music className="h-6 w-6 text-muted-foreground" />
+		if (mimeType.startsWith('text/')) return <FileText className="h-6 w-6 text-muted-foreground" />
+		if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('rar') || mimeType.includes('7z') || mimeType.includes('gzip')) return <Archive className="h-6 w-6 text-muted-foreground" />
+		if (mimeType.includes('json') || mimeType.includes('javascript') || mimeType.includes('html') || mimeType.includes('css')) return <Code className="h-6 w-6 text-muted-foreground" />
+		if (mimeType === 'application/octet-stream') return <FileSearch className="h-6 w-6 text-muted-foreground" />
+		return <File className="h-6 w-6 text-muted-foreground" />
+	}
+
+	/**
+	 * 
+	 * @param bytes length of file
+	 * @returns formatted file size
+	 */
 	const formatFileSize = (bytes: number) => {
 		if (bytes <= 0) return '0 B'
 		const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -67,12 +85,14 @@ export function TicketInput({
 				</div>
 			</div>
 
+			{/*Show loading state when fetching preview metadata */}
 			{isPreviewLoading && ticket.trim() && !previewMetadata ? (
 				<div className="p-3 rounded-md border bg-muted/40 text-sm text-muted-foreground">
 					{t('common:receiver.connectingToSender')}
 				</div>
 			) : null}
 
+			{/* Show preview if metadata is available*/}
 			{previewMetadata ? (
 				<div className="p-3 rounded-md border bg-card flex gap-3 items-center">
 					<div className="w-14 h-14 rounded-md overflow-hidden border bg-muted shrink-0 flex items-center justify-center">
@@ -83,7 +103,7 @@ export function TicketInput({
 								className="w-full h-full object-cover"
 							/>
 						) : (
-							<Download className="h-5 w-5 text-muted-foreground" />
+							getFileIcon(previewMetadata.mimeType)
 						)}
 					</div>
 					<div className="min-w-0 flex-1">

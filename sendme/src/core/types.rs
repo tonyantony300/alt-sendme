@@ -70,13 +70,19 @@ impl From<RelayModeOption> for iroh::RelayMode {
     }
 }
 
+/// # Description
+/// Represents metadata about a file being shared,
+/// including fileName, size, optional thumbnail, description, and MIME type.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileMetadata {
     pub file_name: String,
     pub size: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub thumbnail: Option<String>,
-    // TODO: if we cant provide a thumbnail (e.g. for directories), we should provide some kind of icon or indication of the type of file
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
 }
 
 #[derive(

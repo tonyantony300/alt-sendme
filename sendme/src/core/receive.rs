@@ -2,7 +2,7 @@ use crate::core::send::METADATA_ALPN;
 use crate::core::types::{
     get_or_create_secret, AppHandle, FileMetadata, ReceiveOptions, ReceiveResult,
 };
-use iroh::{discovery::dns::DnsDiscovery, Endpoint};
+use iroh::{discovery::dns::DnsDiscovery, Endpoint, TransportAddr};
 use iroh_blobs::{
     api::{
         blobs::{ExportMode, ExportOptions, ExportProgressItem},
@@ -18,7 +18,11 @@ use n0_future::StreamExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::time::Instant;
-use tokio::{io::AsyncReadExt, select};
+use tokio::{
+    io::AsyncReadExt,
+    select,
+    time::{timeout, Duration},
+};
 
 // Helper function to emit events through the app handle
 fn emit_event(app_handle: &AppHandle, event_name: &str) {
@@ -72,15 +76,30 @@ async fn receive_metadata<S: AsyncReadExt + Unpin>(
 ) -> anyhow::Result<FileMetadata> {
     // Read the length of the metadata (first 4 bytes)
     let mut len_buf = [0u8; 4];
-    stream.read_exact(&mut len_buf).await?;
+    stream
+        .read_exact(&mut len_buf)
+        .await
+        .map_err(|e| anyhow::anyhow!("metadata read length failed: {e}"))?;
     let meta_len = u32::from_be_bytes(len_buf) as usize;
+    tracing::debug!(meta_len, "receive_metadata: length prefix received");
+
+    const MAX_METADATA_BYTES: usize = 8 * 1024 * 1024;
+    anyhow::ensure!(
+        meta_len > 0 && meta_len <= MAX_METADATA_BYTES,
+        "invalid metadata length: {meta_len}"
+    );
 
     // Read the metadata JSON based on the length
     let mut meta_buf = vec![0u8; meta_len];
-    stream.read_exact(&mut meta_buf).await?;
+    stream
+        .read_exact(&mut meta_buf)
+        .await
+        .map_err(|e| anyhow::anyhow!("metadata read body failed: {e}"))?;
+    tracing::debug!(bytes = meta_buf.len(), "receive_metadata: body received");
 
     // Deserialize the metadata from JSON
-    let metadata: FileMetadata = serde_json::from_slice(&meta_buf)?;
+    let metadata: FileMetadata = serde_json::from_slice(&meta_buf)
+        .map_err(|e| anyhow::anyhow!("metadata json decode failed: {e}"))?;
 
     // Emit event with file metadata
     if let Some(emitter) = app_handle {
@@ -327,20 +346,89 @@ pub async fn fetch_metadata(
         builder = builder.bind_addr_v6(addr);
     }
 
-    // Connect to the sender and fetch metadata
     let endpoint = builder.bind().await?;
-    let connection = endpoint.connect(addr, METADATA_ALPN).await?;
-    let (mut send_stream, mut recv_stream) = connection.open_bi().await?;
 
-    // Send 1 byte to indicate metadata request
-    send_stream.write_all(&[1]).await?;
-    send_stream.finish()?;
+    // Attempt connection and metadata fetch up to 3 times
+    let mut attempt_plan: Vec<(usize, &'static str, iroh::EndpointAddr)> =
+        vec![(1, "default", addr.clone()), (2, "default", addr.clone())];
 
-    let metadata = receive_metadata(&mut recv_stream, &None).await?;
+    // Relay-only attempt if relay addresses are avaliable
+    let mut relay_only_addr = addr.clone();
+    relay_only_addr
+        .addrs
+        .retain(|transport_addr| matches!(transport_addr, TransportAddr::Relay(_)));
+    if !relay_only_addr.addrs.is_empty() {
+        attempt_plan.push((3, "relay-only", relay_only_addr));
+    }
+
+    let mut last_error: Option<anyhow::Error> = None;
+
+    for (attempt, path, target_addr) in attempt_plan {
+        tracing::info!(attempt, path, "fetch_metadata: connecting to sender");
+
+        let result = async {
+            let connection = timeout(
+                Duration::from_secs(15),
+                endpoint.connect(target_addr, METADATA_ALPN),
+            )
+            .await
+            .map_err(|_| anyhow::anyhow!("metadata connect timeout"))??;
+
+            tracing::debug!(attempt, path, "fetch_metadata: connection established");
+
+            let (mut send_stream, mut recv_stream) =
+                timeout(Duration::from_secs(20), connection.open_bi())
+                    .await
+                    .map_err(|_| anyhow::anyhow!("metadata open_bi timeout"))??;
+
+            tracing::debug!(attempt, path, "fetch_metadata: bi stream opened");
+
+            // Send 1 byte as a marker to indicate metadata request
+            timeout(Duration::from_secs(10), send_stream.write_all(&[1]))
+                .await
+                .map_err(|_| anyhow::anyhow!("metadata request write timeout"))??;
+
+            tracing::debug!(attempt, path, "fetch_metadata: request marker sent");
+
+            let metadata = timeout(
+                Duration::from_secs(20),
+                receive_metadata(&mut recv_stream, &None),
+            )
+            .await
+            .map_err(|_| anyhow::anyhow!("metadata read timeout"))??;
+
+            // Finish send_stream only AFTER receiving the metadata.
+            // signals the server that we are safely done and it can drop the connection.
+            let _ = send_stream.finish();
+
+            Ok(metadata)
+        }
+        .await;
+
+        match result {
+            Ok(metadata) => {
+                tracing::info!(
+                    attempt,
+                    path,
+                    file_name = %metadata.file_name,
+                    size = metadata.size,
+                    "fetch_metadata: received metadata"
+                );
+                endpoint.close().await;
+                return Ok(metadata);
+            }
+            Err(err) => {
+                tracing::warn!(attempt, path, error = %err, "fetch_metadata attempt failed");
+                last_error = Some(err);
+                if attempt < 3 {
+                    tokio::time::sleep(Duration::from_millis(300)).await;
+                }
+            }
+        }
+    }
 
     endpoint.close().await;
-
-    Ok(metadata)
+    Err(last_error.unwrap_or_else(|| anyhow::anyhow!("metadata fetch failed")))
 }
 
 async fn export(db: &Store, collection: Collection, output_dir: &Path) -> anyhow::Result<()> {
@@ -402,6 +490,61 @@ fn validate_path_component(component: &str) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn test_fetch_metadata_e2e() {
+        use crate::core::send::start_share;
+        use crate::core::types::{
+            AddrInfoOptions, FileMetadata, ReceiveOptions, RelayModeOption, SendOptions,
+        };
+        use std::io::Write;
+        use tempfile::NamedTempFile;
+
+        // Create a dummy file to share
+        let mut temp_file = NamedTempFile::new().unwrap();
+        write!(temp_file, "metadata e2e test content").unwrap();
+        let temp_path = temp_file.path().to_path_buf();
+
+        // Setup metadata
+        let expected_metadata = FileMetadata {
+            file_name: "test_e2e_file.txt".into(),
+            size: 25,
+            thumbnail: Some("data:image/jpeg;base64,e2e_test_thumbnail=".into()),
+            description: Some("E2E test description for file".into()),
+            mime_type: Some("text/plain".into()),
+        };
+
+        let send_opts = SendOptions {
+            relay_mode: RelayModeOption::Default,
+            ticket_type: AddrInfoOptions::RelayAndAddresses,
+            magic_ipv4_addr: None,
+            magic_ipv6_addr: None,
+        };
+
+        // Start share
+        let result = start_share(temp_path, send_opts, None, Some(expected_metadata.clone()))
+            .await
+            .expect("Failed to start share");
+
+        // Fetch metadata via ALPN protocol
+        let recv_opts = ReceiveOptions {
+            output_dir: None,
+            relay_mode: RelayModeOption::Default,
+            magic_ipv4_addr: None,
+            magic_ipv6_addr: None,
+        };
+
+        let fetched = fetch_metadata(result.ticket, recv_opts)
+            .await
+            .expect("Failed to fetch metadata from node");
+
+        // Verify received data matches exactly
+        assert_eq!(fetched.file_name, expected_metadata.file_name);
+        assert_eq!(fetched.size, expected_metadata.size);
+        assert_eq!(fetched.thumbnail, expected_metadata.thumbnail);
+        assert_eq!(fetched.description, expected_metadata.description);
+        assert_eq!(fetched.mime_type, expected_metadata.mime_type);
+    }
 
     #[test]
     fn validate_rejects_empty() {

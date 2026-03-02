@@ -24,6 +24,7 @@ export interface TicketPreviewMetadata {
 	size: number
 	thumbnail?: string
 	description?: string
+	mimeType?: string
 }
 
 export interface SuccessScreenProps {

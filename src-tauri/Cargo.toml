@@ -34,11 +34,18 @@ walkdir = "2.4"
 tauri-plugin-updater = "2.9.0"
 tauri-plugin-store = "2"
 tauri-plugin-notification = "2"
+gstreamer = { version = "0.23", optional = true }
+gstreamer-app = { version = "0.23", optional = true }
 
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+linux-gstreamer = ["dep:gstreamer", "dep:gstreamer-app"]
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"
 dunce = "1.0"
+windows = { version = "0.58", features = ["Win32_Media_MediaFoundation"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2"
