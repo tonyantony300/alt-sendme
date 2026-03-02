@@ -138,6 +138,16 @@ To discard accidental lockfile changes before committing:
 git checkout origin/main -- package-lock.json src-tauri/Cargo.lock sendme/Cargo.lock
 ```
 
+## Release Automation
+
+AltSendme publishes Windows packages to WinGet automatically when a GitHub Release is published.
+
+- Workflow: `.github/workflows/publish-winget.yml`
+- Trigger: `release.published` (skips draft and prerelease releases)
+- Secret required: `WINGET_TOKEN` (GitHub token with permission to create PRs against `microsoft/winget-pkgs`)
+
+The WinGet package identifier is set to `TonyAntony.AltSendme`, and it picks the MSI installer asset (`AltSendme_*_x64_*.msi`) from the published release (preferred over NSIS for WinGet reliability and enterprise deployment compatibility).
+
 ## Code of Conduct
 
 Please be respectful and considerate in all interactions. The goal is to maintain a welcoming and inclusive environment for everyone.
