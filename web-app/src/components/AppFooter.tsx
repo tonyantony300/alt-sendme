@@ -4,7 +4,7 @@ import { useTranslation } from '@/i18n'
 import { AppVersion } from './AppVersionPayload'
 import { Separator } from './ui/separator'
 import { Link } from 'react-router-dom'
-//import { Link } from 'react-router-dom'
+import { handleExternalLinkClick } from '@/lib/openExternalUrl'
 
 const CONTACTS = [
 	{
@@ -36,6 +36,7 @@ export function AppFooter() {
 					<a
 						key={contact.link}
 						href={contact.link}
+						onClick={(event) => handleExternalLinkClick(event, contact.link)}
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={contact['aria-label']}

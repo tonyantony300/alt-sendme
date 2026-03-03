@@ -16,6 +16,7 @@ import { useTranslation } from '../../i18n'
 import { cn } from '../../lib/utils'
 import { LICENSE_LINK, PRIVACY_LINK, VERSION_DISPLAY } from '../../lib/version'
 import { Badge } from '../ui/badge'
+import { handleExternalLinkClick } from '@/lib/openExternalUrl'
 
 function SettingSidebarRoot(props: React.ComponentProps<typeof Sidebar>) {
 	return <Sidebar {...props} />
@@ -118,6 +119,7 @@ function SettingSidebarFooter({
 			<a
 				className="hover:underline hover:text-foreground transition-color"
 				href={PRIVACY_LINK}
+				onClick={(event) => handleExternalLinkClick(event, PRIVACY_LINK)}
 				target="_blank"
 				rel="noopener noreferrer"
 			>
@@ -127,6 +129,7 @@ function SettingSidebarFooter({
 			<a
 				className="hover:underline hover:text-foreground transition-color"
 				href={LICENSE_LINK}
+				onClick={(event) => handleExternalLinkClick(event, LICENSE_LINK)}
 				target="_blank"
 				rel="noopener noreferrer"
 			>

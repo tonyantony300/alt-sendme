@@ -13,6 +13,7 @@
 		"store:default",
 		"os:default",
 		"opener:default",
+		"notification:default",
 		"dialog:default",
 		"dialog:allow-open",
 		"dialog:allow-save",
