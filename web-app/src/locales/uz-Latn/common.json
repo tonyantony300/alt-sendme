@@ -1,0 +1,173 @@
+{
+	"appTitle": "AltSendme",
+	"send": "Yuborish",
+	"comingSoon": "Tez orada",
+	"receive": "Qabul qilish",
+	"ok": "OK",
+	"undo": "Ortga qaytarish",
+	"cancel": "Bekor qilish",
+	"confirm": "Tasdiqlash",
+	"loading": "Yuklanmoqda...",
+	"browse": "Ko'rib chiqish",
+	"donate": "Qo'llab-quvvatlash",
+	"privacyPolicy": "Maxfiylik siyosati",
+	"license": "Litsenziya",
+	"notFound": {
+		"title": "Sahifa topilmadi",
+		"subtitle": "Siz qidirayotgan sahifa mavjud emas yoki ko'chirilgan.",
+		"goBack": "Orqaga qaytish",
+		"goHome": "Bosh sahifaga o'tish"
+	},
+	"sender": {
+		"title": "Yuborish",
+		"subtitle": "Fayl yoki papkalarni shifrlangan peer-to-peer ulanishlari orqali ulashing.",
+		"stoppingTransmission": "Uzatish to'xtatilmoqda...",
+		"startSharing": "Ulashishni boshlash",
+		"startingShare": "Ulashish boshlanmoqda...",
+		"stopSharing": "Ulashishni to'xtatish",
+		"shareThisTicket": "Ushbu ticketni ulashing:",
+		"sendThisTicket": "Ushbu ticketni faylingizni qabul qiladigan kishiga yuboring",
+		"keepAppOpen": "Boshqalar fayllaringizni yuklab olayotganda ilovani ochiq qoldiring",
+		"fileLabel": "Fayl:",
+		"listeningForConnection": "Ulanish kutilmoqda",
+		"sharingInProgress": "Ulashish davom etmoqda",
+		"transferCompleted": "Uzatish yakunlandi",
+		"filesBeingTransmitted": "Fayllar uzatilmoqda",
+		"preparingForTransport": "Uzatishga tayyorlanmoqda...",
+		"pleaseWaitProcessing": "Fayllaringiz ulashish uchun qayta ishlanayotganda biroz kuting...",
+		"dropFilesHere": "Fayl yoki papkalarni bu yerga tashlang",
+		"dragAndDrop": "Sudrab tashlash",
+		"orBrowse": "yoki fayl/papka tanlash uchun ko'rib chiqing",
+		"fileSelected": "Fayl tanlandi",
+		"folderSelected": "Papka tanlandi",
+		"itemSelected": "Element tanlandi",
+		"browseFile": "Faylni tanlash",
+		"browseFolder": "Papkani tanlash",
+		"copyToClipboard": "Buferga nusxalash",
+		"broadcastMode": {
+			"index": "Ommaviy ulashish",
+			"on": {
+				"label": "Siz ommaviy ulashyapsiz",
+				"description": "Ticketga ega bo'lgan har kim faylni yuklab olishi mumkin."
+			},
+			"off": {
+				"label": "Shaxsiy ulashish",
+				"description": "Faqat ticketni ulashgan odam faylni yuklab olishi mumkin."
+			}
+		}
+	},
+	"receiver": {
+		"title": "Fayllarni qabul qilish",
+		"subtitle": "Internet orqali shifrlangan peer-to-peer ulanishlar yordamida yuboruvchidan fayllarni yuklab oling.",
+		"saveToFolder": "Papkaga saqlash:",
+		"noFolderSelected": "Papka tanlanmagan",
+		"pasteTicket": "Ticketni bu yerga qo'ying:",
+		"ticketPlaceholder": "sendme qabul qilish ticketi...",
+		"howToReceive": "Fayllarni qanday qabul qilish",
+		"instruction1": "Yuboruvchi onlayn bo'lishi va fayl ulashayotgan bo'lishi kerak",
+		"instruction2": "Yuboruvchidan ticket oling",
+		"instruction3": "Ticketni matn maydoniga qo'ying",
+		"instruction4": "Qabul qilishni boshlash uchun Yuklab olishni bosing",
+		"instruction5": "Fayllar tanlagan papkangizga saqlanadi",
+		"keepAppOpen": "Fayllar yuklab olinayotganda ilovani ochiq qoldiring",
+		"connectingToSender": "Yuboruvchiga ulanilmoqda",
+		"downloadingInProgress": "Yuklab olish davom etmoqda",
+		"downloadCompleted": "Yuklab olish yakunlandi",
+		"stopReceiving": "Qabul qilishni to'xtatish",
+		"download": "Yuklab olish"
+	},
+	"transfer": {
+		"progress": "Uzatish jarayoni",
+		"speed": "Tezlik",
+		"eta": "ETA",
+		"timeRemaining": "Qolgan vaqt",
+		"calculating": "Hisoblanmoqda...",
+		"complete": "Uzatish yakunlandi!",
+		"stopped": "Uzatish to'xtatildi",
+		"newTransfer": "Yangi uzatish",
+		"done": "Tayyor",
+		"open": "Ochish",
+		"wasStopped": "Uzatish yakunlanishidan oldin to'xtatildi.",
+		"successMessage": "Uzatish muvaffaqiyatli yakunlandi.",
+		"file": "Fayl",
+		"folder": "Papka",
+		"fileName": "Fayl nomi",
+		"fileSize": "Fayl hajmi",
+		"folderSize": "Papka hajmi",
+		"downloadPath": "Yuklab olish manzili",
+		"duration": "Davomiyligi",
+		"avgSpeed": "O'rtacha tezlik"
+	},
+	"errors": {
+		"sharingFailed": "Ulashish muvaffaqiyatsiz",
+		"sharingFailedDesc": "Ulashishni boshlab bo'lmadi",
+		"stopSharingFailed": "Ulashishni to'xtatib bo'lmadi",
+		"stopSharingFailedDesc": "Ulashishni to'xtatishda xatolik yuz berdi",
+		"copyFailed": "Nusxalash muvaffaqiyatsiz",
+		"copyFailedDesc": "Ticketni nusxalab bo'lmadi",
+		"folderDialogFailed": "Papka oynasi xatosi",
+		"folderDialogFailedDesc": "Papka tanlash oynasini ochib bo'lmadi",
+		"fileDialogFailed": "Fayl oynasi xatosi",
+		"fileDialogFailedDesc": "Fayl tanlash oynasini ochib bo'lmadi",
+		"receiveFailed": "Qabul qilish muvaffaqiyatsiz",
+		"receiveFailedDesc": "Faylni qabul qilib bo'lmadi",
+		"openFolderFailed": "Papkani ochib bo'lmadi",
+		"openFolderFailedDesc": "Yuklab olish papkasini ochib bo'lmadi"
+	},
+	"settings": {
+		"title": "Sozlamalar",
+		"navItems": {
+			"appearance": "Ko'rinish va til",
+			"general": "Umumiy",
+			"network": "Tarmoq",
+			"notification": "Bildirishnomalar"
+		},
+		"theme": {
+			"title": "Ko'rinish",
+			"light": "Yorug'",
+			"dark": "Qorong'i",
+			"auto": "Tizim"
+		},
+		"language": {
+			"title": "Til",
+			"description": "Afzal ko'rgan tilingizni tanlang",
+			"noResults": "Tillar topilmadi"
+		},
+		"general": {
+			"title": "Umumiy",
+			"autoCheckUpdates": {
+				"label": "Yangilanishlarni avtomatik tekshirish",
+				"description": "Ilova ishga tushganda yangilanishlar avtomatik tekshiriladi"
+			},
+			"systembar": {
+				"title": "Tizim paneli",
+				"minimizeToTray": {
+					"label": "Tizim paneliga yig'ish",
+					"description": "Yopish oynasida ilovani yakunlash o'rniga yig'ish"
+				},
+				"showProgressOnIcon": {
+					"label": "Ilova ikonkasida uzatish jarayonini ko'rsatish",
+					"description": "Uzatish jarayonini ko'rsatish uchun ikonka ustiga progress panel qo'llanadi"
+				},
+				"runOnSystemStartup": {
+					"label": "Tizim bilan birga ishga tushirish",
+					"description": "Tizim ishga tushganda ilovani avtomatik ishga tushirish"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Yangi yangilanish!",
+		"newVersionAvailable": "Yangi {{version}} versiyasi mavjud.",
+		"newVersionAvailableInline": "Yangi versiya mavjud - {{version}}",
+		"updateNow": "Hozir yangilash",
+		"later": "Keyinroq",
+		"checkForUpdates": "Yangilanishlarni tekshirish",
+		"noUpdatesTitle": "Yangilanishlar topilmadi",
+		"noUpdatesDescription": "Siz allaqachon eng so'nggi versiyadan foydalanmoqdasiz",
+		"checkFailed": "Tekshirish muvaffaqiyatsiz",
+		"checkFailedDesc": "Yangilanishlarni tekshirib bo'lmadi",
+		"installFailed": "O'rnatish muvaffaqiyatsiz",
+		"installFailedDesc": "Yangilanishni o'rnatib bo'lmadi"
+	}
+}

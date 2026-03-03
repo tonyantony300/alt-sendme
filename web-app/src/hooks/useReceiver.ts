@@ -3,7 +3,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { downloadDir, join } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
-import { selectDownloadFolder } from 'tauri-plugin-native-utils-api'
+import { selectDownloadFolder } from '@/plugins/nativeUtils'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
@@ -168,12 +168,14 @@ export function useReceiver(): UseReceiverReturn {
 						const speedInt = parseInt(parts[2], 10)
 						const speedBps = speedInt / 1000.0
 						const percentage =
-							totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
+							totalBytes > 0
+								? Math.min((bytesTransferred / totalBytes) * 100, 100)
+								: 0
 
 						// Add speed sample and calculate ETA
 						speedAveragerRef.current.addSample(speedBps)
 						const avgSpeed = speedAveragerRef.current.getAverage()
-						const bytesRemaining = totalBytes - bytesTransferred
+						const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0)
 						const eta = calculateETA(bytesRemaining, avgSpeed)
 
 						setTransferProgress({
@@ -272,9 +274,9 @@ export function useReceiver(): UseReceiverReturn {
 	const handleBrowseFolder = async () => {
 		if (isReceiving) return
 		try {
-			let selected
+			let selected: string | null
 			if (IS_ANDROID) {
-				let response = await selectDownloadFolder()
+				const response = await selectDownloadFolder()
 				if (!response) return
 				selected = response.path.toString()
 			} else {

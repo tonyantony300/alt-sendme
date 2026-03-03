@@ -18,3 +18,15 @@ impl<R: Runtime> NativeUtils<R> {
         Err(crate::Error::UnsupportedPlafrormError)
     }
 }
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn select_send_document(&self) -> crate::Result<SelectedSendItemResponse> {
+        Err(crate::Error::UnsupportedPlafrormError)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn select_send_folder(&self) -> crate::Result<SelectedSendItemResponse> {
+        Err(crate::Error::UnsupportedPlafrormError)
+    }
+}

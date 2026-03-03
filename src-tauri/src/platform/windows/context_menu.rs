@@ -1,13 +1,13 @@
 // TODO: Currently commands for unregistering the context menu is commented out, as it is not yet implemented when the settings route is built: create a toggle for context menu
 
 #[cfg(target_os = "windows")]
+use anyhow::Context;
+#[cfg(target_os = "windows")]
 use std::path::PathBuf;
 #[cfg(target_os = "windows")]
 use winreg::enums::*;
 #[cfg(target_os = "windows")]
 use winreg::RegKey;
-#[cfg(target_os = "windows")]
-use anyhow::Context;
 
 #[cfg(target_os = "windows")]
 pub fn get_current_exe_path() -> anyhow::Result<PathBuf> {
@@ -18,13 +18,15 @@ pub fn get_current_exe_path() -> anyhow::Result<PathBuf> {
 #[cfg(target_os = "windows")]
 pub fn is_context_menu_registered() -> anyhow::Result<bool> {
     let exe_path = get_current_exe_path()?;
-    let exe_str = exe_path.to_str().ok_or_else(|| anyhow::anyhow!("Invalid path"))?;
-    
+    let exe_str = exe_path
+        .to_str()
+        .ok_or_else(|| anyhow::anyhow!("Invalid path"))?;
+
     // Check if the command key matches our current executable
     // We check just one, assuming they are in sync
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let path = "Software\\Classes\\*\\shell\\Send with AltSendme\\command";
-    
+
     if let Ok(key) = hkcu.open_subkey_with_flags(path, KEY_READ) {
         if let Ok(command_val) = key.get_value::<String, _>("") {
             // Check if command starts with our executable path
@@ -35,7 +37,7 @@ pub fn is_context_menu_registered() -> anyhow::Result<bool> {
             }
         }
     }
-    
+
     Ok(false)
 }
 
@@ -47,18 +49,32 @@ pub fn register_context_menu() -> anyhow::Result<()> {
     }
 
     let exe_path = get_current_exe_path()?;
-    let exe_str = exe_path.to_str().ok_or_else(|| anyhow::anyhow!("Invalid path"))?;
+    let exe_str = exe_path
+        .to_str()
+        .ok_or_else(|| anyhow::anyhow!("Invalid path"))?;
     // Use the first icon resource from the executable
-    let icon_path = format!("{},0", exe_str); 
+    let icon_path = format!("{},0", exe_str);
 
     // Register for Files (*)
     write_registry_key("*", "Send with AltSendme", exe_str, &icon_path, "\"%1\"")?;
 
     // Register for Directories
-    write_registry_key("Directory", "Send with AltSendme", exe_str, &icon_path, "\"%1\"")?;
+    write_registry_key(
+        "Directory",
+        "Send with AltSendme",
+        exe_str,
+        &icon_path,
+        "\"%1\"",
+    )?;
 
     // Register for Directory Backgrounds
-    write_registry_key("Directory\\Background", "Send with AltSendme", exe_str, &icon_path, "\"%V\"")?;
+    write_registry_key(
+        "Directory\\Background",
+        "Send with AltSendme",
+        exe_str,
+        &icon_path,
+        "\"%V\"",
+    )?;
 
     notify_icon_change();
     Ok(())
@@ -80,7 +96,13 @@ pub fn register_context_menu() -> anyhow::Result<()> {
 // }
 
 #[cfg(target_os = "windows")]
-fn write_registry_key(base: &str, name: &str, exe_path: &str, icon_path: &str, arg: &str) -> anyhow::Result<()> {
+fn write_registry_key(
+    base: &str,
+    name: &str,
+    exe_path: &str,
+    icon_path: &str,
+    arg: &str,
+) -> anyhow::Result<()> {
     // HKCU\Software\Classes\{base}\shell\{name}\command
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let path = format!("Software\\Classes\\{}", base);
@@ -100,7 +122,7 @@ fn write_registry_key(base: &str, name: &str, exe_path: &str, icon_path: &str, a
     let (cmd_key, _) = shell_key
         .create_subkey("command")
         .context("failed to create command subkey")?;
-    
+
     let command = format!("\"{}\" {}", exe_path, arg);
     cmd_key
         .set_value("", &command)
@@ -112,7 +134,7 @@ fn write_registry_key(base: &str, name: &str, exe_path: &str, icon_path: &str, a
 // fn remove_registry_key(base: &str, name: &str) -> anyhow::Result<()> {
 //     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
 //     let path = format!("Software\\Classes\\{}\\shell", base);
-//     
+//
 //     match hkcu.open_subkey_with_flags(&path, KEY_READ | KEY_WRITE) {
 //         Ok(shell_key) => {
 //             let _ = shell_key.delete_subkey_all(name);

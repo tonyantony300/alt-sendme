@@ -51,7 +51,7 @@ export function SharingActiveCard({
 				// Auto-close "You are broadcasting" notification after 1 seconds
 				setTimeout(() => {
 					toastManager.close(toastId)
-				}, 1500)
+				}, 5000)
 			}
 		}
 	}
@@ -237,10 +237,7 @@ export function TicketDisplay({
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
-				<p
-					className="block text-sm font-medium"
-					style={{ color: 'var(--app-main-view-fg)' }}
-				>
+				<p className="block text-sm font-medium">
 					{t('common:sender.shareThisTicket')}
 				</p>
 				{isBroadcastMode !== undefined && onToggleBroadcast && (
@@ -256,7 +253,12 @@ export function TicketDisplay({
 				)}
 			</div>
 			<InputGroup>
-				<InputGroupInput type="text" value={ticket} readOnly />
+				<InputGroupInput
+					type="text"
+					value={ticket}
+					className="overflow-ellipsis"
+					readOnly
+				/>
 				<InputGroupAddon align="inline-end">
 					<Button
 						type="button"
@@ -265,11 +267,8 @@ export function TicketDisplay({
 						style={{
 							backgroundColor: copySuccess
 								? 'var(--app-primary)'
-								: 'rgba(255, 255, 255, 0.1)',
-							border: '1px solid rgba(255, 255, 255, 0.2)',
-							color: copySuccess
-								? 'var(--app-primary-fg)'
-								: 'var(--app-main-view-fg)',
+								: 'var(--color-foreground)',
+							border: '1px solid var(--border)',
 						}}
 						title={t('common:sender.copyToClipboard')}
 					>

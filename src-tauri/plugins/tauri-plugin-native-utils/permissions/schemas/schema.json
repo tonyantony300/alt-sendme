@@ -268,10 +268,34 @@
 					"markdownDescription": "Denies the select_download_folder command without any pre-configured scope."
 				},
 				{
-					"description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`",
+					"description": "Enables the select_send_document command without any pre-configured scope.",
+					"type": "string",
+					"const": "allow-select-send-document",
+					"markdownDescription": "Enables the select_send_document command without any pre-configured scope."
+				},
+				{
+					"description": "Denies the select_send_document command without any pre-configured scope.",
+					"type": "string",
+					"const": "deny-select-send-document",
+					"markdownDescription": "Denies the select_send_document command without any pre-configured scope."
+				},
+				{
+					"description": "Enables the select_send_folder command without any pre-configured scope.",
+					"type": "string",
+					"const": "allow-select-send-folder",
+					"markdownDescription": "Enables the select_send_folder command without any pre-configured scope."
+				},
+				{
+					"description": "Denies the select_send_folder command without any pre-configured scope.",
+					"type": "string",
+					"const": "deny-select-send-folder",
+					"markdownDescription": "Denies the select_send_folder command without any pre-configured scope."
+				},
+				{
+					"description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`",
 					"type": "string",
 					"const": "default",
-					"markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`"
+					"markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`"
 				}
 			]
 		}

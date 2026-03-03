@@ -27,7 +27,8 @@ export interface UseSenderReturn {
 	isBroadcastMode: boolean
 	activeConnectionCount: number
 
-	handleFileSelect: (path: string) => void
+	handleFileSelect: (path: string, pathType?: 'file' | 'directory') => void
+	clearSelectedPath: () => void
 	startSharing: () => Promise<void>
 	stopSharing: () => Promise<void>
 	copyTicket: () => Promise<void>
@@ -179,12 +180,14 @@ export function useSender(): UseSenderReturn {
 						const speedInt = parseInt(parts[2], 10)
 						const speedBps = speedInt / 1000.0
 						const percentage =
-							totalBytes > 0 ? (bytesTransferred / totalBytes) * 100 : 0
+							totalBytes > 0
+								? Math.min((bytesTransferred / totalBytes) * 100, 100)
+								: 0
 
 						// Add speed sample and calculate ETA
 						speedAveragerRef.current.addSample(speedBps)
 						const avgSpeed = speedAveragerRef.current.getAverage()
-						const bytesRemaining = totalBytes - bytesTransferred
+						const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0)
 						const eta = calculateETA(bytesRemaining, avgSpeed)
 
 						latestProgressRef.current = {
@@ -445,8 +448,12 @@ export function useSender(): UseSenderReturn {
 		setActiveConnectionCount,
 	])
 
-	const handleFileSelect = async (path: string) => {
+	const handleFileSelect = async (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => {
 		setSelectedPath(path)
+		if (pathType) return setPathType(pathType)
 		try {
 			const type = await invoke<string>('check_path_type', { path })
 			setPathType(type as 'file' | 'directory')
@@ -454,6 +461,11 @@ export function useSender(): UseSenderReturn {
 			console.error('Failed to check path type:', error)
 			setPathType(null)
 		}
+	}
+
+	const clearSelectedPath = () => {
+		setSelectedPath(null)
+		setPathType(null)
 	}
 
 	const startSharing = async () => {
@@ -652,6 +664,7 @@ export function useSender(): UseSenderReturn {
 		activeConnectionCount,
 
 		handleFileSelect,
+		clearSelectedPath,
 		startSharing,
 		stopSharing,
 		copyTicket,

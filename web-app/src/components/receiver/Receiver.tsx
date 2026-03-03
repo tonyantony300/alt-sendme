@@ -48,18 +48,12 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 	}, [isReceiving, onTransferStateChange])
 
 	return (
-		<div
-			className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col"
-			style={{ color: 'var(--app-main-view-fg)' }}
-		>
+		<div className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col">
 			{!isReceiving ? (
 				<>
 					<div className="text-center">
 						<div className="flex items-center justify-center gap-2 mb-2">
-							<h2
-								className="text-xl font-semibold"
-								style={{ color: 'var(--app-main-view-fg)' }}
-							>
+							<h2 className="text-xl font-semibold">
 								{t('common:receiver.title')}
 							</h2>
 							<Button
@@ -72,10 +66,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 								<Info />
 							</Button>
 						</div>
-						<p
-							className="text-sm"
-							style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-						>
+						<p className="text-sm text-muted-foreground">
 							{t('common:receiver.subtitle')}
 						</p>
 					</div>

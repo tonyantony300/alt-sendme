@@ -60,7 +60,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 								<div
 									className="absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-300 ease-in-out"
 									style={{
-										backgroundColor: 'rgba(37, 211, 101, 0.687)',
+										backgroundColor: 'var(--app-primary)',
 										height: `${fillPercentage}%`,
 									}}
 								/>
