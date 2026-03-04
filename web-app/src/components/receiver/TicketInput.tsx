@@ -76,9 +76,7 @@ export function TicketInput({
 			return <FolderIcon size="md" className="scale-60 origin-center" />
 		}
 		// When image thumbnail fails to load, fallback to generic image icon
-		if (
-			mimeType?.startsWith('image/')
-		) {
+		if (mimeType?.startsWith('image/')) {
 			return <ImageIcon size="md" className="scale-60 origin-center mt-1" />
 		}
 
