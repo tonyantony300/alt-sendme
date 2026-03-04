@@ -121,5 +121,3 @@ src-tauri/gen/*
 
 .github-reference/
 .github-reference-readest/
-# Keep main.rs backups ignored
-src-tauri/src/main.backup.*.rs

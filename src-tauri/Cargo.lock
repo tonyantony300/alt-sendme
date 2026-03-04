@@ -82,7 +82,6 @@ version = "0.3.4"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
- "dirs",
  "dunce",
  "gstreamer",
  "gstreamer-app",
