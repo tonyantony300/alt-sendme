@@ -11,6 +11,10 @@ import {
 	DefaultFileIcon,
 	TxtIcon,
 	JsonIcon,
+	DocIcon,
+	XlsxIcon,
+	PptIcon,
+	PdfIcon,
 } from '../illustration'
 
 export function TicketInput({
@@ -25,32 +29,61 @@ export function TicketInput({
 }: TicketInputProps) {
 	const { t } = useTranslation()
 
-	const getFileIcon = (mimeType?: string) => {
-		if (!mimeType) return <DefaultFileIcon className="h-6 w-6" />
-		if (mimeType === 'inode/directory')
-			return <FolderIcon className="h-6 w-6" />
-		if (mimeType.startsWith('image/')) return <ImageIcon className="h-6 w-6" />
-		if (mimeType.startsWith('video/'))
-			return <DefaultFileIcon className="h-6 w-6" /> // fallback
-		if (mimeType.startsWith('audio/'))
-			return <DefaultFileIcon className="h-6 w-6" /> // fallback
-		if (mimeType.startsWith('text/')) return <TxtIcon className="h-6 w-6" />
+	const getFileIcon = (mimeType?: string, fileName?: string) => {
+		const ext = fileName?.split('.').pop()?.toLowerCase() || ''
 		if (
-			mimeType.includes('zip') ||
-			mimeType.includes('tar') ||
-			mimeType.includes('rar') ||
-			mimeType.includes('7z') ||
-			mimeType.includes('gzip')
-		)
-			return <ZipIcon className="h-6 w-6" />
+			mimeType?.includes('word') ||
+			mimeType?.includes('document') ||
+			['doc', 'docx'].includes(ext)
+		) {
+			return <DocIcon size="md" className="scale-60 origin-center" />
+		}
 		if (
-			mimeType.includes('json') ||
-			mimeType.includes('javascript') ||
-			mimeType.includes('html') ||
-			mimeType.includes('css')
-		)
-			return <JsonIcon className="h-6 w-6" />
-		return <DefaultFileIcon className="h-6 w-6" />
+			mimeType?.includes('sheet') ||
+			mimeType?.includes('excel') ||
+			mimeType?.includes('csv') ||
+			['xls', 'xlsx', 'csv'].includes(ext)
+		) {
+			return <XlsxIcon size="md" className="scale-60 origin-center" />
+		}
+		if (
+			mimeType?.includes('presentation') ||
+			mimeType?.includes('powerpoint') ||
+			['ppt', 'pptx'].includes(ext)
+		) {
+			return <PptIcon size="md" className="scale-60 origin-center" />
+		}
+		if (mimeType === 'application/pdf' || ext === 'pdf') {
+			return <PdfIcon size="md" className="scale-60 origin-center" />
+		}
+		if (mimeType === 'application/json' || ext === 'json') {
+			return <JsonIcon size="md" className="scale-60 origin-center" />
+		}
+		if (mimeType?.startsWith('text/') || ext === 'txt') {
+			return <TxtIcon size="md" className="scale-60 origin-center" />
+		}
+		if (
+			mimeType?.includes('zip') ||
+			mimeType?.includes('tar') ||
+			mimeType?.includes('rar') ||
+			mimeType?.includes('7z') ||
+			mimeType?.includes('gzip') ||
+			['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)
+		) {
+			return <ZipIcon size="md" className="scale-60 origin-center" />
+		}
+		if (mimeType === 'inode/directory') {
+			return <FolderIcon size="md" className="scale-60 origin-center" />
+		}
+		// When image thumbnail fails to load, fallback to generic image icon
+		if (
+			mimeType?.startsWith('image/')
+		) {
+			return <ImageIcon size="md" className="scale-60 origin-center mt-1" />
+		}
+
+		// Fallback
+		return <DefaultFileIcon size="md" className="scale-60 origin-center" />
 	}
 
 	/**
@@ -121,7 +154,7 @@ export function TicketInput({
 			{/* Show preview if metadata is available*/}
 			{previewMetadata ? (
 				<div className="p-3 rounded-md border bg-card flex gap-3 items-center">
-					<div className="w-14 h-14 rounded-md overflow-hidden border bg-muted shrink-0 flex items-center justify-center">
+					<div className="w-14 h-14 rounded-md border bg-muted shrink-0 flex items-center justify-center relative overflow-hidden">
 						{previewMetadata.thumbnail ? (
 							<img
 								src={`data:image/jpeg;base64,${previewMetadata.thumbnail}`}
@@ -129,7 +162,7 @@ export function TicketInput({
 								className="w-full h-full object-cover"
 							/>
 						) : (
-							getFileIcon(previewMetadata.mimeType)
+							getFileIcon(previewMetadata.mimeType, previewMetadata.fileName)
 						)}
 					</div>
 					<div className="min-w-0 flex-1">

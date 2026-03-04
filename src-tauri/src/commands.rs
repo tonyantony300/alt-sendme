@@ -28,6 +28,7 @@ impl EventEmitter for TauriEventEmitter {
     }
 }
 
+
 /// Get file or directory size
 #[tauri::command]
 pub async fn get_file_size(path: String) -> Result<u64, String> {

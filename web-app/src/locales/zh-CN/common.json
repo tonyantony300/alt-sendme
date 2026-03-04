@@ -32,7 +32,7 @@
 		"browseFile": "浏览文件",
 		"browseFolder": "浏览文件夹",
 		"copyToClipboard": "复制到剪贴板",
-		"description": "输入可选描述",
+		"description": "描述（可选）",
 		"broadcastMode": {
 			"index": "广播",
 			"on": {
