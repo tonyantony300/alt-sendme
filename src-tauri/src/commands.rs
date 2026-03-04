@@ -193,6 +193,9 @@ pub async fn stop_sharing(state: State<'_, AppStateMutex>) -> Result<(), String>
         if let Err(e) = share.stop().await {
             return Err(e);
         }
+
+        #[cfg(target_os = "android")]
+        std::fs::remove_dir_all(&share._path);
     }
 
     Ok(())

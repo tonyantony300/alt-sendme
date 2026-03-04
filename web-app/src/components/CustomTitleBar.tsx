@@ -1,5 +1,6 @@
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type React from 'react'
+import { IS_MACOS } from '@/lib/platform'
 import { cn } from '@/lib/utils'
 
 interface CustomTitleBarProps {

@@ -2,6 +2,7 @@
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "sendme:default",
 	"description": "enables the default permissions for sendme desktop",
+	"platforms": ["windows", "macOS", "linux"],
 	"windows": ["main"],
 	"permissions": [
 		"core:default",

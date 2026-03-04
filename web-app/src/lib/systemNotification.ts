@@ -5,6 +5,7 @@ import {
 	type Options as NotificationOptions,
 } from '@tauri-apps/plugin-notification'
 import { resolveResource } from '@tauri-apps/api/path'
+import { IS_TAURI, IS_WINDOWS } from './platform'
 
 type SystemNotificationOptions = Pick<NotificationOptions, 'title' | 'body'>
 

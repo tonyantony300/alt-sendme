@@ -452,8 +452,12 @@ export function useSender(): UseSenderReturn {
 		setActiveConnectionCount,
 	])
 
-	const handleFileSelect = async (path: string) => {
+	const handleFileSelect = async (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => {
 		setSelectedPath(path)
+		if (pathType) return setPathType(pathType)
 		try {
 			const type = await invoke<string>('check_path_type', { path })
 			setPathType(type as 'file' | 'directory')
