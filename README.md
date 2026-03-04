@@ -217,12 +217,19 @@ AltSendme uses open-source public relay servers to support establishing direct c
    ```bash
    cargo install tauri-cli
 
-4. **Run in development mode**:
+4. **(Optional) Setup android project**:
+   ```bash
+   rm src-tauri/gen/android
+   cargo tauri android init
+   git checkout src-tauri/gen/android
+   ```
+   
+5. **Run in development mode**:
    ```bash
    cargo tauri dev
    ```
 
-5. **Build locally** :
+6. **Build locally** :
    ```bash
     cargo tauri build --no-bundle
    ```

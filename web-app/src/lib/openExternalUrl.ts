@@ -1,4 +1,5 @@
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { IS_TAURI } from './platform'
 
 export async function openExternalUrl(url: string): Promise<void> {
 	if (IS_TAURI) {

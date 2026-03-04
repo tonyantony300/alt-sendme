@@ -1,0 +1,7 @@
+[default]
+description = "Default permissions for the plugin"
+permissions = [
+    "allow-select-download-folder",
+    "allow-select-send-document",
+    "allow-select-send-folder",
+]
