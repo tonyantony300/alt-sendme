@@ -29,7 +29,6 @@ A free and open-source file transfer tool that harnesses the power of [cutting-e
 
 Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
 
-[Receive major project updates 📫](https://tally.so/r/ob2Vkx)
 
 ## Features
 
@@ -42,7 +41,6 @@ Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easil
 - **Fast & reliable** – Capable of saturating multi-gigabit connections for lightning-fast transfers.
 - [**NAT traversal via QUIC**](https://www.iroh.computer/docs/faq#does-iroh-use-relay-servers) – Secure, low-latency connections using QUIC hole punching with encrypted relay fallback.
 - **CLI integration** – Interoperable with the [Sendme CLI](https://www.iroh.computer/sendme).
-- **Mobile & web** – Coming soon.
 - **Free & open source** – No upload costs, no size limits, and fully community-driven.
 
 
@@ -80,6 +78,10 @@ scoop install extras/altsendme
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
 
+## Supported Languages
+ 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼
+
+ 
 ## How it works 
 
 1. Drop your file or folder - AltSendme creates a one-time share code (called a "ticket").
@@ -139,20 +141,15 @@ AltSendme uses open-source public relay servers to support establishing direct c
 
 ## Roadmap 🚧
 
-- Better support for Linux distros, Windows and mac.
-- Mobile versions
-- Faster transfers
-- Easier transfers
-- Better insights into transfer process and system/network info
-- Advanced user interface for power users and simple functional UI for those who just want to share stuff.
-- Features for those who needs better privacy
-- Features for those who wants speed and convenience
-
-[Receive updates 📫](https://tally.so/r/ob2Vkx)
+- Improving usability for Linux distros, Windows and mac
+- Unthrottled, Reliable transfers with self-hosted relays
+- Better system/network insights into transfer process
 
 
-## Supported Languages
- 🇺🇸 🇷🇺 🇷🇸 🇫🇷 🇨🇳 🇹🇼 🇩🇪 🇯🇵 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷 🇮🇳 🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩
+[📫 Drop your Email to recieve updates](https://tally.so/r/ob2Vkx)
+
+
+
 
 ## Troubleshooting
 
@@ -216,25 +213,39 @@ AltSendme uses open-source public relay servers to support establishing direct c
 3. **Install Tauri**:
    ```bash
    cargo install tauri-cli
+   ```
 
-4. **(Optional) Setup android project**:
+4. **Run in development mode**:
+   ```bash
+   cargo tauri dev
+   ```
+
+5. **(Optional) Setup android project**:
    ```bash
    rm src-tauri/gen/android
    cargo tauri android init
    git checkout src-tauri/gen/android
+   cargo tauri android dev
    ```
    
-5. **Run in development mode**:
-   ```bash
-   cargo tauri dev
-   ```
 
 6. **Build locally** :
    ```bash
     cargo tauri build --no-bundle
    ```
 
-## Join our [Discord](https://discord.gg/xwb7z22Eve)
+7. **Install on Android** :
+   ```
+   npm run android:build -- --debug --apk
+      
+   adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+   ```
+
+## Testing Locally
+
+Install [Sendme CLI](https://www.iroh.computer/sendme) tool and you can share files within same device to test the whole transfer process. Files don't leave your device just works like a copy operation.
+
+## Join our [Discord](https://discord.gg/xwb7z22Eve) to contribute
 
 The best way to contribute is to join our Discord and say hi. Introduce yourself and share what skills or interests you have - whether that’s coding, testing, design, or something else. You can also raise issues, suggest fixes, or pitch ideas. Maintainers are there to guide you every step of the way.
 

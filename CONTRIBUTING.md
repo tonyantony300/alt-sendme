@@ -6,6 +6,11 @@ Thank you for your interest in contributing to AltSendme! Your help is appreciat
 
 The best way to get started is to join our Discord and say hi. Introduce yourself and share what skills or interests you have - whether that’s coding, testing, design, or something else. You can also raise issues, suggest fixes, or pitch ideas. Maintainers are there to guide you every step of the way.
 
+
+## Testing
+
+Install [Sendme CLI](https://www.iroh.computer/sendme) tool and you can share files within same device to test the whole transfer process. Files don't leave your device just works like a copy operation.
+
 ## How You Can Help
 
 This project welcomes contributions in several key areas:
