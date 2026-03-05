@@ -44,7 +44,7 @@
 		"browseFile": "Browse File",
 		"browseFolder": "Browse Folder",
 		"copyToClipboard": "Copy to clipboard",
-		"description": "Description(optional)",
+		"description": "Description (optional)",
 		"broadcastMode": {
 			"index": "Broadcast",
 			"on": {

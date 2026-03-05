@@ -1,6 +1,7 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
 mod commands;
+mod features;
 mod platform;
 mod state;
 #[cfg(not(target_os = "android"))]
@@ -10,7 +11,7 @@ mod version;
 pub use version::get_app_version;
 
 use commands::{
-    check_launch_intent, check_path_type, get_file_size, get_sharing_status, get_transport_status,
+    check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status, get_transport_status,
     receive_file, start_sharing, stop_sharing,
 };
 use state::AppState;
@@ -73,6 +74,7 @@ pub fn run() {
             get_transport_status,
             get_file_size,
             check_launch_intent,
+            fetch_ticket_metadata,
         ])
         .setup(|app| {
             setup_common(app);

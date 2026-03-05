@@ -2,7 +2,8 @@ use image::codecs::jpeg::JpegEncoder;
 use image::DynamicImage;
 use std::io::Cursor;
 use std::path::Path;
-use std::process::Command;
+use tokio::process::Command;
+use tokio::time::Duration;
 
 #[cfg(feature = "linux-gstreamer")]
 use gstreamer as gst;
@@ -20,21 +21,28 @@ use image::RgbImage;
 /// `Ok(Vec<u8>)` containing the JPEG-encoded thumbnail bytes if successful,
 /// or `Err(String)` with an error message if the file is not a valid video
 /// or an error occurs during processing.
-pub fn capture_first_second_frame_jpeg(file_path: &Path) -> Result<Vec<u8>, String> {
+pub async fn capture_first_second_frame_jpeg(file_path: &Path) -> Result<Vec<u8>, String> {
     #[cfg(feature = "linux-gstreamer")]
-    return capture_with_gstreamer(file_path).or_else(|gstreamer_err| {
-        tracing::warn!(
-            path = %file_path.display(),
-            error = %gstreamer_err,
-            "gstreamer thumbnail failed, falling back to ffmpeg"
-        );
-        capture_with_ffmpeg(file_path)
-    });
-
-    #[cfg(not(feature = "linux-gstreamer"))]
     {
-        capture_with_ffmpeg(file_path)
+        let path_buf = file_path.to_path_buf();
+        let gst_result = tokio::task::spawn_blocking(move || capture_with_gstreamer(&path_buf))
+            .await
+            .map_err(|e| format!("Task join error: {e}"))
+            .and_then(|res| res);
+
+        match gst_result {
+            Ok(bytes) => return Ok(bytes),
+            Err(gstreamer_err) => {
+                tracing::warn!(
+                    path = %file_path.display(),
+                    error = %gstreamer_err,
+                    "gstreamer thumbnail failed, falling back to ffmpeg"
+                );
+            }
+        }
     }
+
+    capture_with_ffmpeg(file_path).await
 }
 
 #[cfg(feature = "linux-gstreamer")]
@@ -165,13 +173,13 @@ fn sample_to_thumbnail_jpeg(sample: &gst::Sample) -> Result<Vec<u8>, String> {
     encode_thumbnail(DynamicImage::ImageRgb8(rgb))
 }
 
-fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
+async fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
     let mut errors = Vec::new();
 
     // Try multiple seek points to increase chances of
     // getting a valid frame
     for seek in ["1", "0.2", "0"] {
-        match capture_with_ffmpeg_seek(file_path, seek) {
+        match capture_with_ffmpeg_seek(file_path, seek).await {
             Ok(decoded) => return encode_thumbnail(decoded),
             Err(err) => errors.push(format!("ss={seek}: {err}")),
         }
@@ -183,8 +191,12 @@ fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
     ))
 }
 
-fn capture_with_ffmpeg_seek(file_path: &Path, seek_seconds: &str) -> Result<DynamicImage, String> {
-    let output = Command::new("ffmpeg")
+async fn capture_with_ffmpeg_seek(
+    file_path: &Path,
+    seek_seconds: &str,
+) -> Result<DynamicImage, String> {
+    let mut command = Command::new("ffmpeg");
+    command
         .arg("-hide_banner")
         .arg("-loglevel")
         .arg("error")
@@ -199,8 +211,14 @@ fn capture_with_ffmpeg_seek(file_path: &Path, seek_seconds: &str) -> Result<Dyna
         .arg("-vcodec")
         .arg("mjpeg")
         .arg("pipe:1")
-        .output()
-        .map_err(|e| format!("Failed to execute ffmpeg fallback: {e}"))?;
+        .kill_on_drop(true);
+
+    // Run ffmpeg command with a timeout to avoid hanging on problematic files
+    let output = match tokio::time::timeout(Duration::from_secs(10), command.output()).await {
+        Ok(Ok(out)) => out,
+        Ok(Err(e)) => return Err(format!("Failed to execute ffmpeg fallback: {e}")),
+        Err(_) => return Err("ffmpeg fallback timed out".to_string()),
+    };
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);

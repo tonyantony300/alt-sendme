@@ -349,8 +349,11 @@ pub async fn fetch_metadata(
     let endpoint = builder.bind().await?;
 
     // Attempt connection and metadata fetch up to 3 times
-    let mut attempt_plan: Vec<(usize, &'static str, iroh::EndpointAddr)> =
-        vec![(1, "default", addr.clone()), (2, "default", addr.clone())];
+    let mut attempt_plan: Vec<(usize, &'static str, iroh::EndpointAddr)> = vec![
+        (1, "default", addr.clone()),
+        (2, "default", addr.clone()),
+        (3, "default", addr.clone()),
+    ];
 
     // Relay-only attempt if relay addresses are avaliable
     let mut relay_only_addr = addr.clone();
@@ -358,7 +361,7 @@ pub async fn fetch_metadata(
         .addrs
         .retain(|transport_addr| matches!(transport_addr, TransportAddr::Relay(_)));
     if !relay_only_addr.addrs.is_empty() {
-        attempt_plan.push((3, "relay-only", relay_only_addr));
+        attempt_plan[2] = (3, "relay-only", relay_only_addr);
     }
 
     let mut last_error: Option<anyhow::Error> = None;

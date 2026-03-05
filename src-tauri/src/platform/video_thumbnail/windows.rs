@@ -2,7 +2,8 @@ use image::codecs::jpeg::JpegEncoder;
 use image::DynamicImage;
 use std::io::Cursor;
 use std::path::Path;
-use std::process::Command;
+use tokio::process::Command;
+use tokio::time::Duration;
 use windows::Win32::Media::MediaFoundation::{MFShutdown, MFStartup, MFSTARTUP_LITE, MF_VERSION};
 
 /// # Description
@@ -10,15 +11,24 @@ use windows::Win32::Media::MediaFoundation::{MFShutdown, MFStartup, MFSTARTUP_LI
 /// If that fails, it falls back to using ffmpeg to extract a frame and encode it as a JPEG thumbnail.
 /// # Errors
 /// - Returns an error if both Media Foundation and ffmpeg fail to capture a thumbnail, or if the ffmpeg output cannot be decoded or encoded as a JPEG.
-pub fn capture_first_second_frame_jpeg(file_path: &Path) -> Result<Vec<u8>, String> {
-    attempt_media_foundation(file_path).or_else(|mf_err| {
-        tracing::warn!(
-            path = %file_path.display(),
-            error = %mf_err,
-            "media foundation thumbnail failed, falling back to ffmpeg"
-        );
-        capture_with_ffmpeg(file_path)
-    })
+pub async fn capture_first_second_frame_jpeg(file_path: &Path) -> Result<Vec<u8>, String> {
+    let path_buf = file_path.to_path_buf();
+    let mf_result = tokio::task::spawn_blocking(move || attempt_media_foundation(&path_buf))
+        .await
+        .map_err(|e| format!("Task join error: {e}"))
+        .and_then(|res| res);
+
+    match mf_result {
+        Ok(bytes) => Ok(bytes),
+        Err(mf_err) => {
+            tracing::warn!(
+                path = %file_path.display(),
+                error = %mf_err,
+                "media foundation thumbnail failed, falling back to ffmpeg"
+            );
+            capture_with_ffmpeg(file_path).await
+        }
+    }
 }
 
 fn attempt_media_foundation(file_path: &Path) -> Result<Vec<u8>, String> {
@@ -31,8 +41,9 @@ fn attempt_media_foundation(file_path: &Path) -> Result<Vec<u8>, String> {
     Err("Media Foundation frame extraction is unavailable, using ffmpeg fallback".to_string())
 }
 
-fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
-    let output = Command::new("ffmpeg")
+async fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
+    let mut command = Command::new("ffmpeg");
+    command
         .arg("-hide_banner")
         .arg("-loglevel")
         .arg("error")
@@ -47,8 +58,13 @@ fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
         .arg("-vcodec")
         .arg("mjpeg")
         .arg("pipe:1")
-        .output()
-        .map_err(|e| format!("Failed to execute ffmpeg fallback: {e}"))?;
+        .kill_on_drop(true);
+
+    let output = match tokio::time::timeout(Duration::from_secs(10), command.output()).await {
+        Ok(Ok(out)) => out,
+        Ok(Err(e)) => return Err(format!("Failed to execute ffmpeg fallback: {e}")),
+        Err(_) => return Err("ffmpeg fallback timed out".to_string()),
+    };
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);

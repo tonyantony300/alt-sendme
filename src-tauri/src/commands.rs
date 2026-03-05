@@ -37,36 +37,11 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
         return Err("Path does not exist".to_string());
     }
 
-    if path.is_file() {
-        // For files, get the file size directly
-        match std::fs::metadata(&path) {
-            Ok(metadata) => Ok(metadata.len()),
-            Err(e) => Err(format!("Failed to get file metadata: {}", e)),
-        }
-    } else if path.is_dir() {
-        // For directories, calculate total size recursively
-        let mut total_size = 0u64;
-
-        for entry in walkdir::WalkDir::new(&path) {
-            match entry {
-                Ok(entry) => {
-                    if entry.file_type().is_file() {
-                        if let Ok(metadata) = entry.metadata() {
-                            total_size += metadata.len();
-                        }
-                    }
-                }
-                Err(e) => {
-                    tracing::warn!("Error walking directory: {}", e);
-                    // Continue with other files
-                }
-            }
-        }
-
-        Ok(total_size)
-    } else {
-        Err("Path is neither a file nor a directory".to_string())
-    }
+    tokio::task::spawn_blocking(move || {
+        get_total_size(&path).ok_or_else(|| "Failed to calculate size".to_string())
+    })
+    .await
+    .map_err(|e| format!("Task join error: {}", e))?
 }
 
 /// Start sharing a file or directory
@@ -95,8 +70,20 @@ pub async fn start_sharing(
         .unwrap_or_default()
         .to_string_lossy()
         .into_owned();
-    let size = get_total_size(&path).unwrap_or(0);
-    let thumbnail = generate_thumbnail(&path);
+
+    // Run heavy size calculation in a separate blocking thread
+    let path_clone = path.clone();
+    let size = tokio::task::spawn_blocking(move || {
+        get_total_size(&path_clone)
+            .ok_or_else(|| format!("failed to get total size for {}", path_clone.display()))
+    })
+    .await
+    .map_err(|e| format!("Task join error: {}", e))?
+    .map_err(|e| e)?;
+
+    // Generate thumbnail (async, internally handles blocking operations)
+    let thumbnail = generate_thumbnail(&path).await;
+
     let mime_type = if path.is_file() {
         Some(
             mime_guess::from_path(&path)
@@ -116,8 +103,7 @@ pub async fn start_sharing(
     };
 
     tracing::info!(
-        path = %path.display(),
-        file_name = %metadata.file_name,
+        path_stem = ?path.file_stem(),
         size = metadata.size,
         has_thumbnail = metadata.thumbnail.is_some(),
         "share metadata prepared"
@@ -137,7 +123,6 @@ pub async fn start_sharing(
     });
     let boxed_handle: AppHandle = Some(emitter);
 
-    // Start sharing using the core library
     match start_share(path.clone(), options, boxed_handle, Some(metadata)).await {
         Ok(result) => {
             let ticket = result.ticket.clone();
@@ -165,7 +150,7 @@ pub async fn fetch_ticket_metadata(ticket: String) -> Result<FileMetadata, Strin
     match fetch_metadata(ticket, options).await {
         Ok(metadata) => {
             tracing::info!(
-                file_name = %metadata.file_name,
+                file_name_len = metadata.file_name.len(),
                 size = metadata.size,
                 has_thumbnail = metadata.thumbnail.is_some(),
                 "fetch_ticket_metadata succeeded"

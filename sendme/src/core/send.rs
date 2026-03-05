@@ -67,6 +67,14 @@ impl ProtocolHandler for MetadataProtocol {
             })?
             .map_err(AcceptError::from_err)?;
 
+        // Validate request marker (1 means metadata request)
+        if req[0] != 1 {
+            return Err(AcceptError::from_err(std::io::Error::new(
+                ErrorKind::InvalidData,
+                format!("invalid metadata request marker: {}", req[0]),
+            )));
+        }
+
         tracing::debug!("metadata request marker received");
 
         let payload = self.metadata.clone().unwrap_or(FileMetadata {

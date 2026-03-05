@@ -39,7 +39,16 @@ mod tests {
             }
         }
         let temp_dir = env::temp_dir();
-        let file_path = temp_dir.join("test_thumb_feat.png");
+        // Use unique name to avoid flaky parallel tests
+        let unique = format!(
+            "test_thumb_feat-{}-{}.png",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        );
+        let file_path = temp_dir.join(unique);
         img.save(&file_path).unwrap();
 
         // Generate thumbnail
@@ -66,7 +75,16 @@ mod tests {
     #[test]
     fn test_generate_image_thumbnail_invalid_format() {
         let temp_dir = env::temp_dir();
-        let file_path = temp_dir.join("test_invalid.txt");
+        // Use unique filename
+        let unique = format!(
+            "test_invalid-{}-{}.txt",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        );
+        let file_path = temp_dir.join(unique);
         fs::write(&file_path, "This is not an image file").unwrap();
 
         let result = generate_image_thumbnail(&file_path);

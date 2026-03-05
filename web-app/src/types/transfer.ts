@@ -7,7 +7,6 @@ export interface TransferMetadata {
 	downloadPath?: string
 	wasStopped?: boolean
 	pathType?: 'file' | 'directory' | null
-	// Add thumbnail
 	thumbnailUrl?: string
 }
 
