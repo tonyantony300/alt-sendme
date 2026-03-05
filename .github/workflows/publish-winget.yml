@@ -35,9 +35,9 @@ jobs:
           locale: en-US
           publisher: Tony Antony
           package-name: AltSendme
-          short-description: Fast, private file sharing over local networks.
-          license: MIT
-          copyright: Copyright (c) 2025 Tony Antony
+          short-description: Fast, private file sharing over networks.
+          license: AGPL-3.0
+          copyright: Copyright (c) 2026 Tony Antony
           urls: |
             Homepage: https://github.com/tonyantony300/alt-sendme
             License: https://github.com/tonyantony300/alt-sendme/blob/main/LICENSE
