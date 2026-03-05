@@ -143,6 +143,7 @@ To discard accidental lockfile changes before committing:
 git checkout origin/main -- package-lock.json src-tauri/Cargo.lock sendme/Cargo.lock
 ```
 
+
 ## Code of Conduct
 
 Please be respectful and considerate in all interactions. The goal is to maintain a welcoming and inclusive environment for everyone.

@@ -1,0 +1,43 @@
+name: publish-winget
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  winget:
+    name: Publish to WinGet
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Derive package version
+        id: version
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "value=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish package to WinGet
+        uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
+        with:
+          identifier: TonyAntony.AltSendme
+          installers-regex: '^AltSendme_.*_x64_.*\.msi$'
+          version: ${{ steps.version.outputs.value }}
+          release-tag: ${{ steps.version.outputs.tag }}
+          token: ${{ secrets.WINGET_TOKEN }}
+          installer-type: wix
+          root-locale: en-US
+          locale: en-US
+          publisher: Tony Antony
+          package-name: AltSendme
+          short-description: Fast, private file sharing over networks.
+          license: AGPL-3.0
+          copyright: Copyright (c) 2026 Tony Antony
+          urls: |
+            Homepage: https://github.com/tonyantony300/alt-sendme
+            License: https://github.com/tonyantony300/alt-sendme/blob/main/LICENSE
