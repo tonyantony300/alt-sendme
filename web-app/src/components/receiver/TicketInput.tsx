@@ -1,4 +1,5 @@
 import { Download } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { TicketInputProps } from '../../types/receiver'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
@@ -28,6 +29,13 @@ export function TicketInput({
 	onReceive,
 }: TicketInputProps) {
 	const { t } = useTranslation()
+	const [failedThumbnailKey, setFailedThumbnailKey] = useState<string | null>(
+		null
+	)
+	const previewThumbnailKey =
+		previewMetadata?.thumbnail && previewMetadata?.fileName
+			? `${previewMetadata.fileName}:${previewMetadata.thumbnail}`
+			: null
 
 	const getFileIcon = (mimeType?: string, fileName?: string) => {
 		const ext = fileName?.split('.').pop()?.toLowerCase() || ''
@@ -153,11 +161,13 @@ export function TicketInput({
 			{previewMetadata ? (
 				<div className="p-3 rounded-md border bg-card flex gap-3 items-center">
 					<div className="w-14 h-14 rounded-md border bg-muted shrink-0 flex items-center justify-center relative overflow-hidden">
-						{previewMetadata.thumbnail ? (
+						{previewMetadata.thumbnail &&
+						previewThumbnailKey !== failedThumbnailKey ? (
 							<img
 								src={`data:image/jpeg;base64,${previewMetadata.thumbnail}`}
 								alt={previewMetadata.fileName}
 								className="w-full h-full object-cover"
+								onError={() => setFailedThumbnailKey(previewThumbnailKey)}
 							/>
 						) : (
 							getFileIcon(previewMetadata.mimeType, previewMetadata.fileName)
@@ -170,11 +180,6 @@ export function TicketInput({
 						<p className="text-xs text-muted-foreground">
 							{formatFileSize(previewMetadata.size)}
 						</p>
-						{previewMetadata.description ? (
-							<p className="text-xs text-muted-foreground truncate">
-								{previewMetadata.description}
-							</p>
-						) : null}
 					</div>
 				</div>
 			) : null}

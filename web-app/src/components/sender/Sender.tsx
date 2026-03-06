@@ -30,7 +30,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		isTransporting,
 		ticket,
 		selectedPath,
-		fileDescription,
 		pathType,
 		isLoading,
 		copySuccess,
@@ -39,7 +38,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		transferProgress,
 		isBroadcastMode,
 		activeConnectionCount,
-		setFileDescription,
 		handleFileSelect,
 		clearSelectedPath,
 		startSharing,
@@ -116,10 +114,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 
 						<ShareActionCard
 							selectedPath={selectedPath}
-							fileDescription={fileDescription}
 							isLoading={isLoading}
-							onFileSelect={handleFileSelect}
-							onDescriptionChange={setFileDescription}
 							onStartSharing={startSharing}
 						/>
 					</div>

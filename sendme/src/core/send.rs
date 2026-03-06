@@ -73,7 +73,6 @@ impl ProtocolHandler for MetadataProtocol {
             file_name: "Unknown file".to_string(),
             size: 0,
             thumbnail: None,
-            description: None,
             mime_type: None,
         });
 

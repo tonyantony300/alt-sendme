@@ -12,7 +12,6 @@ export interface SenderStore {
 	// Transfer data
 	ticket: string | null
 	selectedPath: string | null
-	fileDescription: string
 	pathType: 'file' | 'directory' | null
 	thumbnailUrl: string | null
 	transferMetadata: TransferMetadata | null
@@ -29,7 +28,6 @@ export interface SenderStore {
 	setViewState: (state: SenderViewState) => void
 	setTicket: (ticket: string | null) => void
 	setSelectedPath: (path: string | null) => void
-	setFileDescription: (desc: string) => void
 	setPathType: (type: 'file' | 'directory' | null) => void
 	setThumbnailUrl: (url: string | null) => void
 	setTransferMetadata: (metadata: TransferMetadata | null) => void
@@ -53,7 +51,6 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 	viewState: 'IDLE',
 	ticket: null,
 	selectedPath: null,
-	fileDescription: '',
 	pathType: null,
 	thumbnailUrl: null,
 	transferMetadata: null,
@@ -70,8 +67,6 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 	},
 
 	// Actions
-	setFileDescription: (desc) => set({ fileDescription: desc }),
-
 	// console.log('[Store] setViewState called:', {
 	//     from: currentState.viewState,
 	//     to: viewState,
@@ -147,7 +142,6 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 			viewState: 'IDLE',
 			ticket: null,
 			selectedPath: null,
-			fileDescription: '',
 			pathType: null,
 			thumbnailUrl: null,
 			transferMetadata: null,

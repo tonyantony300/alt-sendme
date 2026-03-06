@@ -69,7 +69,7 @@ fn emit_event_with_payload(app_handle: &AppHandle, event_name: &str, payload: &s
 /// Receives metadata. This function will connect to the sender, request metadata, and return it without downloading
 /// the file data.
 /// # Returns
-/// A `FileMetadata` struct containing the file name, size, thumbnail URL (if any), and description (if any).
+/// A `FileMetadata` struct containing the file name, size, thumbnail (if any), and MIME type (if any).
 async fn receive_metadata<S: AsyncReadExt + Unpin>(
     stream: &mut S,
     app_handle: &AppHandle,
@@ -316,9 +316,9 @@ pub async fn download(
 }
 
 /// # Description
-/// Fetches metadata for a given ticket without downloading the file data. This is used to display file information (name, size, thumbnail, description) in the UI before the user decides to download.
+/// Fetches metadata for a given ticket without downloading the file data. This is used to display file information (name, size, thumbnail) in the UI before the user decides to download.
 /// # Returns
-/// A `FileMetadata` struct containing the file name, size, thumbnail URL (if any), and description (if any).
+/// A `FileMetadata` struct containing the file name, size, and preview metadata (if any).
 pub async fn fetch_metadata(
     ticket_str: String,
     options: ReceiveOptions,
@@ -510,7 +510,6 @@ mod tests {
             file_name: "test_e2e_file.txt".into(),
             size: 25,
             thumbnail: Some("data:image/jpeg;base64,e2e_test_thumbnail=".into()),
-            description: Some("E2E test description for file".into()),
             mime_type: Some("text/plain".into()),
         };
 
@@ -542,7 +541,6 @@ mod tests {
         assert_eq!(fetched.file_name, expected_metadata.file_name);
         assert_eq!(fetched.size, expected_metadata.size);
         assert_eq!(fetched.thumbnail, expected_metadata.thumbnail);
-        assert_eq!(fetched.description, expected_metadata.description);
         assert_eq!(fetched.mime_type, expected_metadata.mime_type);
     }
 

@@ -18,7 +18,6 @@ export interface UseSenderReturn {
 
 	ticket: string | null
 	selectedPath: string | null
-	fileDescription: string
 	pathType: 'file' | 'directory' | null
 	isLoading: boolean
 	copySuccess: boolean
@@ -28,7 +27,6 @@ export interface UseSenderReturn {
 	isBroadcastMode: boolean
 	activeConnectionCount: number
 
-	setFileDescription: (desc: string) => void
 	handleFileSelect: (path: string) => void
 	clearSelectedPath: () => void
 	startSharing: () => Promise<void>
@@ -48,7 +46,6 @@ export function useSender(): UseSenderReturn {
 		viewState,
 		ticket,
 		selectedPath,
-		fileDescription,
 		pathType,
 		isLoading,
 		copySuccess,
@@ -60,7 +57,6 @@ export function useSender(): UseSenderReturn {
 		setViewState,
 		setTicket,
 		setSelectedPath,
-		setFileDescription,
 		setPathType,
 		setIsLoading,
 		setCopySuccess,
@@ -497,7 +493,6 @@ export function useSender(): UseSenderReturn {
 			setIsLoading(true)
 			const result = await invoke<string>('start_sharing', {
 				path: selectedPath,
-				description: fileDescription || null,
 			})
 			// console.log('[useSender] startSharing: got ticket, setting state to SHARING')
 			setTicket(result)
@@ -659,7 +654,6 @@ export function useSender(): UseSenderReturn {
 		isCompleted,
 		ticket,
 		selectedPath,
-		fileDescription,
 		pathType,
 		isLoading,
 		copySuccess,
@@ -669,7 +663,6 @@ export function useSender(): UseSenderReturn {
 		isBroadcastMode,
 		activeConnectionCount,
 
-		setFileDescription,
 		handleFileSelect,
 		clearSelectedPath,
 		startSharing,

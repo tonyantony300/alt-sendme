@@ -20,7 +20,6 @@ interface BackendFileMetadata {
 	file_name: string
 	size: number
 	thumbnail?: string | null
-	description?: string | null
 	mime_type?: string | null
 }
 
@@ -173,7 +172,6 @@ export function useReceiver(): UseReceiverReturn {
 					fileName: payload.file_name,
 					size: payload.size,
 					thumbnail: payload.thumbnail ?? undefined,
-					description: payload.description ?? undefined,
 					mimeType: payload.mime_type ?? undefined,
 				})
 			} catch {
