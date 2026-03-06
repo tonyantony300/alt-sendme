@@ -8,206 +8,195 @@ import type { AlertDialogState, AlertType } from '../types/ui'
 import { IS_ANDROID } from '@/lib/platform'
 
 export interface UseDragDropReturn {
-	isDragActive: boolean
-	pathType: 'file' | 'directory' | null
-	showFullPath: boolean
-	alertDialog: AlertDialogState
+isDragActive: boolean
+pathType: 'file' | 'directory' | null
+showFullPath: boolean
+alertDialog: AlertDialogState
 
-	toggleFullPath: () => void
-	browseFile: () => Promise<void>
-	browseFolder: () => Promise<void>
-	showAlert: (title: string, description: string, type?: AlertType) => void
-	closeAlert: () => void
-	checkPathType: (
-		path: string,
-		pathType?: 'file' | 'directory'
-	) => Promise<void>
+toggleFullPath: () => void
+browseFile: () => Promise<void>
+browseFolder: () => Promise<void>
+showAlert: (title: string, description: string, type?: AlertType) => void
+closeAlert: () => void
+checkPathType: (
+path: string,
+pathType?: 'file' | 'directory'
+) => Promise<void>
 }
 
 export function useDragDrop(
-<<<<<<< HEAD
-	onFileSelect: (path: string, pathType?: 'file' | 'directory') => void
-=======
-	onFileSelect: (
-		path: string,
-		pathType?: 'file' | 'directory'
-	) => void | Promise<void>
->>>>>>> da9dd13 (fix(dependencies, thumbnail, icon): fixed relative issues, clear up warnings)
+onFileSelect: (
+path: string,
+pathType?: 'file' | 'directory'
+) => void | Promise<void>
 ): UseDragDropReturn {
-	const { t } = useTranslation()
-	const [isDragActive, setIsDragActive] = useState(false)
-	const [pathType, setPathType] = useState<'file' | 'directory' | null>(null)
-	const [showFullPath, setShowFullPath] = useState(false)
-	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
-		isOpen: false,
-		title: '',
-		description: '',
-		type: 'info',
-	})
+const { t } = useTranslation()
+const [isDragActive, setIsDragActive] = useState(false)
+const [pathType, setPathType] = useState<'file' | 'directory' | null>(null)
+const [showFullPath, setShowFullPath] = useState(false)
+const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
+isOpen: false,
+title: '',
+description: '',
+type: 'info',
+})
 
-	const checkPathType = async (
-		path: string,
-		pathType?: 'file' | 'directory'
-	) => {
-		if (pathType) return setPathType(pathType)
+const checkPathType = async (
+path: string,
+pathType?: 'file' | 'directory'
+) => {
+if (pathType) {
+setPathType(pathType)
+return
+}
 
-		try {
-			const type = await invoke<string>('check_path_type', { path })
-			setPathType(type as 'file' | 'directory')
-		} catch (error) {
-			console.error('Failed to check path type:', error)
-			setPathType(null)
-		}
-	}
+try {
+const type = await invoke<string>('check_path_type', { path })
+setPathType(type as 'file' | 'directory')
+} catch (error) {
+console.error('Failed to check path type:', error)
+setPathType(null)
+}
+}
 
-	const showAlert = (
-						void onFileSelect(selected.cachedPath.toString(), 'file')
-		description: string,
-		type: AlertType = 'info'
-	) => {
-		setAlertDialog({ isOpen: true, title, description, type })
-	}
+const showAlert = (
+title: string,
+description: string,
+type: AlertType = 'info'
+) => {
+setAlertDialog({ isOpen: true, title, description, type })
+}
 
-	const closeAlert = () => {
-		setAlertDialog((prev) => ({ ...prev, isOpen: false }))
-	}
+const closeAlert = () => {
+setAlertDialog((prev) => ({ ...prev, isOpen: false }))
+}
 
-	const toggleFullPath = () => {
-		setShowFullPath((prev) => !prev)
-	}
+const toggleFullPath = () => {
+setShowFullPath((prev) => !prev)
+}
 
-	const browseFile = async () => {
-		try {
-			if (IS_ANDROID) {
-				const selected = await selectSendDocument()
+const browseFile = async () => {
+try {
+if (IS_ANDROID) {
+const selected = await selectSendDocument()
 
-<<<<<<< HEAD
-				if (selected) {
-					onFileSelect(selected.cachedPath.toString(), 'file')
-				}
-			} else {
-				const selected = await open({
-					multiple: false,
-					directory: false,
-						void onFileSelect(selected.cachedPath.toString(), 'directory')
+if (selected) {
+void onFileSelect(selected.cachedPath.toString(), 'file')
+}
+} else {
+const selected = await open({
+multiple: false,
+directory: false,
+})
 
-				if (selected) {
-					onFileSelect(selected)
-				}
-=======
-			if (selected) {
-				void onFileSelect(selected, 'file')
->>>>>>> da9dd13 (fix(dependencies, thumbnail, icon): fixed relative issues, clear up warnings)
-			}
-		} catch (error) {
-			console.error('Failed to open file dialog:', error)
-			showAlert(
-				t('common:errors.fileDialogFailed'),
-				`${t('common:errors.fileDialogFailedDesc')}: ${error}`,
-				'error'
-			)
-		}
-	}
+if (selected) {
+void onFileSelect(selected, 'file')
+}
+}
+} catch (error) {
+console.error('Failed to open file dialog:', error)
+showAlert(
+t('common:errors.fileDialogFailed'),
+`${t('common:errors.fileDialogFailedDesc')}: ${error}`,
+'error'
+)
+}
+}
 
-	const browseFolder = async () => {
-		try {
-			if (IS_ANDROID) {
-				const selected = await selectSendFolder()
+const browseFolder = async () => {
+try {
+if (IS_ANDROID) {
+const selected = await selectSendFolder()
 
-<<<<<<< HEAD
-				if (selected) {
-					onFileSelect(selected.cachedPath.toString(), 'directory')
-				}
-			} else {
-				const selected = await open({
-					multiple: false,
-					directory: true,
-				})
+if (selected) {
+void onFileSelect(selected.cachedPath.toString(), 'directory')
+}
+} else {
+const selected = await open({
+multiple: false,
+directory: true,
+})
 
-				if (selected) {
-					onFileSelect(selected)
-				}
-=======
-			if (selected) {
-				void onFileSelect(selected, 'directory')
->>>>>>> da9dd13 (fix(dependencies, thumbnail, icon): fixed relative issues, clear up warnings)
-			}
-		} catch (error) {
-			console.error('Failed to open folder dialog:', error)
-			showAlert(
-				t('common:errors.folderDialogFailed'),
-				`${t('common:errors.folderDialogFailedDesc')}: ${error}`,
-				'error'
-			)
-		}
-	}
+if (selected) {
+void onFileSelect(selected, 'directory')
+}
+}
+} catch (error) {
+console.error('Failed to open folder dialog:', error)
+showAlert(
+t('common:errors.folderDialogFailed'),
+`${t('common:errors.folderDialogFailedDesc')}: ${error}`,
+'error'
+)
+}
+}
 
-	useEffect(() => {
-		const window = getCurrentWindow()
+useEffect(() => {
+const window = getCurrentWindow()
 
-		let dropUnlisten: (() => void) | undefined
-		let hoverUnlisten: (() => void) | undefined
-		let cancelUnlisten: (() => void) | undefined
+let dropUnlisten: (() => void) | undefined
+let hoverUnlisten: (() => void) | undefined
+let cancelUnlisten: (() => void) | undefined
 
-		window
-			.listen<{ paths: string[]; position: { x: number; y: number } }>(
-				'tauri://drag-drop',
-				(event) => {
-					setIsDragActive(false)
+window
+.listen<{ paths: string[]; position: { x: number; y: number } }>(
+'tauri://drag-drop',
+(event) => {
+setIsDragActive(false)
 
-					if (event.payload?.paths && event.payload.paths.length > 0) {
-						const path = event.payload.paths[0]
-						void onFileSelect(path)
-					}
-				}
-			)
-			.then((unlisten) => {
-				dropUnlisten = unlisten
-			})
-			.catch((err) => {
-				console.error('Failed to register drag-drop listener:', err)
-			})
+if (event.payload?.paths && event.payload.paths.length > 0) {
+const path = event.payload.paths[0]
+void onFileSelect(path)
+}
+}
+)
+.then((unlisten) => {
+dropUnlisten = unlisten
+})
+.catch((err) => {
+console.error('Failed to register drag-drop listener:', err)
+})
 
-		window
-			.listen('tauri://drag-hover', () => {
-				setIsDragActive(true)
-			})
-			.then((unlisten) => {
-				hoverUnlisten = unlisten
-			})
-			.catch((err) => {
-				console.error('Failed to register drag-hover listener:', err)
-			})
+window
+.listen('tauri://drag-hover', () => {
+setIsDragActive(true)
+})
+.then((unlisten) => {
+hoverUnlisten = unlisten
+})
+.catch((err) => {
+console.error('Failed to register drag-hover listener:', err)
+})
 
-		window
-			.listen('tauri://drag-leave', () => {
-				setIsDragActive(false)
-			})
-			.then((unlisten) => {
-				cancelUnlisten = unlisten
-			})
-			.catch((err) => {
-				console.error('Failed to register drag-leave listener:', err)
-			})
+window
+.listen('tauri://drag-leave', () => {
+setIsDragActive(false)
+})
+.then((unlisten) => {
+cancelUnlisten = unlisten
+})
+.catch((err) => {
+console.error('Failed to register drag-leave listener:', err)
+})
 
-		return () => {
-			dropUnlisten?.()
-			hoverUnlisten?.()
-			cancelUnlisten?.()
-		}
-	}, [onFileSelect])
+return () => {
+dropUnlisten?.()
+hoverUnlisten?.()
+cancelUnlisten?.()
+}
+}, [onFileSelect])
 
-	return {
-		isDragActive,
-		pathType,
-		showFullPath,
-		alertDialog,
+return {
+isDragActive,
+pathType,
+showFullPath,
+alertDialog,
 
-		toggleFullPath,
-		browseFile,
-		browseFolder,
-		showAlert,
-		closeAlert,
-		checkPathType,
-	}
+toggleFullPath,
+browseFile,
+browseFolder,
+showAlert,
+closeAlert,
+checkPathType,
+}
 }
