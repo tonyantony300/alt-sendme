@@ -466,7 +466,6 @@ export function useSender(): UseSenderReturn {
 	const clearSelectedPath = () => {
 		setSelectedPath(null)
 		setPathType(null)
-		setFileDescription('')
 	}
 
 	const startSharing = async () => {
