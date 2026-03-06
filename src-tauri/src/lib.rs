@@ -11,8 +11,8 @@ mod version;
 pub use version::get_app_version;
 
 use commands::{
-    check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status, get_transport_status,
-    receive_file, start_sharing, stop_sharing,
+    check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status,
+    get_transport_status, receive_file, start_sharing, stop_sharing,
 };
 use state::AppState;
 use std::fs;
