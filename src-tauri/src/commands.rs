@@ -53,18 +53,20 @@ pub async fn start_sharing(
 ) -> Result<String, String> {
     let path = PathBuf::from(path);
 
-    // Check if already sharing
-    let mut app_state = state.lock().await;
-    if app_state.current_share.is_some() {
-        return Err("Already sharing a file. Please stop current share first.".to_string());
-    }
-
-    // Validate path exists
+    // Validate path exists before doing any work.
     if !path.exists() {
         return Err(format!("Path does not exist: {}", path.display()));
     }
 
-    // Generate thumbnail and build metadata
+    // Fast pre-check before expensive metadata and share setup.
+    {
+        let app_state = state.lock().await;
+        if app_state.current_share.is_some() {
+            return Err("Already sharing a file. Please stop current share first.".to_string());
+        }
+    }
+
+    // Prepare metadata outside the state mutex.
     let file_name = path
         .file_name()
         .unwrap_or_default()
@@ -123,15 +125,29 @@ pub async fn start_sharing(
     });
     let boxed_handle: AppHandle = Some(emitter);
 
-    match start_share(path.clone(), options, boxed_handle, Some(metadata)).await {
-        Ok(result) => {
-            let ticket = result.ticket.clone();
-            // CRITICAL: Store the entire SendResult to keep router and temp_tag alive!
-            app_state.current_share = Some(ShareHandle::new(ticket.clone(), path, result));
-            Ok(ticket)
+    let result = start_share(path.clone(), options, boxed_handle, Some(metadata))
+        .await
+        .map_err(|e| format!("Failed to start sharing: {}", e))?;
+
+    let ticket = result.ticket.clone();
+
+    // Lock only for the final install into state.
+    let mut app_state = state.lock().await;
+    if app_state.current_share.is_some() {
+        drop(app_state);
+
+        // A concurrent share may have started after pre-check; clean up ours.
+        let mut orphan_share = ShareHandle::new(ticket, path, result);
+        if let Err(err) = orphan_share.stop().await {
+            tracing::warn!(error = %err, "failed to stop concurrent orphan share");
         }
-        Err(e) => Err(format!("Failed to start sharing: {}", e)),
+
+        return Err("Already sharing a file. Please stop current share first.".to_string());
     }
+
+    // CRITICAL: Store the entire SendResult to keep router and temp_tag alive!
+    app_state.current_share = Some(ShareHandle::new(ticket.clone(), path, result));
+    Ok(ticket)
 }
 
 /// Fetch metadata from sender by ticket, without starting file download.

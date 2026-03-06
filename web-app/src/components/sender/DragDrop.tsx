@@ -5,7 +5,10 @@ import { AppAlertDialog } from '../AppAlertDialog'
 import { useDragDrop } from '../../hooks/useDragDrop'
 
 interface DragDropProps {
-	onFileSelect: (path: string) => void
+	onFileSelect: (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => Promise<void>
 	selectedPath?: string | null
 	isLoading?: boolean
 	onClearSelection: () => void

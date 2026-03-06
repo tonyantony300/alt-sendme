@@ -391,6 +391,7 @@ export function useReceiver(): UseReceiverReturn {
 		if (!ticket.trim()) return
 
 		try {
+			previewRequestSeqRef.current += 1
 			setIsReceiving(true)
 			setIsTransporting(false)
 			setIsCompleted(false)
@@ -399,7 +400,6 @@ export function useReceiver(): UseReceiverReturn {
 			setTransferStartTime(null)
 			setPreviewMetadata(null)
 			setIsPreviewLoading(false)
-			previewRequestSeqRef.current += 1
 			folderOpenTriggeredRef.current = false
 
 			await invoke<string>('receive_file', {
@@ -416,6 +416,7 @@ export function useReceiver(): UseReceiverReturn {
 	}
 
 	const resetForNewTransfer = async () => {
+		previewRequestSeqRef.current += 1
 		setIsReceiving(false)
 		setIsTransporting(false)
 		setIsCompleted(false)
@@ -426,7 +427,6 @@ export function useReceiver(): UseReceiverReturn {
 		setFileNames([])
 		setPreviewMetadata(null)
 		setIsPreviewLoading(false)
-		previewRequestSeqRef.current += 1
 		folderOpenTriggeredRef.current = false
 	}
 

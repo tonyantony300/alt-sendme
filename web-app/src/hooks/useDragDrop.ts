@@ -25,7 +25,14 @@ export interface UseDragDropReturn {
 }
 
 export function useDragDrop(
+<<<<<<< HEAD
 	onFileSelect: (path: string, pathType?: 'file' | 'directory') => void
+=======
+	onFileSelect: (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => void | Promise<void>
+>>>>>>> da9dd13 (fix(dependencies, thumbnail, icon): fixed relative issues, clear up warnings)
 ): UseDragDropReturn {
 	const { t } = useTranslation()
 	const [isDragActive, setIsDragActive] = useState(false)
@@ -54,7 +61,7 @@ export function useDragDrop(
 	}
 
 	const showAlert = (
-		title: string,
+						void onFileSelect(selected.cachedPath.toString(), 'file')
 		description: string,
 		type: AlertType = 'info'
 	) => {
@@ -74,6 +81,7 @@ export function useDragDrop(
 			if (IS_ANDROID) {
 				const selected = await selectSendDocument()
 
+<<<<<<< HEAD
 				if (selected) {
 					onFileSelect(selected.cachedPath.toString(), 'file')
 				}
@@ -81,11 +89,15 @@ export function useDragDrop(
 				const selected = await open({
 					multiple: false,
 					directory: false,
-				})
+						void onFileSelect(selected.cachedPath.toString(), 'directory')
 
 				if (selected) {
 					onFileSelect(selected)
 				}
+=======
+			if (selected) {
+				void onFileSelect(selected, 'file')
+>>>>>>> da9dd13 (fix(dependencies, thumbnail, icon): fixed relative issues, clear up warnings)
 			}
 		} catch (error) {
 			console.error('Failed to open file dialog:', error)
@@ -102,6 +114,7 @@ export function useDragDrop(
 			if (IS_ANDROID) {
 				const selected = await selectSendFolder()
 
+<<<<<<< HEAD
 				if (selected) {
 					onFileSelect(selected.cachedPath.toString(), 'directory')
 				}
@@ -114,6 +127,10 @@ export function useDragDrop(
 				if (selected) {
 					onFileSelect(selected)
 				}
+=======
+			if (selected) {
+				void onFileSelect(selected, 'directory')
+>>>>>>> da9dd13 (fix(dependencies, thumbnail, icon): fixed relative issues, clear up warnings)
 			}
 		} catch (error) {
 			console.error('Failed to open folder dialog:', error)
@@ -140,7 +157,7 @@ export function useDragDrop(
 
 					if (event.payload?.paths && event.payload.paths.length > 0) {
 						const path = event.payload.paths[0]
-						onFileSelect(path)
+						void onFileSelect(path)
 					}
 				}
 			)
