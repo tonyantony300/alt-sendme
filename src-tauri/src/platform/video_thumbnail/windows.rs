@@ -1,7 +1,8 @@
 use image::codecs::jpeg::JpegEncoder;
 use image::DynamicImage;
 use std::io::Cursor;
-use std::path::Path;
+use std::io::ErrorKind;
+use std::path::{Path, PathBuf};
 use tokio::process::Command;
 use tokio::time::Duration;
 use windows::Win32::Media::MediaFoundation::{MFShutdown, MFStartup, MFSTARTUP_LITE, MF_VERSION};
@@ -22,7 +23,6 @@ pub async fn capture_first_second_frame_jpeg(file_path: &Path) -> Result<Vec<u8>
         Ok(bytes) => Ok(bytes),
         Err(mf_err) => {
             tracing::warn!(
-                path = %file_path.display(),
                 error = %mf_err,
                 "media foundation thumbnail failed, falling back to ffmpeg"
             );
@@ -42,42 +42,132 @@ fn attempt_media_foundation(file_path: &Path) -> Result<Vec<u8>, String> {
 }
 
 async fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
-    let mut command = Command::new("ffmpeg");
-    command
-        .arg("-hide_banner")
-        .arg("-loglevel")
-        .arg("error")
-        .arg("-ss")
-        .arg("1")
-        .arg("-i")
-        .arg(file_path)
-        .arg("-frames:v")
-        .arg("1")
-        .arg("-f")
-        .arg("image2pipe")
-        .arg("-vcodec")
-        .arg("mjpeg")
-        .arg("pipe:1")
-        .kill_on_drop(true);
+    let mut errors = Vec::new();
 
-    let output = match tokio::time::timeout(Duration::from_secs(10), command.output()).await {
-        Ok(Ok(out)) => out,
-        Ok(Err(e)) => return Err(format!("Failed to execute ffmpeg fallback: {e}")),
-        Err(_) => return Err("ffmpeg fallback timed out".to_string()),
-    };
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("ffmpeg fallback failed: {stderr}"));
+    // Try multiple seek points to increase chances of getting a valid frame.
+    for seek in ["1", "0.2", "0"] {
+        match capture_with_ffmpeg_seek(file_path, seek).await {
+            Ok(decoded) => return encode_thumbnail(decoded),
+            Err(err) => errors.push(format!("ss={seek}: {err}")),
+        }
     }
 
-    if output.stdout.is_empty() {
-        return Err("ffmpeg fallback returned empty image output".to_string());
+    Err(format!(
+        "ffmpeg fallback failed for all seek points: {}",
+        errors.join(" | ")
+    ))
+}
+
+fn ffmpeg_candidates() -> Vec<PathBuf> {
+    let mut candidates = Vec::new();
+
+    if let Ok(path) = std::env::var("ALT_SENDME_FFMPEG_PATH") {
+        if !path.trim().is_empty() {
+            candidates.push(PathBuf::from(path));
+        }
     }
 
-    let decoded = image::load_from_memory(&output.stdout)
-        .map_err(|e| format!("Failed to decode ffmpeg frame image: {e}"))?;
-    encode_thumbnail(decoded)
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            candidates.push(exe_dir.join("ffmpeg.exe"));
+            candidates.push(exe_dir.join("ffmpeg"));
+            candidates.push(exe_dir.join("ffmpeg-x86_64-pc-windows-msvc.exe"));
+            candidates.push(exe_dir.join("ffmpeg-x86_64-pc-windows-gnu.exe"));
+        }
+    }
+
+    // PATH fallback.
+    candidates.push(PathBuf::from("ffmpeg"));
+
+    let mut unique = Vec::new();
+    for candidate in candidates {
+        if !unique
+            .iter()
+            .any(|existing: &PathBuf| existing == &candidate)
+        {
+            unique.push(candidate);
+        }
+    }
+    unique
+}
+
+async fn capture_with_ffmpeg_seek(
+    file_path: &Path,
+    seek_seconds: &str,
+) -> Result<DynamicImage, String> {
+    let mut not_found = Vec::new();
+    let mut last_error = None;
+
+    for ffmpeg_bin in ffmpeg_candidates() {
+        let mut command = Command::new(&ffmpeg_bin);
+        command
+            .arg("-hide_banner")
+            .arg("-loglevel")
+            .arg("error")
+            .arg("-ss")
+            .arg(seek_seconds)
+            .arg("-i")
+            .arg(file_path)
+            .arg("-frames:v")
+            .arg("1")
+            .arg("-f")
+            .arg("image2pipe")
+            .arg("-vcodec")
+            .arg("mjpeg")
+            .arg("pipe:1")
+            .kill_on_drop(true);
+
+        let output = match tokio::time::timeout(Duration::from_secs(10), command.output()).await {
+            Ok(Ok(out)) => out,
+            Ok(Err(e)) => {
+                if e.kind() == ErrorKind::NotFound {
+                    not_found.push(ffmpeg_bin.display().to_string());
+                    continue;
+                }
+                last_error = Some(format!(
+                    "Failed to execute ffmpeg fallback ({}): {e}",
+                    ffmpeg_bin.display()
+                ));
+                continue;
+            }
+            Err(_) => {
+                last_error = Some(format!(
+                    "ffmpeg fallback timed out ({})",
+                    ffmpeg_bin.display()
+                ));
+                continue;
+            }
+        };
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            last_error = Some(format!(
+                "ffmpeg fallback failed ({}): {stderr}",
+                ffmpeg_bin.display()
+            ));
+            continue;
+        }
+
+        if output.stdout.is_empty() {
+            last_error = Some(format!(
+                "ffmpeg fallback returned empty image output ({})",
+                ffmpeg_bin.display()
+            ));
+            continue;
+        }
+
+        return image::load_from_memory(&output.stdout)
+            .map_err(|e| format!("Failed to decode ffmpeg frame image: {e}"));
+    }
+
+    if !not_found.is_empty() {
+        return Err(format!(
+            "ffmpeg executable not found (set ALT_SENDME_FFMPEG_PATH or bundle a sidecar). Tried: {}",
+            not_found.join(", ")
+        ));
+    }
+
+    Err(last_error.unwrap_or_else(|| "ffmpeg fallback failed".to_string()))
 }
 
 fn encode_thumbnail(image: DynamicImage) -> Result<Vec<u8>, String> {

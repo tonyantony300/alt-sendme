@@ -77,12 +77,12 @@ impl ProtocolHandler for MetadataProtocol {
 
         tracing::debug!("metadata request marker received");
 
-        let payload = self.metadata.clone().unwrap_or(FileMetadata {
-            file_name: "Unknown file".to_string(),
-            size: 0,
-            thumbnail: None,
-            mime_type: None,
-        });
+        let payload = self.metadata.clone().ok_or_else(|| {
+            AcceptError::from_err(std::io::Error::new(
+                ErrorKind::NotFound,
+                "metadata unavailable",
+            ))
+        })?;
 
         let meta_bytes = serde_json::to_vec(&payload).map_err(AcceptError::from_err)?;
         const MAX_METADATA_BYTES: usize = 8 * 1024 * 1024;

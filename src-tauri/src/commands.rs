@@ -37,11 +37,9 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
         return Err("Path does not exist".to_string());
     }
 
-    tokio::task::spawn_blocking(move || {
-        get_total_size(&path).ok_or_else(|| "Failed to calculate size".to_string())
-    })
-    .await
-    .map_err(|e| format!("Task join error: {}", e))?
+    tokio::task::spawn_blocking(move || get_total_size(&path))
+        .await
+        .map_err(|e| format!("Task join error: {}", e))?
 }
 
 /// Start sharing a file or directory
@@ -58,96 +56,109 @@ pub async fn start_sharing(
         return Err(format!("Path does not exist: {}", path.display()));
     }
 
-    // Fast pre-check before expensive metadata and share setup.
+    // Reserve slot before expensive setup to avoid concurrent start_sharing races.
     {
-        let app_state = state.lock().await;
-        if app_state.current_share.is_some() {
+        let mut app_state = state.lock().await;
+        if app_state.current_share.is_some() || app_state.is_share_starting {
             return Err("Already sharing a file. Please stop current share first.".to_string());
         }
+        app_state.is_share_starting = true;
     }
 
-    // Prepare metadata outside the state mutex.
-    let file_name = path
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy()
-        .into_owned();
+    let start_result = async {
+        // Prepare metadata outside the state mutex.
+        let file_name = path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into_owned();
 
-    // Run heavy size calculation in a separate blocking thread
-    let path_clone = path.clone();
-    let size = tokio::task::spawn_blocking(move || {
-        get_total_size(&path_clone)
-            .ok_or_else(|| format!("failed to get total size for {}", path_clone.display()))
-    })
-    .await
-    .map_err(|e| format!("Task join error: {}", e))?
-    .map_err(|e| e)?;
+        // Run heavy size calculation in a separate blocking thread
+        let path_clone = path.clone();
+        let size = tokio::task::spawn_blocking(move || get_total_size(&path_clone))
+            .await
+            .map_err(|e| format!("Task join error: {}", e))?;
+        let size = size?;
 
-    // Generate thumbnail (async, internally handles blocking operations)
-    let thumbnail = generate_thumbnail(&path).await;
+        // Generate thumbnail (async, internally handles blocking operations)
+        let thumbnail = generate_thumbnail(&path).await;
 
-    let mime_type = if path.is_file() {
-        Some(
-            mime_guess::from_path(&path)
-                .first_or_octet_stream()
-                .essence_str()
-                .to_string(),
-        )
-    } else {
-        Some("inode/directory".to_string())
-    };
+        let mime_type = if path.is_file() {
+            Some(
+                mime_guess::from_path(&path)
+                    .first_or_octet_stream()
+                    .essence_str()
+                    .to_string(),
+            )
+        } else {
+            Some("inode/directory".to_string())
+        };
 
-    let metadata = FileMetadata {
-        file_name,
-        size,
-        thumbnail,
-        mime_type,
-    };
+        let metadata = FileMetadata {
+            file_name,
+            size,
+            thumbnail,
+            mime_type,
+        };
 
-    tracing::info!(
-        path_stem = ?path.file_stem(),
-        size = metadata.size,
-        has_thumbnail = metadata.thumbnail.is_some(),
-        "share metadata prepared"
-    );
+        tracing::info!(
+            path_stem = ?path.file_stem(),
+            size = metadata.size,
+            has_thumbnail = metadata.thumbnail.is_some(),
+            "share metadata prepared"
+        );
 
-    // Create send options with defaults
-    let options = SendOptions {
-        relay_mode: RelayModeOption::Default,
-        ticket_type: AddrInfoOptions::RelayAndAddresses,
-        magic_ipv4_addr: None,
-        magic_ipv6_addr: None,
-    };
+        // Create send options with defaults
+        let options = SendOptions {
+            relay_mode: RelayModeOption::Default,
+            ticket_type: AddrInfoOptions::RelayAndAddresses,
+            magic_ipv4_addr: None,
+            magic_ipv6_addr: None,
+        };
 
-    // Wrap the app_handle in our EventEmitter implementation
-    let emitter = Arc::new(TauriEventEmitter {
-        app_handle: app_handle.clone(),
-    });
-    let boxed_handle: AppHandle = Some(emitter);
+        // Wrap the app_handle in our EventEmitter implementation
+        let emitter = Arc::new(TauriEventEmitter {
+            app_handle: app_handle.clone(),
+        });
+        let boxed_handle: AppHandle = Some(emitter);
 
-    let result = start_share(path.clone(), options, boxed_handle, Some(metadata))
-        .await
-        .map_err(|e| format!("Failed to start sharing: {}", e))?;
+        let result = start_share(path.clone(), options, boxed_handle, Some(metadata))
+            .await
+            .map_err(|e| format!("Failed to start sharing: {}", e))?;
 
-    let ticket = result.ticket.clone();
+        let ticket = result.ticket.clone();
+        Ok((ticket, result))
+    }
+    .await;
 
-    // Lock only for the final install into state.
-    let mut app_state = state.lock().await;
-    if app_state.current_share.is_some() {
-        drop(app_state);
+    match start_result {
+        Ok((ticket, result)) => {
+            // Clear reservation and install active share atomically.
+            let mut app_state = state.lock().await;
+            app_state.is_share_starting = false;
 
-        // A concurrent share may have started after pre-check; clean up ours.
-        let mut orphan_share = ShareHandle::new(ticket, path, result);
-        if let Err(err) = orphan_share.stop().await {
-            tracing::warn!(error = %err, "failed to stop concurrent orphan share");
+            if app_state.current_share.is_some() {
+                drop(app_state);
+
+                // Defensive cleanup in case state was externally changed.
+                let mut orphan_share = ShareHandle::new(ticket, path, result);
+                if let Err(err) = orphan_share.stop().await {
+                    tracing::warn!(error = %err, "failed to stop concurrent orphan share");
+                }
+
+                return Err("Already sharing a file. Please stop current share first.".to_string());
+            }
+
+            // CRITICAL: Store the entire SendResult to keep router and temp_tag alive!
+            app_state.current_share = Some(ShareHandle::new(ticket.clone(), path, result));
+            Ok(ticket)
         }
-
-        return Err("Already sharing a file. Please stop current share first.".to_string());
+        Err(err) => {
+            let mut app_state = state.lock().await;
+            app_state.is_share_starting = false;
+            Err(err)
+        }
     }
-
-    // CRITICAL: Store the entire SendResult to keep router and temp_tag alive!
-    app_state.current_share = Some(ShareHandle::new(ticket.clone(), path, result));
-    Ok(ticket)
 }
 
 /// Fetch metadata from sender by ticket, without starting file download.
@@ -302,27 +313,34 @@ pub async fn unregister_context_menu() -> Result<(), String> {
 */
 
 /// Helper function to calculate total size of a file or directory
-fn get_total_size(path: &Path) -> Option<u64> {
+fn get_total_size(path: &Path) -> Result<u64, String> {
     if path.is_file() {
-        return std::fs::metadata(path).ok().map(|m| m.len());
+        return std::fs::metadata(path)
+            .map(|m| m.len())
+            .map_err(|e| format!("Failed to read metadata for {}: {e}", path.display()));
     }
 
     if path.is_dir() {
         let mut total_size = 0u64;
         for entry in walkdir::WalkDir::new(path) {
-            let Ok(entry) = entry else {
-                continue;
-            };
+            let entry = entry.map_err(|e| format!("Failed to traverse {}: {e}", path.display()))?;
             if entry.file_type().is_file() {
-                if let Ok(metadata) = entry.metadata() {
-                    total_size = total_size.saturating_add(metadata.len());
-                }
+                let metadata = entry.metadata().map_err(|e| {
+                    format!(
+                        "Failed to read metadata for {}: {e}",
+                        entry.path().display()
+                    )
+                })?;
+                total_size = total_size.saturating_add(metadata.len());
             }
         }
-        return Some(total_size);
+        return Ok(total_size);
     }
 
-    None
+    Err(format!(
+        "Path is neither a file nor a directory: {}",
+        path.display()
+    ))
 }
 
 #[cfg(test)]

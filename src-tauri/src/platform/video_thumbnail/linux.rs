@@ -12,6 +12,8 @@ use gstreamer::prelude::*;
 #[cfg(feature = "linux-gstreamer")]
 use gstreamer_app as gst_app;
 #[cfg(feature = "linux-gstreamer")]
+use gstreamer_video as gst_video;
+#[cfg(feature = "linux-gstreamer")]
 use image::RgbImage;
 
 /// # Description
@@ -148,26 +150,61 @@ fn sample_to_thumbnail_jpeg(sample: &gst::Sample) -> Result<Vec<u8>, String> {
         .caps()
         .ok_or_else(|| "Missing sample caps".to_string())?;
 
-    let structure = caps
-        .structure(0)
-        .ok_or_else(|| "Missing video structure in caps".to_string())?;
+    let info = gst_video::VideoInfo::from_caps(caps.as_ref())
+        .map_err(|e| format!("Failed to parse video info from caps: {e}"))?;
+    let width = info.width() as usize;
+    let height = info.height() as usize;
+    if width == 0 || height == 0 {
+        return Err("Invalid frame dimensions in caps".to_string());
+    }
 
-    let width = structure
-        .get::<i32>("width")
-        .map_err(|_| "Missing width in caps".to_string())?;
-    let height = structure
-        .get::<i32>("height")
-        .map_err(|_| "Missing height in caps".to_string())?;
-
-    // Map the sample buffer as readable and convert it to an RGB image
+    // Map the sample as a video frame and copy row-by-row to handle stride padding.
     let buffer = sample
         .buffer()
         .ok_or_else(|| "Missing sample buffer".to_string())?;
-    let map = buffer
-        .map_readable()
-        .map_err(|_| "Failed to map sample buffer as readable".to_string())?;
 
-    let rgb = RgbImage::from_raw(width as u32, height as u32, map.as_slice().to_vec())
+    let frame = gst_video::VideoFrameRef::from_buffer_ref_readable(buffer, &info)
+        .map_err(|e| format!("Failed to map sample buffer as video frame: {e}"))?;
+    let plane = frame
+        .plane_data(0)
+        .map_err(|e| format!("Failed to access RGB plane data: {e}"))?;
+
+    let stride = buffer
+        .meta::<gst_video::VideoMeta>()
+        .map(|meta| meta.stride()[0])
+        .unwrap_or_else(|| info.stride()[0]);
+    if stride <= 0 {
+        return Err(format!("Invalid non-positive frame stride: {stride}"));
+    }
+
+    let stride = stride as usize;
+    let row_bytes = width
+        .checked_mul(3)
+        .ok_or_else(|| "RGB row size overflow".to_string())?;
+    if stride < row_bytes {
+        return Err(format!(
+            "Frame stride {stride} is smaller than required RGB row size {row_bytes}"
+        ));
+    }
+
+    let required_len = stride
+        .checked_mul(height)
+        .ok_or_else(|| "Frame size overflow".to_string())?;
+    if plane.len() < required_len {
+        return Err(format!(
+            "Insufficient frame data: got {} bytes, need at least {required_len}",
+            plane.len()
+        ));
+    }
+
+    let mut packed = Vec::with_capacity(row_bytes * height);
+    for row in 0..height {
+        let start = row * stride;
+        let end = start + row_bytes;
+        packed.extend_from_slice(&plane[start..end]);
+    }
+
+    let rgb = RgbImage::from_raw(width as u32, height as u32, packed)
         .ok_or_else(|| "Failed to convert frame to RGB image".to_string())?;
 
     encode_thumbnail(DynamicImage::ImageRgb8(rgb))

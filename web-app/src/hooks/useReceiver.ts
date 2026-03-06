@@ -178,10 +178,11 @@ export function useReceiver(): UseReceiverReturn {
 					thumbnail: payload.thumbnail ?? undefined,
 					mimeType: payload.mime_type ?? undefined,
 				})
-			} catch {
+			} catch (error) {
 				if (previewRequestSeqRef.current !== seq) {
 					return
 				}
+				console.warn('Failed to fetch ticket preview metadata:', error)
 				setPreviewMetadata(null)
 			} finally {
 				if (previewRequestSeqRef.current === seq) {

@@ -7,7 +7,8 @@ use tokio::sync::Mutex;
 #[derive(Default)]
 pub struct AppState {
     pub current_share: Option<ShareHandle>,
-    pub is_transporting: bool, // True when actual data transfer is happening
+    pub is_share_starting: bool, // True while start_sharing is preparing metadata/session
+    pub is_transporting: bool,   // True when actual data transfer is happening
     pub launch_intent: Option<String>, // Path to file/folder passed via CLI (e.g. context menu)
 }
 

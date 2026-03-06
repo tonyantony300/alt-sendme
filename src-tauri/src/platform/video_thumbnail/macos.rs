@@ -186,13 +186,33 @@ fn encode_thumbnail(image: DynamicImage) -> Result<Vec<u8>, String> {
 }
 
 async fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
+    let mut errors = Vec::new();
+
+    // Try multiple seek points to increase chances of getting a valid frame.
+    for seek in ["1", "0.2", "0"] {
+        match capture_with_ffmpeg_seek(file_path, seek).await {
+            Ok(decoded) => return encode_thumbnail(decoded),
+            Err(err) => errors.push(format!("ss={seek}: {err}")),
+        }
+    }
+
+    Err(format!(
+        "ffmpeg fallback failed for all seek points: {}",
+        errors.join(" | ")
+    ))
+}
+
+async fn capture_with_ffmpeg_seek(
+    file_path: &Path,
+    seek_seconds: &str,
+) -> Result<DynamicImage, String> {
     let mut command = Command::new("ffmpeg");
     command
         .arg("-hide_banner")
         .arg("-loglevel")
         .arg("error")
         .arg("-ss")
-        .arg("1")
+        .arg(seek_seconds)
         .arg("-i")
         .arg(file_path)
         .arg("-frames:v")
@@ -219,7 +239,6 @@ async fn capture_with_ffmpeg(file_path: &Path) -> Result<Vec<u8>, String> {
         return Err("ffmpeg fallback returned empty image output".to_string());
     }
 
-    let decoded = image::load_from_memory(&output.stdout)
-        .map_err(|e| format!("Failed to decode ffmpeg frame image: {e}"))?;
-    encode_thumbnail(decoded)
+    image::load_from_memory(&output.stdout)
+        .map_err(|e| format!("Failed to decode ffmpeg frame image: {e}"))
 }

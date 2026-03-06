@@ -1,22 +1,12 @@
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
+import { getPreviewFileIcon } from '../../lib/fileIcons'
+import { formatFileSize } from '../../lib/utils'
 import type { TicketInputProps } from '../../types/receiver'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
-import {
-	FolderIcon,
-	ImageIcon,
-	ZipIcon,
-	DefaultFileIcon,
-	TxtIcon,
-	JsonIcon,
-	DocIcon,
-	XlsxIcon,
-	PptIcon,
-	PdfIcon,
-} from '../illustration'
 
 export function TicketInput({
 	ticket,
@@ -41,77 +31,6 @@ export function TicketInput({
 			? previewMetadata.thumbnail
 			: `data:image/jpeg;base64,${previewMetadata.thumbnail}`
 		: null
-
-	const getFileIcon = (mimeType?: string, fileName?: string) => {
-		const ext = fileName?.split('.').pop()?.toLowerCase() || ''
-		if (
-			mimeType?.includes('word') ||
-			mimeType?.includes('document') ||
-			['doc', 'docx'].includes(ext)
-		) {
-			return <DocIcon size="md" className="scale-60 origin-center" />
-		}
-		if (
-			mimeType?.includes('sheet') ||
-			mimeType?.includes('excel') ||
-			mimeType?.includes('csv') ||
-			['xls', 'xlsx', 'csv'].includes(ext)
-		) {
-			return <XlsxIcon size="md" className="scale-60 origin-center" />
-		}
-		if (
-			mimeType?.includes('presentation') ||
-			mimeType?.includes('powerpoint') ||
-			['ppt', 'pptx'].includes(ext)
-		) {
-			return <PptIcon size="md" className="scale-60 origin-center" />
-		}
-		if (mimeType === 'application/pdf' || ext === 'pdf') {
-			return <PdfIcon size="md" className="scale-60 origin-center" />
-		}
-		if (mimeType === 'application/json' || ext === 'json') {
-			return <JsonIcon size="md" className="scale-60 origin-center" />
-		}
-		if (mimeType?.startsWith('text/') || ext === 'txt') {
-			return <TxtIcon size="md" className="scale-60 origin-center" />
-		}
-		if (
-			mimeType?.includes('zip') ||
-			mimeType?.includes('tar') ||
-			mimeType?.includes('rar') ||
-			mimeType?.includes('7z') ||
-			mimeType?.includes('gzip') ||
-			['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)
-		) {
-			return <ZipIcon size="md" className="scale-60 origin-center" />
-		}
-		if (mimeType === 'inode/directory') {
-			return <FolderIcon size="md" className="scale-60 origin-center" />
-		}
-		// When image thumbnail fails to load, fallback to generic image icon
-		if (mimeType?.startsWith('image/')) {
-			return <ImageIcon size="md" className="scale-60 origin-center mt-1" />
-		}
-
-		// Fallback
-		return <DefaultFileIcon size="md" className="scale-60 origin-center" />
-	}
-
-	/**
-	 *
-	 * @param bytes length of file
-	 * @returns formatted file size
-	 */
-	const formatFileSize = (bytes: number) => {
-		if (bytes <= 0) return '0 B'
-		const units = ['B', 'KB', 'MB', 'GB', 'TB']
-		const exponent = Math.min(
-			Math.floor(Math.log(bytes) / Math.log(1024)),
-			units.length - 1
-		)
-		const size = bytes / 1024 ** exponent
-		return `${size.toFixed(size < 10 && exponent > 0 ? 1 : 0)} ${units[exponent]}`
-	}
 
 	return (
 		<div className="space-y-4">
@@ -176,7 +95,10 @@ export function TicketInput({
 								onError={() => setFailedThumbnailKey(previewThumbnailKey)}
 							/>
 						) : (
-							getFileIcon(previewMetadata.mimeType, previewMetadata.fileName)
+							getPreviewFileIcon(
+								previewMetadata.mimeType,
+								previewMetadata.fileName
+							)
 						)}
 					</div>
 					<div className="min-w-0 flex-1">
