@@ -203,7 +203,7 @@ export function SharingActiveCard({
 					onToggleBroadcast={onToggleBroadcast}
 				/>
 			)}
-
+            
 			{isTransporting && progressToDisplay && (
 				<TransferProgressBar progress={progressToDisplay} />
 			)}
