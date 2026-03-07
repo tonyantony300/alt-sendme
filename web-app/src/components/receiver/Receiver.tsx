@@ -50,7 +50,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 	}, [isReceiving, onTransferStateChange])
 
 	return (
-		<div className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col">
+		<div className="p-6 space-y-6 relative h-[62dvh] sm:h-112 overflow-y-auto flex flex-col">
 			{!isReceiving ? (
 				<>
 					<div className="text-center">

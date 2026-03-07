@@ -92,7 +92,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	}, [viewState, isBroadcastMode, setIsBroadcastMode])
 
 	return (
-		<div className="p-6 space-y-6 relative h-112 overflow-y-auto flex flex-col">
+		<div className="p-0 sm:p-6 space-y-6 relative h-[62dvh] sm:h-112 overflow-y-auto flex flex-col">
 			{/* IDLE state: Show file selection UI */}
 			{viewState === 'IDLE' && (
 				<>

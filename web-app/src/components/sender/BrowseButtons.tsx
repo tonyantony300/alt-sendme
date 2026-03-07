@@ -12,7 +12,7 @@ export function BrowseButtons({
 	const { t } = useTranslation()
 
 	return (
-		<Group className="mx-auto">
+		<Group className="mx-auto flex w-full max-w-sm flex-col gap-2 mt-2 sm:mt-0 sm:w-fit sm:max-w-none sm:flex-row sm:gap-0">
 			<Button
 				type="button"
 				onClick={(e) => {
@@ -20,6 +20,7 @@ export function BrowseButtons({
 					onBrowseFile()
 				}}
 				disabled={isLoading}
+				className='rounded-none sm:rounded-lg'
 			>
 				{isLoading ? (
 					t('common:loading')
@@ -30,7 +31,7 @@ export function BrowseButtons({
 					</>
 				)}
 			</Button>
-			<GroupSeparator />
+			<GroupSeparator className="hidden sm:block" />
 			<Button
 				type="button"
 				onClick={(e) => {
@@ -38,6 +39,7 @@ export function BrowseButtons({
 					onBrowseFolder()
 				}}
 				disabled={isLoading}
+				className='rounded-none sm:rounded-lg'
 			>
 				{isLoading ? (
 					t('common:loading')
