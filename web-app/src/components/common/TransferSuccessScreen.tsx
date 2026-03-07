@@ -160,7 +160,7 @@ export function TransferSuccessScreen({
 						type="button"
 						variant="secondary"
 						onClick={onOpenFolder}
-						className="flex-1 "
+						className="flex-1 hidden sm:flex"
 					>
 						<ExternalLinkIcon size={12} />
 						{t('common:transfer.open')}

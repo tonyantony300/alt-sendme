@@ -50,7 +50,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 	}, [isReceiving, onTransferStateChange])
 
 	return (
-		<div className="p-6 space-y-6 relative h-[62dvh] sm:h-112 overflow-y-auto flex flex-col">
+		<div className="p-2 sm:p-6 space-y-6 relative h-[62dvh] sm:h-112 overflow-y-auto flex flex-col">
 			{!isReceiving ? (
 				<>
 					<div className="text-center">
@@ -63,7 +63,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 								type="button"
 								variant="ghost"
 								onClick={() => setShowInstructionsDialog(true)}
-								className="absolute top-6 right-6"
+								className="absolute top-0 right-0 sm:top-6 sm:right-6"
 							>
 								<Info />
 							</Button>
