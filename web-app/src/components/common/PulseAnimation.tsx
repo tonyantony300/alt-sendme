@@ -50,7 +50,9 @@ export function PulseAnimation({
 	}, [isTransporting, hasActiveConnections])
 
 	return (
-		<div className={`${className}${isTransporting ? ' max-sm:hidden' : ''}`.trim()}>
+		<div
+			className={`${className}${isTransporting ? ' max-sm:hidden' : ''}`.trim()}
+		>
 			<Lottie
 				animationData={animationData}
 				loop={true}

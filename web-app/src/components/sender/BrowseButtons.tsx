@@ -20,7 +20,7 @@ export function BrowseButtons({
 					onBrowseFile()
 				}}
 				disabled={isLoading}
-				className='rounded-none sm:rounded-lg'
+				className="rounded-none sm:rounded-lg"
 			>
 				{isLoading ? (
 					t('common:loading')
@@ -39,7 +39,7 @@ export function BrowseButtons({
 					onBrowseFolder()
 				}}
 				disabled={isLoading}
-				className='rounded-none sm:rounded-lg'
+				className="rounded-none sm:rounded-lg"
 			>
 				{isLoading ? (
 					t('common:loading')

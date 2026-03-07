@@ -203,7 +203,7 @@ export function SharingActiveCard({
 					onToggleBroadcast={onToggleBroadcast}
 				/>
 			)}
-            
+
 			{isTransporting && progressToDisplay && (
 				<TransferProgressBar progress={progressToDisplay} />
 			)}
@@ -242,7 +242,7 @@ export function TicketDisplay({
 				</p>
 				{isBroadcastMode !== undefined && onToggleBroadcast && (
 					<div className="flex items-start gap-2">
-						<Label htmlFor={'broadcast-toggle'} className='text-sm'>
+						<Label htmlFor={'broadcast-toggle'} className="text-sm">
 							{t('common:sender.broadcastMode.index')}
 						</Label>
 						<Switch
