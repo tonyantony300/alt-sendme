@@ -82,6 +82,7 @@ version = "0.3.4"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
+ "core-foundation 0.10.1",
  "core-graphics",
  "dunce",
  "gstreamer",

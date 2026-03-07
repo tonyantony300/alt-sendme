@@ -1,9 +1,11 @@
-use core_graphics::base::{CGImageRef, CGImageRelease};
+use core_foundation::base::CFRelease;
+use core_graphics::sys::CGImageRef;
 use image::codecs::jpeg::JpegEncoder;
 use image::DynamicImage;
 use objc::rc::autoreleasepool;
 use objc::runtime::{Object, YES};
 use objc::{class, msg_send, sel, sel_impl};
+use std::ffi::c_void;
 use std::io::Cursor;
 use std::path::Path;
 use tokio::process::Command;
@@ -15,6 +17,8 @@ unsafe extern "C" {}
 unsafe extern "C" {}
 #[link(name = "CoreMedia", kind = "framework")]
 unsafe extern "C" {}
+#[link(name = "CoreGraphics", kind = "framework")]
+unsafe extern "C" {}
 #[link(name = "AppKit", kind = "framework")]
 unsafe extern "C" {}
 
@@ -25,6 +29,61 @@ struct CMTime {
     timescale: i32,
     flags: u32,
     epoch: i64,
+}
+
+const NS_UTF8_STRING_ENCODING: usize = 4;
+const NS_BITMAP_IMAGE_FILE_TYPE_JPEG: usize = 3;
+
+struct ObjcOwned {
+    ptr: *mut Object,
+}
+
+impl ObjcOwned {
+    fn new() -> Self {
+        Self {
+            ptr: std::ptr::null_mut(),
+        }
+    }
+
+    fn set(&mut self, ptr: *mut Object) {
+        self.ptr = ptr;
+    }
+}
+
+impl Drop for ObjcOwned {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                let _: () = msg_send![self.ptr, release];
+            }
+        }
+    }
+}
+
+struct CgImageOwned {
+    ptr: CGImageRef,
+}
+
+impl CgImageOwned {
+    fn new() -> Self {
+        Self {
+            ptr: std::ptr::null_mut(),
+        }
+    }
+
+    fn set(&mut self, ptr: CGImageRef) {
+        self.ptr = ptr;
+    }
+}
+
+impl Drop for CgImageOwned {
+    fn drop(&mut self) {
+        if !self.ptr.is_null() {
+            unsafe {
+                CFRelease(self.ptr as *const c_void);
+            }
+        }
+    }
 }
 
 unsafe extern "C" {
@@ -61,18 +120,19 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
     let path_bytes = path_string.as_bytes();
 
     autoreleasepool(|| unsafe {
-        let mut ns_string_ptr: *mut Object = std::ptr::null_mut();
-        let mut cg_image_ptr: CGImageRef = std::ptr::null_mut();
-        let mut image_rep_ptr: *mut Object = std::ptr::null_mut();
+        let mut ns_string = ObjcOwned::new();
+        let mut cg_image = CgImageOwned::new();
+        let mut image_rep = ObjcOwned::new();
 
         let result = (|| -> Result<DynamicImage, String> {
             let ns_string_alloc: *mut Object = msg_send![class!(NSString), alloc];
-            ns_string_ptr = msg_send![
+            let ns_string_ptr: *mut Object = msg_send![
                 ns_string_alloc,
                 initWithBytes: path_bytes.as_ptr()
                 length: path_bytes.len()
-                encoding: 4usize
+                encoding: NS_UTF8_STRING_ENCODING
             ];
+            ns_string.set(ns_string_ptr);
 
             if ns_string_ptr.is_null() {
                 return Err("Failed to create NSString for path".to_string());
@@ -105,12 +165,13 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
             };
             let mut error: *mut Object = std::ptr::null_mut();
 
-            cg_image_ptr = msg_send![
+            let cg_image_ptr: CGImageRef = msg_send![
                 generator,
                 copyCGImageAtTime: time
                 actualTime: &mut actual_time
                 error: &mut error
             ];
+            cg_image.set(cg_image_ptr);
 
             if cg_image_ptr.is_null() {
                 if !error.is_null() {
@@ -127,7 +188,9 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
             }
 
             let image_rep_alloc: *mut Object = msg_send![class!(NSBitmapImageRep), alloc];
-            image_rep_ptr = msg_send![image_rep_alloc, initWithCGImage: cg_image_ptr];
+            let image_rep_ptr: *mut Object =
+                msg_send![image_rep_alloc, initWithCGImage: cg_image_ptr];
+            image_rep.set(image_rep_ptr);
             if image_rep_ptr.is_null() {
                 return Err("Failed to create NSBitmapImageRep".to_string());
             }
@@ -135,7 +198,7 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
             let properties: *mut Object = msg_send![class!(NSDictionary), dictionary];
             let data: *mut Object = msg_send![
                 image_rep_ptr,
-                representationUsingType: 3usize
+                representationUsingType: NS_BITMAP_IMAGE_FILE_TYPE_JPEG
                 properties: properties
             ];
 
@@ -154,17 +217,6 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
             image::load_from_memory(&raw)
                 .map_err(|e| format!("Failed to decode AVFoundation image data: {e}"))
         })();
-
-        // Clean up resources
-        if !image_rep_ptr.is_null() {
-            let _: () = msg_send![image_rep_ptr, release];
-        }
-        if !cg_image_ptr.is_null() {
-            CGImageRelease(cg_image_ptr);
-        }
-        if !ns_string_ptr.is_null() {
-            let _: () = msg_send![ns_string_ptr, release];
-        }
 
         result.and_then(encode_thumbnail)
     })

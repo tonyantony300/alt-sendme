@@ -56,5 +56,6 @@ dunce = "1.0"
 windows = { version = "0.58", features = ["Win32_Media_MediaFoundation"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
 core-graphics = "0.24"
 objc = "0.2"
