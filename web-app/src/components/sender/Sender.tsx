@@ -137,7 +137,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 				!isBroadcastMode) ||
 				(viewState === 'SHARING' && isBroadcastMode)) && (
 				<>
-					<div className="text-center">
+					<div className="text-center mt-18 sm:mt-0">
 						<PulseAnimation
 							isTransporting={isTransporting && !isBroadcastMode}
 							hasActiveConnections={

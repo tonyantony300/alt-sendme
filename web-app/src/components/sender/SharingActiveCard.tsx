@@ -178,7 +178,7 @@ export function SharingActiveCard({
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
-				<p className="text-xs mb-4 max-w-120 truncate">
+				<p className="text-xs mb-4 max-w-40 sm:max-w-120 truncate">
 					<strong className="mr-1">{t('common:sender.fileLabel')}</strong>{' '}
 					{selectedPath?.split('/').pop()}
 				</p>
@@ -213,7 +213,7 @@ export function SharingActiveCard({
 				type="button"
 				onClick={onStopSharing}
 				variant="destructive-outline"
-				className="absolute top-0 right-6 rounded-full font-medium transition-colors not-disabled:not-active:not-data-pressed:before:shadow-none dark:not-disabled:before:shadow-none dark:not-disabled:not-active:not-data-pressed:before:shadow-none"
+				className="absolute top-0 right-0 sm:right-6 rounded-full font-medium transition-colors not-disabled:not-active:not-data-pressed:before:shadow-none dark:not-disabled:before:shadow-none dark:not-disabled:not-active:not-data-pressed:before:shadow-none"
 				aria-label="Stop sharing"
 			>
 				<Square className="w-4 h-4" fill="currentColor" />
@@ -242,7 +242,7 @@ export function TicketDisplay({
 				</p>
 				{isBroadcastMode !== undefined && onToggleBroadcast && (
 					<div className="flex items-start gap-2">
-						<Label htmlFor={'broadcast-toggle'}>
+						<Label htmlFor={'broadcast-toggle'} className='text-sm'>
 							{t('common:sender.broadcastMode.index')}
 						</Label>
 						<Switch
