@@ -184,10 +184,7 @@ pub async fn fetch_ticket_metadata(ticket: String) -> Result<FileMetadata, Strin
             );
             Ok(metadata)
         }
-        Err(e) => {
-            tracing::warn!(error = %e, "fetch_ticket_metadata failed");
-            Err(format!("Failed to fetch metadata: {}", e))
-        }
+        Err(e) => Err(format!("Failed to fetch metadata: {}", e)),
     }
 }
 

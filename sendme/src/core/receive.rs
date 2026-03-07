@@ -365,11 +365,12 @@ pub async fn fetch_metadata(
     }
 
     let mut last_error: Option<anyhow::Error> = None;
+    let mut attempt_errors: Vec<(usize, &'static str, String)> = Vec::new();
 
     for (attempt, path, target_addr) in attempt_plan {
         tracing::info!(attempt, path, "fetch_metadata: connecting to sender");
 
-        let result = async {
+        let result: anyhow::Result<FileMetadata> = async {
             let connection = timeout(
                 Duration::from_secs(15),
                 endpoint.connect(target_addr, METADATA_ALPN),
@@ -413,6 +414,7 @@ pub async fn fetch_metadata(
                 tracing::info!(
                     attempt,
                     path,
+                    retries = attempt_errors.len(),
                     file_name = %metadata.file_name,
                     size = metadata.size,
                     "fetch_metadata: received metadata"
@@ -421,9 +423,17 @@ pub async fn fetch_metadata(
                 return Ok(metadata);
             }
             Err(err) => {
-                tracing::warn!(attempt, path, error = %err, "fetch_metadata attempt failed");
+                let will_retry = attempt < 3;
+                tracing::debug!(
+                    attempt,
+                    path,
+                    will_retry,
+                    error = %err,
+                    "fetch_metadata attempt failed"
+                );
+                attempt_errors.push((attempt, path, err.to_string()));
                 last_error = Some(err);
-                if attempt < 3 {
+                if will_retry {
                     tokio::time::sleep(Duration::from_millis(300)).await;
                 }
             }
@@ -431,6 +441,24 @@ pub async fn fetch_metadata(
     }
 
     endpoint.close().await;
+
+    if !attempt_errors.is_empty() {
+        let failure_summary = attempt_errors
+            .iter()
+            .map(|(attempt, path, err)| format!("#{attempt}({path}): {err}"))
+            .collect::<Vec<_>>()
+            .join(" | ");
+
+        if let Some(ref err) = last_error {
+            tracing::warn!(
+                attempts = attempt_errors.len(),
+                error = %err,
+                failure_summary = %failure_summary,
+                "fetch_metadata: failed to connect to sender"
+            );
+        }
+    }
+
     Err(last_error.unwrap_or_else(|| anyhow::anyhow!("metadata fetch failed")))
 }
 
