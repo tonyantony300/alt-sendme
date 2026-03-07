@@ -1,5 +1,7 @@
+use core_graphics::sys::base::{CGImageRef, CGImageRelease};
 use image::codecs::jpeg::JpegEncoder;
 use image::DynamicImage;
+use objc::rc::autoreleasepool;
 use objc::runtime::{Object, YES};
 use objc::{class, msg_send, sel, sel_impl};
 use std::io::Cursor;
@@ -15,10 +17,6 @@ unsafe extern "C" {}
 unsafe extern "C" {}
 #[link(name = "AppKit", kind = "framework")]
 unsafe extern "C" {}
-#[link(name = "CoreGraphics", kind = "framework")]
-unsafe extern "C" {
-    fn CGImageRelease(image: *mut std::ffi::c_void);
-}
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -62,10 +60,9 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
     let path_string = file_path.to_string_lossy().to_string();
     let path_bytes = path_string.as_bytes();
 
-    unsafe {
-        let pool: *mut Object = msg_send![class!(NSAutoreleasePool), new];
+    autoreleasepool(|| unsafe {
         let mut ns_string_ptr: *mut Object = std::ptr::null_mut();
-        let mut cg_image_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
+        let mut cg_image_ptr: CGImageRef = std::ptr::null_mut();
         let mut image_rep_ptr: *mut Object = std::ptr::null_mut();
 
         let result = (|| -> Result<DynamicImage, String> {
@@ -169,10 +166,8 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
             let _: () = msg_send![ns_string_ptr, release];
         }
 
-        let _: () = msg_send![pool, drain];
-
         result.and_then(encode_thumbnail)
-    }
+    })
 }
 
 fn encode_thumbnail(image: DynamicImage) -> Result<Vec<u8>, String> {
