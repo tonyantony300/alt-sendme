@@ -43,6 +43,7 @@ tauri-plugin-notification = "2"
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
 linux-gstreamer = ["dep:gstreamer", "dep:gstreamer-app", "dep:gstreamer-video"]
+cargo-clippy = []
 
 [target.'cfg(target_os = "linux")'.dependencies]
 gstreamer = { version = "0.23", optional = true }

@@ -1,4 +1,4 @@
-use core_graphics::sys::base::{CGImageRef, CGImageRelease};
+use core_graphics::base::{CGImageRef, CGImageRelease};
 use image::codecs::jpeg::JpegEncoder;
 use image::DynamicImage;
 use objc::rc::autoreleasepool;
