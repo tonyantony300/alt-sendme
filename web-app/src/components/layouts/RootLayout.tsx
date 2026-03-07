@@ -11,7 +11,7 @@ export function RootLayout() {
 	return (
 		<>
 			{!IS_ANDROID && <AppUpdater />}
-			<main className="h-screen flex flex-col relative glass-background select-none bg-background">
+			<main className="h-dvh min-h-screen flex flex-col relative glass-background select-none bg-background">
 				{IS_LINUX && !IS_ANDROID && <TitleBar title={t('appTitle')} />}
 
 				{IS_MACOS && (

@@ -56,6 +56,9 @@ export function Dropzone({
 	const getSubText = () => {
 		if (isLoading) return t('common:sender.pleaseWaitProcessing')
 		if (selectedPath) {
+			const fileName = selectedPath.split('/').pop() ?? ''
+			const displayName =
+				fileName.length > 60 ? `${fileName.slice(0, 60)}…` : fileName
 			return (
 				<div>
 					<div
@@ -63,8 +66,8 @@ export function Dropzone({
 						onClick={onToggleFullPath}
 						title="Click to toggle full path"
 					>
-						{selectedPath.split('/').pop()}
-						<span className="-mr-2">
+						{displayName}
+						<span className="-mr-2 hidden sm:block ">
 							{showFullPath ? (
 								<ChevronDown className="p-0.5 h-6 w-6" size={16} />
 							) : (
@@ -73,7 +76,7 @@ export function Dropzone({
 						</span>
 					</div>
 					<div
-						className="text-xs mt-1 opacity-75 break-all transition-opacity"
+						className="text-xs mt-1 opacity-75 break-all transition-opacity max-sm:hidden"
 						style={{
 							visibility: showFullPath ? 'visible' : 'hidden',
 						}}
@@ -144,7 +147,7 @@ export function Dropzone({
 				</div>
 
 				<div>
-					<p className="text-lg font-medium mb-2 text-accent-foreground">
+					<p className=" hidden sm:block text-lg font-medium mb-2 text-accent-foreground">
 						{getStatusText()}
 					</p>
 					<div className="text-sm text-muted-foreground">{getSubText()}</div>
