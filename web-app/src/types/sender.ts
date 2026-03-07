@@ -20,7 +20,6 @@ export interface SenderState extends SharingState, CopyState {
 export interface ShareActionProps {
 	selectedPath: string | null
 	isLoading: boolean
-	onFileSelect: (path: string) => void
 }
 
 export interface SharingControlsProps {

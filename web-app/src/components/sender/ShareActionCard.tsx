@@ -12,7 +12,7 @@ export function ShareActionCard({
 	if (!selectedPath) return null
 
 	return (
-		<div className="">
+		<div className="space-y-4">
 			<Button
 				type="button"
 				onClick={onStartSharing}

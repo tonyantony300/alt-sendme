@@ -34,6 +34,8 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
+		previewMetadata,
+		isPreviewLoading,
 		fileNames,
 		handleTicketChange,
 		handleBrowseFolder,
@@ -76,6 +78,8 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 							ticket={ticket}
 							isReceiving={isReceiving}
 							savePath={savePath}
+							previewMetadata={previewMetadata}
+							isPreviewLoading={isPreviewLoading}
 							onTicketChange={handleTicketChange}
 							onBrowseFolder={handleBrowseFolder}
 							onReceive={handleReceive}

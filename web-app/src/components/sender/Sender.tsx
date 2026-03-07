@@ -115,7 +115,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 						<ShareActionCard
 							selectedPath={selectedPath}
 							isLoading={isLoading}
-							onFileSelect={handleFileSelect}
 							onStartSharing={startSharing}
 						/>
 					</div>

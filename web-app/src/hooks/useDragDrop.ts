@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-dialog'
 import { selectSendDocument, selectSendFolder } from '@/plugins/nativeUtils'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
 import { IS_ANDROID } from '@/lib/platform'
@@ -25,7 +25,10 @@ export interface UseDragDropReturn {
 }
 
 export function useDragDrop(
-	onFileSelect: (path: string, pathType?: 'file' | 'directory') => void
+	onFileSelect: (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => void | Promise<void>
 ): UseDragDropReturn {
 	const { t } = useTranslation()
 	const [isDragActive, setIsDragActive] = useState(false)
@@ -38,36 +41,54 @@ export function useDragDrop(
 		type: 'info',
 	})
 
-	const checkPathType = async (
-		path: string,
-		pathType?: 'file' | 'directory'
-	) => {
-		if (pathType) return setPathType(pathType)
+	const showAlert = useCallback(
+		(title: string, description: string, type: AlertType = 'info') => {
+			setAlertDialog({ isOpen: true, title, description, type })
+		},
+		[]
+	)
 
-		try {
-			const type = await invoke<string>('check_path_type', { path })
-			setPathType(type as 'file' | 'directory')
-		} catch (error) {
-			console.error('Failed to check path type:', error)
-			setPathType(null)
-		}
-	}
-
-	const showAlert = (
-		title: string,
-		description: string,
-		type: AlertType = 'info'
-	) => {
-		setAlertDialog({ isOpen: true, title, description, type })
-	}
-
-	const closeAlert = () => {
+	const closeAlert = useCallback(() => {
 		setAlertDialog((prev) => ({ ...prev, isOpen: false }))
-	}
+	}, [])
 
-	const toggleFullPath = () => {
+	const toggleFullPath = useCallback(() => {
 		setShowFullPath((prev) => !prev)
-	}
+	}, [])
+
+	const checkPathType = useCallback(
+		async (path: string, pathType?: 'file' | 'directory') => {
+			if (pathType) {
+				setPathType(pathType)
+				return
+			}
+
+			try {
+				const type = await invoke<string>('check_path_type', { path })
+				setPathType(type as 'file' | 'directory')
+			} catch (error) {
+				console.error('Failed to check path type:', error)
+				setPathType(null)
+			}
+		},
+		[]
+	)
+
+	const triggerFileSelect = useCallback(
+		async (path: string, pathType?: 'file' | 'directory') => {
+			try {
+				await Promise.resolve(onFileSelect(path, pathType))
+			} catch (error) {
+				console.error('Failed to handle selected path:', error)
+				showAlert(
+					t('common:errors.fileDialogFailed'),
+					`${t('common:errors.fileDialogFailedDesc')}: ${error}`,
+					'error'
+				)
+			}
+		},
+		[onFileSelect, showAlert, t]
+	)
 
 	const browseFile = async () => {
 		try {
@@ -75,7 +96,7 @@ export function useDragDrop(
 				const selected = await selectSendDocument()
 
 				if (selected) {
-					onFileSelect(selected.cachedPath.toString(), 'file')
+					await triggerFileSelect(selected.cachedPath.toString(), 'file')
 				}
 			} else {
 				const selected = await open({
@@ -84,7 +105,7 @@ export function useDragDrop(
 				})
 
 				if (selected) {
-					onFileSelect(selected)
+					await triggerFileSelect(selected, 'file')
 				}
 			}
 		} catch (error) {
@@ -103,7 +124,7 @@ export function useDragDrop(
 				const selected = await selectSendFolder()
 
 				if (selected) {
-					onFileSelect(selected.cachedPath.toString(), 'directory')
+					await triggerFileSelect(selected.cachedPath.toString(), 'directory')
 				}
 			} else {
 				const selected = await open({
@@ -112,7 +133,7 @@ export function useDragDrop(
 				})
 
 				if (selected) {
-					onFileSelect(selected)
+					await triggerFileSelect(selected, 'directory')
 				}
 			}
 		} catch (error) {
@@ -140,7 +161,7 @@ export function useDragDrop(
 
 					if (event.payload?.paths && event.payload.paths.length > 0) {
 						const path = event.payload.paths[0]
-						onFileSelect(path)
+						void triggerFileSelect(path)
 					}
 				}
 			)
@@ -178,7 +199,7 @@ export function useDragDrop(
 			hoverUnlisten?.()
 			cancelUnlisten?.()
 		}
-	}, [onFileSelect])
+	}, [triggerFileSelect])
 
 	return {
 		isDragActive,

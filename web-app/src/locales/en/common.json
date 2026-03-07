@@ -44,6 +44,7 @@
 		"browseFile": "Browse File",
 		"browseFolder": "Browse Folder",
 		"copyToClipboard": "Copy to clipboard",
+		"description": "Description (optional)",
 		"broadcastMode": {
 			"index": "Broadcast",
 			"on": {
@@ -145,7 +146,6 @@
 					"label": "Minimize to system tray",
 					"description": "When close dialog, minimize the app instead of terminate"
 				},
-
 				"showProgressOnIcon": {
 					"label": "Show transfer progress on app icon",
 					"description": "Using a progress bar overlay on the app icon to indicate transfer progress"

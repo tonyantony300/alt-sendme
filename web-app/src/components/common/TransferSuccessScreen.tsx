@@ -1,18 +1,9 @@
 import { CheckCircle, ExternalLinkIcon, XCircle } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { trackTransferComplete } from '../../lib/analytics'
+import { formatFileSize } from '../../lib/utils'
 import type { SuccessScreenProps } from '../../types/transfer'
 import { Button } from '../ui/button'
-
-function formatFileSize(bytes: number): string {
-	if (bytes === 0) return 'NA'
-
-	const k = 1024
-	const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-	const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-	return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`
-}
 
 function formatDuration(ms: number): string {
 	if (ms === 0) {
@@ -129,7 +120,13 @@ export function TransferSuccessScreen({
 							:
 						</span>
 						<span className="text-sm">
-							{wasStopped ? 'NA' : formatFileSize(metadata.fileSize)}
+							{wasStopped
+								? 'NA'
+								: formatFileSize(metadata.fileSize, {
+										zeroValue: 'NA',
+										precision: 1,
+										smallPrecision: 1,
+									})}
 						</span>
 					</div>
 

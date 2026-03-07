@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -67,6 +68,19 @@ impl From<RelayModeOption> for iroh::RelayMode {
             RelayModeOption::Custom(url) => iroh::RelayMode::Custom(url.into()),
         }
     }
+}
+
+/// # Description
+/// Represents metadata about a file being shared,
+/// including file_name, size, optional thumbnail, and MIME type.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileMetadata {
+    pub file_name: String,
+    pub size: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thumbnail: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
 }
 
 #[derive(

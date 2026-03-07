@@ -1,6 +1,7 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
 mod commands;
+mod features;
 mod platform;
 mod state;
 #[cfg(not(target_os = "android"))]
@@ -10,8 +11,8 @@ mod version;
 pub use version::get_app_version;
 
 use commands::{
-    check_launch_intent, check_path_type, get_file_size, get_sharing_status, get_transport_status,
-    receive_file, start_sharing, stop_sharing,
+    check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status,
+    get_transport_status, receive_file, start_sharing, stop_sharing,
 };
 use state::AppState;
 use std::fs;
@@ -48,13 +49,17 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
 
     #[cfg(desktop)]
-    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-        if let Some(window) = app.get_webview_window("main") {
-            let _ = window.show();
-            let _ = window.unminimize();
-            let _ = window.set_focus();
-        }
-    }));
+    let builder = if std::env::var("ALT_SENDME_ALLOW_MULTI_INSTANCE").unwrap_or_default() == "1" {
+        builder
+    } else {
+        builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
+    };
 
     let builder = builder
         .plugin(tauri_plugin_dialog::init())
@@ -73,6 +78,7 @@ pub fn run() {
             get_transport_status,
             get_file_size,
             check_launch_intent,
+            fetch_ticket_metadata,
         ])
         .setup(|app| {
             setup_common(app);
