@@ -12,42 +12,48 @@ export function BrowseButtons({
 	const { t } = useTranslation()
 
 	return (
-		<Group className="mx-auto">
-			<Button
-				type="button"
-				onClick={(e) => {
-					e.stopPropagation()
-					onBrowseFile()
-				}}
-				disabled={isLoading}
-			>
-				{isLoading ? (
-					t('common:loading')
-				) : (
-					<>
-						{t('common:sender.browseFile')}
-						<FileTextIcon />
-					</>
-				)}
-			</Button>
-			<GroupSeparator />
-			<Button
-				type="button"
-				onClick={(e) => {
-					e.stopPropagation()
-					onBrowseFolder()
-				}}
-				disabled={isLoading}
-			>
-				{isLoading ? (
-					t('common:loading')
-				) : (
-					<>
-						{t('common:sender.browseFolder')}
-						<FolderOpenIcon />
-					</>
-				)}
-			</Button>
+		<Group className="mx-auto flex w-full max-w-sm flex-col gap-2 mt-2 sm:mt-0 sm:w-fit sm:max-w-none sm:flex-row sm:gap-0">
+			<div className="w-full sm:w-auto">
+				<Button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation()
+						onBrowseFile()
+					}}
+					disabled={isLoading}
+					className="w-full rounded-lg sm:rounded-l-lg sm:rounded-r-none text-sm px-3 py-2 sm:px-4 sm:py-2.5"
+				>
+					{isLoading ? (
+						t('common:loading')
+					) : (
+						<>
+							{t('common:sender.browseFile')}
+							<FileTextIcon />
+						</>
+					)}
+				</Button>
+			</div>
+			<GroupSeparator className="hidden sm:block" />
+			<div className="w-full sm:w-auto">
+				<Button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation()
+						onBrowseFolder()
+					}}
+					disabled={isLoading}
+					className="w-full rounded-lg sm:rounded-r-lg sm:rounded-l-none text-sm px-3 py-2 sm:px-4 sm:py-2.5"
+				>
+					{isLoading ? (
+						t('common:loading')
+					) : (
+						<>
+							{t('common:sender.browseFolder')}
+							<FolderOpenIcon />
+						</>
+					)}
+				</Button>
+			</div>
 		</Group>
 	)
 }

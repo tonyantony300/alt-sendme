@@ -108,7 +108,7 @@ function SettingSidebarFooter({
 	return (
 		<SidebarFooter
 			className={cn(
-				'text-sm flex-row items-center text-muted-foreground justify-around',
+				'text-xs flex-row items-center text-muted-foreground justify-around',
 				className
 			)}
 			{...props}

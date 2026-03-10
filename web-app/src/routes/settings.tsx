@@ -4,8 +4,8 @@ import { LanguageSelect } from '../components/settings/language-select/language-
 export function SettingsPage() {
 	return (
 		<>
-			<ThemeSelectRadio />
 			<LanguageSelect />
+			<ThemeSelectRadio />
 		</>
 	)
 }
