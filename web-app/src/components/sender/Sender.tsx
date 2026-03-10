@@ -51,34 +51,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	const { t } = useTranslation()
 	const setIsBroadcastMode = useSenderStore((state) => state.setIsBroadcastMode)
 
-	// Debug logging
-	useEffect(() => {
-		// console.log('[Sender] viewState changed:', viewState, {
-		// 	isSharing,
-		// 	isTransporting,
-		// 	transferMetadata: !!transferMetadata,
-		// 	transferMetadataDetails: transferMetadata ? {
-		// 		fileName: transferMetadata.fileName,
-		// 		wasStopped: transferMetadata.wasStopped,
-		// 	} : null,
-		// 	isBroadcastMode,
-		// 	selectedPath,
-		// })
-
-		// Warn if SUCCESS state without metadata
-		if (viewState === 'SUCCESS' && !transferMetadata) {
-			console.error(
-				'[Sender] ⚠️ INVALID STATE: SUCCESS without transferMetadata!',
-				{
-					viewState,
-					transferMetadata,
-					isSharing,
-					isTransporting,
-					selectedPath,
-				}
-			)
-		}
-	}, [viewState, isSharing, isTransporting, transferMetadata, selectedPath])
 
 	useEffect(() => {
 		onTransferStateChange(isSharing)
@@ -92,7 +64,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	}, [viewState, isBroadcastMode, setIsBroadcastMode])
 
 	return (
-		<div className="p-0 sm:p-6 space-y-6 relative h-[62dvh] sm:h-112 overflow-y-auto flex flex-col">
+		<div className="p-0 sm:p-6 space-y-6 relative h-[65dvh] sm:h-112 overflow-y-auto flex flex-col">
 			{/* IDLE state: Show file selection UI */}
 			{viewState === 'IDLE' && (
 				<>

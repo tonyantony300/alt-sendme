@@ -1,6 +1,7 @@
 import Lottie from 'lottie-react'
 import pulseAnimationOriginal from '../../assets/pulse.json'
 import { useMemo } from 'react'
+import { cn } from '@/lib/utils'
 
 interface PulseAnimationProps {
 	isTransporting: boolean
@@ -50,9 +51,7 @@ export function PulseAnimation({
 	}, [isTransporting, hasActiveConnections])
 
 	return (
-		<div
-			className={`${className}${isTransporting ? ' max-sm:hidden' : ''}`.trim()}
-		>
+		<div className={cn(className, isTransporting && 'max-sm:hidden')}>
 			<Lottie
 				animationData={animationData}
 				loop={true}
