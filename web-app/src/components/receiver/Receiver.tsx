@@ -115,7 +115,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 						/>
 					</div>
 				</>
-)} 
+			)}
 
 			<AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
 				<AlertDialogContent>

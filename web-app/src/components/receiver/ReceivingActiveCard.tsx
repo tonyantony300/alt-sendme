@@ -42,7 +42,9 @@ export function ReceivingActiveCard({
 				/>
 			</div>
 
-			<p className="text-xs text-center my-10 sm:my-0">{t('common:receiver.keepAppOpen')}</p>
+			<p className="text-xs text-center my-10 sm:my-0">
+				{t('common:receiver.keepAppOpen')}
+			</p>
 
 			{isTransporting && transferProgress && (
 				<TransferProgressBar progress={transferProgress} />

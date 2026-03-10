@@ -51,7 +51,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 	const { t } = useTranslation()
 	const setIsBroadcastMode = useSenderStore((state) => state.setIsBroadcastMode)
 
-
 	useEffect(() => {
 		onTransferStateChange(isSharing)
 	}, [isSharing, onTransferStateChange])
