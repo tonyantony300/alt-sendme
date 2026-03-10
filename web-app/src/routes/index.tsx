@@ -59,7 +59,7 @@ export function IndexPage() {
 
 	return (
 		<SingleLayoutPage.SingleLayoutPage>
-			<div className="max-w-2xl mx-auto w-full pt-12 sm:pt-0">
+			<div className="max-w-2xl mx-auto w-full pt-8 sm:pt-0">
 				<Frame>
 					<Tabs
 						value={activeTab}

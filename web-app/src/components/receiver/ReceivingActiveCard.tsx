@@ -42,7 +42,7 @@ export function ReceivingActiveCard({
 				/>
 			</div>
 
-			<p className="text-xs text-center">{t('common:receiver.keepAppOpen')}</p>
+			<p className="text-xs text-center my-10 sm:my-0">{t('common:receiver.keepAppOpen')}</p>
 
 			{isTransporting && transferProgress && (
 				<TransferProgressBar progress={transferProgress} />
@@ -53,7 +53,7 @@ export function ReceivingActiveCard({
 				size="icon-lg"
 				type="button"
 				onClick={onStopReceiving}
-				className="absolute top-0 right-6 rounded-full"
+				className="absolute top-0 right-2 sm:right-6 rounded-full font-medium transition-colors not-disabled:not-active:not-data-pressed:before:shadow-none dark:not-disabled:before:shadow-none dark:not-disabled:not-active:not-data-pressed:before:shadow-none"
 				aria-label="Stop receiving"
 			>
 				<Square className="w-4 h-4" fill="currentColor" />
