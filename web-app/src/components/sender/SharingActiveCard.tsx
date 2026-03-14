@@ -25,13 +25,13 @@ export function SharingActiveCard({
 	activeConnectionCount = 0,
 	onCopyTicket,
 	onStopSharing,
-	onToggleBroadcast: _onToggleBroadcast,
+	onSetBroadcast: _onSetBroadcast,
 }: SharingControlsProps) {
 	const { t } = useTranslation()
-	const onToggleBroadcast = () => {
-		if (_onToggleBroadcast) {
+	const onSetBroadcast = () => {
+		if (_onSetBroadcast) {
 			const isTurningOn = !isBroadcastMode
-			_onToggleBroadcast()
+			_onSetBroadcast(isTurningOn)
 			// Only show toast notification when turning broadcast mode ON, not for private sharing
 			if (isTurningOn) {
 				const toastId = crypto.randomUUID()
@@ -43,7 +43,7 @@ export function SharingActiveCard({
 					actionProps: {
 						children: t('common:undo'),
 						onClick: () => {
-							_onToggleBroadcast?.()
+							_onSetBroadcast?.(false)
 							toastManager.close(toastId)
 						},
 					},
@@ -200,7 +200,7 @@ export function SharingActiveCard({
 					copySuccess={copySuccess}
 					onCopyTicket={onCopyTicket}
 					isBroadcastMode={isBroadcastMode}
-					onToggleBroadcast={onToggleBroadcast}
+					onSetBroadcast={onSetBroadcast}
 				/>
 			)}
 
@@ -227,10 +227,10 @@ export function TicketDisplay({
 	copySuccess,
 	onCopyTicket,
 	isBroadcastMode,
-	onToggleBroadcast,
+	onSetBroadcast,
 }: TicketDisplayProps & {
 	isBroadcastMode?: boolean
-	onToggleBroadcast?: () => void
+	onSetBroadcast?: (broadcast: boolean) => void
 }) {
 	const { t } = useTranslation()
 
@@ -240,14 +240,14 @@ export function TicketDisplay({
 				<p className="block text-sm font-medium">
 					{t('common:sender.shareThisTicket')}
 				</p>
-				{isBroadcastMode !== undefined && onToggleBroadcast && (
+				{isBroadcastMode !== undefined && onSetBroadcast && (
 					<div className="flex items-start gap-2">
 						<Label htmlFor={'broadcast-toggle'} className="text-sm">
 							{t('common:sender.broadcastMode.index')}
 						</Label>
 						<Switch
 							checked={isBroadcastMode}
-							onCheckedChange={onToggleBroadcast}
+							onCheckedChange={onSetBroadcast}
 						/>
 					</div>
 				)}
