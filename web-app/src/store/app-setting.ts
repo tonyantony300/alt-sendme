@@ -12,6 +12,7 @@ export type AppSettingsState = {
 	darkMode: boolean
 	autoUpdate: boolean
 	showProgressOnIcon: boolean
+	downloadsPath: string
 }
 
 export type AppSettingsActions = {
@@ -21,6 +22,7 @@ export type AppSettingsActions = {
 	setDarkMode: (value: boolean) => void
 	setAutoUpdate: (value: boolean) => void
 	toggleShowProgressOnIcon?: (value: boolean) => void
+	setDownloadsPath: (value: string) => void
 }
 
 export type AppSettings = AppSettingsState & AppSettingsActions
@@ -39,6 +41,7 @@ export const useAppSettingStore = create<AppSettings>()(
 			setAutoUpdate: (value: boolean) => set({ autoUpdate: value }),
 			toggleShowProgressOnIcon: (value: boolean) =>
 				set({ showProgressOnIcon: value }),
+			setDownloadsPath: (value: string) => set({downloadsPath: value})
 		}),
 		{
 			name: AppSettingsKey,
