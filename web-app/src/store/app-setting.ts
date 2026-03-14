@@ -41,7 +41,7 @@ export const useAppSettingStore = create<AppSettings>()(
 			setAutoUpdate: (value: boolean) => set({ autoUpdate: value }),
 			toggleShowProgressOnIcon: (value: boolean) =>
 				set({ showProgressOnIcon: value }),
-			setDownloadsPath: (value: string) => set({downloadsPath: value})
+			setDownloadsPath: (value: string) => set({ downloadsPath: value }),
 		}),
 		{
 			name: AppSettingsKey,

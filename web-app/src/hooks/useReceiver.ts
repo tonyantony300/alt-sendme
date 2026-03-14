@@ -54,9 +54,7 @@ export function useReceiver(): UseReceiverReturn {
 	const [isCompleted, setIsCompleted] = useState(false)
 	const [savePath, setSavePath] = useState('')
 	const downloadsPath = useAppSettingStore((state) => state.downloadsPath)
-	const setDownloadsPath = useAppSettingStore(
-		(state) => state.setDownloadsPath
-	)
+	const setDownloadsPath = useAppSettingStore((state) => state.setDownloadsPath)
 	const [transferMetadata, setTransferMetadata] =
 		useState<TransferMetadata | null>(null)
 	const [transferProgress, setTransferProgress] =
@@ -211,7 +209,7 @@ export function useReceiver(): UseReceiverReturn {
 	useEffect(() => {
 		const initializeSavePath = async () => {
 			try {
-				if(IS_ANDROID) {
+				if (IS_ANDROID) {
 					setSavePath(downloadsPath)
 				} else {
 					const downloadsPath = await downloadDir()
