@@ -7,6 +7,20 @@ import type { TicketInputProps } from '../../types/receiver'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
+import { IS_ANDROID } from '../../lib/platform'
+
+const formatDisplayPath = (path: string | undefined | null) => {
+	if (!path) return ''
+
+	if (!IS_ANDROID) return path
+
+	const normalized = path.replace(/\\/g, '/')
+	const segments = normalized.split('/').filter(Boolean)
+
+	if (segments.length <= 2) return segments.join('/')
+
+	return segments.slice(-2).join('/')
+}
 
 export function TicketInput({
 	ticket,
@@ -41,7 +55,10 @@ export function TicketInput({
 				<InputGroup onClick={onBrowseFolder}>
 					<InputGroupInput
 						disabled
-						value={savePath || t('common:receiver.noFolderSelected')}
+						value={
+							formatDisplayPath(savePath) ||
+							t('common:receiver.noFolderSelected')
+						}
 					/>
 					<InputGroupAddon align="inline-end">
 						<Button disabled={isReceiving} size="xs">
