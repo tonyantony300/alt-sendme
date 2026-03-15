@@ -15,6 +15,7 @@ import type {
 } from '../types/transfer'
 import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 import { IS_ANDROID } from '@/lib/platform'
+import { useAppSettingStore } from '@/store/app-setting'
 
 interface BackendFileMetadata {
 	file_name: string
@@ -52,6 +53,8 @@ export function useReceiver(): UseReceiverReturn {
 	const [isTransporting, setIsTransporting] = useState(false)
 	const [isCompleted, setIsCompleted] = useState(false)
 	const [savePath, setSavePath] = useState('')
+	const downloadsPath = useAppSettingStore((state) => state.downloadsPath)
+	const setDownloadsPath = useAppSettingStore((state) => state.setDownloadsPath)
 	const [transferMetadata, setTransferMetadata] =
 		useState<TransferMetadata | null>(null)
 	const [transferProgress, setTransferProgress] =
@@ -206,15 +209,19 @@ export function useReceiver(): UseReceiverReturn {
 	useEffect(() => {
 		const initializeSavePath = async () => {
 			try {
-				const downloadsPath = await downloadDir()
-				setSavePath(downloadsPath)
+				if (IS_ANDROID) {
+					setSavePath(downloadsPath)
+				} else {
+					const downloadsPath = await downloadDir()
+					setSavePath(downloadsPath)
+				}
 			} catch (error) {
 				console.error('Failed to get downloads directory:', error)
 				setSavePath('')
 			}
 		}
 		initializeSavePath()
-	}, [])
+	}, [downloadsPath])
 
 	useEffect(() => {
 		let disposed = false
@@ -368,6 +375,7 @@ export function useReceiver(): UseReceiverReturn {
 				const response = await selectDownloadFolder()
 				if (!response) return
 				selected = response.path.toString()
+				setDownloadsPath(selected)
 			} else {
 				selected = await open({
 					multiple: false,

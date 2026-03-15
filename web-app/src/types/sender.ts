@@ -37,7 +37,7 @@ export interface SharingControlsProps {
 	onStartSharing: () => Promise<void>
 	onStopSharing: () => Promise<void>
 	onCopyTicket: () => Promise<void>
-	onToggleBroadcast: () => void
+	onSetBroadcast: (broadcast: boolean) => void
 }
 
 export interface TicketDisplayProps {

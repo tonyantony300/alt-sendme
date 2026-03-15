@@ -45,7 +45,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		copyTicket,
 		closeAlert,
 		resetForNewTransfer,
-		toggleBroadcastMode,
 	} = useSender()
 
 	const { t } = useTranslation()
@@ -133,7 +132,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							onStartSharing={startSharing}
 							onStopSharing={stopSharing}
 							onCopyTicket={copyTicket}
-							onToggleBroadcast={toggleBroadcastMode}
+							onSetBroadcast={setIsBroadcastMode}
 						/>
 					</div>
 				</>

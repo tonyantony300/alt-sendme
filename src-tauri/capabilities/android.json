@@ -30,6 +30,7 @@
 			],
 			"deny": []
 		},
+		"store:default",
 		"native-utils:default"
 	]
 }

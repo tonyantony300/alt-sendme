@@ -38,7 +38,6 @@ export interface UseSenderReturn {
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
 	resetForNewTransfer: () => Promise<void>
-	toggleBroadcastMode: () => void
 }
 
 export function useSender(): UseSenderReturn {
@@ -66,7 +65,6 @@ export function useSender(): UseSenderReturn {
 		setTransferMetadata,
 		setTransferProgress,
 		setIsBroadcastMode,
-		toggleBroadcastMode,
 		showAlert,
 		closeAlert,
 		resetToIdle,
@@ -678,6 +676,5 @@ export function useSender(): UseSenderReturn {
 		showAlert,
 		closeAlert,
 		resetForNewTransfer,
-		toggleBroadcastMode,
 	}
 }
