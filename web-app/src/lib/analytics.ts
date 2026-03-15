@@ -14,11 +14,15 @@ declare global {
 	}
 }
 
+/** No-op on Android; analytics are disabled for the mobile build. */
 export function trackTransferComplete(
 	fileSizeBytes: number,
 	role: 'sender' | 'receiver',
 	durationMs: number = 0
 ): void {
+	if (import.meta.env.TAURI_PLATFORM === 'android') {
+		return
+	}
 	if (typeof window === 'undefined' || !window.goatcounter) {
 		return
 	}

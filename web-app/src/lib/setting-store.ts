@@ -11,6 +11,7 @@ export const defaultAppSettings: AppSettingsState = {
 	darkMode: false,
 	autoUpdate: true,
 	showProgressOnIcon: false,
+	downloadsPath: '',
 }
 export const localSettingStore = new LazyStore(SETTING_FILE, {
 	autoSave: true,
