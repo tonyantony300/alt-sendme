@@ -16,7 +16,7 @@ tauri-build = { version = "2.0", features = [] }
 serde_json = "1.0"
 
 [dependencies]
-tauri = { version = "2.0", features = ["macos-private-api", "protocol-asset", "tray-icon"] }
+tauri = { version = "2.0", features = [ "protocol-asset", "tray-icon"] }
 mime_guess="2.0"
 base64 = "0.22.1"
 image="0.25"

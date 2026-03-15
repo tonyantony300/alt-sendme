@@ -1,0 +1,38 @@
+# F-Droid metadata reference for AltSendme (Tauri v2 Android).
+# Copy this to your fdroiddata fork as metadata/com.altsendme.android.yml
+# when opening a "New app: AltSendme" MR. Replace AllowedAPKSigningKeys
+# with the SHA-256 from your first signed build (see docs/android-release-build.md).
+
+Categories:
+  - Connectivity
+License: AGPL-3.0-only
+SourceCode: https://github.com/tonyantony300/alt-sendme
+IssueTracker: https://github.com/tonyantony300/alt-sendme/issues
+
+AutoName: AltSendme
+Summary: P2P file transfer with end-to-end encryption. No cloud, no accounts.
+
+RepoType: git
+Repo: https://github.com/tonyantony300/alt-sendme
+
+Builds:
+  - versionName: "0.3.4"
+    versionCode: 3004
+    commit: v0.3.4
+    sudo:
+      - apt-get update && apt-get install -y openjdk-17-jdk wget unzip nodejs npm
+      - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.81
+      - source $HOME/.cargo/env && rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+      # NDK: install via Android SDK (sdkmanager); set ANDROID_HOME/ANDROID_NDK_HOME per F-Droid docs
+      # - sdkmanager "ndk;26.1.10909125"
+    prebuild: |
+      npm install
+      npx tauri android build --apk
+      node scripts/patch-android-release-gradle.js
+    build: cd src-tauri/gen/android && ./gradlew assembleRelease
+
+AllowedAPKSigningKeys: b45e6274e96b4a7273ad93512dd51c0dc6daa5ca19149dc601b90f88938f0959
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: "0.3.4"
+CurrentVersionCode: 3004
