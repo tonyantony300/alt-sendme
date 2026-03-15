@@ -20,10 +20,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 const genAndroid = path.join(rootDir, 'src-tauri/gen/android')
-const apkDir = path.join(
-	genAndroid,
-	'app/build/outputs/apk/universal/release'
-)
+const apkDir = path.join(genAndroid, 'app/build/outputs/apk/universal/release')
 const unsignedApk = path.join(apkDir, 'app-universal-release-unsigned.apk')
 const signedApk = path.join(apkDir, 'app-universal-release.apk')
 
@@ -82,12 +79,7 @@ if (fs.existsSync(keystorePropsPath)) {
 			process.env.ANDROID_HOME ||
 			process.env.ANDROID_SDK_ROOT ||
 			path.join(process.env.HOME || '', 'Library/Android/sdk')
-		let apksigner = path.join(
-			androidHome,
-			'build-tools',
-			'34.0.0',
-			'apksigner'
-		)
+		let apksigner = path.join(androidHome, 'build-tools', '34.0.0', 'apksigner')
 		if (!fs.existsSync(apksigner)) {
 			const buildTools = path.join(androidHome, 'build-tools')
 			if (fs.existsSync(buildTools)) {
