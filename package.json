@@ -15,7 +15,8 @@
 		"validate-version": "node ./scripts/validate-version.js",
 		"lint": "biome lint && tsc --noEmit --skipLibCheck",
 		"lint:fix": "biome lint --fix",
-		"format": "biome format --write && cargo fmt --manifest-path sendme/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml"
+		"format": "biome format --write && cargo fmt --manifest-path sendme/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml",
+		"android:build:release": "node ./scripts/android-release-build.js"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.1.0",
@@ -45,9 +46,9 @@
 		"zustand": "^5.0.10"
 	},
 	"devDependencies": {
-		"@tauri-apps/cli": "^2.0.0",
 		"@biomejs/biome": "^2.3.11",
 		"@tailwindcss/postcss": "^4.1.18",
+		"@tauri-apps/cli": "^2.0.0",
 		"@types/node": "^20.0.0",
 		"@types/react": "^18.2.0",
 		"@types/react-dom": "^18.2.0",
