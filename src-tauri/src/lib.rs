@@ -92,7 +92,7 @@ pub fn run() {
         ])
         .setup(|app| {
             setup_common(app);
-            #[cfg(desktop)]
+            #[cfg(all(desktop, not(target_os = "macos")))]
             tray::setup_tray(&app.handle())?;
             Ok(())
         });
@@ -109,8 +109,14 @@ pub fn run() {
     });
 
     builder
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::Reopen { .. } = event {
+                #[cfg(not(target_os = "android"))]
+                tray::open_and_focus(app);
+            }
+        });
 }
 
 fn app_state_initial() -> AppState {
