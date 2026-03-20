@@ -12,13 +12,14 @@ pub use version::get_app_version;
 
 use commands::{
     check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status,
-    get_transport_status, receive_file, start_sharing, stop_sharing,
+    get_transport_status, receive_file, start_sharing, stop_sharing, toggle_context_menu,
 };
 use state::AppState;
 use std::fs;
 use std::sync::Arc;
 
 use tauri::Manager as _;
+use tauri::Emitter as _;
 
 /// Clean up any orphaned .sendme-* directories from previous runs
 fn cleanup_orphaned_directories() {
@@ -52,11 +53,19 @@ pub fn run() {
     let builder = if std::env::var("ALT_SENDME_ALLOW_MULTI_INSTANCE").unwrap_or_default() == "1" {
         builder
     } else {
-        builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
                 let _ = window.unminimize();
                 let _ = window.set_focus();
+            }
+            let maybe_path = args.into_iter().skip(1).find(|a| !a.starts_with('-'));
+            if let Some(path) = maybe_path {
+                let state = app.state::<state::AppStateMutex>();
+                if let Ok(mut app_state) = state.try_lock() {
+                    app_state.launch_intent = Some(path.clone());
+                }
+                let _ = app.emit("launch-intent", path);
             }
         }))
     };
@@ -79,6 +88,7 @@ pub fn run() {
             get_file_size,
             check_launch_intent,
             fetch_ticket_metadata,
+            toggle_context_menu,
         ])
         .setup(|app| {
             setup_common(app);
@@ -125,11 +135,4 @@ fn setup_common(app: &tauri::App) {
     if let Some(window) = app.handle().get_webview_window("main") {
         let _ = window.set_decorations(false);
     }
-
-    #[cfg(target_os = "windows")]
-    std::thread::spawn(|| {
-        if let Err(e) = crate::platform::windows::context_menu::register_context_menu() {
-            tracing::warn!("Failed to auto-register context menu: {}", e);
-        }
-    });
 }
