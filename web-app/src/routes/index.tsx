@@ -40,7 +40,9 @@ export function IndexPage() {
 		}
 
 		invoke<string | null>('check_launch_intent')
-			.then((path) => { if (path) applyIntent(path) })
+			.then((path) => {
+				if (path) applyIntent(path)
+			})
 			.catch((e) => console.error('Failed to check launch intent:', e))
 
 		const unlistenPromise = listen<string>('launch-intent', (event) => {

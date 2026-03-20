@@ -18,8 +18,8 @@ use state::AppState;
 use std::fs;
 use std::sync::Arc;
 
-use tauri::Manager as _;
 use tauri::Emitter as _;
+use tauri::Manager as _;
 
 /// Clean up any orphaned .sendme-* directories from previous runs
 fn cleanup_orphaned_directories() {
