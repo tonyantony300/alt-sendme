@@ -42,7 +42,7 @@ export function ThemeSelectRadio() {
 			</FrameHeader>
 			<FramePanel className="flex flex-col gap-6">
 				{/* Mobile view - Select dropdown */}
-				<div className="md:hidden w-full space-y-1">
+				<div className="sm:hidden w-full space-y-1">
 					<FrameDescription>{t('settings.theme.description')}</FrameDescription>
 					<Select value={activeTheme}>
 						<SelectTrigger size="default" className="w-full">
@@ -66,7 +66,7 @@ export function ThemeSelectRadio() {
 				</div>
 
 				{/* Desktop view - Radio cards */}
-				<div className="hidden md:flex flex-wrap gap-6 justify-start">
+				<div className="hidden sm:flex flex-wrap gap-6 justify-start">
 					{themes.map((theme) => (
 						<ThemeSelectRadioItem
 							key={theme}
