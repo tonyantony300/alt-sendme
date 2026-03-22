@@ -15,7 +15,7 @@ export function LanguageSelect() {
 			<FrameHeader>
 				<FrameTitle>{t('settings.language.title')}</FrameTitle>
 			</FrameHeader>
-			<FramePanel className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ">
+			<FramePanel className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div className="flex-1">
 					<FrameDescription>
 						{t('settings.language.description')}
