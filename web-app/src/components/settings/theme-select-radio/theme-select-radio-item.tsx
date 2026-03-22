@@ -12,6 +12,7 @@ export type Props = {
 
 export function ThemeSelectRadioItem(props: Props) {
 	const { theme, onSelect, isSelected, className, ...rest } = props
+
 	return (
 		<div
 			data-selected={isSelected}
