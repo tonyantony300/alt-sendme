@@ -1,9 +1,8 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import type React from 'react'
-import { motion } from 'framer-motion'
 import { cn } from '../../../lib/utils'
-import { LazyIcon } from '../../icons'
 import type { AppTheme } from '../../../types/app'
-import { AnimatePresence } from 'framer-motion'
+import { LazyIcon } from '../../icons'
 
 export type Props = {
 	theme: AppTheme
@@ -25,7 +24,7 @@ export function ThemeSelectRadioItem(props: Props) {
 		>
 			<div
 				className={cn(
-					'bg-card shadow-sm lg:size-52 size-40 overflow-hidden xl:size-56 border rounded-2xl border-border p-4 transition-all',
+					'bg-card shadow-sm size-20 md:size-32 lg:size-52 overflow-hidden xl:size-56 border rounded-2xl border-border p-4 transition-all',
 					'hover:border-input outline-2 outline-transparent',
 					isSelected && 'outline-success outline-offset-2',
 					theme === 'dark' && 'dark'

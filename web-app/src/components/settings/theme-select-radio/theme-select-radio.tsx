@@ -1,7 +1,7 @@
-import { FrameHeader, FrameTitle, FramePanel, Frame } from '../../ui/frame'
-import { ThemeSelectRadioItem } from './theme-select-radio-item'
-import { useThemeStore } from '../../../store'
 import { useTranslation } from '../../../i18n'
+import { useThemeStore } from '../../../store'
+import { Frame, FrameHeader, FramePanel, FrameTitle } from '../../ui/frame'
+import { ThemeSelectRadioItem } from './theme-select-radio-item'
 
 export function ThemeSelectRadio() {
 	const { activeTheme, themes, setTheme } = useThemeStore()
@@ -12,7 +12,7 @@ export function ThemeSelectRadio() {
 			<FrameHeader>
 				<FrameTitle>{t('settings.theme.title')}</FrameTitle>
 			</FrameHeader>
-			<FramePanel className="flex flex-wrap gap-6 justify-start">
+			<FramePanel className="flex flex-wrap justify-center gap-4 sm:gap-6 sm:justify-start">
 				{themes.map((theme) => (
 					<ThemeSelectRadioItem
 						key={theme}
