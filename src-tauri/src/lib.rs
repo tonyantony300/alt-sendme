@@ -4,7 +4,7 @@ mod commands;
 mod features;
 mod platform;
 mod state;
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 mod tray;
 mod version;
 
