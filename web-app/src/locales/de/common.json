@@ -36,7 +36,7 @@
 			"index": "Broadcast",
 			"on": {
 				"label": "Sie senden",
-				"description": "Jeder mit dem Ticket kann die Datei herunterladen."
+				"description": "Mehrere Personen mit dem Ticket können im Broadcast-Modus Dateien gleichzeitig herunterladen."
 			},
 			"off": {
 				"label": "Privates Teilen",

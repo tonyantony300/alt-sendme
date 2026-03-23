@@ -36,7 +36,7 @@
 			"index": "Trasmissione",
 			"on": {
 				"label": "Stai trasmettendo",
-				"description": "Chiunque abbia il ticket può scaricare il file."
+				"description": "Più persone con il ticket possono scaricare file contemporaneamente in modalità broadcast."
 			},
 			"off": {
 				"label": "Condivisione privata",

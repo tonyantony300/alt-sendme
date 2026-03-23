@@ -36,7 +36,7 @@
 			"index": "Kringkasting",
 			"on": {
 				"label": "Du kringkaster",
-				"description": "Alle med nøkkelen kan laste ned filen."
+				"description": "Flere personer med billetten kan laste ned filer samtidig i kringkastingsmodus."
 			},
 			"off": {
 				"label": "Privat deling",

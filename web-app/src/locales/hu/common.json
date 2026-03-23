@@ -39,7 +39,7 @@
 			"index": "Nyílvános",
 			"on": {
 				"label": "Nyílvános megosztás",
-				"description": "A jegy birtokában bárki letöltheti a fájl(oka)t."
+				"description": "A jeggyel rendelkező több ember egyszerre tölthet le fájlokat sugárzás módban."
 			},
 			"off": {
 				"label": "Privát megosztás",

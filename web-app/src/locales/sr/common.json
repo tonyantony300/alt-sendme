@@ -36,7 +36,7 @@
 			"index": "Емитовање",
 			"on": {
 				"label": "Емитујеш",
-				"description": "Свако са картом може преузети датотеку."
+				"description": "Više osoba sa kartom može istovremeno preuzimati fajlove u režimu emitovanja."
 			},
 			"off": {
 				"label": "Приватно дељење",

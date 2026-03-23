@@ -49,7 +49,7 @@
 			"index": "Broadcast",
 			"on": {
 				"label": "You are broadcasting",
-				"description": "Anyone with the ticket can download the file."
+				"description": "Multiple people with the ticket can download files concurrently in broadcast mode."
 			},
 			"off": {
 				"label": "Private sharing",

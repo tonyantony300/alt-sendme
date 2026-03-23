@@ -36,7 +36,7 @@
 			"index": "Diffusion",
 			"on": {
 				"label": "Vous diffusez",
-				"description": "Toute personne ayant le ticket peut télécharger le fichier."
+				"description": "Plusieurs personnes disposant du ticket peuvent télécharger des fichiers simultanément en mode diffusion."
 			},
 			"off": {
 				"label": "Partage privé",

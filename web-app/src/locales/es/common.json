@@ -36,7 +36,7 @@
 			"index": "Difusión",
 			"on": {
 				"label": "Estás transmitiendo",
-				"description": "Cualquiera con el ticket puede descargar el archivo."
+				"description": "Varias personas con el ticket pueden descargar archivos simultáneamente en el modo de difusión."
 			},
 			"off": {
 				"label": "Compartición privada",

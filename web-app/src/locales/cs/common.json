@@ -36,7 +36,7 @@
 			"index": "Vysílání",
 			"on": {
 				"label": "Vysíláte",
-				"description": "Kdokoli s ticketem může stáhnout soubor."
+				"description": "Více lidí s tiketem může v režimu vysílání stahovat soubory současně."
 			},
 			"off": {
 				"label": "Soukromé sdílení",

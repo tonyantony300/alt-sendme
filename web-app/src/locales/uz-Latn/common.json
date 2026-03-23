@@ -48,7 +48,7 @@
 			"index": "Ommaviy ulashish",
 			"on": {
 				"label": "Siz ommaviy ulashyapsiz",
-				"description": "Ticketga ega bo'lgan har kim faylni yuklab olishi mumkin."
+				"description": "Chiptaga ega bir nechta odam broadcast rejimida fayllarni bir vaqtning o‘zida yuklab olishi mumkin."
 			},
 			"off": {
 				"label": "Shaxsiy ulashish",
