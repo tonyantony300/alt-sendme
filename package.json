@@ -17,6 +17,9 @@
 		"lint:fix": "biome lint --fix",
 		"format": "biome format --write && cargo fmt --manifest-path sendme/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml"
 	},
+	"engines": {
+		"node": ">=20.19"
+	},
 	"dependencies": {
 		"@base-ui/react": "^1.1.0",
 		"@phosphor-icons/react": "^2.1.10",
