@@ -59,6 +59,14 @@
 	},
 	"overrides": [
 		{
+			"includes": [
+				"src-tauri/plugins/tauri-plugin-native-utils/permissions/schemas/schema.json"
+			],
+			"formatter": {
+				"enabled": false
+			}
+		},
+		{
 			"includes": ["**/*.js", "**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
 			"linter": {
 				"enabled": true,
