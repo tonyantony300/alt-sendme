@@ -111,10 +111,11 @@ pub fn run() {
     builder
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|app, event| {
-            if let tauri::RunEvent::Reopen { .. } = event {
-                #[cfg(not(target_os = "android"))]
-                tray::open_and_focus(app);
+        .run(|_app, _event| {
+            // RunEvent::Reopen only exists on macOS (dock icon re-click)
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = _event {
+                tray::open_and_focus(_app);
             }
         });
 }
