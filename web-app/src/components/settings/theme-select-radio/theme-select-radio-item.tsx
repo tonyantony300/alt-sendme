@@ -25,7 +25,7 @@ export function ThemeSelectRadioItem(props: Props) {
 		>
 			<div
 				className={cn(
-					'bg-card shadow-sm lg:size-52 size-40 overflow-hidden xl:size-56 border rounded-2xl border-border p-4 transition-all',
+					'bg-card shadow-sm lg:size-52 sm:size-40 size-30 overflow-hidden xl:size-56 border rounded-2xl border-border p-4 transition-all',
 					'hover:border-input outline-2 outline-transparent',
 					isSelected && 'outline-success outline-offset-2',
 					theme === 'dark' && 'dark'
@@ -64,7 +64,7 @@ export function ThemeSelectRadioItem(props: Props) {
 									<div
 										// biome-ignore lint/suspicious/noArrayIndexKey: no better key available
 										key={i}
-										className="flex items-center gap-2 p-3"
+										className="flex items-center gap-0.5 sm:gap-2 sm:p-3 p-1"
 									>
 										<div className="bg-muted-foreground/40 size-2 rounded-xs"></div>
 										<div className="h-1 rounded-full bg-muted-foreground/40 flex-1"></div>

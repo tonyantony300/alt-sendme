@@ -124,6 +124,7 @@
 			"notification": "Notifications"
 		},
 		"theme": {
+			"description": "Select your preferred theme",
 			"title": "Appearance",
 			"light": "Light",
 			"dark": "Dark",
