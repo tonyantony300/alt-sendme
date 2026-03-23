@@ -51,7 +51,7 @@ export function ThemeSelectRadio() {
 								placeholder="Select a theme"
 							/>
 						</SelectTrigger>
-						<SelectPopup>
+						<SelectPopup positionerClassName="!left-1/2 !-translate-x-1/2">
 							{themes.map((theme) => (
 								<SelectItem
 									key={theme}
