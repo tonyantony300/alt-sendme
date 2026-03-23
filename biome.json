@@ -18,7 +18,7 @@
 			"recommended": true,
 			"suspicious": {
 				"noUnknownAtRules": {
-				  "level": "warn",
+					"level": "warn",
 					"options": {
 						"ignore": ["@tailwind"]
 					}
