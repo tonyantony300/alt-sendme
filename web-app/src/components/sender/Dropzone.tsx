@@ -150,7 +150,9 @@ export function Dropzone({
 					<p className=" hidden sm:block text-lg font-medium mb-2 text-accent-foreground">
 						{getStatusText()}
 					</p>
-					<div className="text-sm truncate text-muted-foreground">{getSubText()}</div>
+					<div className="text-sm truncate text-muted-foreground">
+						{getSubText()}
+					</div>
 				</div>
 			</motion.div>
 		</motion.div>
