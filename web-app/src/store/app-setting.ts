@@ -50,6 +50,10 @@ export const useAppSettingStore = create<AppSettings>()(
 		{
 			name: AppSettingsKey,
 			storage: createJSONStorage(() => localSettingLazyStoreStorage),
+			merge: (persistedState, currentState) => ({
+				...currentState,
+				...(persistedState as Partial<AppSettings>),
+			}),
 		}
 	)
 )
