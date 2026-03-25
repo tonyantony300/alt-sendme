@@ -4,7 +4,7 @@ mod commands;
 mod features;
 mod platform;
 mod state;
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 mod tray;
 mod version;
 
@@ -12,12 +12,13 @@ pub use version::get_app_version;
 
 use commands::{
     check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status,
-    get_transport_status, receive_file, start_sharing, stop_sharing,
+    get_transport_status, receive_file, start_sharing, stop_sharing, toggle_context_menu,
 };
 use state::AppState;
 use std::fs;
 use std::sync::Arc;
 
+use tauri::Emitter as _;
 use tauri::Manager as _;
 
 /// Clean up any orphaned .sendme-* directories from previous runs
@@ -52,11 +53,20 @@ pub fn run() {
     let builder = if std::env::var("ALT_SENDME_ALLOW_MULTI_INSTANCE").unwrap_or_default() == "1" {
         builder
     } else {
-        builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
                 let _ = window.unminimize();
                 let _ = window.set_focus();
+            }
+            let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
+            if let Some(path) = maybe_path {
+                let app_handle = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    let state = app_handle.state::<state::AppStateMutex>();
+                    state.lock().await.launch_intent = Some(path.clone());
+                    let _ = app_handle.emit("launch-intent", path);
+                });
             }
         }))
     };
@@ -80,10 +90,11 @@ pub fn run() {
             get_file_size,
             check_launch_intent,
             fetch_ticket_metadata,
+            toggle_context_menu,
         ])
         .setup(|app| {
             setup_common(app);
-            #[cfg(desktop)]
+            #[cfg(all(desktop, not(target_os = "macos")))]
             tray::setup_tray(&app.handle())?;
             Ok(())
         });
@@ -100,17 +111,23 @@ pub fn run() {
     });
 
     builder
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app, _event| {
+            // RunEvent::Reopen only exists on macOS (dock icon re-click)
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = _event {
+                tray::open_and_focus(_app);
+            }
+        });
+}
+
+fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
+    args.into_iter().find(|arg| !arg.starts_with('-'))
 }
 
 fn app_state_initial() -> AppState {
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    let launch_intent = if !args.is_empty() && !args[0].starts_with("-") {
-        Some(args[0].clone())
-    } else {
-        None
-    };
+    let launch_intent = first_non_flag_arg(std::env::args().skip(1));
     AppState {
         launch_intent,
         ..Default::default()
@@ -126,11 +143,4 @@ fn setup_common(app: &tauri::App) {
     if let Some(window) = app.handle().get_webview_window("main") {
         let _ = window.set_decorations(false);
     }
-
-    #[cfg(target_os = "windows")]
-    std::thread::spawn(|| {
-        if let Err(e) = crate::platform::windows::context_menu::register_context_menu() {
-            tracing::warn!("Failed to auto-register context menu: {}", e);
-        }
-    });
 }
