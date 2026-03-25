@@ -59,13 +59,14 @@ pub fn run() {
                 let _ = window.unminimize();
                 let _ = window.set_focus();
             }
-            let maybe_path = args.into_iter().skip(1).find(|a| !a.starts_with('-'));
+            let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
             if let Some(path) = maybe_path {
-                let state = app.state::<state::AppStateMutex>();
-                if let Ok(mut app_state) = state.try_lock() {
-                    app_state.launch_intent = Some(path.clone());
-                }
-                let _ = app.emit("launch-intent", path);
+                let app_handle = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    let state = app_handle.state::<state::AppStateMutex>();
+                    state.lock().await.launch_intent = Some(path.clone());
+                    let _ = app_handle.emit("launch-intent", path);
+                });
             }
         }))
     };
@@ -120,13 +121,12 @@ pub fn run() {
         });
 }
 
+fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
+    args.into_iter().find(|arg| !arg.starts_with('-'))
+}
+
 fn app_state_initial() -> AppState {
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    let launch_intent = if !args.is_empty() && !args[0].starts_with("-") {
-        Some(args[0].clone())
-    } else {
-        None
-    };
+    let launch_intent = first_non_flag_arg(std::env::args().skip(1));
     AppState {
         launch_intent,
         ..Default::default()
