@@ -81,7 +81,9 @@
 			"digestAlgorithm": "sha256",
 			"timestampUrl": "",
 			"wix": {
-				"language": "en-US"
+				"language": "en-US",
+				"fragmentPaths": ["WiX/context-menu.wxs"],
+				"componentRefs": ["ContextMenuRegistryFiles"]
 			}
 		}
 	}

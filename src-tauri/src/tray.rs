@@ -1,15 +1,16 @@
-// imports for tray
+use tauri::{AppHandle, Manager};
+
+#[cfg(not(target_os = "macos"))]
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager,
 };
 
 // to show confirmation dialog box for quit event from tray
 // use tauri_plugin_dialog::DialogExt;
 
 /// Return true if window was shown (or attempted) successfully, false otherwise.
-fn open_and_focus(app: &AppHandle) -> bool {
+pub fn open_and_focus(app: &AppHandle) -> bool {
     // try main window by label first
     if let Some(window) = app.get_webview_window("main") {
         if let Err(e) = window.show() {
@@ -38,6 +39,7 @@ fn open_and_focus(app: &AppHandle) -> bool {
     false
 }
 
+#[cfg(not(target_os = "macos"))]
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let open = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?; // open button
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?; // quit button

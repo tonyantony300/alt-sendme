@@ -154,6 +154,10 @@
 				"runOnSystemStartup": {
 					"label": "Run on system startup",
 					"description": "Automatically launch the app when the system starts"
+				},
+				"contextMenu": {
+					"label": "Explorer context menu",
+					"description": "Add 'Send with AltSendme' to the Windows Explorer right-click menu"
 				}
 			}
 		}
