@@ -10,6 +10,7 @@ export function ContextMenuToggle() {
 	const enabled = useAppSettingStore((s) => s.windowsContextMenu)
 	const setEnabled = useAppSettingStore((s) => s.setWindowsContextMenu)
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only runs on mount
 	useEffect(() => {
 		invoke('toggle_context_menu', { enable: enabled }).catch((e) =>
 			console.error('Failed to sync context menu state:', e)
