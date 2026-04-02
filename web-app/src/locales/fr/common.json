@@ -42,7 +42,8 @@
 				"label": "Partage privé",
 				"description": "Seule la personne avec qui vous partagez le ticket peut télécharger le fichier."
 			}
-		}
+		},
+		"description": "Description (facultatif)"
 	},
 	"receiver": {
 		"title": "Recevoir des fichiers",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Échec de la réception du fichier",
 		"openFolderFailed": "Échec de l'ouverture du dossier",
 		"openFolderFailedDesc": "Échec de l'ouverture du dossier de téléchargement"
+	},
+	"comingSoon": "Bientôt disponible",
+	"undo": "Annuler l’action",
+	"cancel": "Annuler",
+	"confirm": "Confirmer",
+	"privacyPolicy": "Politique de confidentialité",
+	"license": "Licence",
+	"notFound": {
+		"title": "Page introuvable",
+		"subtitle": "La page que vous recherchez n’existe pas ou a été déplacée.",
+		"goBack": "Retour",
+		"goHome": "Accueil"
+	},
+	"settings": {
+		"title": "Paramètres",
+		"navItems": {
+			"appearance": "Thème et langue",
+			"general": "Général",
+			"network": "Réseau",
+			"notification": "Notifications"
+		},
+		"theme": {
+			"description": "Sélectionnez votre thème préféré",
+			"title": "Apparence",
+			"light": "Clair",
+			"dark": "Sombre",
+			"auto": "Système"
+		},
+		"language": {
+			"title": "Langue",
+			"description": "Choisissez votre langue préférée",
+			"noResults": "Aucune langue trouvée"
+		},
+		"general": {
+			"title": "Général",
+			"autoCheckUpdates": {
+				"label": "Rechercher les mises à jour automatiquement",
+				"description": "L’application recherche les mises à jour au démarrage"
+			},
+			"systembar": {
+				"title": "Zone de notification",
+				"minimizeToTray": {
+					"label": "Réduire dans la zone de notification",
+					"description": "Lors de la fermeture, réduire l’application au lieu de quitter"
+				},
+				"showProgressOnIcon": {
+					"label": "Afficher la progression sur l’icône",
+					"description": "Barre de progression sur l’icône pour indiquer l’avancement du transfert"
+				},
+				"runOnSystemStartup": {
+					"label": "Lancer au démarrage du système",
+					"description": "Lancer automatiquement l’application au démarrage du système"
+				},
+				"contextMenu": {
+					"label": "Menu contextuel de l’Explorateur",
+					"description": "Ajouter « Envoyer avec AltSendme » au menu contextuel de l’Explorateur Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Nouvelle mise à jour !",
+		"newVersionAvailable": "La version {{version}} est disponible.",
+		"newVersionAvailableInline": "Une nouvelle version est disponible : {{version}}",
+		"updateNow": "Mettre à jour",
+		"later": "Plus tard",
+		"checkForUpdates": "Rechercher des mises à jour",
+		"noUpdatesTitle": "Aucune mise à jour",
+		"noUpdatesDescription": "Vous utilisez déjà la dernière version",
+		"checkFailed": "Échec de la vérification",
+		"checkFailedDesc": "Impossible de rechercher des mises à jour",
+		"installFailed": "Échec de l’installation",
+		"installFailedDesc": "Impossible d’installer la mise à jour"
 	}
 }

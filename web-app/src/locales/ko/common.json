@@ -42,7 +42,8 @@
 				"label": "비공개 공유",
 				"description": "티켓을 공유한 사람만 파일을 다운로드할 수 있습니다."
 			}
-		}
+		},
+		"description": "설명(선택)"
 	},
 	"receiver": {
 		"title": "파일 받기",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "파일을 받을 수 없습니다",
 		"openFolderFailed": "폴더 열기 실패",
 		"openFolderFailedDesc": "다운로드 폴더를 열 수 없습니다"
+	},
+	"comingSoon": "곧 제공",
+	"undo": "실행 취소",
+	"cancel": "취소",
+	"confirm": "확인",
+	"privacyPolicy": "개인정보 처리방침",
+	"license": "라이선스",
+	"notFound": {
+		"title": "페이지를 찾을 수 없음",
+		"subtitle": "찾으시는 페이지가 없거나 이동되었습니다.",
+		"goBack": "뒤로",
+		"goHome": "홈으로"
+	},
+	"settings": {
+		"title": "설정",
+		"navItems": {
+			"appearance": "테마 및 언어",
+			"general": "일반",
+			"network": "네트워크",
+			"notification": "알림"
+		},
+		"theme": {
+			"description": "원하는 테마를 선택하세요",
+			"title": "모양",
+			"light": "밝게",
+			"dark": "어둡게",
+			"auto": "시스템"
+		},
+		"language": {
+			"title": "언어",
+			"description": "사용할 언어를 선택하세요",
+			"noResults": "언어를 찾을 수 없습니다"
+		},
+		"general": {
+			"title": "일반",
+			"autoCheckUpdates": {
+				"label": "업데이트 자동 확인",
+				"description": "앱 시작 시 업데이트를 자동으로 확인합니다"
+			},
+			"systembar": {
+				"title": "시스템 트레이",
+				"minimizeToTray": {
+					"label": "시스템 트레이로 최소화",
+					"description": "닫을 때 종료 대신 최소화합니다"
+				},
+				"showProgressOnIcon": {
+					"label": "앱 아이콘에 전송 진행률 표시",
+					"description": "앱 아이콘 위에 진행률 막대를 표시합니다"
+				},
+				"runOnSystemStartup": {
+					"label": "시스템 시작 시 실행",
+					"description": "시스템이 켜질 때 앱을 자동으로 실행합니다"
+				},
+				"contextMenu": {
+					"label": "탐색기 바로 가기 메뉴",
+					"description": "Windows 탐색기의 오른쪽 클릭 메뉴에 «AltSendme로 보내기» 추가"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "새 업데이트!",
+		"newVersionAvailable": "{{version}} 버전을 사용할 수 있습니다.",
+		"newVersionAvailableInline": "새 버전이 있습니다 — {{version}}",
+		"updateNow": "지금 업데이트",
+		"later": "나중에",
+		"checkForUpdates": "업데이트 확인",
+		"noUpdatesTitle": "업데이트 없음",
+		"noUpdatesDescription": "이미 최신 버전을 사용 중입니다",
+		"checkFailed": "확인 실패",
+		"checkFailedDesc": "업데이트를 확인할 수 없습니다",
+		"installFailed": "설치 실패",
+		"installFailedDesc": "업데이트를 설치할 수 없습니다"
 	}
 }

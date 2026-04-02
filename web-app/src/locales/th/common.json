@@ -42,7 +42,8 @@
 				"label": "การแชร์แบบส่วนตัว",
 				"description": "เฉพาะคนที่คุณแชร์ตั๋วด้วยเท่านั้นที่สามารถดาวน์โหลดไฟล์ได้"
 			}
-		}
+		},
+		"description": "คำอธิบาย (ไม่บังคับ)"
 	},
 	"receiver": {
 		"title": "รับไฟล์",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "ไม่สามารถรับไฟล์ได้",
 		"openFolderFailed": "การเปิดโฟลเดอร์ล้มเหลว",
 		"openFolderFailedDesc": "ไม่สามารถเปิดโฟลเดอร์ดาวน์โหลดได้"
+	},
+	"comingSoon": "เร็วๆ นี้",
+	"undo": "เลิกทำ",
+	"cancel": "ยกเลิก",
+	"confirm": "ยืนยัน",
+	"privacyPolicy": "นโยบายความเป็นส่วนตัว",
+	"license": "ใบอนุญาต",
+	"notFound": {
+		"title": "ไม่พบหน้า",
+		"subtitle": "ไม่มีหน้าที่คุณกำลังมองหา หรือหน้านั้นถูกย้ายแล้ว",
+		"goBack": "กลับ",
+		"goHome": "หน้าแรก"
+	},
+	"settings": {
+		"title": "การตั้งค่า",
+		"navItems": {
+			"appearance": "ธีมและภาษา",
+			"general": "ทั่วไป",
+			"network": "เครือข่าย",
+			"notification": "การแจ้งเตือน"
+		},
+		"theme": {
+			"description": "เลือกธีมที่คุณต้องการ",
+			"title": "รูปลักษณ์",
+			"light": "สว่าง",
+			"dark": "มืด",
+			"auto": "ตามระบบ"
+		},
+		"language": {
+			"title": "ภาษา",
+			"description": "เลือกภาษาที่ต้องการ",
+			"noResults": "ไม่พบภาษา"
+		},
+		"general": {
+			"title": "ทั่วไป",
+			"autoCheckUpdates": {
+				"label": "ตรวจสอบอัปเดตอัตโนมัติ",
+				"description": "แอปจะตรวจสอบอัปเดตเมื่อเริ่มทำงาน"
+			},
+			"systembar": {
+				"title": "ถาดระบบ",
+				"minimizeToTray": {
+					"label": "ย่อไปที่ถาดระบบ",
+					"description": "เมื่อปิด ให้ย่อแอปแทนการออก"
+				},
+				"showProgressOnIcon": {
+					"label": "แสดงความคืบหน้าการถ่ายโอนบนไอคอน",
+					"description": "แถบความคืบหน้าบนไอคอนแอป"
+				},
+				"runOnSystemStartup": {
+					"label": "เรียกใช้เมื่อเปิดระบบ",
+					"description": "เปิดแอปอัตโนมัติเมื่อระบบเริ่มทำงาน"
+				},
+				"contextMenu": {
+					"label": "เมนูคลิกขวาของ Explorer",
+					"description": "เพิ่ม «ส่งด้วย AltSendme» ในเมนูคลิกขวาของ Windows Explorer"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "มีอัปเดตใหม่!",
+		"newVersionAvailable": "มีเวอร์ชัน {{version}} ให้ใช้งาน",
+		"newVersionAvailableInline": "มีเวอร์ชันใหม่ — {{version}}",
+		"updateNow": "อัปเดตตอนนี้",
+		"later": "ภายหลัง",
+		"checkForUpdates": "ตรวจสอบอัปเดต",
+		"noUpdatesTitle": "ไม่มีอัปเดต",
+		"noUpdatesDescription": "คุณใช้เวอร์ชันล่าสุดอยู่แล้ว",
+		"checkFailed": "ตรวจสอบไม่สำเร็จ",
+		"checkFailedDesc": "ไม่สามารถตรวจสอบอัปเดตได้",
+		"installFailed": "ติดตั้งไม่สำเร็จ",
+		"installFailedDesc": "ไม่สามารถติดตั้งอัปเดตได้"
 	}
 }

@@ -102,5 +102,78 @@
 		"receiveFailedDesc": "无法接收文件",
 		"openFolderFailed": "打开文件夹失败",
 		"openFolderFailedDesc": "无法打开下载文件夹"
+	},
+	"comingSoon": "即将推出",
+	"undo": "撤销",
+	"cancel": "取消",
+	"confirm": "确认",
+	"privacyPolicy": "隐私政策",
+	"license": "许可协议",
+	"notFound": {
+		"title": "页面未找到",
+		"subtitle": "您访问的页面不存在或已被移动。",
+		"goBack": "返回",
+		"goHome": "返回首页"
+	},
+	"settings": {
+		"title": "设置",
+		"navItems": {
+			"appearance": "主题与语言",
+			"general": "通用",
+			"network": "网络",
+			"notification": "通知"
+		},
+		"theme": {
+			"description": "选择您喜欢的主题",
+			"title": "外观",
+			"light": "浅色",
+			"dark": "深色",
+			"auto": "跟随系统"
+		},
+		"language": {
+			"title": "语言",
+			"description": "选择您偏好的语言",
+			"noResults": "未找到语言"
+		},
+		"general": {
+			"title": "通用",
+			"autoCheckUpdates": {
+				"label": "自动检查更新",
+				"description": "应用启动时将自动检查更新"
+			},
+			"systembar": {
+				"title": "系统托盘",
+				"minimizeToTray": {
+					"label": "最小化到系统托盘",
+					"description": "关闭时最小化应用而非退出"
+				},
+				"showProgressOnIcon": {
+					"label": "在应用图标上显示传输进度",
+					"description": "在应用图标上叠加进度条以显示传输进度"
+				},
+				"runOnSystemStartup": {
+					"label": "开机时启动",
+					"description": "系统启动时自动运行本应用"
+				},
+				"contextMenu": {
+					"label": "资源管理器右键菜单",
+					"description": "在 Windows 资源管理器右键菜单中添加「使用 AltSendme 发送」"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "有新更新！",
+		"newVersionAvailable": "新版本 {{version}} 可用。",
+		"newVersionAvailableInline": "有新版本可用 — {{version}}",
+		"updateNow": "立即更新",
+		"later": "稍后",
+		"checkForUpdates": "检查更新",
+		"noUpdatesTitle": "暂无更新",
+		"noUpdatesDescription": "您已在使用最新版本",
+		"checkFailed": "检查失败",
+		"checkFailedDesc": "无法检查更新",
+		"installFailed": "安装失败",
+		"installFailedDesc": "无法安装更新"
 	}
 }
