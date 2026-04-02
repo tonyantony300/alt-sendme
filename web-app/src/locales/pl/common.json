@@ -51,7 +51,7 @@
 		"saveToFolder": "Zapisz do folderu:",
 		"noFolderSelected": "Nie wybrano folderu",
 		"pasteTicket": "Wklej bilet tutaj:",
-		"ticketPlaceholder": "sendme receive ticket...",
+		"ticketPlaceholder": "sendme bilet odbioru...",
 		"howToReceive": "Jak odbierać pliki",
 		"instruction1": "Nadawca musi być online i udostępniać plik",
 		"instruction2": "Odbierz bilet od nadawcy",

@@ -21,7 +21,7 @@
 		"sharingInProgress": "Передача в процессе",
 		"transferCompleted": "Передача завершена",
 		"filesBeingTransmitted": "Файлы передаются",
-		"preparingForTransport": "Ожидание передачи...",
+		"preparingForTransport": "Подготовка к передаче...",
 		"pleaseWaitProcessing": "Пожалуйста, подождите, пока мы подготавливаем ваши файлы к передаче...",
 		"dropFilesHere": "Перетащите файлы или папки сюда",
 		"dragAndDrop": "Перетащить",

@@ -1,5 +1,5 @@
 {
-	"appTitle": "АлтПошаљиМи",
+	"appTitle": "AltSendme",
 	"send": "Пошаљи",
 	"receive": "Прими",
 	"ok": "У реду",
@@ -36,7 +36,7 @@
 			"index": "Емитовање",
 			"on": {
 				"label": "Емитујеш",
-				"description": "Više osoba sa kartom može istovremeno preuzimati fajlove u režimu emitovanja."
+				"description": "Више особа са картом може истовремено преузимати фајлове у режиму емитовања."
 			},
 			"off": {
 				"label": "Приватно дељење",
@@ -74,9 +74,9 @@
 		"complete": "Пренос је завршен!",
 		"stopped": "Пренос заустављен",
 		"newTransfer": "Нови пренос",
-		"done": "Gotovo",
-		"open": "Otvori",
-		"wasStopped": "Prenos je zaustavljen pre završetka.",
+		"done": "Готово",
+		"open": "Отвори",
+		"wasStopped": "Пренос је заустављен пре завршетка.",
 		"successMessage": "Твој пренос је успешно завршен.",
 		"file": "Датотека",
 		"folder": "Фасцикла",

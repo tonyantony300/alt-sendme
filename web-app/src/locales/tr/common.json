@@ -36,7 +36,7 @@
 			"index": "Yayın",
 			"on": {
 				"label": "Yayın yapıyorsunuz",
-				"description": "Bilete sahip birden fazla kişi yayın modunda dosyaları aynı anda indirebilir."
+				"description": "Anahtara sahip birden fazla kişi yayın modunda dosyaları aynı anda indirebilir."
 			},
 			"off": {
 				"label": "Özel paylaşım",

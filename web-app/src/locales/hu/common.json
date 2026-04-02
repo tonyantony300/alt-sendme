@@ -36,9 +36,9 @@
 		"browseFolder": "Könyvtár tallózása",
 		"copyToClipboard": "Vágólapra másolás",
 		"broadcastMode": {
-			"index": "Nyílvános",
+			"index": "Nyilvános",
 			"on": {
-				"label": "Nyílvános megosztás",
+				"label": "Nyilvános megosztás",
 				"description": "A jeggyel rendelkező több ember egyszerre tölthet le fájlokat sugárzás módban."
 			},
 			"off": {
@@ -79,7 +79,7 @@
 		"newTransfer": "Új átvitel",
 		"done": "Kész",
 		"open": "Megnyitás",
-		"wasStopped": "Az átvitel le eltt állítve még a befejezése előtt.",
+		"wasStopped": "Az átvitel le lett állítva még a befejezése előtt.",
 		"successMessage": "Az átvitel sikeresen befejeződött.",
 		"file": "Fájl",
 		"folder": "Könyvtár",
