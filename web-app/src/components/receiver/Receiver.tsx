@@ -18,10 +18,11 @@ import { TicketInput } from './TicketInput'
 import { Button } from '../ui/button'
 
 interface ReceiverProps {
-	onTransferStateChange: (isReceiving: boolean) => void
+	onTransferStateChange?: (isReceiving: boolean) => void
+	initialTicket?: string | null
 }
 
-export function Receiver({ onTransferStateChange }: ReceiverProps) {
+export function Receiver({ onTransferStateChange, initialTicket }: ReceiverProps) {
 	const [showInstructionsDialog, setShowInstructionsDialog] = useState(false)
 	const { t } = useTranslation()
 
@@ -45,8 +46,18 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 		resetForNewTransfer,
 	} = useReceiver()
 
+	// Handle initial ticket from deep link
 	useEffect(() => {
-		onTransferStateChange(isReceiving)
+		if (initialTicket && initialTicket !== ticket) {
+			console.debug('[Receiver] Auto-filling ticket from deep link:', initialTicket)
+			handleTicketChange(initialTicket)
+		}
+	}, [initialTicket])
+
+	useEffect(() => {
+		if (onTransferStateChange) {
+			onTransferStateChange(isReceiving)
+		}
 	}, [isReceiving, onTransferStateChange])
 
 	return (

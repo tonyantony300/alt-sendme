@@ -38,6 +38,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"
 tauri-plugin-store = "2"
 tauri-plugin-notification = "2"
+tauri-plugin-deep-link = "2"
+url = "2.5"
 
 [features]
 default = ["custom-protocol"]

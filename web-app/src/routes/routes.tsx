@@ -5,6 +5,7 @@ import { RootLayout } from '@/components/layouts/RootLayout'
 import { NotFoundPage } from './notfound'
 import { SettingGeneralPage } from './settings.general'
 import { SettingLayout } from '../components/layouts/SettingLayout'
+import { ReceivePage } from './receive'
 
 export interface RouteConfig {
 	path: string
@@ -19,6 +20,10 @@ export const routers = createBrowserRouter([
 			{
 				index: true,
 				Component: IndexPage,
+			},
+			{
+				path: '/receive',
+				Component: ReceivePage,
 			},
 			{
 				path: '/settings',
