@@ -7,14 +7,14 @@ labels:
 assignees: ''
 ---
 
-## What do you want?
+## What would you like to see?
 
-A clear, short description of the feature or change.
+Please share a clear, short description of the feature or change you have in mind.
 
-## Why?
+## Why would this be helpful?
 
-Brief reason it would be useful (optional).
+We'd love to understand why this would be useful to you (optional).
 
-## Anything else?
+## Anything else you'd like to add?
 
-Screenshots, mockups, or links (optional).
+Feel free to include screenshots, mockups, or links that might help illustrate your idea (optional).
