@@ -70,13 +70,13 @@ export function DeepLinkHandler() {
     switch (action) {
       case "receive":
         if (ticket) {
-          navigate(`/receive?ticket=${encodeURIComponent(ticket)}`);
+          navigate(`/?tab=receive&ticket=${encodeURIComponent(ticket)}`);
         } else {
-          navigate("/receive");
+          navigate("/?tab=receive");
         }
         break;
       case "send":
-        navigate("/send");
+        navigate("/?tab=send");
         break;
       default:
         console.warn(`[DeepLinkHandler] Unknown action: ${action}`);
@@ -135,9 +135,11 @@ export function DeepLinkHeader() {
           onClick={() => {
             const { action, ticket } = incomingPayload;
             if (action === "receive" && ticket) {
-              navigate(`/receive?ticket=${encodeURIComponent(ticket)}`);
-            } else {
-              navigate("/receive");
+              navigate(`/?tab=receive&ticket=${encodeURIComponent(ticket)}`);
+            } else if (action === "receive") {
+              navigate("/?tab=receive");
+            } else if (action === "send") {
+              navigate("/?tab=send");
             }
             setIncomingPayload(null);
           }}

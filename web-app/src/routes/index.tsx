@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import * as SingleLayoutPage from '@/components/common/SingleLayoutPage'
 import { Receiver } from '@/components/receiver/Receiver'
 import { Sender } from '@/components/sender/Sender'
@@ -15,7 +16,18 @@ import { useTranslation } from '@/i18n'
 import { useSenderStore } from '@/store/sender-store'
 
 export function IndexPage() {
-	const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
+        const [searchParams] = useSearchParams()
+        const initialTab = (searchParams.get("tab") as "send" | "receive") || "send"
+        const initialTicket = searchParams.get("ticket")
+        const [activeTab, setActiveTab] = useState<"send" | "receive">(initialTab)
+
+        useEffect(() => {
+                const tab = searchParams.get("tab")
+                if (tab === "send" || tab === "receive") {
+                        setActiveTab(tab)
+                }
+        }, [searchParams])
+
 	const [isSharing, setIsSharing] = useState(false)
 	const [isReceiving, setIsReceiving] = useState(false)
 	const isInitialRender = useRef(false)
@@ -81,7 +93,8 @@ export function IndexPage() {
 								<Sender onTransferStateChange={setIsSharing} />
 							</TabsContent>
 							<TabsContent value="receive">
-								<Receiver onTransferStateChange={setIsReceiving} />
+                                                                <Receiver onTransferStateChange={setIsReceiving} initialTicket={initialTicket} />
+
 							</TabsContent>
 						</FramePanel>
 					</Tabs>

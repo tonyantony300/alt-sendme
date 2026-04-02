@@ -52,7 +52,8 @@ export function Receiver({ onTransferStateChange, initialTicket }: ReceiverProps
 			console.debug('[Receiver] Auto-filling ticket from deep link:', initialTicket)
 			handleTicketChange(initialTicket)
 		}
-	}, [initialTicket])
+        }, [initialTicket, ticket, handleTicketChange])
+
 
 	useEffect(() => {
 		if (onTransferStateChange) {
