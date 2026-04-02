@@ -45,7 +45,8 @@
 				"label": "Privát megosztás",
 				"description": "Csak az töltheti le a fájl(oka)t akivel megosztod a jegyet."
 			}
-		}
+		},
+		"description": "Leírás (opcionális)"
 	},
 	"receiver": {
 		"title": "Fájlok fogadása",
@@ -104,5 +105,75 @@
 		"receiveFailedDesc": "Fájl fogadása sikertelen",
 		"openFolderFailed": "Könyvtár megnyitása nem sikerült",
 		"openFolderFailedDesc": "Nem sikerült megnyitni a fogadó könyvtárat"
+	},
+	"comingSoon": "Hamarosan",
+	"privacyPolicy": "Adatvédelmi irányelvek",
+	"license": "Licenc",
+	"notFound": {
+		"title": "Az oldal nem található",
+		"subtitle": "A keresett oldal nem létezik vagy áthelyezésre került.",
+		"goBack": "Vissza",
+		"goHome": "Kezdőlap"
+	},
+	"settings": {
+		"title": "Beállítások",
+		"navItems": {
+			"appearance": "Téma és nyelv",
+			"general": "Általános",
+			"network": "Hálózat",
+			"notification": "Értesítések"
+		},
+		"theme": {
+			"description": "Válassza ki a kívánt témát",
+			"title": "Megjelenés",
+			"light": "Világos",
+			"dark": "Sötét",
+			"auto": "Rendszer"
+		},
+		"language": {
+			"title": "Nyelv",
+			"description": "Válassza ki az előnyben részesített nyelvet",
+			"noResults": "Nem található nyelv"
+		},
+		"general": {
+			"title": "Általános",
+			"autoCheckUpdates": {
+				"label": "Frissítések automatikus keresése",
+				"description": "Az alkalmazás indításkor automatikusan ellenőrzi a frissítéseket"
+			},
+			"systembar": {
+				"title": "Rendszertálca",
+				"minimizeToTray": {
+					"label": "Kis méret a rendszertálcán",
+					"description": "Bezáráskor minimalizálás a kilépés helyett"
+				},
+				"showProgressOnIcon": {
+					"label": "Átvitel előrehaladása az ikonon",
+					"description": "Előrehaladás jelzése az alkalmazás ikonján"
+				},
+				"runOnSystemStartup": {
+					"label": "Indítás a rendszerrel",
+					"description": "Az alkalmazás automatikus indítása a rendszer indulásakor"
+				},
+				"contextMenu": {
+					"label": "Intéző helyi menü",
+					"description": "„Küldés az AltSendme-val” hozzáadása a Windows Intéző helyi menüjéhez"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Új frissítés!",
+		"newVersionAvailable": "Elérhető a(z) {{version}} verzió.",
+		"newVersionAvailableInline": "Új verzió érhető el — {{version}}",
+		"updateNow": "Frissítés most",
+		"later": "Később",
+		"checkForUpdates": "Frissítések keresése",
+		"noUpdatesTitle": "Nincs frissítés",
+		"noUpdatesDescription": "Már a legújabb verziót használja",
+		"checkFailed": "Ellenőrzés sikertelen",
+		"checkFailedDesc": "A frissítések ellenőrzése nem sikerült",
+		"installFailed": "Telepítés sikertelen",
+		"installFailedDesc": "A frissítés telepítése nem sikerült"
 	}
 }

@@ -42,7 +42,8 @@
 				"label": "Приватна передача",
 				"description": "Тільки людина, з якою ви ділитесь тікетом, може завантажити файл."
 			}
-		}
+		},
+		"description": "Опис (необов’язково)"
 	},
 	"receiver": {
 		"title": "Отримати файли",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Не вдалося отримати файл",
 		"openFolderFailed": "Помилка відкриття папки",
 		"openFolderFailedDesc": "Не вдалося відкрити папку для завантаження"
+	},
+	"comingSoon": "Незабаром",
+	"undo": "Відмінити",
+	"cancel": "Скасувати",
+	"confirm": "Підтвердити",
+	"privacyPolicy": "Політика конфіденційності",
+	"license": "Ліцензія",
+	"notFound": {
+		"title": "Сторінку не знайдено",
+		"subtitle": "Сторінка, яку ви шукаєте, не існує або була переміщена.",
+		"goBack": "Назад",
+		"goHome": "На головну"
+	},
+	"settings": {
+		"title": "Налаштування",
+		"navItems": {
+			"appearance": "Тема та мова",
+			"general": "Загальні",
+			"network": "Мережа",
+			"notification": "Сповіщення"
+		},
+		"theme": {
+			"description": "Виберіть бажану тему",
+			"title": "Зовнішній вигляд",
+			"light": "Світла",
+			"dark": "Темна",
+			"auto": "Як у системі"
+		},
+		"language": {
+			"title": "Мова",
+			"description": "Виберіть бажану мову",
+			"noResults": "Мов не знайдено"
+		},
+		"general": {
+			"title": "Загальні",
+			"autoCheckUpdates": {
+				"label": "Автоматично перевіряти оновлення",
+				"description": "Програма перевірятиме оновлення під час запуску"
+			},
+			"systembar": {
+				"title": "Область сповіщень",
+				"minimizeToTray": {
+					"label": "Згортати в область сповіщень",
+					"description": "Під час закриття згортати програму замість виходу"
+				},
+				"showProgressOnIcon": {
+					"label": "Показувати прогрес передачі на піктограмі",
+					"description": "Індикатор прогресу на піктограмі програми"
+				},
+				"runOnSystemStartup": {
+					"label": "Запускати під час старту системи",
+					"description": "Автоматично запускати програму під час увімкнення системи"
+				},
+				"contextMenu": {
+					"label": "Контекстне меню провідника",
+					"description": "Додати «Надіслати через AltSendme» до контекстного меню провідника Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Нове оновлення!",
+		"newVersionAvailable": "Доступна версія {{version}}.",
+		"newVersionAvailableInline": "Доступна нова версія — {{version}}",
+		"updateNow": "Оновити зараз",
+		"later": "Пізніше",
+		"checkForUpdates": "Перевірити оновлення",
+		"noUpdatesTitle": "Оновлень немає",
+		"noUpdatesDescription": "У вас уже встановлена остання версія",
+		"checkFailed": "Перевірка не вдалася",
+		"checkFailedDesc": "Не вдалося перевірити оновлення",
+		"installFailed": "Помилка встановлення",
+		"installFailedDesc": "Не вдалося встановити оновлення"
 	}
 }

@@ -42,7 +42,8 @@
 				"label": "Prywatne udostępnianie",
 				"description": "Tylko osoba, z którą udostępniasz bilet, może pobrać plik."
 			}
-		}
+		},
+		"description": "Opis (opcjonalnie)"
 	},
 	"receiver": {
 		"title": "Odbierz pliki",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Nie udało się odebrać pliku",
 		"openFolderFailed": "Nie udało się otworzyć folderu",
 		"openFolderFailedDesc": "Nie udało się otworzyć folderu pobierania"
+	},
+	"comingSoon": "Wkrótce",
+	"undo": "Cofnij",
+	"cancel": "Anuluj",
+	"confirm": "Potwierdź",
+	"privacyPolicy": "Polityka prywatności",
+	"license": "Licencja",
+	"notFound": {
+		"title": "Nie znaleziono strony",
+		"subtitle": "Strona, której szukasz, nie istnieje lub została przeniesiona.",
+		"goBack": "Wstecz",
+		"goHome": "Strona główna"
+	},
+	"settings": {
+		"title": "Ustawienia",
+		"navItems": {
+			"appearance": "Motyw i język",
+			"general": "Ogólne",
+			"network": "Sieć",
+			"notification": "Powiadomienia"
+		},
+		"theme": {
+			"description": "Wybierz preferowany motyw",
+			"title": "Wygląd",
+			"light": "Jasny",
+			"dark": "Ciemny",
+			"auto": "Systemowy"
+		},
+		"language": {
+			"title": "Język",
+			"description": "Wybierz preferowany język",
+			"noResults": "Nie znaleziono języków"
+		},
+		"general": {
+			"title": "Ogólne",
+			"autoCheckUpdates": {
+				"label": "Automatycznie sprawdzaj aktualizacje",
+				"description": "Aplikacja sprawdzi aktualizacje przy uruchomieniu"
+			},
+			"systembar": {
+				"title": "Zasobnik systemowy",
+				"minimizeToTray": {
+					"label": "Minimalizuj do zasobnika",
+					"description": "Przy zamykaniu minimalizuj aplikację zamiast kończyć"
+				},
+				"showProgressOnIcon": {
+					"label": "Pokaż postęp transferu na ikonie",
+					"description": "Pasek postępu na ikonie aplikacji"
+				},
+				"runOnSystemStartup": {
+					"label": "Uruchamiaj przy starcie systemu",
+					"description": "Automatycznie uruchamiaj aplikację po włączeniu systemu"
+				},
+				"contextMenu": {
+					"label": "Menu kontekstowe Eksploratora",
+					"description": "Dodaj „Wyślij przez AltSendme” do menu kontekstowego Eksploratora Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Nowa aktualizacja!",
+		"newVersionAvailable": "Dostępna jest wersja {{version}}.",
+		"newVersionAvailableInline": "Dostępna jest nowa wersja — {{version}}",
+		"updateNow": "Aktualizuj teraz",
+		"later": "Później",
+		"checkForUpdates": "Sprawdź aktualizacje",
+		"noUpdatesTitle": "Brak aktualizacji",
+		"noUpdatesDescription": "Masz już najnowszą wersję",
+		"checkFailed": "Sprawdzenie nie powiodło się",
+		"checkFailedDesc": "Nie udało się sprawdzić aktualizacji",
+		"installFailed": "Instalacja nie powiodła się",
+		"installFailedDesc": "Nie udało się zainstalować aktualizacji"
 	}
 }

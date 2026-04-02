@@ -42,7 +42,8 @@
 				"label": "私人分享",
 				"description": "只有您與之分享票券的人才能下載檔案。"
 			}
-		}
+		},
+		"description": "說明（選填）"
 	},
 	"receiver": {
 		"title": "接收檔案",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "無法接收檔案",
 		"openFolderFailed": "開啟資料夾失敗",
 		"openFolderFailedDesc": "無法開啟下載資料夾"
+	},
+	"comingSoon": "即將推出",
+	"undo": "復原",
+	"cancel": "取消",
+	"confirm": "確認",
+	"privacyPolicy": "隱私權政策",
+	"license": "授權條款",
+	"notFound": {
+		"title": "找不到頁面",
+		"subtitle": "您要找的頁面不存在或已移動。",
+		"goBack": "返回",
+		"goHome": "返回首頁"
+	},
+	"settings": {
+		"title": "設定",
+		"navItems": {
+			"appearance": "主題與語言",
+			"general": "一般",
+			"network": "網路",
+			"notification": "通知"
+		},
+		"theme": {
+			"description": "選擇您偏好的主題",
+			"title": "外觀",
+			"light": "淺色",
+			"dark": "深色",
+			"auto": "跟隨系統"
+		},
+		"language": {
+			"title": "語言",
+			"description": "選擇您偏好的語言",
+			"noResults": "找不到語言"
+		},
+		"general": {
+			"title": "一般",
+			"autoCheckUpdates": {
+				"label": "自動檢查更新",
+				"description": "應用程式啟動時會自動檢查更新"
+			},
+			"systembar": {
+				"title": "系統匣",
+				"minimizeToTray": {
+					"label": "最小化到系統匣",
+					"description": "關閉時最小化應用程式而非結束"
+				},
+				"showProgressOnIcon": {
+					"label": "在應用程式圖示上顯示傳輸進度",
+					"description": "在應用程式圖示上顯示進度列以表示傳輸進度"
+				},
+				"runOnSystemStartup": {
+					"label": "開機時啟動",
+					"description": "系統啟動時自動執行應用程式"
+				},
+				"contextMenu": {
+					"label": "檔案總管右鍵選單",
+					"description": "在 Windows 檔案總管右鍵選單中新增「使用 AltSendme 傳送」"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "有新更新！",
+		"newVersionAvailable": "已有新版本 {{version}}。",
+		"newVersionAvailableInline": "有新版本可用 — {{version}}",
+		"updateNow": "立即更新",
+		"later": "稍後",
+		"checkForUpdates": "檢查更新",
+		"noUpdatesTitle": "沒有可用更新",
+		"noUpdatesDescription": "您已使用最新版本",
+		"checkFailed": "檢查失敗",
+		"checkFailedDesc": "無法檢查更新",
+		"installFailed": "安裝失敗",
+		"installFailedDesc": "無法安裝更新"
 	}
 }
