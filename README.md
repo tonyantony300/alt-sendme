@@ -15,6 +15,8 @@
 
 <div align="center">
 
+
+[![Discord][badge-discord]](https://discord.gg/xwb7z22Eve)
 ![Version][badge-version]
 ![Website][badge-website]
 ![Platforms][badge-platforms]
@@ -29,19 +31,24 @@ A free and open-source file transfer tool that harnesses the power of [cutting-e
 
 Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easily transfer files directly, end-to-end encrypted and without revealing any personal information?
 
+Join our [Discord](https://discord.gg/xwb7z22Eve) to contribute
 
 ## Features
 
 - **Send anywhere** – Works seamlessly on local networks or across continents.
-- **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud storage in between.
-- **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
-- **No accounts or personal info** – Transfer files without sign-ups or exposing personal info.
 - [**Transfer anything**](https://www.iroh.computer/proto/iroh-blobs) – Send files or directories of any size or any format, verified with BLAKE3-based integrity checks.
+- **No accounts or personal info** – Transfer files without sign-ups or exposing personal info.
+- **Peer-to-peer direct transfer** – Send files straight between devices, with no cloud storage in between.
+- **Authentication** - Tickets contains cryptographic identity info for authentication.
+- **End-to-end encryption** – Always-on protection with QUIC + TLS 1.3 for forward and backward secrecy.
 - **Resumable transfers** – Interrupted downloads automatically resume where they left off.
+- **Broadcast** - Share same file/folder with any number of peers.
+- **Preview** - View and verify before downloading
 - **Fast & reliable** – Capable of saturating multi-gigabit connections for lightning-fast transfers.
 - [**NAT traversal via QUIC**](https://www.iroh.computer/docs/faq#does-iroh-use-relay-servers) – Secure, low-latency connections using QUIC hole punching with encrypted relay fallback.
 - **CLI integration** – Interoperable with the [Sendme CLI](https://www.iroh.computer/sendme).
 - **Free & open source** – No upload costs, no size limits, and fully community-driven.
+- **Coming Soon** – Mobile and Web versions
 
 
 
@@ -290,6 +297,7 @@ Thank you for checking out this project! If you find it useful, consider giving 
 
 [badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
 [badge-version]: https://img.shields.io/badge/version-0.3.4-blue
+[badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
 
