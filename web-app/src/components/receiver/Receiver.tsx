@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useReceiver } from '../../hooks/useReceiver'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { PulseAnimation } from '../common/PulseAnimation'
@@ -46,13 +46,16 @@ export function Receiver({ onTransferStateChange, initialTicket }: ReceiverProps
 		resetForNewTransfer,
 	} = useReceiver()
 
-	// Handle initial ticket from deep link
-	useEffect(() => {
-		if (initialTicket && initialTicket !== ticket) {
-			console.debug('[Receiver] Auto-filling ticket from deep link:', initialTicket)
-			handleTicketChange(initialTicket)
-		}
-        }, [initialTicket, ticket, handleTicketChange])
+const processedTicketRef = useRef<string | null>(null)
+
+        // Handle initial ticket from deep link
+        useEffect(() => {
+                if (initialTicket && initialTicket !== processedTicketRef.current) {
+                        console.debug('[Receiver] Auto-filling ticket from deep link:', initialTicket)
+                        processedTicketRef.current = initialTicket
+                        handleTicketChange(initialTicket)
+                }
+        }, [initialTicket, handleTicketChange])
 
 
 	useEffect(() => {

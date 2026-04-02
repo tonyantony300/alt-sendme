@@ -5,7 +5,7 @@ import { TitleBar } from "../TitleBar";
 import { useTranslation } from "@/i18n";
 import { AppUpdater } from "../common/AppUpdater";
 import { IS_ANDROID, IS_LINUX, IS_MACOS } from "@/lib/platform";
-import { DeepLinkHandler, DeepLinkHeader } from "../common/DeepLinkHandler";
+import { DeepLinkHandler } from "../common/DeepLinkHandler";
 
 export function RootLayout() {
   const { t } = useTranslation("common");
@@ -13,7 +13,6 @@ export function RootLayout() {
     <>
       <DeepLinkHandler />
       {!IS_ANDROID && <AppUpdater />}
-      <DeepLinkHeader />
       <main className="h-dvh min-h-screen flex flex-col relative glass-background select-none bg-background">
         {IS_LINUX && !IS_ANDROID && <TitleBar title={t("appTitle")} />}
 

@@ -32,7 +32,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		selectedPath,
 		pathType,
 		isLoading,
-		copySuccess,
 		alertDialog,
 		transferMetadata,
 		transferProgress,
@@ -42,7 +41,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		clearSelectedPath,
 		startSharing,
 		stopSharing,
-		copyTicket,
 		closeAlert,
 		resetForNewTransfer,
 	} = useSender()
@@ -125,13 +123,11 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							selectedPath={selectedPath}
 							pathType={pathType}
 							ticket={ticket}
-							copySuccess={copySuccess}
 							transferProgress={transferProgress}
 							isBroadcastMode={isBroadcastMode}
 							activeConnectionCount={activeConnectionCount}
 							onStartSharing={startSharing}
 							onStopSharing={stopSharing}
-							onCopyTicket={copyTicket}
 							onSetBroadcast={setIsBroadcastMode}
 						/>
 					</div>
