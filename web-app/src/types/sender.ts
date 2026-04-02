@@ -1,5 +1,5 @@
 import type { AlertDialogState } from './ui'
-import type { TransferProgress } from './transfer'
+import type { TransferProgress, TransferMetadata } from './transfer'
 
 export interface SharingState {
 	isSharing: boolean
@@ -31,6 +31,7 @@ export interface SharingControlsProps {
 	pathType: 'file' | 'directory' | null
 	ticket: string | null
 	copySuccess: boolean
+	transferMetadata?: TransferMetadata | null
 	transferProgress: TransferProgress | null
 	isBroadcastMode: boolean
 	activeConnectionCount?: number

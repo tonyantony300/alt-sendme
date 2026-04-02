@@ -22,7 +22,10 @@ interface ReceiverProps {
 	initialTicket?: string | null
 }
 
-export function Receiver({ onTransferStateChange, initialTicket }: ReceiverProps) {
+export function Receiver({
+	onTransferStateChange,
+	initialTicket,
+}: ReceiverProps) {
 	const [showInstructionsDialog, setShowInstructionsDialog] = useState(false)
 	const { t } = useTranslation()
 
@@ -46,17 +49,19 @@ export function Receiver({ onTransferStateChange, initialTicket }: ReceiverProps
 		resetForNewTransfer,
 	} = useReceiver()
 
-const processedTicketRef = useRef<string | null>(null)
+	const processedTicketRef = useRef<string | null>(null)
 
-        // Handle initial ticket from deep link
-        useEffect(() => {
-                if (initialTicket && initialTicket !== processedTicketRef.current) {
-                        console.debug('[Receiver] Auto-filling ticket from deep link:', initialTicket)
-                        processedTicketRef.current = initialTicket
-                        handleTicketChange(initialTicket)
-                }
-        }, [initialTicket, handleTicketChange])
-
+	// Handle initial ticket from deep link
+	useEffect(() => {
+		if (initialTicket && initialTicket !== processedTicketRef.current) {
+			console.debug(
+				'[Receiver] Auto-filling ticket from deep link:',
+				initialTicket
+			)
+			processedTicketRef.current = initialTicket
+			handleTicketChange(initialTicket)
+		}
+	}, [initialTicket, handleTicketChange])
 
 	useEffect(() => {
 		if (onTransferStateChange) {

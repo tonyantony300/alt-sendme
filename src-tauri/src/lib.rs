@@ -62,13 +62,16 @@ pub fn run() {
                 let _ = window.unminimize();
                 let _ = window.set_focus();
             }
-            
+
             // Check for deep links in the second instance argument list
             let parser = crate::deep_link::DeepLinkParser::new();
             for arg in &args {
                 if arg.starts_with("sendme://") || arg.starts_with("alt-sendme://") {
                     if let Ok(payload) = parser.parse(arg) {
-                        tracing::debug!("Deep link intercepted by single-instance guard: {:?}", payload);
+                        tracing::debug!(
+                            "Deep link intercepted by single-instance guard: {:?}",
+                            payload
+                        );
                         let _ = app.emit("deep-link", payload);
                     }
                 }
@@ -110,10 +113,10 @@ pub fn run() {
         ])
         .setup(|app| {
             setup_common(app);
-            
+
             // Initialize deep link parser with global state
             let parser = std::sync::Arc::new(deep_link::DeepLinkParser::new());
-            
+
             // Handle cold start deep link
             if let Ok(Some(urls)) = app.deep_link().get_current() {
                 debug!("App launched with deep link: {:?}", &urls);
@@ -169,9 +172,7 @@ pub fn run() {
 
 fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
     args.into_iter().find(|arg| {
-        !arg.starts_with('-')
-            && !arg.starts_with("sendme://")
-            && !arg.starts_with("alt-sendme://")
+        !arg.starts_with('-') && !arg.starts_with("sendme://") && !arg.starts_with("alt-sendme://")
     })
 }
 
@@ -207,7 +208,9 @@ fn handle_deep_links(
                         let app_handle = app.handle().clone();
                         let ticket_clone = ticket.clone();
                         tauri::async_runtime::spawn(async move {
-                            if let Some(state) = app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>() {
+                            if let Some(state) =
+                                app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
+                            {
                                 state.lock().await.launch_intent = Some(ticket_clone);
                             }
                         });
@@ -262,7 +265,9 @@ fn handle_deep_links_handle(
                         let app_handle = app_handle.clone();
                         let ticket_clone = ticket.clone();
                         tauri::async_runtime::spawn(async move {
-                            if let Some(state) = app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>() {
+                            if let Some(state) =
+                                app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
+                            {
                                 state.lock().await.launch_intent = Some(ticket_clone);
                             }
                         });
