@@ -62,6 +62,18 @@ pub fn run() {
                 let _ = window.unminimize();
                 let _ = window.set_focus();
             }
+            
+            // Check for deep links in the second instance argument list
+            let parser = crate::deep_link::DeepLinkParser::new();
+            for arg in &args {
+                if arg.starts_with("sendme://") || arg.starts_with("alt-sendme://") {
+                    if let Ok(payload) = parser.parse(arg) {
+                        tracing::debug!("Deep link intercepted by single-instance guard: {:?}", payload);
+                        let _ = app.emit("deep-link", payload);
+                    }
+                }
+            }
+
             let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
             if let Some(path) = maybe_path {
                 let app_handle = app.clone();
