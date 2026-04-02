@@ -1,10 +1,7 @@
 import { CheckCircle, Copy, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "../../i18n/react-i18next-compat";
-import type {
-  SharingControlsProps,
-  TicketDisplayProps,
-} from "../../types/sender";
+import type { SharingControlsProps } from "../../types/sender";
 import { TransferProgressBar } from "../common/TransferProgressBar";
 import { StatusIndicator } from "../common/StatusIndicator";
 import { Button } from "../ui/button";
@@ -21,16 +18,14 @@ export function SharingActiveCard({
   selectedPath,
   pathType,
   ticket,
-  copySuccess,
   transferProgress,
   isTransporting,
   isCompleted,
   isBroadcastMode,
   activeConnectionCount = 0,
-  onCopyTicket,
   onStopSharing,
   onSetBroadcast: _onSetBroadcast,
-}: SharingControlsProps) {
+}: Omit<SharingControlsProps, "copySuccess" | "onCopyTicket">) {
   const { t } = useTranslation();
   const onSetBroadcast = () => {
     if (_onSetBroadcast) {
