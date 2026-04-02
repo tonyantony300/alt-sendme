@@ -156,7 +156,11 @@ pub fn run() {
 }
 
 fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
-    args.into_iter().find(|arg| !arg.starts_with('-'))
+    args.into_iter().find(|arg| {
+        !arg.starts_with('-')
+            && !arg.starts_with("sendme://")
+            && !arg.starts_with("alt-sendme://")
+    })
 }
 
 /// Handle deep link URLs and emit events to frontend
