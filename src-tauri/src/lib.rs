@@ -1,7 +1,6 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
 mod commands;
-mod deep_link;
 mod features;
 mod platform;
 mod state;
@@ -9,17 +8,19 @@ mod state;
 mod tray;
 mod version;
 
-use tauri_plugin_deep_link::DeepLinkExt;
-use tracing::debug;
-pub use version::get_app_version;
-
 use commands::{
     check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status,
     get_transport_status, receive_file, start_sharing, stop_sharing, toggle_context_menu,
 };
+use features::deep_link::{
+    first_non_flag_arg, handle_deep_links, handle_deep_links_handle, DeepLinkParser,
+};
 use state::AppState;
 use std::fs;
 use std::sync::Arc;
+use tauri_plugin_deep_link::DeepLinkExt;
+use tracing::debug;
+pub use version::get_app_version;
 
 use tauri::Emitter as _;
 use tauri::Manager as _;
@@ -64,7 +65,7 @@ pub fn run() {
             }
 
             // Check for deep links in the second instance argument list
-            let parser = deep_link::DeepLinkParser::new();
+            let parser = DeepLinkParser::new();
             let mut deep_link_handled = false;
             for arg in &args {
                 if arg.starts_with("sendme://") {
@@ -121,7 +122,7 @@ pub fn run() {
             setup_common(app);
 
             // Initialize deep link parser with global state
-            let parser = std::sync::Arc::new(deep_link::DeepLinkParser::new());
+            let parser = std::sync::Arc::new(DeepLinkParser::new());
 
             // Handle cold start deep link
             if let Ok(Some(urls)) = app.deep_link().get_current() {
@@ -174,126 +175,6 @@ pub fn run() {
                 tray::open_and_focus(_app);
             }
         });
-}
-
-fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
-    args.into_iter().find(|arg| {
-        !arg.starts_with('-') && !arg.starts_with("sendme://") && !arg.starts_with("alt-sendme://")
-    })
-}
-
-/// Handle deep link URLs and emit events to frontend
-fn handle_deep_links(
-    app: &tauri::App,
-    parser: &std::sync::Arc<deep_link::DeepLinkParser>,
-    urls: Vec<String>,
-    is_cold_start: bool,
-) {
-    for url in urls {
-        // Check for duplicate processing
-        if parser.is_duplicate(&url) {
-            debug!("Skipping duplicate deep link: {}", &url);
-            continue;
-        }
-
-        // Parse the deep link URL
-        match parser.parse(&url) {
-            Ok(payload) => {
-                parser.mark_processed(url.clone());
-                debug!("Deep link parsed successfully: {:?}", payload);
-
-                // Emit event to all windows using Emitter trait
-                let windows: Vec<_> = app.webview_windows().values().cloned().collect();
-                for window in windows {
-                    let _ = window.emit("deep-link", &payload);
-                }
-
-                // For cold start, also update state if it's a receive ticket
-                if is_cold_start && payload.action == "receive" {
-                    if let Some(ticket) = &payload.ticket {
-                        let app_handle = app.handle().clone();
-                        let ticket_clone = ticket.clone();
-                        tauri::async_runtime::spawn(async move {
-                            if let Some(state) =
-                                app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
-                            {
-                                state.lock().await.launch_intent = Some(ticket_clone);
-                            }
-                        });
-                    }
-                }
-            }
-            Err(e) => {
-                tracing::warn!("Failed to parse deep link '{}': {}", url, e);
-                // Emit error event to frontend
-                let error_payload = serde_json::json!({
-                    "error": e,
-                    "url": url
-                });
-                let windows: Vec<_> = app.webview_windows().values().cloned().collect();
-                for window in windows {
-                    let _ = window.emit("deep-link-error", &error_payload);
-                }
-            }
-        }
-    }
-}
-
-/// Handle deep link URLs using an app handle (for use in closures)
-fn handle_deep_links_handle(
-    app_handle: &tauri::AppHandle,
-    parser: &std::sync::Arc<deep_link::DeepLinkParser>,
-    urls: Vec<String>,
-    is_cold_start: bool,
-) {
-    for url in urls {
-        // Check for duplicate processing
-        if parser.is_duplicate(&url) {
-            debug!("Skipping duplicate deep link: {}", &url);
-            continue;
-        }
-
-        // Parse the deep link URL
-        match parser.parse(&url) {
-            Ok(payload) => {
-                parser.mark_processed(url.clone());
-                debug!("Deep link parsed successfully: {:?}", payload);
-
-                // Emit event to all windows using Emitter trait
-                let windows: Vec<_> = app_handle.webview_windows().values().cloned().collect();
-                for window in windows {
-                    let _ = window.emit("deep-link", &payload);
-                }
-
-                // For cold start, also update state if it's a receive ticket
-                if is_cold_start && payload.action == "receive" {
-                    if let Some(ticket) = &payload.ticket {
-                        let app_handle = app_handle.clone();
-                        let ticket_clone = ticket.clone();
-                        tauri::async_runtime::spawn(async move {
-                            if let Some(state) =
-                                app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
-                            {
-                                state.lock().await.launch_intent = Some(ticket_clone);
-                            }
-                        });
-                    }
-                }
-            }
-            Err(e) => {
-                tracing::warn!("Failed to parse deep link '{}': {}", url, e);
-                // Emit error event to frontend
-                let error_payload = serde_json::json!({
-                    "error": e,
-                    "url": url
-                });
-                let windows: Vec<_> = app_handle.webview_windows().values().cloned().collect();
-                for window in windows {
-                    let _ = window.emit("deep-link-error", &error_payload);
-                }
-            }
-        }
-    }
 }
 
 fn app_state_initial() -> AppState {
