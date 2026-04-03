@@ -8,9 +8,8 @@ use tracing::debug;
 pub use deep_link::DeepLinkParser;
 
 pub fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
-    args.into_iter().find(|arg| {
-        !arg.starts_with('-') && !arg.starts_with("sendme://") && !arg.starts_with("alt-sendme://")
-    })
+    args.into_iter()
+        .find(|arg| !arg.starts_with('-') && !arg.starts_with("sendme://"))
 }
 
 /// Handle deep link URLs and emit events to frontend

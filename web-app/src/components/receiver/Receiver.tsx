@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react'
 import { useEffect, useState, useRef } from 'react'
+import { listen } from '@tauri-apps/api/event'
 import { useReceiver } from '../../hooks/useReceiver'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { PulseAnimation } from '../common/PulseAnimation'
@@ -62,6 +63,27 @@ export function Receiver({
 			handleTicketChange(initialTicket)
 		}
 	}, [initialTicket, handleTicketChange])
+
+	// Listen for deep-link events and auto-fill ticket
+	useEffect(() => {
+		const unlistenPromise = listen<{ action: string; ticket?: string }>(
+			'deep-link',
+			(event) => {
+				const { action, ticket } = event.payload
+				if (action === 'receive' && ticket) {
+					console.debug('[Receiver] Deep-link ticket received:', ticket)
+					if (ticket !== processedTicketRef.current) {
+						processedTicketRef.current = ticket
+						handleTicketChange(ticket)
+					}
+				}
+			}
+		)
+
+		return () => {
+			unlistenPromise.then((unlisten) => unlisten())
+		}
+	}, [handleTicketChange])
 
 	useEffect(() => {
 		if (onTransferStateChange) {

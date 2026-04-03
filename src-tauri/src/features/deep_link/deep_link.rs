@@ -52,9 +52,9 @@ impl DeepLinkParser {
         let url = Url::parse(url_str).map_err(|e| format!("Invalid URL: {}", e))?;
 
         // Validate scheme
-        if url.scheme() != "sendme" && url.scheme() != "alt-sendme" {
+        if url.scheme() != "sendme" {
             return Err(format!(
-                "Invalid scheme: {}. Expected 'sendme' or 'alt-sendme'",
+                "Invalid scheme: {}. Expected 'sendme'",
                 url.scheme()
             ));
         }

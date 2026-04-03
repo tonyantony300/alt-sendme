@@ -65,26 +65,32 @@ pub fn run() {
 
             // Check for deep links in the second instance argument list
             let parser = features::deep_link::DeepLinkParser::new();
+            let mut deep_link_handled = false;
             for arg in &args {
-                if arg.starts_with("sendme://") || arg.starts_with("alt-sendme://") {
+                if arg.starts_with("sendme://") {
                     if let Ok(payload) = parser.parse(arg) {
                         tracing::debug!(
                             "Deep link intercepted by single-instance guard: {:?}",
                             payload
                         );
                         let _ = app.emit("deep-link", payload);
+                        deep_link_handled = true;
+                        break;
                     }
                 }
             }
 
-            let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
-            if let Some(path) = maybe_path {
-                let app_handle = app.clone();
-                tauri::async_runtime::spawn(async move {
-                    let state = app_handle.state::<state::AppStateMutex>();
-                    state.lock().await.launch_intent = Some(path.clone());
-                    let _ = app_handle.emit("launch-intent", path);
-                });
+            // Only process launch intent if deep link was not handled
+            if !deep_link_handled {
+                let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
+                if let Some(path) = maybe_path {
+                    let app_handle = app.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let state = app_handle.state::<state::AppStateMutex>();
+                        state.lock().await.launch_intent = Some(path.clone());
+                        let _ = app_handle.emit("launch-intent", path);
+                    });
+                }
             }
         }))
     };

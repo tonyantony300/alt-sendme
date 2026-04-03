@@ -64,12 +64,28 @@ export function IndexPage() {
 			})
 			.catch((e) => console.error('Failed to check launch intent:', e))
 
-		const unlistenPromise = listen<string>('launch-intent', (event) => {
+		const unlistenLaunchIntent = listen<string>('launch-intent', (event) => {
 			if (event.payload) applyIntent(event.payload)
 		})
 
+		// Listen for deep-link events to switch tabs
+		const unlistenDeepLink = listen<{ action: string; ticket?: string }>(
+			'deep-link',
+			(event) => {
+				const { action } = event.payload
+				if (action === 'receive') {
+					setActiveTab('receive')
+				}
+			}
+		)
+
 		return () => {
-			unlistenPromise.then((unlisten) => unlisten())
+			Promise.all([unlistenLaunchIntent, unlistenDeepLink]).then(
+				([unlistenLI, unlistenDL]) => {
+					unlistenLI()
+					unlistenDL()
+				}
+			)
 		}
 	}, [setSelectedPath, setPathType])
 
