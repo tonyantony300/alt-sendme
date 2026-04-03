@@ -42,7 +42,8 @@
 				"label": "Compartición privada",
 				"description": "Solo la persona con la que compartes el ticket puede descargar el archivo."
 			}
-		}
+		},
+		"description": "Descripción (opcional)"
 	},
 	"receiver": {
 		"title": "Recibir archivos",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "No se pudo recibir el archivo",
 		"openFolderFailed": "Error al abrir la carpeta",
 		"openFolderFailedDesc": "No se pudo abrir la carpeta de descargas"
+	},
+	"comingSoon": "Próximamente",
+	"undo": "Deshacer",
+	"cancel": "Cancelar",
+	"confirm": "Confirmar",
+	"privacyPolicy": "Política de privacidad",
+	"license": "Licencia",
+	"notFound": {
+		"title": "Página no encontrada",
+		"subtitle": "La página que buscas no existe o se ha movido.",
+		"goBack": "Volver",
+		"goHome": "Ir al inicio"
+	},
+	"settings": {
+		"title": "Ajustes",
+		"navItems": {
+			"appearance": "Tema e idioma",
+			"general": "General",
+			"network": "Red",
+			"notification": "Notificaciones"
+		},
+		"theme": {
+			"description": "Selecciona tu tema preferido",
+			"title": "Apariencia",
+			"light": "Claro",
+			"dark": "Oscuro",
+			"auto": "Sistema"
+		},
+		"language": {
+			"title": "Idioma",
+			"description": "Selecciona tu idioma preferido",
+			"noResults": "No se encontraron idiomas"
+		},
+		"general": {
+			"title": "General",
+			"autoCheckUpdates": {
+				"label": "Buscar actualizaciones automáticamente",
+				"description": "La aplicación buscará actualizaciones al iniciar"
+			},
+			"systembar": {
+				"title": "Bandeja del sistema",
+				"minimizeToTray": {
+					"label": "Minimizar a la bandeja del sistema",
+					"description": "Al cerrar el diálogo, minimizar la aplicación en lugar de salir"
+				},
+				"showProgressOnIcon": {
+					"label": "Mostrar el progreso de la transferencia en el icono",
+					"description": "Barra de progreso superpuesta en el icono para indicar el avance"
+				},
+				"runOnSystemStartup": {
+					"label": "Ejecutar al iniciar el sistema",
+					"description": "Iniciar la aplicación automáticamente al arrancar el sistema"
+				},
+				"contextMenu": {
+					"label": "Menú contextual del Explorador",
+					"description": "Añadir «Enviar con AltSendme» al menú contextual del Explorador de Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "¡Nueva actualización!",
+		"newVersionAvailable": "La versión {{version}} está disponible.",
+		"newVersionAvailableInline": "Hay una nueva versión disponible: {{version}}",
+		"updateNow": "Actualizar ahora",
+		"later": "Más tarde",
+		"checkForUpdates": "Buscar actualizaciones",
+		"noUpdatesTitle": "No hay actualizaciones",
+		"noUpdatesDescription": "Ya estás usando la última versión",
+		"checkFailed": "Error al comprobar",
+		"checkFailedDesc": "No se pudieron buscar actualizaciones",
+		"installFailed": "Error de instalación",
+		"installFailedDesc": "No se pudo instalar la actualización"
 	}
 }

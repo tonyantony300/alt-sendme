@@ -42,7 +42,8 @@
 				"label": "Soukromé sdílení",
 				"description": "Pouze osoba, se kterou sdílíte ticket, může stáhnout soubor."
 			}
-		}
+		},
+		"description": "Popis (volitelné)"
 	},
 	"receiver": {
 		"title": "Přijmout soubory",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Nepodařilo se přijmout soubor",
 		"openFolderFailed": "Otevření složky selhalo",
 		"openFolderFailedDesc": "Nepodařilo se otevřít složku pro stahování"
+	},
+	"comingSoon": "Již brzy",
+	"undo": "Zpět",
+	"cancel": "Zrušit",
+	"confirm": "Potvrdit",
+	"privacyPolicy": "Zásady ochrany osobních údajů",
+	"license": "Licence",
+	"notFound": {
+		"title": "Stránka nenalezena",
+		"subtitle": "Hledaná stránka neexistuje nebo byla přesunuta.",
+		"goBack": "Zpět",
+		"goHome": "Domů"
+	},
+	"settings": {
+		"title": "Nastavení",
+		"navItems": {
+			"appearance": "Motiv a jazyk",
+			"general": "Obecné",
+			"network": "Síť",
+			"notification": "Oznámení"
+		},
+		"theme": {
+			"description": "Vyberte preferovaný motiv",
+			"title": "Vzhled",
+			"light": "Světlý",
+			"dark": "Tmavý",
+			"auto": "Systém"
+		},
+		"language": {
+			"title": "Jazyk",
+			"description": "Vyberte preferovaný jazyk",
+			"noResults": "Žádné jazyky nenalezeny"
+		},
+		"general": {
+			"title": "Obecné",
+			"autoCheckUpdates": {
+				"label": "Automaticky kontrolovat aktualizace",
+				"description": "Aplikace při spuštění automaticky zkontroluje aktualizace"
+			},
+			"systembar": {
+				"title": "Oznamovací oblast",
+				"minimizeToTray": {
+					"label": "Minimalizovat do oznamovací oblasti",
+					"description": "Při zavření minimalizovat aplikaci místo ukončení"
+				},
+				"showProgressOnIcon": {
+					"label": "Zobrazit průběh přenosu na ikoně",
+					"description": "Pruh průběhu na ikoně aplikace"
+				},
+				"runOnSystemStartup": {
+					"label": "Spustit při startu systému",
+					"description": "Automaticky spustit aplikaci při zapnutí systému"
+				},
+				"contextMenu": {
+					"label": "Kontextová nabídka Průzkumníka",
+					"description": "Přidat „Odeslat pomocí AltSendme“ do kontextové nabídky Průzkumníka Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Nová aktualizace!",
+		"newVersionAvailable": "Je k dispozici verze {{version}}.",
+		"newVersionAvailableInline": "Je k dispozici nová verze — {{version}}",
+		"updateNow": "Aktualizovat nyní",
+		"later": "Později",
+		"checkForUpdates": "Zkontrolovat aktualizace",
+		"noUpdatesTitle": "Žádné aktualizace",
+		"noUpdatesDescription": "Používáte již nejnovější verzi",
+		"checkFailed": "Kontrola se nezdařila",
+		"checkFailedDesc": "Nepodařilo se zkontrolovat aktualizace",
+		"installFailed": "Instalace se nezdařila",
+		"installFailedDesc": "Nepodařilo se nainstalovat aktualizaci"
 	}
 }

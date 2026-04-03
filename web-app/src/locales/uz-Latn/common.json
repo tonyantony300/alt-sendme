@@ -54,7 +54,8 @@
 				"label": "Shaxsiy ulashish",
 				"description": "Faqat ticketni ulashgan odam faylni yuklab olishi mumkin."
 			}
-		}
+		},
+		"description": "Tavsif (ixtiyoriy)"
 	},
 	"receiver": {
 		"title": "Fayllarni qabul qilish",
@@ -126,7 +127,8 @@
 			"title": "Ko'rinish",
 			"light": "Yorug'",
 			"dark": "Qorong'i",
-			"auto": "Tizim"
+			"auto": "Tizim",
+			"description": "Afzal ko‘rgan mavzuingizni tanlang"
 		},
 		"language": {
 			"title": "Til",
@@ -152,6 +154,10 @@
 				"runOnSystemStartup": {
 					"label": "Tizim bilan birga ishga tushirish",
 					"description": "Tizim ishga tushganda ilovani avtomatik ishga tushirish"
+				},
+				"contextMenu": {
+					"label": "Explorer kontekst menyusi",
+					"description": "Windows Explorer o‘ng tugma menyusiga «AltSendme bilan yuborish» qo‘shish"
 				}
 			}
 		}

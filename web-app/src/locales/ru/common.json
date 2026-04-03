@@ -21,7 +21,7 @@
 		"sharingInProgress": "Передача в процессе",
 		"transferCompleted": "Передача завершена",
 		"filesBeingTransmitted": "Файлы передаются",
-		"preparingForTransport": "Ожидание передачи...",
+		"preparingForTransport": "Подготовка к передаче...",
 		"pleaseWaitProcessing": "Пожалуйста, подождите, пока мы подготавливаем ваши файлы к передаче...",
 		"dropFilesHere": "Перетащите файлы или папки сюда",
 		"dragAndDrop": "Перетащить",
@@ -42,7 +42,8 @@
 				"label": "Приватная передача",
 				"description": "Только человек, с которым вы делитесь тикетом, может скачать файл."
 			}
-		}
+		},
+		"description": "Описание (необязательно)"
 	},
 	"receiver": {
 		"title": "Получить файлы",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Не удалось получить файл",
 		"openFolderFailed": "Ошибка открытия папки",
 		"openFolderFailedDesc": "Не удалось открыть папку для скачивания"
+	},
+	"comingSoon": "Скоро",
+	"undo": "Отменить",
+	"cancel": "Отмена",
+	"confirm": "Подтвердить",
+	"privacyPolicy": "Политика конфиденциальности",
+	"license": "Лицензия",
+	"notFound": {
+		"title": "Страница не найдена",
+		"subtitle": "Запрашиваемая страница не существует или была перемещена.",
+		"goBack": "Назад",
+		"goHome": "На главную"
+	},
+	"settings": {
+		"title": "Настройки",
+		"navItems": {
+			"appearance": "Тема и язык",
+			"general": "Общие",
+			"network": "Сеть",
+			"notification": "Уведомления"
+		},
+		"theme": {
+			"description": "Выберите тему оформления",
+			"title": "Оформление",
+			"light": "Светлая",
+			"dark": "Тёмная",
+			"auto": "Как в системе"
+		},
+		"language": {
+			"title": "Язык",
+			"description": "Выберите предпочитаемый язык",
+			"noResults": "Языки не найдены"
+		},
+		"general": {
+			"title": "Общие",
+			"autoCheckUpdates": {
+				"label": "Автоматически проверять обновления",
+				"description": "Приложение будет проверять обновления при запуске"
+			},
+			"systembar": {
+				"title": "Область уведомлений",
+				"minimizeToTray": {
+					"label": "Сворачивать в область уведомлений",
+					"description": "При закрытии сворачивать приложение вместо выхода"
+				},
+				"showProgressOnIcon": {
+					"label": "Показывать прогресс передачи на значке",
+					"description": "Индикатор прогресса поверх значка приложения"
+				},
+				"runOnSystemStartup": {
+					"label": "Запускать при старте системы",
+					"description": "Автоматически запускать приложение при включении компьютера"
+				},
+				"contextMenu": {
+					"label": "Контекстное меню проводника",
+					"description": "Добавить «Отправить через AltSendme» в контекстное меню проводника Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Доступно обновление!",
+		"newVersionAvailable": "Доступна версия {{version}}.",
+		"newVersionAvailableInline": "Доступна новая версия — {{version}}",
+		"updateNow": "Обновить сейчас",
+		"later": "Позже",
+		"checkForUpdates": "Проверить обновления",
+		"noUpdatesTitle": "Обновлений нет",
+		"noUpdatesDescription": "У вас уже установлена последняя версия",
+		"checkFailed": "Проверка не удалась",
+		"checkFailedDesc": "Не удалось проверить обновления",
+		"installFailed": "Ошибка установки",
+		"installFailedDesc": "Не удалось установить обновление"
 	}
 }

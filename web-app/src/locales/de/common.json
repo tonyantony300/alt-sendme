@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "Senden",
+	"comingSoon": "Demnächst",
 	"receive": "Empfangen",
 	"ok": "OK",
+	"undo": "Rückgängig",
+	"cancel": "Abbrechen",
+	"confirm": "Bestätigen",
 	"loading": "Wird geladen...",
 	"browse": "Durchsuchen",
 	"donate": "Spenden",
+	"privacyPolicy": "Datenschutzerklärung",
+	"license": "Lizenz",
+	"notFound": {
+		"title": "Seite nicht gefunden",
+		"subtitle": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+		"goBack": "Zurück",
+		"goHome": "Zur Startseite"
+	},
 	"sender": {
 		"title": "Senden",
 		"subtitle": "Dateien oder Ordner über verschlüsselte Peer-to-Peer-Verbindungen teilen.",
@@ -32,6 +44,7 @@
 		"browseFile": "Datei durchsuchen",
 		"browseFolder": "Ordner durchsuchen",
 		"copyToClipboard": "In Zwischenablage kopieren",
+		"description": "Beschreibung (optional)",
 		"broadcastMode": {
 			"index": "Broadcast",
 			"on": {
@@ -81,7 +94,7 @@
 		"folder": "Ordner",
 		"fileName": "Dateiname",
 		"fileSize": "Dateigröße",
-		"folderSize": "Ordner Größe",
+		"folderSize": "Ordnergröße",
 		"downloadPath": "Downloadpfad",
 		"duration": "Dauer",
 		"avgSpeed": "Durchschnittsgeschwindigkeit"
@@ -101,5 +114,66 @@
 		"receiveFailedDesc": "Datei konnte nicht empfangen werden",
 		"openFolderFailed": "Ordner öffnen fehlgeschlagen",
 		"openFolderFailedDesc": "Download-Ordner konnte nicht geöffnet werden"
+	},
+	"settings": {
+		"title": "Einstellungen",
+		"navItems": {
+			"appearance": "Design & Sprache",
+			"general": "Allgemein",
+			"network": "Netzwerk",
+			"notification": "Benachrichtigungen"
+		},
+		"theme": {
+			"description": "Wählen Sie Ihr bevorzugtes Design",
+			"title": "Erscheinungsbild",
+			"light": "Hell",
+			"dark": "Dunkel",
+			"auto": "System"
+		},
+		"language": {
+			"title": "Sprache",
+			"description": "Wählen Sie Ihre bevorzugte Sprache",
+			"noResults": "Keine Sprachen gefunden"
+		},
+		"general": {
+			"title": "Allgemein",
+			"autoCheckUpdates": {
+				"label": "Automatisch nach Updates suchen",
+				"description": "Die App sucht beim Start automatisch nach Updates"
+			},
+			"systembar": {
+				"title": "Infobereich (Tray)",
+				"minimizeToTray": {
+					"label": "In den Infobereich minimieren",
+					"description": "Beim Schließen des Fensters die App minimieren statt beenden"
+				},
+				"showProgressOnIcon": {
+					"label": "Übertragungsfortschritt im App-Symbol anzeigen",
+					"description": "Fortschrittsbalken über dem App-Symbol zur Anzeige des Übertragungsfortschritts"
+				},
+				"runOnSystemStartup": {
+					"label": "Beim Systemstart starten",
+					"description": "Die App beim Systemstart automatisch starten"
+				},
+				"contextMenu": {
+					"label": "Kontextmenü im Explorer",
+					"description": "„Mit AltSendme senden“ zum Rechtsklickmenü im Windows-Explorer hinzufügen"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Neues Update!",
+		"newVersionAvailable": "Version {{version}} ist verfügbar.",
+		"newVersionAvailableInline": "Eine neue Version ist verfügbar – {{version}}",
+		"updateNow": "Jetzt aktualisieren",
+		"later": "Später",
+		"checkForUpdates": "Nach Updates suchen",
+		"noUpdatesTitle": "Keine Updates verfügbar",
+		"noUpdatesDescription": "Sie verwenden bereits die neueste Version",
+		"checkFailed": "Suche fehlgeschlagen",
+		"checkFailedDesc": "Update-Suche ist fehlgeschlagen",
+		"installFailed": "Installation fehlgeschlagen",
+		"installFailedDesc": "Update konnte nicht installiert werden"
 	}
 }

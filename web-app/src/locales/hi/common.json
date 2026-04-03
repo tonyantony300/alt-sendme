@@ -42,7 +42,8 @@
 				"label": "निजी साझाकरण",
 				"description": "केवल वह व्यक्ति जिसके साथ आप टिकट साझा करते हैं, फ़ाइल डाउनलोड कर सकता है।"
 			}
-		}
+		},
+		"description": "विवरण (वैकल्पिक)"
 	},
 	"receiver": {
 		"title": "फ़ाइलें प्राप्त करें",
@@ -50,7 +51,7 @@
 		"saveToFolder": "इस फ़ोल्डर में सहेजें:",
 		"noFolderSelected": "कोई फ़ोल्डर चयनित नहीं",
 		"pasteTicket": "टिकट यहाँ पेस्ट करें:",
-		"ticketPlaceholder": "sendme receive ticket...",
+		"ticketPlaceholder": "sendme प्राप्ति टिकट...",
 		"howToReceive": "फ़ाइलें कैसे प्राप्त करें",
 		"instruction1": "प्रेषक ऑनलाइन होना चाहिए और फ़ाइल साझा कर रहा होना चाहिए",
 		"instruction2": "प्रेषक से टिकट प्राप्त करें",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "फ़ाइल प्राप्त करने में विफल",
 		"openFolderFailed": "फ़ोल्डर खोलना विफल",
 		"openFolderFailedDesc": "डाउनलोड फ़ोल्डर खोलने में विफल"
+	},
+	"comingSoon": "जल्द आ रहा है",
+	"undo": "पूर्ववत करें",
+	"cancel": "रद्द करें",
+	"confirm": "पुष्टि करें",
+	"privacyPolicy": "गोपनीयता नीति",
+	"license": "लाइसेंस",
+	"notFound": {
+		"title": "पृष्ठ नहीं मिला",
+		"subtitle": "जिस पृष्ठ की आप तलाश कर रहे हैं वह मौजूद नहीं है या स्थानांतरित कर दिया गया है।",
+		"goBack": "वापस जाएँ",
+		"goHome": "होम पर जाएँ"
+	},
+	"settings": {
+		"title": "सेटिंग्स",
+		"navItems": {
+			"appearance": "थीम और भाषा",
+			"general": "सामान्य",
+			"network": "नेटवर्क",
+			"notification": "सूचनाएँ"
+		},
+		"theme": {
+			"description": "अपनी पसंदीदा थीम चुनें",
+			"title": "दिखावट",
+			"light": "हल्का",
+			"dark": "गहरा",
+			"auto": "सिस्टम"
+		},
+		"language": {
+			"title": "भाषा",
+			"description": "अपनी पसंदीदा भाषा चुनें",
+			"noResults": "कोई भाषा नहीं मिली"
+		},
+		"general": {
+			"title": "सामान्य",
+			"autoCheckUpdates": {
+				"label": "अपडेट स्वचालित रूप से जाँचें",
+				"description": "ऐप प्रारंभ पर अपडेट जाँचेगा"
+			},
+			"systembar": {
+				"title": "सिस्टम ट्रे",
+				"minimizeToTray": {
+					"label": "सिस्टम ट्रे में छोटा करें",
+					"description": "बंद करते समय ऐप समाप्त करने के बजाय छोटा करें"
+				},
+				"showProgressOnIcon": {
+					"label": "आइकन पर स्थानांतरण प्रगति दिखाएँ",
+					"description": "प्रगति पट्टी ऐप आइकन पर"
+				},
+				"runOnSystemStartup": {
+					"label": "सिस्टम प्रारंभ पर चलाएँ",
+					"description": "सिस्टम शुरू होने पर ऐप स्वचालित रूप से चलाएँ"
+				},
+				"contextMenu": {
+					"label": "एक्सप्लोरर संदर्भ मेनू",
+					"description": "विंडोज़ एक्सप्लोरर के दाएँ-क्लिक मेनू में «AltSendme से भेजें» जोड़ें"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "नया अपडेट!",
+		"newVersionAvailable": "संस्करण {{version}} उपलब्ध है।",
+		"newVersionAvailableInline": "नया संस्करण उपलब्ध है — {{version}}",
+		"updateNow": "अभी अपडेट करें",
+		"later": "बाद में",
+		"checkForUpdates": "अपडेट जाँचें",
+		"noUpdatesTitle": "कोई अपडेट नहीं",
+		"noUpdatesDescription": "आप पहले से नवीनतम संस्करण उपयोग कर रहे हैं",
+		"checkFailed": "जाँच विफल",
+		"checkFailedDesc": "अपडेट जाँच नहीं हो सकी",
+		"installFailed": "इंस्टॉल विफल",
+		"installFailedDesc": "अपडेट इंस्टॉल नहीं हो सका"
 	}
 }
