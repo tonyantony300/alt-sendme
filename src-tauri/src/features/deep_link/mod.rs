@@ -30,7 +30,7 @@ pub fn handle_deep_links(
         match parser.parse(&url) {
             Ok(payload) => {
                 parser.mark_processed(url.clone());
-                debug!("Deep link parsed successfully: {:?}", payload);
+                debug!("Deep link parsed successfully");
 
                 // Emit event to all windows using Emitter trait
                 let windows: Vec<_> = app.webview_windows().values().cloned().collect();
@@ -44,7 +44,15 @@ pub fn handle_deep_links(
                         if let Some(state) =
                             app.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
                         {
-                            state.blocking_lock().launch_intent = Some(ticket.clone());
+                            if let Ok(mut guard) = state.try_lock() {
+                                guard.launch_intent = Some(ticket.clone());
+                            } else {
+                                let state = state.inner().clone();
+                                let ticket_clone = ticket.clone();
+                                tauri::async_runtime::spawn(async move {
+                                    state.lock().await.launch_intent = Some(ticket_clone);
+                                });
+                            }
                         }
                     }
                 }
@@ -54,7 +62,7 @@ pub fn handle_deep_links(
                 // Emit error event to frontend
                 let error_payload = serde_json::json!({
                     "error": e,
-                    "url": url
+                    "url": url.split('?').next().unwrap_or(&url)
                 });
                 let windows: Vec<_> = app.webview_windows().values().cloned().collect();
                 for window in windows {
@@ -97,7 +105,15 @@ pub fn handle_deep_links_handle(
                         if let Some(state) =
                             app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
                         {
-                            state.blocking_lock().launch_intent = Some(ticket.clone());
+                            if let Ok(mut guard) = state.try_lock() {
+                                guard.launch_intent = Some(ticket.clone());
+                            } else {
+                                let state = state.inner().clone();
+                                let ticket_clone = ticket.clone();
+                                tauri::async_runtime::spawn(async move {
+                                    state.lock().await.launch_intent = Some(ticket_clone);
+                                });
+                            }
                         }
                     }
                 }

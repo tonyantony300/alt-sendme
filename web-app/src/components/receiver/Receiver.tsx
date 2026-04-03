@@ -1,6 +1,5 @@
 import { Info } from 'lucide-react'
 import { useEffect, useState, useRef } from 'react'
-import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useReceiver } from '../../hooks/useReceiver'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { PulseAnimation } from '../common/PulseAnimation'
@@ -69,50 +68,6 @@ export function Receiver({
 			handleTicketChange(initialTicket)
 		}
 	}, [initialTicket, handleTicketChange])
-
-	// Listen for deep-link events and auto-fill ticket
-	useEffect(() => {
-		let disposed = false
-		const cleanupFns: UnlistenFn[] = []
-
-		const setupListener = async () => {
-			try {
-				const unlistenDeepLink = await listen<{
-					action: string
-					ticket?: string
-				}>('deep-link', (event) => {
-					const { action, ticket } = event.payload
-					if (action === 'receive' && ticket) {
-						console.debug('[Receiver] Deep-link ticket received:', ticket)
-						if (ticket !== processedTicketRef.current) {
-							processedTicketRef.current = ticket
-							handleTicketChange(ticket)
-						}
-					}
-				})
-
-				if (disposed) {
-					unlistenDeepLink()
-					return
-				}
-
-				cleanupFns.push(unlistenDeepLink)
-			} catch (error) {
-				cleanupFns.forEach((unlisten) => unlisten())
-				console.debug(
-					'[Receiver] Note: Tauri deep-link listener not available',
-					error
-				)
-			}
-		}
-
-		void setupListener()
-
-		return () => {
-			disposed = true
-			cleanupFns.forEach((unlisten) => unlisten())
-		}
-	}, [handleTicketChange])
 
 	useEffect(() => {
 		if (onTransferStateChange) {

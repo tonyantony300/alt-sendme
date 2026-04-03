@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Receiver } from '@/components/receiver/Receiver'
 
@@ -11,22 +11,22 @@ import { Receiver } from '@/components/receiver/Receiver'
  */
 export function ReceivePage() {
 	const [searchParams, setSearchParams] = useSearchParams()
-	const [ticket, setTicket] = useState<string | null>(null)
-
+	const initialTicket = searchParams.get('ticket')
 	useEffect(() => {
 		// Extract ticket from URL query params (from deep-link route)
 		const ticketParam = searchParams.get('ticket')
 		if (ticketParam) {
-			setTicket(ticketParam)
-			const newParams = new URLSearchParams(searchParams)
-			newParams.delete('ticket')
-			setSearchParams(newParams, { replace: true })
+			if (searchParams.has('ticket')) {
+				const newParams = new URLSearchParams(searchParams)
+				newParams.delete('ticket')
+				setSearchParams(newParams, { replace: true })
+			}
 		}
 	}, [searchParams, setSearchParams])
 
 	return (
 		<div className="w-full">
-			<Receiver initialTicket={ticket} />
+			<Receiver initialTicket={initialTicket || undefined} />
 		</div>
 	)
 }

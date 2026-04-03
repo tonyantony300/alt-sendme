@@ -20,6 +20,7 @@
 	},
 	"sender": {
 		"title": "Send",
+		"copyUri": "Copy URI",
 		"subtitle": "Share files or folders via encrypted peer-to-peer connections.",
 		"stoppingTransmission": "Stopping transmission...",
 		"startSharing": "Start Sharing",

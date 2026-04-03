@@ -239,6 +239,11 @@ export function TicketDisplay({
 			setTimeout(() => setCopySchemeSuccess(false), 2000)
 		} catch (error) {
 			console.error('Failed to copy scheme URI:', error)
+			toastManager.add({
+				title: t('common:copyUriFailed'),
+				type: 'error',
+				id: crypto.randomUUID(),
+			})
 		}
 	}
 
@@ -304,13 +309,9 @@ export function TicketDisplay({
 							type="button"
 							size="icon-xs"
 							onClick={handleCopySchemeURI}
-							style={{
-								backgroundColor: copySchemeSuccess
-									? 'var(--app-primary)'
-									: 'var(--color-foreground)',
-								border: '1px solid var(--border)',
-							}}
-							title="Copy URI"
+							data-success={copySchemeSuccess}
+							className="border border-border bg-foreground data-[success=true]:bg-primary"
+							title={t('common:copyUri')}
 						>
 							{copySchemeSuccess ? (
 								<CheckCircle className="h-4 w-4" />

@@ -47,7 +47,9 @@ export function DeepLinkHandler() {
 					'deep-link',
 					(event) => {
 						const payload = event.payload
-						console.log('[DeepLinkHandler] Received deep-link event:', payload)
+						console.log('[DeepLinkHandler] Received deep-link event:', {
+							action: payload.action,
+						})
 						handleDeepLink(payload)
 					}
 				)

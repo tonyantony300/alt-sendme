@@ -86,7 +86,15 @@ pub fn run() {
                 let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
                 if let Some(path) = maybe_path {
                     let state = app.state::<state::AppStateMutex>();
-                    state.blocking_lock().launch_intent = Some(path.clone());
+                    if let Ok(mut guard) = state.try_lock() {
+                        guard.launch_intent = Some(path.clone());
+                    } else {
+                        let state = state.inner().clone();
+                        let path_clone = path.clone();
+                        tauri::async_runtime::spawn(async move {
+                            state.lock().await.launch_intent = Some(path_clone);
+                        });
+                    }
                     let _ = app.emit("launch-intent", path);
                 }
             }
@@ -123,7 +131,7 @@ pub fn run() {
 
             // Handle cold start deep link
             if let Ok(Some(urls)) = app.deep_link().get_current() {
-                debug!("App launched with deep link: {:?}", &urls);
+                debug!("App launched with deep link.");
                 let urls: Vec<String> = urls.iter().map(|u| u.to_string()).collect();
                 handle_deep_links(app, &parser, urls, true);
             }
@@ -141,7 +149,6 @@ pub fn run() {
             // Register deep link protocols at runtime (not supported on macOS)
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             {
-                use tauri_plugin_deep_link::DeepLinkExt;
                 // Try to register all configured schemes; ignore errors for development
                 let _ = app.deep_link().register_all();
             }
