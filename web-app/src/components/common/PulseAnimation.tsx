@@ -1,10 +1,7 @@
-import LottieDefault from 'lottie-react'
+import { useLottie } from 'lottie-react'
 import pulseAnimationOriginal from '../../assets/pulse.json'
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
-
-// handle both default and named exports for Lottie
-const Lottie = (LottieDefault as any).default || LottieDefault
 
 interface PulseAnimationProps {
 	isTransporting: boolean
@@ -13,11 +10,7 @@ interface PulseAnimationProps {
 }
 
 function modifyAnimationColor(animationData: any, color: number[]) {
-	// if Vite inlines the JSON, then parse it
-	const data = animationData?.default || animationData
-	if (!data) return null
-
-	const cloned = JSON.parse(JSON.stringify(data))
+	const cloned = JSON.parse(JSON.stringify(animationData))
 
 	if (cloned.assets?.[0]?.layers) {
 		cloned.assets[0].layers.forEach((layer: any) => {
@@ -57,16 +50,16 @@ export function PulseAnimation({
 		return modifyAnimationColor(pulseAnimationOriginal, color)
 	}, [isTransporting, hasActiveConnections])
 
+	const { View } = useLottie({
+		animationData,
+		loop: true,
+		autoplay: true,
+		style: { width: 180, height: 180 },
+	})
+
 	return (
 		<div className={cn(className, isTransporting && 'max-sm:hidden')}>
-			{animationData && Lottie && (
-				<Lottie
-					animationData={animationData}
-					loop={true}
-					autoplay={true}
-					style={{ width: 180, height: 180 }}
-				/>
-			)}
+			{View}
 		</div>
 	)
 }

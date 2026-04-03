@@ -1,5 +1,5 @@
 use crate::features::thumbnail::generate_thumbnail;
-use crate::state::{AppStateMutex, ShareHandle};
+use crate::state::{AppStateMutex, LaunchIntentState, ShareHandle};
 use sendme::{
     core::types::FileMetadata, download, fetch_metadata, start_share, AddrInfoOptions, AppHandle,
     EventEmitter, ReceiveOptions, RelayModeOption, SendOptions,
@@ -277,10 +277,9 @@ pub async fn get_transport_status(state: State<'_, AppStateMutex>) -> Result<boo
 /// Returns the path if present and clears it from state
 #[tauri::command]
 pub async fn check_launch_intent(
-    state: State<'_, AppStateMutex>,
+    state: State<'_, LaunchIntentState>,
 ) -> Result<Option<String>, String> {
-    let mut app_state = state.lock().await;
-    Ok(app_state.launch_intent.take())
+    Ok(crate::state::take_launch_intent(state.inner()))
 }
 
 #[tauri::command]

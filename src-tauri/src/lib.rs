@@ -85,16 +85,8 @@ pub fn run() {
             if !deep_link_handled {
                 let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
                 if let Some(path) = maybe_path {
-                    let state = app.state::<state::AppStateMutex>();
-                    if let Ok(mut guard) = state.try_lock() {
-                        guard.launch_intent = Some(path.clone());
-                    } else {
-                        let state = state.inner().clone();
-                        let path_clone = path.clone();
-                        tauri::async_runtime::spawn(async move {
-                            state.lock().await.launch_intent = Some(path_clone);
-                        });
-                    }
+                    let state = app.state::<state::LaunchIntentState>();
+                    state::set_launch_intent(state.inner(), path.clone());
                     let _ = app.emit("launch-intent", path);
                 }
             }
@@ -110,6 +102,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_native_utils::init())
         .plugin(tauri_plugin_deep_link::init())
+        .manage(Arc::new(std::sync::Mutex::new(launch_intent_initial())))
         .manage(Arc::new(tokio::sync::Mutex::new(app_state_initial())))
         .invoke_handler(tauri::generate_handler![
             start_sharing,
@@ -182,11 +175,11 @@ pub fn run() {
 }
 
 fn app_state_initial() -> AppState {
-    let launch_intent = first_non_flag_arg(std::env::args().skip(1));
-    AppState {
-        launch_intent,
-        ..Default::default()
-    }
+    AppState::default()
+}
+
+fn launch_intent_initial() -> Option<String> {
+    first_non_flag_arg(std::env::args().skip(1))
 }
 
 #[allow(unused_variables)]

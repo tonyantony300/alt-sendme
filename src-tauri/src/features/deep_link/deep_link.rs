@@ -110,14 +110,12 @@ impl DeepLinkParser {
         })
     }
 
-    /// Check if URL has already been processed (deduplication)
-    pub fn is_duplicate(&self, url: &str) -> bool {
-        self.processed_urls.lock().unwrap().contains(url)
-    }
-
-    /// Mark URL as processed
-    pub fn mark_processed(&self, url: String) {
-        self.processed_urls.lock().unwrap().insert(url);
+    /// Atomically mark a URL as processed.
+    ///
+    /// Returns `true` when this URL is seen for the first time,
+    /// `false` when it was already processed before.
+    pub fn mark_processed_if_new(&self, url: &str) -> bool {
+        self.processed_urls.lock().unwrap().insert(url.to_string())
     }
 
     /// Validate if action is supported

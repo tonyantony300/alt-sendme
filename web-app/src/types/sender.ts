@@ -42,8 +42,8 @@ export interface SharingControlsProps {
 
 export interface TicketDisplayProps {
 	ticket: string
-	copySuccess: boolean
-	onCopyTicket: () => Promise<void>
+	isBroadcastMode: boolean
+	onSetBroadcast: (broadcast: boolean) => void
 }
 
 export interface DragDropState {

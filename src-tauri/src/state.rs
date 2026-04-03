@@ -9,7 +9,6 @@ pub struct AppState {
     pub current_share: Option<ShareHandle>,
     pub is_share_starting: bool, // True while start_sharing is preparing metadata/session
     pub is_transporting: bool,   // True when actual data transfer is happening
-    pub launch_intent: Option<String>, // Path to file/folder passed via CLI (e.g. context menu)
 }
 
 /// Handle for an active sharing session
@@ -77,3 +76,48 @@ impl ShareHandle {
 
 /// Thread-safe wrapper for AppState
 pub type AppStateMutex = Arc<Mutex<AppState>>;
+
+/// Dedicated launch-intent state, independent from AppState async mutex contention.
+pub type LaunchIntentState = Arc<std::sync::Mutex<Option<String>>>;
+
+pub fn set_launch_intent(state: &LaunchIntentState, value: String) {
+    match state.lock() {
+        Ok(mut guard) => {
+            *guard = Some(value);
+        }
+        Err(poisoned) => {
+            let mut guard = poisoned.into_inner();
+            *guard = Some(value);
+        }
+    }
+}
+
+pub fn take_launch_intent(state: &LaunchIntentState) -> Option<String> {
+    match state.lock() {
+        Ok(mut guard) => guard.take(),
+        Err(poisoned) => {
+            let mut guard = poisoned.into_inner();
+            guard.take()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{set_launch_intent, take_launch_intent, AppState, LaunchIntentState};
+    use std::sync::Arc;
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn launch_intent_is_available_under_app_state_contention() {
+        let app_state = Arc::new(tokio::sync::Mutex::new(AppState::default()));
+        let launch_intent: LaunchIntentState = Arc::new(std::sync::Mutex::new(None));
+
+        let _guard = app_state.lock().await;
+
+        set_launch_intent(&launch_intent, "ticket-under-lock".to_string());
+        assert_eq!(
+            take_launch_intent(&launch_intent),
+            Some("ticket-under-lock".to_string())
+        );
+    }
+}

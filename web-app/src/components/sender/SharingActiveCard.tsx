@@ -1,7 +1,10 @@
 import { CheckCircle, Copy, Square } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import type { SharingControlsProps } from '../../types/sender'
+import type {
+	SharingControlsProps,
+	TicketDisplayProps,
+} from '../../types/sender'
 import { TransferProgressBar } from '../common/TransferProgressBar'
 import { StatusIndicator } from '../common/StatusIndicator'
 import { Button } from '../ui/button'
@@ -219,11 +222,7 @@ export function TicketDisplay({
 	ticket,
 	isBroadcastMode,
 	onSetBroadcast,
-}: {
-	ticket: string
-	isBroadcastMode?: boolean
-	onSetBroadcast?: (broadcast: boolean) => void
-}) {
+}: TicketDisplayProps) {
 	const { t } = useTranslation()
 	const [copySchemeSuccess, setCopySchemeSuccess] = useState(false)
 	const [copyTicketSuccess, setCopyTicketSuccess] = useState(false)

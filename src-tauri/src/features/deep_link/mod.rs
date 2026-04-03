@@ -1,6 +1,5 @@
 mod deep_link;
 use crate::state;
-use std::sync::Arc;
 use tauri::Emitter;
 use tauri::Manager as _;
 use tracing::debug;
@@ -9,7 +8,7 @@ pub use deep_link::DeepLinkParser;
 
 pub fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
     args.into_iter()
-        .find(|arg| !arg.starts_with('-') && !arg.starts_with("sendme://"))
+        .find(|arg| !arg.starts_with('-') && !arg.contains("://"))
 }
 
 /// Handle deep link URLs and emit events to frontend
@@ -20,19 +19,16 @@ pub fn handle_deep_links(
     is_cold_start: bool,
 ) {
     for url in urls {
-        // Check for duplicate processing
-        if parser.is_duplicate(&url) {
-            debug!(
-                "Skipping duplicate deep link: {}",
-                url.split('?').next().unwrap_or(&url)
-            );
-            continue;
-        }
-
         // Parse the deep link URL
         match parser.parse(&url) {
             Ok(payload) => {
-                parser.mark_processed(url.clone());
+                if !parser.mark_processed_if_new(&url) {
+                    debug!(
+                        "Skipping duplicate deep link: {}",
+                        url.split('?').next().unwrap_or(&url)
+                    );
+                    continue;
+                }
                 debug!("Deep link parsed successfully");
 
                 // Emit event to all windows using Emitter trait
@@ -44,18 +40,8 @@ pub fn handle_deep_links(
                 // For cold start, also update state if it's a receive ticket
                 if is_cold_start && payload.action == "receive" {
                     if let Some(ticket) = &payload.ticket {
-                        if let Some(state) =
-                            app.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
-                        {
-                            if let Ok(mut guard) = state.try_lock() {
-                                guard.launch_intent = Some(ticket.clone());
-                            } else {
-                                let state = state.inner().clone();
-                                let ticket_clone = ticket.clone();
-                                tauri::async_runtime::spawn(async move {
-                                    state.lock().await.launch_intent = Some(ticket_clone);
-                                });
-                            }
+                        if let Some(state) = app.try_state::<state::LaunchIntentState>() {
+                            state::set_launch_intent(state.inner(), ticket.clone());
                         }
                     }
                 }
@@ -84,19 +70,16 @@ pub fn handle_deep_links_handle(
     is_cold_start: bool,
 ) {
     for url in urls {
-        // Check for duplicate processing
-        if parser.is_duplicate(&url) {
-            debug!(
-                "Skipping duplicate deep link: {}",
-                url.split('?').next().unwrap_or(&url)
-            );
-            continue;
-        }
-
         // Parse the deep link URL
         match parser.parse(&url) {
             Ok(payload) => {
-                parser.mark_processed(url.clone());
+                if !parser.mark_processed_if_new(&url) {
+                    debug!(
+                        "Skipping duplicate deep link: {}",
+                        url.split('?').next().unwrap_or(&url)
+                    );
+                    continue;
+                }
                 debug!("Deep link parsed successfully, actions={}", payload.action);
 
                 // Emit event to all windows using Emitter trait
@@ -108,18 +91,8 @@ pub fn handle_deep_links_handle(
                 // For cold start, also update state if it's a receive ticket
                 if is_cold_start && payload.action == "receive" {
                     if let Some(ticket) = &payload.ticket {
-                        if let Some(state) =
-                            app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
-                        {
-                            if let Ok(mut guard) = state.try_lock() {
-                                guard.launch_intent = Some(ticket.clone());
-                            } else {
-                                let state = state.inner().clone();
-                                let ticket_clone = ticket.clone();
-                                tauri::async_runtime::spawn(async move {
-                                    state.lock().await.launch_intent = Some(ticket_clone);
-                                });
-                            }
+                        if let Some(state) = app_handle.try_state::<state::LaunchIntentState>() {
+                            state::set_launch_intent(state.inner(), ticket.clone());
                         }
                     }
                 }
