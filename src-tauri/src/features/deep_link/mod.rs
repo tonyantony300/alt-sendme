@@ -22,7 +22,10 @@ pub fn handle_deep_links(
     for url in urls {
         // Check for duplicate processing
         if parser.is_duplicate(&url) {
-            debug!("Skipping duplicate deep link: {}", &url);
+            debug!(
+                "Skipping duplicate deep link: {}",
+                url.split('?').next().unwrap_or(&url)
+            );
             continue;
         }
 
@@ -83,7 +86,10 @@ pub fn handle_deep_links_handle(
     for url in urls {
         // Check for duplicate processing
         if parser.is_duplicate(&url) {
-            debug!("Skipping duplicate deep link: {}", &url);
+            debug!(
+                "Skipping duplicate deep link: {}",
+                url.split('?').next().unwrap_or(&url)
+            );
             continue;
         }
 

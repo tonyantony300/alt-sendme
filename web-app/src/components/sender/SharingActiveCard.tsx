@@ -255,6 +255,11 @@ export function TicketDisplay({
 			setTimeout(() => setCopyTicketSuccess(false), 2000)
 		} catch (error) {
 			console.error('Failed to copy ticket:', error)
+			toastManager.add({
+				title: t('common:errors.copyFailed'),
+				type: 'error',
+				id: crypto.randomUUID(),
+			})
 		}
 	}
 
@@ -271,6 +276,7 @@ export function TicketDisplay({
 						onClick={handleCopyTicket}
 						variant="outline"
 						className="flex items-center justify-center gap-2"
+						title={t('common:sender.copyToClipboard')}
 					>
 						{copyTicketSuccess ? (
 							<CheckCircle className="h-4 w-4" />
