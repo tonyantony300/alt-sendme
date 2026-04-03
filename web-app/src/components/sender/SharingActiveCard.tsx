@@ -14,7 +14,6 @@ export function SharingActiveCard({
 	selectedPath,
 	pathType,
 	ticket,
-	transferMetadata,
 	transferProgress,
 	isTransporting,
 	isCompleted,
@@ -176,8 +175,7 @@ export function SharingActiveCard({
 			<div className="p-4 rounded-lg absolute top-0 left-0">
 				<p className="text-xs mb-4 max-w-40 sm:max-w-120 truncate">
 					<strong className="mr-1">{t('common:sender.fileLabel')}</strong>{' '}
-					{selectedPath?.split(/[/\\]/).filter(Boolean).pop() ||
-						transferMetadata?.fileName}
+					{selectedPath?.split('/').pop()}
 				</p>
 
 				<StatusIndicator
