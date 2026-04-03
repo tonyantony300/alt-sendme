@@ -60,10 +60,7 @@ export function Receiver({
 	// Handle initial ticket from deep link
 	useEffect(() => {
 		if (initialTicket && initialTicket !== processedTicketRef.current) {
-			console.debug(
-				'[Receiver] Auto-filling ticket from deep link:',
-				initialTicket
-			)
+			console.debug('[Receiver] Auto-filling ticket from deep link')
 			processedTicketRef.current = initialTicket
 			handleTicketChange(initialTicket)
 		}

@@ -71,8 +71,8 @@ pub fn run() {
                 if arg.starts_with("sendme://") {
                     if let Ok(payload) = parser.parse(arg) {
                         tracing::debug!(
-                            "Deep link intercepted by single-instance guard: {:?}",
-                            payload
+                            "Deep link intercepted by single-instance guard: action={}",
+                            payload.action
                         );
                         let _ = app.emit("deep-link", payload);
                         deep_link_handled = true;
@@ -141,7 +141,7 @@ pub fn run() {
             let app_handle = app.handle().clone();
             app.deep_link().on_open_url(move |event| {
                 let urls = event.urls();
-                debug!("Deep link event received: {:?}", &urls);
+                debug!("Deep link event received, len={}", &urls.len());
                 let urls: Vec<String> = urls.iter().map(|u| u.to_string()).collect();
                 handle_deep_links_handle(&app_handle, &parser_clone, urls, false);
             });

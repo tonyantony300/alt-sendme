@@ -91,7 +91,7 @@ pub fn handle_deep_links_handle(
         match parser.parse(&url) {
             Ok(payload) => {
                 parser.mark_processed(url.clone());
-                debug!("Deep link parsed successfully: {:?}", payload);
+                debug!("Deep link parsed successfully, actions={}", payload.action);
 
                 // Emit event to all windows using Emitter trait
                 let windows: Vec<_> = app_handle.webview_windows().values().cloned().collect();
@@ -123,7 +123,7 @@ pub fn handle_deep_links_handle(
                 // Emit error event to frontend
                 let error_payload = serde_json::json!({
                     "error": e,
-                    "url": url
+                    "url": url.split('?').next().unwrap_or(&url)
                 });
                 let windows: Vec<_> = app_handle.webview_windows().values().cloned().collect();
                 for window in windows {

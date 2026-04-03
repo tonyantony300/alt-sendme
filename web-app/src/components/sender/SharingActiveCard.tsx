@@ -240,7 +240,7 @@ export function TicketDisplay({
 		} catch (error) {
 			console.error('Failed to copy scheme URI:', error)
 			toastManager.add({
-				title: t('common:copyUriFailed'),
+				title: t('common:errors.copyFailed'),
 				type: 'error',
 				id: crypto.randomUUID(),
 			})
@@ -301,7 +301,7 @@ export function TicketDisplay({
 					<InputGroupInput
 						type="text"
 						value={schemeURI}
-						className="overflow-ellipsis text-xs"
+						className="text-ellipsis text-xs"
 						readOnly
 					/>
 					<InputGroupAddon align="inline-end">
@@ -311,7 +311,7 @@ export function TicketDisplay({
 							onClick={handleCopySchemeURI}
 							data-success={copySchemeSuccess}
 							className="border border-border bg-foreground data-[success=true]:bg-primary"
-							title={t('common:copyUri')}
+							title={t('common:sender.copyUri')}
 						>
 							{copySchemeSuccess ? (
 								<CheckCircle className="h-4 w-4" />
