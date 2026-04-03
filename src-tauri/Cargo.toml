@@ -23,7 +23,6 @@ image="0.25"
 tauri-plugin-dialog = "2.0"
 tauri-plugin-opener = "2.0"
 tauri-plugin-os = "2.0"
-tauri-plugin-single-instance = "2.0"
 tauri-plugin-http = "2.0"
 tauri-plugin-shell = "2.0"
 tauri-plugin-updater = "2.10.0"
@@ -61,3 +60,6 @@ windows = { version = "0.58", features = ["Win32_Media_MediaFoundation"] }
 core-foundation = "0.10"
 core-graphics = "0.24"
 objc = "0.2"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = { version = "2.0.0", features = ["deep-link"] }
