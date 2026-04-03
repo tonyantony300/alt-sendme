@@ -257,9 +257,23 @@ export function TicketDisplay({
 		<div className="space-y-5">
 			{/* Header with broadcast toggle */}
 			<div className="flex items-center justify-between">
-				<p className="block text-sm font-medium">
-					{t('common:sender.shareThisTicket')}
-				</p>
+				<div className="flex items-center gap-2">
+					<p className="text-sm font-medium">
+						{t('common:sender.shareThisTicket')}{' '}
+					</p>
+					<Button
+						type="button"
+						onClick={handleCopyTicket}
+						variant="outline"
+						className="flex items-center justify-center gap-2"
+					>
+						{copyTicketSuccess ? (
+							<CheckCircle className="h-4 w-4" />
+						) : (
+							<Copy className="h-4 w-4" />
+						)}
+					</Button>
+				</div>
 				{isBroadcastMode !== undefined && onSetBroadcast && (
 					<div className="flex items-start gap-2">
 						<Label htmlFor={'broadcast-toggle'} className="text-sm">
@@ -275,8 +289,8 @@ export function TicketDisplay({
 
 			{/* Scheme URI Section */}
 			<div className="space-y-2">
-				<p className="text-xs font-medium text-muted-foreground">
-					Deep Link URI (可分享)：
+				<p className="text-sm font-medium block">
+					{t('common:sender.deepLinkURI')}
 				</p>
 				<InputGroup>
 					<InputGroupInput
@@ -296,7 +310,7 @@ export function TicketDisplay({
 									: 'var(--color-foreground)',
 								border: '1px solid var(--border)',
 							}}
-							title="复制 Deep Link URI"
+							title="Copy URI"
 						>
 							{copySchemeSuccess ? (
 								<CheckCircle className="h-4 w-4" />
@@ -306,47 +320,6 @@ export function TicketDisplay({
 						</Button>
 					</InputGroupAddon>
 				</InputGroup>
-				<p className="text-xs text-muted-foreground">
-					用户点击此链接可直接打开应用并自动填充Ticket
-				</p>
-			</div>
-
-			{/* Original Ticket Section */}
-			<div className="space-y-2">
-				<p className="text-xs font-medium text-muted-foreground">
-					原始 Ticket：
-				</p>
-				<InputGroup>
-					<InputGroupInput
-						type="text"
-						value={ticket}
-						className="overflow-ellipsis"
-						readOnly
-					/>
-					<InputGroupAddon align="inline-end">
-						<Button
-							type="button"
-							size="icon-xs"
-							onClick={handleCopyTicket}
-							style={{
-								backgroundColor: copyTicketSuccess
-									? 'var(--app-primary)'
-									: 'var(--color-foreground)',
-								border: '1px solid var(--border)',
-							}}
-							title="复制原始 Ticket"
-						>
-							{copyTicketSuccess ? (
-								<CheckCircle className="h-4 w-4" />
-							) : (
-								<Copy className="h-4 w-4" />
-							)}
-						</Button>
-					</InputGroupAddon>
-				</InputGroup>
-				<p className="text-xs text-muted-foreground">
-					用户可手动复制粘贴此Ticket到应用中
-				</p>
 			</div>
 		</div>
 	)

@@ -85,12 +85,9 @@ pub fn run() {
             if !deep_link_handled {
                 let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
                 if let Some(path) = maybe_path {
-                    let app_handle = app.clone();
-                    tauri::async_runtime::spawn(async move {
-                        let state = app_handle.state::<state::AppStateMutex>();
-                        state.lock().await.launch_intent = Some(path.clone());
-                        let _ = app_handle.emit("launch-intent", path);
-                    });
+                    let state = app.state::<state::AppStateMutex>();
+                    state.blocking_lock().launch_intent = Some(path.clone());
+                    let _ = app.emit("launch-intent", path);
                 }
             }
         }))

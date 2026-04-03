@@ -17,7 +17,9 @@ import { useSenderStore } from '@/store/sender-store'
 
 export function IndexPage() {
 	const [searchParams, setSearchParams] = useSearchParams()
-	const initialTab = (searchParams.get('tab') as 'send' | 'receive') || 'send'
+	const tabParam = searchParams.get('tab')
+	const initialTab: 'send' | 'receive' =
+		tabParam === 'receive' ? 'receive' : 'send'
 	const initialTicket = searchParams.get('ticket')
 	const [activeTab, setActiveTab] = useState<'send' | 'receive'>(initialTab)
 
@@ -25,6 +27,8 @@ export function IndexPage() {
 		const tab = searchParams.get('tab')
 		if (tab === 'send' || tab === 'receive') {
 			setActiveTab(tab)
+		} else {
+			setActiveTab('send')
 		}
 
 		// Immediately remove ticket from URL to prevent accidental re-pasting

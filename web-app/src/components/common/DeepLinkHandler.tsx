@@ -19,8 +19,8 @@ export function DeepLinkHandler() {
 	const navigate = useNavigate()
 
 	useEffect(() => {
-		let unlistenDeepLink: UnlistenFn | null = null
-		let unlistenDeepLinkError: UnlistenFn | null = null
+		let disposed = false
+		const cleanupFns: UnlistenFn[] = []
 
 		const handleDeepLink = (payload: DeepLinkPayload) => {
 			const { action, ticket } = payload
@@ -43,7 +43,7 @@ export function DeepLinkHandler() {
 		const setupListeners = async () => {
 			try {
 				// Listen for deep-link events from Rust
-				unlistenDeepLink = await listen<DeepLinkPayload>(
+				const unlistenDeepLink = await listen<DeepLinkPayload>(
 					'deep-link',
 					(event) => {
 						const payload = event.payload
@@ -52,8 +52,14 @@ export function DeepLinkHandler() {
 					}
 				)
 
+				if (disposed) {
+					unlistenDeepLink()
+					return
+				}
+				cleanupFns.push(unlistenDeepLink)
+
 				// Listen for deep-link errors
-				unlistenDeepLinkError = await listen<{
+				const unlistenDeepLinkError = await listen<{
 					error: string
 					url: string
 				}>('deep-link-error', (event) => {
@@ -63,9 +69,16 @@ export function DeepLinkHandler() {
 					)
 				})
 
+				if (disposed) {
+					unlistenDeepLinkError()
+					return
+				}
+				cleanupFns.push(unlistenDeepLinkError)
+
 				console.log('[DeepLinkHandler] Listeners initialized successfully')
 			} catch (error) {
 				// Silently fail if Tauri is not available (e.g. browser environment)
+				cleanupFns.forEach((unlisten) => unlisten())
 				console.debug(
 					'[DeepLinkHandler] Note: Tauri event listener not available',
 					error
@@ -73,11 +86,11 @@ export function DeepLinkHandler() {
 			}
 		}
 
-		setupListeners()
+		void setupListeners()
 
 		return () => {
-			if (unlistenDeepLink) unlistenDeepLink()
-			if (unlistenDeepLinkError) unlistenDeepLinkError()
+			disposed = true
+			cleanupFns.forEach((unlisten) => unlisten())
 		}
 	}, [navigate])
 

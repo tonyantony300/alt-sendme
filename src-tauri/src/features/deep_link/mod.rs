@@ -8,9 +8,8 @@ use tracing::debug;
 pub use deep_link::DeepLinkParser;
 
 pub fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
-    args.into_iter().find(|arg| {
-        !arg.starts_with('-') && !arg.starts_with("sendme://") && !arg.starts_with("alt-sendme://")
-    })
+    args.into_iter()
+        .find(|arg| !arg.starts_with('-') && !arg.starts_with("sendme://"))
 }
 
 /// Handle deep link URLs and emit events to frontend
@@ -42,20 +41,16 @@ pub fn handle_deep_links(
                 // For cold start, also update state if it's a receive ticket
                 if is_cold_start && payload.action == "receive" {
                     if let Some(ticket) = &payload.ticket {
-                        let app_handle = app.handle().clone();
-                        let ticket_clone = ticket.clone();
-                        tauri::async_runtime::spawn(async move {
-                            if let Some(state) =
-                                app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
-                            {
-                                state.lock().await.launch_intent = Some(ticket_clone);
-                            }
-                        });
+                        if let Some(state) =
+                            app.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
+                        {
+                            state.blocking_lock().launch_intent = Some(ticket.clone());
+                        }
                     }
                 }
             }
             Err(e) => {
-                tracing::warn!("Failed to parse deep link '{}': {}", url, e);
+                tracing::warn!("Failed to parse deep link: {}", e);
                 // Emit error event to frontend
                 let error_payload = serde_json::json!({
                     "error": e,
@@ -99,20 +94,16 @@ pub fn handle_deep_links_handle(
                 // For cold start, also update state if it's a receive ticket
                 if is_cold_start && payload.action == "receive" {
                     if let Some(ticket) = &payload.ticket {
-                        let app_handle = app_handle.clone();
-                        let ticket_clone = ticket.clone();
-                        tauri::async_runtime::spawn(async move {
-                            if let Some(state) =
-                                app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
-                            {
-                                state.lock().await.launch_intent = Some(ticket_clone);
-                            }
-                        });
+                        if let Some(state) =
+                            app_handle.try_state::<Arc<tokio::sync::Mutex<state::AppState>>>()
+                        {
+                            state.blocking_lock().launch_intent = Some(ticket.clone());
+                        }
                     }
                 }
             }
             Err(e) => {
-                tracing::warn!("Failed to parse deep link '{}': {}", url, e);
+                tracing::warn!("Failed to parse deep link: {}", e);
                 // Emit error event to frontend
                 let error_payload = serde_json::json!({
                     "error": e,
