@@ -1,6 +1,7 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
 mod commands;
+mod deep_link;
 mod features;
 mod platform;
 mod state;
@@ -8,7 +9,6 @@ mod state;
 mod tray;
 mod version;
 
-use features::deep_link::{first_non_flag_arg, handle_deep_links, handle_deep_links_handle};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tracing::debug;
 pub use version::get_app_version;
@@ -64,7 +64,7 @@ pub fn run() {
             }
 
             // Check for deep links in the second instance argument list
-            let parser = features::deep_link::DeepLinkParser::new();
+            let parser = deep_link::DeepLinkParser::new();
             let mut deep_link_handled = false;
             for arg in &args {
                 if arg.starts_with("sendme://") {
