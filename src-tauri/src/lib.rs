@@ -54,10 +54,7 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
 
     #[cfg(desktop)]
-    let builder = if std::env::var("ALT_SENDME_ALLOW_MULTI_INSTANCE").unwrap_or_default() == "1" {
-        builder
-    } else {
-        builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
                 let _ = window.unminimize();
@@ -90,8 +87,7 @@ pub fn run() {
                     let _ = app.emit("launch-intent", path);
                 }
             }
-        }))
-    };
+        }));
 
     let builder = builder
         .plugin(tauri_plugin_dialog::init())
