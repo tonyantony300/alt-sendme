@@ -181,48 +181,6 @@ export function useSender(): UseSenderReturn {
 			unlistenProgress = await listen('transfer-progress', (event: any) => {
 				try {
 					const rawPayload = event.payload as string
-					const parsedPayload = rawPayload.startsWith('{')
-						? (JSON.parse(rawPayload) as {
-								scope?: 'total' | 'file'
-								bytesTransferred: number
-								totalBytes: number
-								speedBps: number
-								percentage: number
-								etaSeconds?: number | null
-							})
-						: null
-
-					if (parsedPayload) {
-						const {
-							scope = 'total',
-							bytesTransferred,
-							totalBytes,
-							speedBps,
-							percentage,
-							etaSeconds,
-						} = parsedPayload
-
-						if (scope === 'file') {
-							return
-						}
-
-						speedAveragerRef.current.addSample(speedBps)
-						const avgSpeed = speedAveragerRef.current.getAverage()
-						const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0)
-						const eta = calculateETA(bytesRemaining, avgSpeed)
-
-						const progress: TransferProgress = {
-							bytesTransferred,
-							totalBytes,
-							speedBps,
-							percentage,
-							etaSeconds: eta ?? etaSeconds ?? undefined,
-							scope: 'total',
-						}
-
-						latestProgressRef.current = progress
-						return
-					}
 
 					const parts = rawPayload.split(':')
 
