@@ -82,6 +82,8 @@ export function SharingActiveCard({
 	const maxBytesRef = useRef<number>(0)
 	const isFolderTransfer = pathType === 'directory' && isTransporting
 	const fileProgressEntries = Object.entries(fileProgressMap)
+	const shouldShowFileDetails =
+		selectedPaths.length > 1 || fileProgressEntries.length > 0
 
 	useEffect(() => {
 		if (isTransporting && pathType === 'directory') {
@@ -231,7 +233,7 @@ export function SharingActiveCard({
 						<TransferProgressBar progress={progressToDisplay} />
 					</div>
 
-					{fileProgressEntries.length > 0 && (
+					{shouldShowFileDetails && (
 						<div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
 							<button
 								type="button"
@@ -248,6 +250,11 @@ export function SharingActiveCard({
 
 							{isFileDetailsOpen && (
 								<div className="space-y-3">
+									{fileProgressEntries.length === 0 && (
+										<div className="text-[11px] text-muted-foreground">
+											Waiting for per-file progress...
+										</div>
+									)}
 									{fileProgressEntries.map(([fileName, progress]) => (
 										<div key={fileName} className="space-y-1">
 											<div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
