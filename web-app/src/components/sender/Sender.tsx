@@ -29,6 +29,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		isSharing,
 		isTransporting,
 		ticket,
+		selectedPaths,
 		selectedPath,
 		pathType,
 		isLoading,
@@ -36,9 +37,11 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
+		fileProgressMap,
 		isBroadcastMode,
 		activeConnectionCount,
 		handleFileSelect,
+		handleFilesSelect,
 		clearSelectedPath,
 		startSharing,
 		stopSharing,
@@ -77,12 +80,15 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 					<div className="space-y-4 flex-1 flex flex-col">
 						<DragDrop
 							onFileSelect={handleFileSelect}
+							onFilesSelect={handleFilesSelect}
+							selectedPaths={selectedPaths}
 							selectedPath={selectedPath}
 							isLoading={isLoading}
 							onClearSelection={clearSelectedPath}
 						/>
 
 						<ShareActionCard
+							selectedPaths={selectedPaths}
 							selectedPath={selectedPath}
 							isLoading={isLoading}
 							onStartSharing={startSharing}
@@ -122,11 +128,13 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							isLoading={isLoading}
 							isTransporting={isTransporting && !isBroadcastMode}
 							isCompleted={false}
+							selectedPaths={selectedPaths}
 							selectedPath={selectedPath}
 							pathType={pathType}
 							ticket={ticket}
 							copySuccess={copySuccess}
 							transferProgress={transferProgress}
+							fileProgressMap={fileProgressMap}
 							isBroadcastMode={isBroadcastMode}
 							activeConnectionCount={activeConnectionCount}
 							onStartSharing={startSharing}

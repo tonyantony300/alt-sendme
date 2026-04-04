@@ -1,4 +1,10 @@
-import { CheckCircle, Copy, Square } from 'lucide-react'
+import {
+	CheckCircle,
+	ChevronDown,
+	ChevronRight,
+	Copy,
+	Square,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type {
@@ -14,11 +20,13 @@ import { Switch } from '../ui/switch'
 import { toastManager } from '../ui/toast'
 
 export function SharingActiveCard({
+	selectedPaths,
 	selectedPath,
 	pathType,
 	ticket,
 	copySuccess,
 	transferProgress,
+	fileProgressMap,
 	isTransporting,
 	isCompleted,
 	isBroadcastMode,
@@ -69,9 +77,11 @@ export function SharingActiveCard({
 	const [transferStartTime, setTransferStartTime] = useState<number | null>(
 		null
 	)
+	const [isFileDetailsOpen, setIsFileDetailsOpen] = useState(false)
 	const previousBytesRef = useRef<number>(0)
 	const maxBytesRef = useRef<number>(0)
 	const isFolderTransfer = pathType === 'directory' && isTransporting
+	const fileProgressEntries = Object.entries(fileProgressMap)
 
 	useEffect(() => {
 		if (isTransporting && pathType === 'directory') {
@@ -175,12 +185,19 @@ export function SharingActiveCard({
 		? folderProgress || transferProgress || defaultProgress
 		: null
 
+	const totalProgressLabel =
+		selectedPaths.length > 1
+			? `${selectedPaths.length} files total`
+			: t('common:transfer.progress')
+
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
 				<p className="text-xs mb-4 max-w-40 sm:max-w-120 truncate">
 					<strong className="mr-1">{t('common:sender.fileLabel')}</strong>{' '}
-					{selectedPath?.split('/').pop()}
+					{selectedPaths.length > 1
+						? `${selectedPaths[0]?.split('/').pop() || ''} ... 等${selectedPaths.length - 1}个文件`
+						: selectedPath?.split('/').pop()}
 				</p>
 
 				<StatusIndicator
@@ -205,7 +222,51 @@ export function SharingActiveCard({
 			)}
 
 			{isTransporting && progressToDisplay && (
-				<TransferProgressBar progress={progressToDisplay} />
+				<div className="space-y-3">
+					<div className="space-y-2">
+						<div className="flex items-center justify-between text-xs text-muted-foreground">
+							<span>{totalProgressLabel}</span>
+							<span>{progressToDisplay.percentage.toFixed(1)}%</span>
+						</div>
+						<TransferProgressBar progress={progressToDisplay} />
+					</div>
+
+					{fileProgressEntries.length > 0 && (
+						<div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
+							<button
+								type="button"
+								onClick={() => setIsFileDetailsOpen((prev) => !prev)}
+								className="flex items-center gap-1 text-xs font-medium text-muted-foreground"
+							>
+								{isFileDetailsOpen ? (
+									<ChevronDown className="h-4 w-4" />
+								) : (
+									<ChevronRight className="h-4 w-4" />
+								)}
+								<span>File details</span>
+							</button>
+
+							{isFileDetailsOpen && (
+								<div className="space-y-3">
+									{fileProgressEntries.map(([fileName, progress]) => (
+										<div key={fileName} className="space-y-1">
+											<div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+												<span className="truncate">{fileName}</span>
+												<span>{progress.percentage.toFixed(1)}%</span>
+											</div>
+											<div className="h-2 overflow-hidden rounded-full bg-input">
+												<div
+													className="h-full rounded-full bg-[var(--app-primary)] transition-all duration-300"
+													style={{ width: `${progress.percentage}%` }}
+												/>
+											</div>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					)}
+				</div>
 			)}
 
 			<Button

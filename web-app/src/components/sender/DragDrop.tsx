@@ -6,6 +6,11 @@ import { useDragDrop } from '../../hooks/useDragDrop'
 
 interface DragDropProps {
 	onFileSelect: (path: string, pathType?: 'file' | 'directory') => Promise<void>
+	onFilesSelect: (
+		paths: string[],
+		pathType?: 'file' | 'directory'
+	) => Promise<void>
+	selectedPaths: string[]
 	selectedPath?: string | null
 	isLoading?: boolean
 	onClearSelection: () => void
@@ -13,6 +18,8 @@ interface DragDropProps {
 
 export function DragDrop({
 	onFileSelect,
+	onFilesSelect,
+	selectedPaths,
 	selectedPath,
 	isLoading,
 	onClearSelection,
@@ -24,10 +31,11 @@ export function DragDrop({
 		alertDialog,
 		toggleFullPath,
 		browseFile,
+		addMoreFiles,
 		browseFolder,
 		closeAlert,
 		checkPathType,
-	} = useDragDrop(onFileSelect)
+	} = useDragDrop(onFileSelect, onFilesSelect)
 
 	useEffect(() => {
 		if (selectedPath) {
@@ -39,11 +47,13 @@ export function DragDrop({
 		<div className="h-full flex flex-col justify-between">
 			<Dropzone
 				isDragActive={isDragActive}
+				selectedPaths={selectedPaths}
 				selectedPath={selectedPath || null}
 				pathType={pathType}
 				showFullPath={showFullPath}
 				isLoading={isLoading || false}
 				onToggleFullPath={toggleFullPath}
+				onAddFiles={addMoreFiles}
 				onClearSelection={onClearSelection}
 			/>
 

@@ -4,6 +4,7 @@ import type { TransferProgress } from './transfer'
 export interface SharingState {
 	isSharing: boolean
 	ticket: string | null
+	selectedPaths: string[]
 	selectedPath: string | null
 	isLoading: boolean
 	isBroadcastMode: boolean
@@ -18,6 +19,7 @@ export interface SenderState extends SharingState, CopyState {
 }
 
 export interface ShareActionProps {
+	selectedPaths: string[]
 	selectedPath: string | null
 	isLoading: boolean
 }
@@ -27,11 +29,13 @@ export interface SharingControlsProps {
 	isLoading: boolean
 	isTransporting: boolean
 	isCompleted: boolean
+	selectedPaths: string[]
 	selectedPath: string | null
 	pathType: 'file' | 'directory' | null
 	ticket: string | null
 	copySuccess: boolean
 	transferProgress: TransferProgress | null
+	fileProgressMap: Record<string, TransferProgress>
 	isBroadcastMode: boolean
 	activeConnectionCount?: number
 	onStartSharing: () => Promise<void>
@@ -55,11 +59,13 @@ export interface DragDropState {
 
 export interface DropzoneProps {
 	isDragActive: boolean
+	selectedPaths: string[]
 	selectedPath: string | null
 	pathType: 'file' | 'directory' | null
 	showFullPath: boolean
 	isLoading: boolean
 	onToggleFullPath: () => void
+	onAddFiles: () => Promise<void>
 	onClearSelection: () => void
 }
 

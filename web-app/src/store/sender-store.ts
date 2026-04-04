@@ -11,6 +11,7 @@ export interface SenderStore {
 
 	// Transfer data
 	ticket: string | null
+	selectedPaths: string[]
 	selectedPath: string | null
 	pathType: 'file' | 'directory' | null
 	thumbnailUrl: string | null
@@ -27,6 +28,8 @@ export interface SenderStore {
 	// Actions
 	setViewState: (state: SenderViewState) => void
 	setTicket: (ticket: string | null) => void
+	setSelectedPaths: (paths: string[]) => void
+	addSelectedPaths: (paths: string[]) => void
 	setSelectedPath: (path: string | null) => void
 	setPathType: (type: 'file' | 'directory' | null) => void
 	setThumbnailUrl: (url: string | null) => void
@@ -50,6 +53,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 	// Initial state
 	viewState: 'IDLE',
 	ticket: null,
+	selectedPaths: [],
 	selectedPath: null,
 	pathType: null,
 	thumbnailUrl: null,
@@ -83,6 +87,23 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 		set({ viewState })
 	},
 	setTicket: (ticket) => set({ ticket }),
+	setSelectedPaths: (selectedPaths) =>
+		set({
+			selectedPaths,
+			selectedPath: selectedPaths[0] ?? null,
+		}),
+	addSelectedPaths: (paths) =>
+		set((state) => {
+			const deduped = new Set(state.selectedPaths)
+			for (const path of paths) {
+				deduped.add(path)
+			}
+			const selectedPaths = Array.from(deduped)
+			return {
+				selectedPaths,
+				selectedPath: selectedPaths[0] ?? null,
+			}
+		}),
 	setSelectedPath: (selectedPath) => set({ selectedPath }),
 	setPathType: (pathType) => set({ pathType }),
 	setThumbnailUrl: (thumbnailUrl) => set({ thumbnailUrl }),
@@ -141,6 +162,7 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 		set({
 			viewState: 'IDLE',
 			ticket: null,
+			selectedPaths: [],
 			selectedPath: null,
 			pathType: null,
 			thumbnailUrl: null,

@@ -15,6 +15,10 @@ export interface TransferProgress {
 	totalBytes: number
 	speedBps: number
 	percentage: number
+	scope?: 'total' | 'file'
+	currentFileName?: string
+	fileIndex?: number
+	totalFiles?: number
 	etaSeconds?: number
 }
 
