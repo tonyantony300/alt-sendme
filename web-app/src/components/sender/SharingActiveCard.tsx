@@ -1,10 +1,4 @@
-import {
-	CheckCircle,
-	ChevronDown,
-	ChevronRight,
-	Copy,
-	Square,
-} from 'lucide-react'
+import { CheckCircle, Copy, Square } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type {
@@ -26,7 +20,6 @@ export function SharingActiveCard({
 	ticket,
 	copySuccess,
 	transferProgress,
-	fileProgressMap,
 	isTransporting,
 	isCompleted,
 	isBroadcastMode,
@@ -77,13 +70,9 @@ export function SharingActiveCard({
 	const [transferStartTime, setTransferStartTime] = useState<number | null>(
 		null
 	)
-	const [isFileDetailsOpen, setIsFileDetailsOpen] = useState(false)
 	const previousBytesRef = useRef<number>(0)
 	const maxBytesRef = useRef<number>(0)
 	const isFolderTransfer = pathType === 'directory' && isTransporting
-	const fileProgressEntries = Object.entries(fileProgressMap)
-	const shouldShowFileDetails =
-		selectedPaths.length > 1 || fileProgressEntries.length > 0
 
 	useEffect(() => {
 		if (isTransporting && pathType === 'directory') {
@@ -232,47 +221,6 @@ export function SharingActiveCard({
 						</div>
 						<TransferProgressBar progress={progressToDisplay} />
 					</div>
-
-					{shouldShowFileDetails && (
-						<div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
-							<button
-								type="button"
-								onClick={() => setIsFileDetailsOpen((prev) => !prev)}
-								className="flex items-center gap-1 text-xs font-medium text-muted-foreground"
-							>
-								{isFileDetailsOpen ? (
-									<ChevronDown className="h-4 w-4" />
-								) : (
-									<ChevronRight className="h-4 w-4" />
-								)}
-								<span>File details</span>
-							</button>
-
-							{isFileDetailsOpen && (
-								<div className="space-y-3">
-									{fileProgressEntries.length === 0 && (
-										<div className="text-[11px] text-muted-foreground">
-											Waiting for per-file progress...
-										</div>
-									)}
-									{fileProgressEntries.map(([fileName, progress]) => (
-										<div key={fileName} className="space-y-1">
-											<div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
-												<span className="truncate">{fileName}</span>
-												<span>{progress.percentage.toFixed(1)}%</span>
-											</div>
-											<div className="h-2 overflow-hidden rounded-full bg-input">
-												<div
-													className="h-full rounded-full bg-[var(--app-primary)] transition-all duration-300"
-													style={{ width: `${progress.percentage}%` }}
-												/>
-											</div>
-										</div>
-									))}
-								</div>
-							)}
-						</div>
-					)}
 				</div>
 			)}
 

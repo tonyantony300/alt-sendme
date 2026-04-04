@@ -37,7 +37,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
-		fileProgressMap,
 		isBroadcastMode,
 		activeConnectionCount,
 		handleFileSelect,
@@ -134,7 +133,6 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 							ticket={ticket}
 							copySuccess={copySuccess}
 							transferProgress={transferProgress}
-							fileProgressMap={fileProgressMap}
 							isBroadcastMode={isBroadcastMode}
 							activeConnectionCount={activeConnectionCount}
 							onStartSharing={startSharing}

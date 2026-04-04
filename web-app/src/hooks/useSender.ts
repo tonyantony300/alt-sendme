@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useTranslation } from '../i18n/react-i18next-compat'
@@ -25,7 +25,6 @@ export interface UseSenderReturn {
 	alertDialog: any
 	transferMetadata: TransferMetadata | null
 	transferProgress: TransferProgress | null
-	fileProgressMap: Record<string, TransferProgress>
 	isBroadcastMode: boolean
 	activeConnectionCount: number
 
@@ -89,9 +88,6 @@ export function useSender(): UseSenderReturn {
 	const selectedPathRef = useRef<string | null>(null)
 	const pathTypeRef = useRef<'file' | 'directory' | null>(null)
 	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
-	const [fileProgressMap, setFileProgressMap] = useState<
-		Record<string, TransferProgress>
-	>({})
 
 	useEffect(() => {
 		// console.log('[useSender] selectedPath changed, updating ref:', {
@@ -149,7 +145,6 @@ export function useSender(): UseSenderReturn {
 					// console.log('[useSender] transfer-started: broadcast mode - staying in SHARING state')
 					setTransferProgress(null)
 					setTransferMetadata(null)
-					setFileProgressMap({})
 					wasManuallyStoppedRef.current = false
 
 					if (progressUpdateIntervalRef.current) {
@@ -166,7 +161,6 @@ export function useSender(): UseSenderReturn {
 					setViewState('TRANSPORTING')
 					setTransferProgress(null)
 					setTransferMetadata(null)
-					setFileProgressMap({})
 					wasManuallyStoppedRef.current = false
 
 					if (progressUpdateIntervalRef.current) {
@@ -190,29 +184,27 @@ export function useSender(): UseSenderReturn {
 					const parsedPayload = rawPayload.startsWith('{')
 						? (JSON.parse(rawPayload) as {
 								scope?: 'total' | 'file'
-								currentFileName?: string
 								bytesTransferred: number
 								totalBytes: number
 								speedBps: number
 								percentage: number
 								etaSeconds?: number | null
-								fileIndex?: number | null
-								totalFiles?: number | null
 							})
 						: null
 
 					if (parsedPayload) {
 						const {
 							scope = 'total',
-							currentFileName = '',
 							bytesTransferred,
 							totalBytes,
 							speedBps,
 							percentage,
 							etaSeconds,
-							fileIndex,
-							totalFiles,
 						} = parsedPayload
+
+						if (scope === 'file') {
+							return
+						}
 
 						speedAveragerRef.current.addSample(speedBps)
 						const avgSpeed = speedAveragerRef.current.getAverage()
@@ -225,20 +217,10 @@ export function useSender(): UseSenderReturn {
 							speedBps,
 							percentage,
 							etaSeconds: eta ?? etaSeconds ?? undefined,
-							currentFileName,
-							fileIndex: fileIndex ?? undefined,
-							totalFiles: totalFiles ?? undefined,
-							scope,
+							scope: 'total',
 						}
 
-						if (scope === 'file' && currentFileName) {
-							setFileProgressMap((current) => ({
-								...current,
-								[currentFileName]: progress,
-							}))
-						} else {
-							latestProgressRef.current = progress
-						}
+						latestProgressRef.current = progress
 						return
 					}
 
@@ -557,7 +539,6 @@ export function useSender(): UseSenderReturn {
 		setSelectedPaths([])
 		setSelectedPath(null)
 		setPathType(null)
-		setFileProgressMap({})
 	}
 
 	const startSharing = async () => {
@@ -702,7 +683,6 @@ export function useSender(): UseSenderReturn {
 			setSelectedPath(null)
 			setPathType(null)
 			setTransferProgress(null)
-			setFileProgressMap({})
 			transferStartTimeRef.current = null
 		} catch (error) {
 			console.error('Failed to stop sharing:', error)
@@ -755,7 +735,6 @@ export function useSender(): UseSenderReturn {
 		alertDialog,
 		transferMetadata,
 		transferProgress,
-		fileProgressMap,
 		isBroadcastMode,
 		activeConnectionCount,
 

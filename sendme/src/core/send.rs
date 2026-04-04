@@ -21,8 +21,6 @@ use iroh_blobs::{
 use n0_future::StreamExt;
 use n0_future::{task::AbortOnDropHandle, BufferedStreamExt};
 use rand::Rng;
-use serde::Serialize;
-use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::{
     path::{Component, Path, PathBuf},
@@ -139,35 +137,21 @@ fn emit_event(app_handle: &AppHandle, event_name: &str) {
     }
 }
 
-fn emit_progress_event(app_handle: &AppHandle, payload: &TransferProgressPayload) {
+fn emit_progress_event(
+    app_handle: &AppHandle,
+    bytes_transferred: u64,
+    total_size: u64,
+    speed: f64,
+) {
     if let Some(handle) = app_handle {
         let event_name = "transfer-progress";
 
-        if let Ok(payload) = serde_json::to_string(payload) {
-            if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
-                tracing::warn!("Failed to emit progress event: {}", e);
-            }
-        } else if let Err(e) = handle.emit_event_with_payload(event_name, "{}") {
+        // Keep legacy payload format for frontend compatibility: "bytes:total:speed"
+        let payload = format!("{}:{}:{}", bytes_transferred, total_size, speed);
+        if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
             tracing::warn!("Failed to emit progress event: {}", e);
         }
     }
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct TransferProgressPayload {
-    scope: &'static str,
-    current_file_name: String,
-    bytes_transferred: u64,
-    total_bytes: u64,
-    speed_bps: f64,
-    percentage: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    eta_seconds: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    file_index: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    total_files: Option<usize>,
 }
 
 fn emit_active_connection_count(app_handle: &AppHandle, count: usize) {
@@ -259,7 +243,6 @@ pub async fn start_share(
             app_handle_clone,
             size,
             entry_type_for_progress,
-            HashMap::new(),
         ));
 
         let router = iroh::protocol::Router::builder(endpoint)
@@ -371,18 +354,13 @@ pub async fn start_share_items(
         );
 
         let import_result = import_paths(canonical_paths, blobs.store()).await?;
-        let (ref _temp_tag, size, ref collection) = import_result;
-        let file_names_by_hash: HashMap<String, String> = collection
-            .iter()
-            .map(|(name, hash)| (hash.to_hex().to_string(), name.to_string()))
-            .collect();
+        let (ref _temp_tag, size, ref _collection) = import_result;
 
         let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
             progress_rx,
             app_handle_clone,
             size,
             entry_type_for_progress,
-            file_names_by_hash,
         ));
 
         let router = iroh::protocol::Router::builder(endpoint)
@@ -702,7 +680,6 @@ async fn show_provide_progress_with_logging(
     app_handle: AppHandle,
     total_collection_size: u64,
     entry_type: String,
-    file_names_by_hash: HashMap<String, String>,
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -716,7 +693,6 @@ async fn show_provide_progress_with_logging(
         start_time: Instant,
         total_size: u64,
         current_size: u64,
-        current_file_name: String,
     }
 
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> =
@@ -746,13 +722,7 @@ async fn show_provide_progress_with_logging(
                     iroh_blobs::provider::events::ProviderMessage::GetRequestReceivedNotify(msg) => {
                         let connection_id = msg.connection_id;
                         let request_id = msg.request_id;
-                        let file_names_by_hash_task = file_names_by_hash.clone();
                         let completed_bytes_task = completed_bytes.clone();
-                        let request_hash_hex = msg.request.hash.to_hex().to_string();
-                        let request_file_name = file_names_by_hash_task
-                            .get(&request_hash_hex)
-                            .cloned()
-                            .unwrap_or_else(|| format!("blob-{}", request_hash_hex));
 
                         active_requests.fetch_add(1, Ordering::SeqCst);
 
@@ -785,7 +755,6 @@ async fn show_provide_progress_with_logging(
                                                         start_time: Instant::now(),
                                                         total_size: _m.size,
                                                         current_size: 0,
-                                                        current_file_name: request_file_name.clone(),
                                                     }
                                                 );
                                                 states.len()
@@ -811,7 +780,6 @@ async fn show_provide_progress_with_logging(
                                                         start_time: Instant::now(),
                                                         total_size: m.end_offset,
                                                         current_size: 0,
-                                                        current_file_name: request_file_name.clone(),
                                                     }
                                                 );
                                                 states.len()
@@ -826,12 +794,11 @@ async fn show_provide_progress_with_logging(
                                             has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
 
-                                        if let Some((current_file_name, current_total_size, current_file_bytes, elapsed)) = {
+                                        if let Some((_current_total_size, _current_file_bytes, elapsed)) = {
                                             let mut states = transfer_states_task.lock().await;
                                             states.get_mut(&(connection_id, request_id)).map(|state| {
                                                 state.current_size = m.end_offset.min(state.total_size);
                                                 (
-                                                    state.current_file_name.clone(),
                                                     state.total_size,
                                                     state.current_size,
                                                     state.start_time.elapsed().as_secs_f64(),
@@ -844,47 +811,17 @@ async fn show_provide_progress_with_logging(
                                                 0.0
                                             };
 
-                                            let file_percentage = if current_total_size > 0 {
-                                                (current_file_bytes as f64 / current_total_size as f64) * 100.0
-                                            } else {
-                                                0.0
-                                            };
-
-                                            let file_payload = TransferProgressPayload {
-                                                scope: "file",
-                                                current_file_name: current_file_name.clone(),
-                                                bytes_transferred: current_file_bytes,
-                                                total_bytes: current_total_size,
-                                                speed_bps,
-                                                percentage: file_percentage,
-                                                eta_seconds: None,
-                                                file_index: None,
-                                                total_files: None,
-                                            };
-                                            emit_progress_event(&app_handle_task, &file_payload);
-
                                             let total_active_bytes = {
                                                 let states = transfer_states_task.lock().await;
                                                 states.values().map(|s| s.current_size).sum::<u64>()
                                             };
                                             let total_bytes = completed_bytes_task.load(Ordering::SeqCst) + total_active_bytes;
-                                            let total_percentage = if total_collection_size > 0 {
-                                                (total_bytes as f64 / total_collection_size as f64) * 100.0
-                                            } else {
-                                                0.0
-                                            };
-                                            let total_payload = TransferProgressPayload {
-                                                scope: "total",
-                                                current_file_name: current_file_name,
-                                                bytes_transferred: total_bytes,
-                                                total_bytes: total_collection_size,
+                                            emit_progress_event(
+                                                &app_handle_task,
+                                                total_bytes,
+                                                total_collection_size,
                                                 speed_bps,
-                                                percentage: total_percentage,
-                                                eta_seconds: None,
-                                                file_index: None,
-                                                total_files: Some(file_names_by_hash_task.len()),
-                                            };
-                                            emit_progress_event(&app_handle_task, &total_payload);
+                                            );
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {

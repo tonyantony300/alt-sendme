@@ -35,7 +35,6 @@ export interface SharingControlsProps {
 	ticket: string | null
 	copySuccess: boolean
 	transferProgress: TransferProgress | null
-	fileProgressMap: Record<string, TransferProgress>
 	isBroadcastMode: boolean
 	activeConnectionCount?: number
 	onStartSharing: () => Promise<void>
