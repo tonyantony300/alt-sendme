@@ -66,6 +66,7 @@ export function useReceiver(): UseReceiverReturn {
 	const [previewMetadata, setPreviewMetadata] =
 		useState<TicketPreviewMetadata | null>(null)
 	const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+	const pendingConflictNoticeRef = useRef<string | null>(null)
 
 	const fileNamesRef = useRef<string[]>([])
 	const transferProgressRef = useRef<TransferProgress | null>(null)
@@ -206,6 +207,17 @@ export function useReceiver(): UseReceiverReturn {
 		type: 'info',
 	})
 
+	const showAlert = useCallback(
+		(title: string, description: string, type: AlertType = 'info') => {
+			setAlertDialog({ isOpen: true, title, description, type })
+		},
+		[]
+	)
+
+	const closeAlert = useCallback(() => {
+		setAlertDialog((prev) => ({ ...prev, isOpen: false }))
+	}, [])
+
 	useEffect(() => {
 		const initializeSavePath = async () => {
 			try {
@@ -294,6 +306,34 @@ export function useReceiver(): UseReceiverReturn {
 				}
 			})
 
+			await registerListener('receive-conflicts', (event: any) => {
+				try {
+					const payload = event.payload as string
+					const conflicts = JSON.parse(payload) as Array<{
+						original: string
+						resolved: string
+					}>
+
+					if (conflicts.length === 0) return
+
+					const preview = conflicts
+						.slice(0, 3)
+						.map((c) => {
+							const from = c.original.split('/').pop() || c.original
+							const to = c.resolved.split('/').pop() || c.resolved
+							return `${from} -> ${to}`
+						})
+						.join('\n')
+
+					pendingConflictNoticeRef.current =
+						conflicts.length > 3
+							? `${preview}\n... and ${conflicts.length - 3} more`
+							: preview
+				} catch (error) {
+					console.error('Failed to parse receive-conflicts event:', error)
+				}
+			})
+
 			await registerListener('receive-completed', () => {
 				setIsTransporting(false)
 				setIsCompleted(true)
@@ -332,6 +372,15 @@ export function useReceiver(): UseReceiverReturn {
 				}
 				setTransferMetadata(metadata)
 
+				if (pendingConflictNoticeRef.current) {
+					showAlert(
+						'Name conflicts resolved',
+						pendingConflictNoticeRef.current,
+						'info'
+					)
+					pendingConflictNoticeRef.current = null
+				}
+
 				void sendSystemNotification({
 					title: t('common:receiver.downloadCompleted'),
 					body: displayName,
@@ -349,19 +398,7 @@ export function useReceiver(): UseReceiverReturn {
 				unlisten()
 			})
 		}
-	}, [t])
-
-	const showAlert = (
-		title: string,
-		description: string,
-		type: AlertType = 'info'
-	) => {
-		setAlertDialog({ isOpen: true, title, description, type })
-	}
-
-	const closeAlert = () => {
-		setAlertDialog((prev) => ({ ...prev, isOpen: false }))
-	}
+	}, [t, showAlert])
 
 	const handleTicketChange = (newTicket: string) => {
 		setTicket(newTicket)
@@ -409,6 +446,7 @@ export function useReceiver(): UseReceiverReturn {
 			setTransferStartTime(null)
 			setPreviewMetadata(null)
 			setIsPreviewLoading(false)
+			pendingConflictNoticeRef.current = null
 			folderOpenTriggeredRef.current = false
 
 			await invoke<string>('receive_file', {
@@ -436,6 +474,7 @@ export function useReceiver(): UseReceiverReturn {
 		setFileNames([])
 		setPreviewMetadata(null)
 		setIsPreviewLoading(false)
+		pendingConflictNoticeRef.current = null
 		folderOpenTriggeredRef.current = false
 	}
 
