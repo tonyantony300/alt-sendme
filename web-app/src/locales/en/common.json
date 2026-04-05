@@ -72,6 +72,7 @@
 		"instruction5": "Files will be saved to your selected folder",
 		"keepAppOpen": "Keep this app open while downloading files",
 		"connectingToSender": "Connecting to sender",
+		"previewMultipleItems": "{{name}} ... and {{count}} more",
 		"downloadingInProgress": "Downloading in progress",
 		"downloadCompleted": "Download completed",
 		"stopReceiving": "Stop receiving",

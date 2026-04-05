@@ -19,6 +19,7 @@ import { useAppSettingStore } from '@/store/app-setting'
 
 interface BackendFileMetadata {
 	file_name: string
+	item_count: number
 	size: number
 	thumbnail?: string | null
 	mime_type?: string | null
@@ -178,6 +179,7 @@ export function useReceiver(): UseReceiverReturn {
 
 				setPreviewMetadata({
 					fileName: payload.file_name,
+					itemCount: payload.item_count,
 					size: payload.size,
 					thumbnail: payload.thumbnail ?? undefined,
 					mimeType: payload.mime_type ?? undefined,

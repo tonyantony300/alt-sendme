@@ -619,6 +619,7 @@ mod tests {
         // Setup metadata
         let expected_metadata = FileMetadata {
             file_name: "test_e2e_file.txt".into(),
+            item_count: 1,
             size: 25,
             thumbnail: Some("data:image/jpeg;base64,e2e_test_thumbnail=".into()),
             mime_type: Some("text/plain".into()),

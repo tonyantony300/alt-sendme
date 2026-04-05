@@ -196,6 +196,7 @@ async fn build_send_metadata(paths: &[PathBuf]) -> Result<FileMetadata, String> 
 
         return Ok(FileMetadata {
             file_name,
+            item_count: 1,
             size: total_size,
             thumbnail,
             mime_type,
@@ -207,11 +208,11 @@ async fn build_send_metadata(paths: &[PathBuf]) -> Result<FileMetadata, String> 
         .unwrap_or_default()
         .to_string_lossy()
         .into_owned();
-    let display_name = format!("{} ... 等{}个文件", first_name, paths.len() - 1);
     let thumbnail = generate_thumbnail(&paths[0]).await;
 
     Ok(FileMetadata {
-        file_name: display_name,
+        file_name: first_name,
+        item_count: paths.len() as u32,
         size: total_size,
         thumbnail,
         mime_type: Some("application/x-iroh-collection".to_string()),
@@ -438,6 +439,7 @@ mod tests {
 
         let expected_metadata = FileMetadata {
             file_name: "preview-source.txt".to_string(),
+            item_count: 1,
             size: 123,
             thumbnail: Some("data:image/jpeg;base64,ZmFrZS10aHVtYg==".to_string()),
             mime_type: Some("text/plain".to_string()),

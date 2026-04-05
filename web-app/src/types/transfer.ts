@@ -24,6 +24,7 @@ export interface TransferProgress {
 
 export interface TicketPreviewMetadata {
 	fileName: string
+	itemCount: number
 	size: number
 	thumbnail?: string
 	mimeType?: string

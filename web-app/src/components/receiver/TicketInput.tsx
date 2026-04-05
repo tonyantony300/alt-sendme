@@ -45,6 +45,13 @@ export function TicketInput({
 			? previewMetadata.thumbnail
 			: `data:image/jpeg;base64,${previewMetadata.thumbnail}`
 		: null
+	const previewDisplayName =
+		previewMetadata && previewMetadata.itemCount > 1
+			? t('common:receiver.previewMultipleItems', {
+					name: previewMetadata.fileName,
+					count: previewMetadata.itemCount - 1,
+				})
+			: previewMetadata?.fileName
 
 	return (
 		<div className="space-y-4">
@@ -120,7 +127,7 @@ export function TicketInput({
 					</div>
 					<div className="min-w-0 flex-1">
 						<p className="text-sm font-medium truncate">
-							{previewMetadata.fileName}
+							{previewDisplayName}
 						</p>
 						<p className="text-xs text-muted-foreground">
 							{formatFileSize(previewMetadata.size)}

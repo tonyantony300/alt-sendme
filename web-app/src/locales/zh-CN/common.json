@@ -60,6 +60,7 @@
 		"instruction5": "文件将保存到您选择的文件夹",
 		"keepAppOpen": "在下载文件时请保持应用打开",
 		"connectingToSender": "正在连接到发送者",
+		"previewMultipleItems": "{{name}} ... 等{{count}}个文件",
 		"downloadingInProgress": "正在下载",
 		"downloadCompleted": "下载完成",
 		"stopReceiving": "停止接收",

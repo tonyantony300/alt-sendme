@@ -76,6 +76,7 @@ impl From<RelayModeOption> for iroh::RelayMode {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileMetadata {
     pub file_name: String,
+    pub item_count: u32,
     pub size: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub thumbnail: Option<String>,
