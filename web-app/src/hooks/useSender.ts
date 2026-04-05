@@ -37,6 +37,7 @@ export interface UseSenderReturn {
 		pathType?: 'file' | 'directory'
 	) => Promise<void>
 	clearSelectedPath: () => void
+	removeSelectedPath: (path: string) => void
 	startSharing: () => Promise<void>
 	stopSharing: () => Promise<void>
 	copyTicket: () => Promise<void>
@@ -66,6 +67,7 @@ export function useSender(): UseSenderReturn {
 		setTicket,
 		setSelectedPaths,
 		addSelectedPaths,
+		removeSelectedPath: removeSelectedPathFromStore,
 		setSelectedPath,
 		setPathType,
 		setIsLoading,
@@ -499,6 +501,10 @@ export function useSender(): UseSenderReturn {
 		setPathType(null)
 	}
 
+	const removeSelectedPath = (path: string) => {
+		removeSelectedPathFromStore(path)
+	}
+
 	const startSharing = async () => {
 		// console.log('[useSender] startSharing called:', {
 		// 	selectedPath,
@@ -699,6 +705,7 @@ export function useSender(): UseSenderReturn {
 		handleFileSelect,
 		handleFilesSelect,
 		clearSelectedPath,
+		removeSelectedPath,
 		startSharing,
 		stopSharing,
 		copyTicket,

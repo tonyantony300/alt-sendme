@@ -30,6 +30,7 @@ export interface SenderStore {
 	setTicket: (ticket: string | null) => void
 	setSelectedPaths: (paths: string[]) => void
 	addSelectedPaths: (paths: string[]) => void
+	removeSelectedPath: (path: string) => void
 	setSelectedPath: (path: string | null) => void
 	setPathType: (type: 'file' | 'directory' | null) => void
 	setThumbnailUrl: (url: string | null) => void
@@ -102,6 +103,15 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 			return {
 				selectedPaths,
 				selectedPath: selectedPaths[0] ?? null,
+			}
+		}),
+	removeSelectedPath: (path) =>
+		set((state) => {
+			const selectedPaths = state.selectedPaths.filter((item) => item !== path)
+			return {
+				selectedPaths,
+				selectedPath: selectedPaths[0] ?? null,
+				pathType: selectedPaths.length ? state.pathType : null,
 			}
 		}),
 	setSelectedPath: (selectedPath) => set({ selectedPath }),

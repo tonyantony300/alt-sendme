@@ -10,6 +10,7 @@ interface DragDropProps {
 		paths: string[],
 		pathType?: 'file' | 'directory'
 	) => Promise<void>
+	onRemoveSelectedPath: (path: string) => void
 	selectedPaths: string[]
 	selectedPath?: string | null
 	isLoading?: boolean
@@ -19,6 +20,7 @@ interface DragDropProps {
 export function DragDrop({
 	onFileSelect,
 	onFilesSelect,
+	onRemoveSelectedPath,
 	selectedPaths,
 	selectedPath,
 	isLoading,
@@ -32,6 +34,7 @@ export function DragDrop({
 		toggleFullPath,
 		browseFile,
 		addMoreFiles,
+		addMoreFolders,
 		browseFolder,
 		closeAlert,
 		checkPathType,
@@ -54,6 +57,8 @@ export function DragDrop({
 				isLoading={isLoading || false}
 				onToggleFullPath={toggleFullPath}
 				onAddFiles={addMoreFiles}
+				onAddFolders={addMoreFolders}
+				onRemoveSelectedPath={onRemoveSelectedPath}
 				onClearSelection={onClearSelection}
 			/>
 

@@ -65,6 +65,8 @@ export interface DropzoneProps {
 	isLoading: boolean
 	onToggleFullPath: () => void
 	onAddFiles: () => Promise<void>
+	onAddFolders: () => Promise<void>
+	onRemoveSelectedPath: (path: string) => void
 	onClearSelection: () => void
 }
 

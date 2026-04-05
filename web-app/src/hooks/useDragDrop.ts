@@ -16,6 +16,7 @@ export interface UseDragDropReturn {
 	toggleFullPath: () => void
 	browseFile: () => Promise<void>
 	addMoreFiles: () => Promise<void>
+	addMoreFolders: () => Promise<void>
 	browseFolder: () => Promise<void>
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
@@ -241,6 +242,39 @@ export function useDragDrop(
 		await browseFile()
 	}, [browseFile])
 
+	const addMoreFolders = useCallback(async () => {
+		try {
+			if (IS_ANDROID) {
+				const selected = await selectSendFolder()
+
+				if (selected) {
+					const selectedPath = selected.cachedPath.toString()
+					await triggerFilesSelect([selectedPath], 'directory')
+					return
+				}
+
+				return
+			}
+
+			const selected = await open({
+				multiple: true,
+				directory: true,
+			})
+
+			if (!selected) return
+
+			const paths = Array.isArray(selected) ? selected : [selected]
+			await triggerFilesSelect(paths, 'directory')
+		} catch (error) {
+			console.error('Failed to open folders dialog:', error)
+			showAlert(
+				t('common:errors.folderDialogFailed'),
+				`${t('common:errors.folderDialogFailedDesc')}: ${error}`,
+				'error'
+			)
+		}
+	}, [showAlert, t, triggerFilesSelect])
+
 	return {
 		isDragActive,
 		pathType,
@@ -250,6 +284,7 @@ export function useDragDrop(
 		toggleFullPath,
 		browseFile,
 		addMoreFiles,
+		addMoreFolders,
 		browseFolder,
 		showAlert,
 		closeAlert,

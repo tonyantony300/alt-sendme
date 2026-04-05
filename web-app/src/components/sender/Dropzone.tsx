@@ -1,5 +1,12 @@
-import { motion } from 'framer-motion'
-import { ChevronDown, ChevronRight, Plus, Upload, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+	ChevronDown,
+	ChevronRight,
+	FolderPlus,
+	Plus,
+	Upload,
+	X,
+} from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
 import { FolderIcon, getFileIcon } from '../illustration'
@@ -13,9 +20,12 @@ export function Dropzone({
 	isLoading,
 	onToggleFullPath,
 	onAddFiles,
+	onAddFolders,
+	onRemoveSelectedPath,
 	onClearSelection,
 }: DropzoneProps) {
 	const { t } = useTranslation()
+	const hasSelection = selectedPaths.length > 0
 	const getDropzoneStyles = () => {
 		const baseStyles: React.CSSProperties = {}
 
@@ -30,7 +40,7 @@ export function Dropzone({
 		if (selectedPath && !isLoading) {
 			return {
 				...baseStyles,
-				paddingBottom: '2rem',
+				paddingBottom: '1.5rem',
 			}
 		}
 
@@ -104,19 +114,17 @@ export function Dropzone({
 		return t('common:sender.orBrowse')
 	}
 
-	const renderSuccessIcon = () => {
-		if (pathType === 'directory') return <FolderIcon />
+	const renderPathIcon = (path: string) => {
+		const fileName = path.split('/').pop() ?? path
+		const hasExtension = fileName.includes('.')
 
-		const fileExtension = selectedPath
-			? selectedPath.split('.').pop()?.toLowerCase()
-			: null
-		if (!fileExtension) return null
+		if ((pathType === 'directory' && !hasExtension) || !hasExtension) {
+			return <FolderIcon size="lg" className="origin-center scale-110" />
+		}
 
-		const icon = getFileIcon(fileExtension)
-		if (!icon) return null
-
-		const IconComponent = icon
-		return <IconComponent />
+		const extension = fileName.split('.').pop()?.toLowerCase() ?? ''
+		const IconComponent = getFileIcon(extension)
+		return <IconComponent size="lg" className="origin-center scale-110" />
 	}
 
 	return (
@@ -124,10 +132,24 @@ export function Dropzone({
 			layout
 			transition={{ duration: 0.3, ease: 'easeInOut' }}
 			style={getDropzoneStyles()}
-			className="relative border-2 border-dashed rounded-lg p-16 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground flex items-center justify-center h-64 border-border"
+			className="relative border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground h-64 border-border overflow-hidden"
 		>
 			{selectedPath && !isLoading && (
 				<div className="absolute top-3 right-3 flex items-center gap-2">
+					<motion.button
+						key="add-folder-button"
+						type="button"
+						initial={{ opacity: 0, filter: 'blur(4px)' }}
+						animate={{ opacity: 1, filter: 'blur(0px)' }}
+						onClick={(e) => {
+							e.stopPropagation()
+							void onAddFolders()
+						}}
+						className="p-1.5 rounded-md text-muted-foreground cursor-pointer"
+						aria-label="Add more folders"
+					>
+						<FolderPlus className="h-6 w-6" />
+					</motion.button>
 					<motion.button
 						key="add-button"
 						type="button"
@@ -164,27 +186,89 @@ export function Dropzone({
 				animate={{ opacity: 1, filter: 'blur(0px)' }}
 				exit={{ opacity: 0, filter: 'blur(4px)' }}
 				transition={{ duration: 0.25 }}
-				className="space-y-4 w-full"
+				className="h-full w-full"
 			>
-				<div className="flex justify-center items-center h-16">
-					{selectedPath ? (
-						renderSuccessIcon()
-					) : (
-						<Upload
-							className="h-12 w-12 text-foreground/60 data-active:text-accent-foreground transition-transform"
-							data-active={isDragActive ? 'true' : 'false'}
-						/>
-					)}
-				</div>
+				{!hasSelection && (
+					<div className="h-full w-full flex flex-col items-center justify-center space-y-4">
+						<div className="flex justify-center items-center h-16">
+							<Upload
+								className="h-12 w-12 text-foreground/60 data-active:text-accent-foreground transition-transform"
+								data-active={isDragActive ? 'true' : 'false'}
+							/>
+						</div>
 
-				<div>
-					<p className=" hidden sm:block text-lg font-medium mb-2 text-accent-foreground">
-						{getStatusText()}
-					</p>
-					<div className="text-sm truncate text-muted-foreground">
-						{getSubText()}
+						<div>
+							<p className=" hidden sm:block text-lg font-medium mb-2 text-accent-foreground">
+								{getStatusText()}
+							</p>
+							<div className="text-sm truncate text-muted-foreground">
+								{getSubText()}
+							</div>
+						</div>
 					</div>
-				</div>
+				)}
+
+				<AnimatePresence initial={false}>
+					{hasSelection && (
+						<motion.div
+							key="selected-files-preview"
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: 6 }}
+							transition={{ duration: 0.2 }}
+							className="h-full w-full flex flex-col justify-center"
+						>
+							<div className="relative">
+								<div className="overflow-x-auto overflow-y-hidden pb-3 px-1">
+									<motion.div
+										layout
+										className="inline-flex min-w-full justify-start gap-3 pr-3"
+									>
+										<AnimatePresence initial={false}>
+											{selectedPaths.map((path) => {
+												const fileName = path.split('/').pop() ?? path
+												return (
+													<motion.div
+														key={path}
+														layout
+														initial={{ opacity: 0, scale: 0.94 }}
+														animate={{ opacity: 1, scale: 1 }}
+														exit={{ opacity: 0, scale: 0.94 }}
+														transition={{ duration: 0.16 }}
+														className="group relative w-44 shrink-0"
+													>
+														<div className="relative p-1">
+															<button
+																type="button"
+																onClick={(e) => {
+																	e.stopPropagation()
+																	onRemoveSelectedPath(path)
+																}}
+																className="absolute -right-1.5 -top-1.5 z-10 rounded-full border bg-background p-1 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
+																aria-label={`Remove ${fileName}`}
+																title="Remove from sharing"
+															>
+																<X className="h-3.5 w-3.5" />
+															</button>
+
+															<div className="flex h-36 w-full items-center justify-center overflow-hidden">
+																{renderPathIcon(path)}
+															</div>
+														</div>
+
+														<p className="mt-2 truncate text-base text-foreground">
+															{fileName}
+														</p>
+													</motion.div>
+												)
+											})}
+										</AnimatePresence>
+									</motion.div>
+								</div>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</motion.div>
 		</motion.div>
 	)
