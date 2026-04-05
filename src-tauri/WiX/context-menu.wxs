@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
-    <DirectoryRef Id="APPLICATIONFOLDER">
+    <DirectoryRef Id="INSTALLDIR">
       <Component Id="ContextMenuRegistryFiles"
                  Guid="3C4F8A2B-7D19-4E5F-8B3A-C6D0E2F14975">
         <RegistryKey Root="HKLM"
                      Key="SOFTWARE\Classes\*\shell\Send with AltSendme"
                      Action="createAndRemoveOnUninstall">
           <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string" KeyPath="yes"/>
-          <RegistryValue Name="Icon"    Value="[APPLICATIONFOLDER]AltSendme.exe,0" Type="string"/>
+          <RegistryValue Name="Icon"    Value="[INSTALLDIR]AltSendme.exe,0" Type="string"/>
           <RegistryKey Key="command">
-            <RegistryValue Value="&quot;[APPLICATIONFOLDER]AltSendme.exe&quot; &quot;%1&quot;" Type="string"/>
+            <RegistryValue Value="&quot;[INSTALLDIR]AltSendme.exe&quot; &quot;%1&quot;" Type="string"/>
           </RegistryKey>
         </RegistryKey>
 
@@ -18,9 +18,9 @@
                      Key="SOFTWARE\Classes\Directory\shell\Send with AltSendme"
                      Action="createAndRemoveOnUninstall">
           <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string"/>
-          <RegistryValue Name="Icon"    Value="[APPLICATIONFOLDER]AltSendme.exe,0" Type="string"/>
+          <RegistryValue Name="Icon"    Value="[INSTALLDIR]AltSendme.exe,0" Type="string"/>
           <RegistryKey Key="command">
-            <RegistryValue Value="&quot;[APPLICATIONFOLDER]AltSendme.exe&quot; &quot;%1&quot;" Type="string"/>
+            <RegistryValue Value="&quot;[INSTALLDIR]AltSendme.exe&quot; &quot;%1&quot;" Type="string"/>
           </RegistryKey>
         </RegistryKey>
 
@@ -28,9 +28,9 @@
                      Key="SOFTWARE\Classes\Directory\Background\shell\Send with AltSendme"
                      Action="createAndRemoveOnUninstall">
           <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string"/>
-          <RegistryValue Name="Icon"    Value="[APPLICATIONFOLDER]AltSendme.exe,0" Type="string"/>
+          <RegistryValue Name="Icon"    Value="[INSTALLDIR]AltSendme.exe,0" Type="string"/>
           <RegistryKey Key="command">
-            <RegistryValue Value="&quot;[APPLICATIONFOLDER]AltSendme.exe&quot; &quot;%V&quot;" Type="string"/>
+            <RegistryValue Value="&quot;[INSTALLDIR]AltSendme.exe&quot; &quot;%V&quot;" Type="string"/>
           </RegistryKey>
         </RegistryKey>
       </Component>
