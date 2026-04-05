@@ -3,12 +3,11 @@
   <Fragment>
     <DirectoryRef Id="APPLICATIONFOLDER">
       <Component Id="ContextMenuRegistryFiles"
-                 Guid="3C4F8A2B-7D19-4E5F-8B3A-C6D0E2F14975"
-                 KeyPath="yes">
+                 Guid="3C4F8A2B-7D19-4E5F-8B3A-C6D0E2F14975">
         <RegistryKey Root="HKCU"
                      Key="Software\Classes\*\shell\Send with AltSendme"
                      Action="createAndRemoveOnUninstall">
-          <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string"/>
+          <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string" KeyPath="yes"/>
           <RegistryValue Name="Icon"    Value="[APPLICATIONFOLDER]AltSendme.exe,0" Type="string"/>
           <RegistryKey Key="command">
             <RegistryValue Value="&quot;[APPLICATIONFOLDER]AltSendme.exe&quot; &quot;%1&quot;" Type="string"/>
