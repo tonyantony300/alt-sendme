@@ -404,6 +404,30 @@ pub async fn check_path_type(path: String) -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+pub async fn get_paths_mime_types(paths: Vec<String>) -> Result<Vec<Option<String>>, String> {
+    let result = paths
+        .into_iter()
+        .map(|path| {
+            let path_buf = PathBuf::from(path);
+            if path_buf.is_dir() {
+                return Some("inode/directory".to_string());
+            }
+            if path_buf.is_file() {
+                return Some(
+                    mime_guess::from_path(path_buf)
+                        .first_or_octet_stream()
+                        .essence_str()
+                        .to_string(),
+                );
+            }
+            None
+        })
+        .collect();
+
+    Ok(result)
+}
+
 /// Get the current transport status (whether bytes are actively being transferred)
 #[tauri::command]
 pub async fn get_transport_status(state: State<'_, AppStateMutex>) -> Result<bool, String> {

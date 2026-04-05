@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { invoke } from '@tauri-apps/api/core'
 import {
 	ChevronDown,
 	ChevronRight,
@@ -7,9 +8,10 @@ import {
 	Upload,
 	X,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
-import { FolderIcon, getFileIcon } from '../illustration'
+import { getPreviewFileIcon } from '../../lib/fileIcons'
 
 export function Dropzone({
 	isDragActive,
@@ -26,6 +28,43 @@ export function Dropzone({
 }: DropzoneProps) {
 	const { t } = useTranslation()
 	const hasSelection = selectedPaths.length > 0
+	const [mimeTypesByPath, setMimeTypesByPath] = useState<
+		Record<string, string>
+	>({})
+
+	useEffect(() => {
+		if (!selectedPaths.length) {
+			setMimeTypesByPath({})
+			return
+		}
+
+		let mounted = true
+		void (async () => {
+			try {
+				const mimeTypes = await invoke<(string | null)[]>(
+					'get_paths_mime_types',
+					{
+						paths: selectedPaths,
+					}
+				)
+				if (!mounted) return
+
+				const nextMap: Record<string, string> = {}
+				for (const [index, path] of selectedPaths.entries()) {
+					const mimeType = mimeTypes[index]
+					if (mimeType) nextMap[path] = mimeType
+				}
+				setMimeTypesByPath(nextMap)
+			} catch (error) {
+				console.error('Failed to resolve mime types for selected paths:', error)
+			}
+		})()
+
+		return () => {
+			mounted = false
+		}
+	}, [selectedPaths])
+
 	const getDropzoneStyles = () => {
 		const baseStyles: React.CSSProperties = {}
 
@@ -116,15 +155,12 @@ export function Dropzone({
 
 	const renderPathIcon = (path: string) => {
 		const fileName = path.split('/').pop() ?? path
-		const hasExtension = fileName.includes('.')
-
-		if ((pathType === 'directory' && !hasExtension) || !hasExtension) {
-			return <FolderIcon size="lg" className="origin-center scale-110" />
-		}
-
-		const extension = fileName.split('.').pop()?.toLowerCase() ?? ''
-		const IconComponent = getFileIcon(extension)
-		return <IconComponent size="lg" className="origin-center scale-110" />
+		const mimeType = mimeTypesByPath[path]
+		return (
+			<div className="origin-center scale-[1.85]">
+				{getPreviewFileIcon(mimeType, fileName)}
+			</div>
+		)
 	}
 
 	return (
@@ -135,7 +171,7 @@ export function Dropzone({
 			className="relative border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground h-64 border-border overflow-hidden"
 		>
 			{selectedPath && !isLoading && (
-				<div className="absolute top-3 right-3 flex items-center gap-2">
+				<div className="absolute top-3 right-3 z-30 flex items-center gap-2 pointer-events-auto">
 					<motion.button
 						key="add-folder-button"
 						type="button"
@@ -216,7 +252,7 @@ export function Dropzone({
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: 6 }}
 							transition={{ duration: 0.2 }}
-							className="h-full w-full flex flex-col justify-center"
+							className="h-full w-full flex flex-col justify-center pt-12"
 						>
 							<div className="relative">
 								<div className="overflow-x-auto overflow-y-hidden pb-3 px-1">
