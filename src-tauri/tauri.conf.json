@@ -96,7 +96,6 @@
       "timestampUrl": "",
       "wix": {
         "language": "en-US",
-        "installMode": "currentUser",
         "fragmentPaths": [
           "WiX/context-menu.wxs"
         ],

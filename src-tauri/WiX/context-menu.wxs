@@ -4,8 +4,8 @@
     <DirectoryRef Id="APPLICATIONFOLDER">
       <Component Id="ContextMenuRegistryFiles"
                  Guid="3C4F8A2B-7D19-4E5F-8B3A-C6D0E2F14975">
-        <RegistryKey Root="HKCU"
-                     Key="Software\Classes\*\shell\Send with AltSendme"
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Classes\*\shell\Send with AltSendme"
                      Action="createAndRemoveOnUninstall">
           <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string" KeyPath="yes"/>
           <RegistryValue Name="Icon"    Value="[APPLICATIONFOLDER]AltSendme.exe,0" Type="string"/>
@@ -14,8 +14,8 @@
           </RegistryKey>
         </RegistryKey>
 
-        <RegistryKey Root="HKCU"
-                     Key="Software\Classes\Directory\shell\Send with AltSendme"
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Classes\Directory\shell\Send with AltSendme"
                      Action="createAndRemoveOnUninstall">
           <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string"/>
           <RegistryValue Name="Icon"    Value="[APPLICATIONFOLDER]AltSendme.exe,0" Type="string"/>
@@ -24,8 +24,8 @@
           </RegistryKey>
         </RegistryKey>
 
-        <RegistryKey Root="HKCU"
-                     Key="Software\Classes\Directory\Background\shell\Send with AltSendme"
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Classes\Directory\Background\shell\Send with AltSendme"
                      Action="createAndRemoveOnUninstall">
           <RegistryValue Name="MUIVerb" Value="Send with AltSendme" Type="string"/>
           <RegistryValue Name="Icon"    Value="[APPLICATIONFOLDER]AltSendme.exe,0" Type="string"/>
