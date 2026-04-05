@@ -4,7 +4,7 @@ import {
 	ChevronDown,
 	ChevronRight,
 	FolderPlus,
-	Plus,
+	FilePlus,
 	Upload,
 	X,
 } from 'lucide-react'
@@ -198,7 +198,7 @@ export function Dropzone({
 						className="p-1.5 rounded-md text-muted-foreground cursor-pointer"
 						aria-label="Add more files"
 					>
-						<Plus className="h-6 w-6" />
+						<FilePlus className="h-6 w-6" />
 					</motion.button>
 					<motion.button
 						key="clear-button"
@@ -258,7 +258,7 @@ export function Dropzone({
 								<div className="overflow-x-auto overflow-y-hidden pb-3 px-1">
 									<motion.div
 										layout
-										className="inline-flex min-w-full justify-start gap-3 pr-3"
+										className="inline-flex min-w-full justify-center gap-3 pr-3"
 									>
 										<AnimatePresence initial={false}>
 											{selectedPaths.map((path) => {
@@ -273,22 +273,21 @@ export function Dropzone({
 														transition={{ duration: 0.16 }}
 														className="group relative w-44 shrink-0"
 													>
-														<div className="relative p-1">
-															<button
-																type="button"
-																onClick={(e) => {
-																	e.stopPropagation()
-																	onRemoveSelectedPath(path)
-																}}
-																className="absolute -right-1.5 -top-1.5 z-10 rounded-full border bg-background p-1 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
-																aria-label={`Remove ${fileName}`}
-																title="Remove from sharing"
-															>
-																<X className="h-3.5 w-3.5" />
-															</button>
-
-															<div className="flex h-36 w-full items-center justify-center overflow-hidden">
+														<div className="p-1">
+															<div className="relative flex h-36 w-full items-center justify-center overflow-hidden">
 																{renderPathIcon(path)}
+																<button
+																	type="button"
+																	onClick={(e) => {
+																		e.stopPropagation()
+																		onRemoveSelectedPath(path)
+																	}}
+																	className="absolute right-2 top-2 z-10 rounded-full border bg-background p-1 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
+																	aria-label={`Remove ${fileName}`}
+																	title="Remove from sharing"
+																>
+																	<X className="h-3.5 w-3.5" />
+																</button>
 															</div>
 														</div>
 

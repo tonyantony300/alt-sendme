@@ -165,6 +165,10 @@ fn emit_active_connection_count(app_handle: &AppHandle, count: usize) {
     }
 }
 
+/// Deprecated: `start_share_items` should be used instead which supports
+/// sharing multiple files/directories at once and provides better filename handling.
+///
+/// todo: Testing and cli should be migrated to `start_share_items`
 pub async fn start_share(
     path: PathBuf,
     options: SendOptions,
