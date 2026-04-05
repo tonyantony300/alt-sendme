@@ -7,7 +7,7 @@ use sendme::{
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{Emitter, State};
+use tauri::{Emitter, Manager, State};
 
 // Wrapper for Tauri AppHandle that implements EventEmitter
 struct TauriEventEmitter {
@@ -40,6 +40,29 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
     tokio::task::spawn_blocking(move || get_total_size(&path))
         .await
         .map_err(|e| format!("Task join error: {}", e))?
+}
+
+#[tauri::command]
+pub async fn focus_main_window(app_handle: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app_handle.get_webview_window("main") {
+        window.show().map_err(|e| e.to_string())?;
+        if window.is_minimized().map_err(|e| e.to_string())? {
+            window.unminimize().map_err(|e| e.to_string())?;
+        }
+        window.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    if let Some(window) = app_handle.webview_windows().values().next() {
+        window.show().map_err(|e| e.to_string())?;
+        if window.is_minimized().map_err(|e| e.to_string())? {
+            window.unminimize().map_err(|e| e.to_string())?;
+        }
+        window.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    Err("No window available to focus".to_string())
 }
 
 #[tauri::command]
