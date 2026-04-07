@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { invoke } from '@tauri-apps/api/core'
 import {
+	ChevronsLeft,
+	ChevronsRight,
 	ChevronDown,
 	ChevronRight,
 	FolderPlus,
@@ -8,7 +10,7 @@ import {
 	Upload,
 	X,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
 import { getPreviewFileIcon } from '../../lib/fileIcons'
@@ -36,6 +38,10 @@ export function Dropzone({
 	const [mimeTypesByPath, setMimeTypesByPath] = useState<
 		Record<string, string>
 	>({})
+	const previewScrollerRef = useRef<HTMLDivElement | null>(null)
+	const previewScrollerCleanupRef = useRef<(() => void) | null>(null)
+	const [canScrollLeft, setCanScrollLeft] = useState(false)
+	const [canScrollRight, setCanScrollRight] = useState(false)
 
 	useEffect(() => {
 		if (!selectedPaths.length) {
@@ -69,6 +75,60 @@ export function Dropzone({
 			mounted = false
 		}
 	}, [selectedPaths])
+
+	const updateScrollHints = () => {
+		const container = previewScrollerRef.current
+		if (!container) {
+			setCanScrollLeft(false)
+			setCanScrollRight(false)
+			return
+		}
+
+		const { scrollLeft, scrollWidth, clientWidth } = container
+		const maxScrollLeft = scrollWidth - clientWidth
+		setCanScrollLeft(scrollLeft > 4)
+		setCanScrollRight(maxScrollLeft - scrollLeft > 4)
+	}
+
+	const attachPreviewScroller = (node: HTMLDivElement | null) => {
+		previewScrollerCleanupRef.current?.()
+		previewScrollerCleanupRef.current = null
+		previewScrollerRef.current = node
+
+		if (!node) {
+			updateScrollHints()
+			return
+		}
+
+		updateScrollHints()
+		node.addEventListener('scroll', updateScrollHints, { passive: true })
+
+		previewScrollerCleanupRef.current = () => {
+			node.removeEventListener('scroll', updateScrollHints)
+		}
+	}
+
+	useEffect(() => {
+		const handleResize = () => {
+			const container = previewScrollerRef.current
+			if (!container) {
+				setCanScrollLeft(false)
+				setCanScrollRight(false)
+				return
+			}
+
+			const { scrollLeft, scrollWidth, clientWidth } = container
+			const maxScrollLeft = scrollWidth - clientWidth
+			setCanScrollLeft(scrollLeft > 4)
+			setCanScrollRight(maxScrollLeft - scrollLeft > 4)
+		}
+
+		window.addEventListener('resize', handleResize)
+		return () => {
+			previewScrollerCleanupRef.current?.()
+			window.removeEventListener('resize', handleResize)
+		}
+	}, [])
 
 	const getDropzoneStyles = () => {
 		const baseStyles: React.CSSProperties = {}
@@ -174,6 +234,19 @@ export function Dropzone({
 		)
 	}
 
+	const handlePreviewWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+		const container = event.currentTarget
+		if (
+			Math.abs(event.deltaY) <= Math.abs(event.deltaX) ||
+			container.scrollWidth <= container.clientWidth
+		) {
+			return
+		}
+
+		container.scrollLeft += event.deltaY
+		event.preventDefault()
+	}
+
 	return (
 		<motion.div
 			layout
@@ -263,13 +336,27 @@ export function Dropzone({
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: 6 }}
 							transition={{ duration: 0.2 }}
-							className="h-full w-full flex flex-col pt-12"
+							className="h-full w-full flex flex-col justify-center pt-12"
 						>
-							<div className="relative flex-1 min-h-0">
-								<div className="h-full overflow-y-auto overflow-x-hidden pb-3 px-1">
+							<div className="relative">
+								{canScrollLeft ? (
+									<div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex w-12 items-center justify-start bg-gradient-to-r from-accent via-accent/90 to-transparent pl-1">
+										<ChevronsLeft className="h-4 w-4 text-muted-foreground/80" />
+									</div>
+								) : null}
+								{canScrollRight ? (
+									<div className="pointer-events-none absolute inset-y-0 right-0 z-10 flex w-12 items-center justify-end bg-gradient-to-l from-accent via-accent/90 to-transparent pr-1">
+										<ChevronsRight className="h-4 w-4 text-muted-foreground/80" />
+									</div>
+								) : null}
+								<div
+									ref={attachPreviewScroller}
+									className="overflow-x-auto overflow-y-hidden pb-3 px-1"
+									onWheel={handlePreviewWheel}
+								>
 									<motion.div
 										layout
-										className="grid grid-cols-2 gap-3 pr-1 sm:grid-cols-3 lg:grid-cols-4"
+										className="inline-flex min-w-full justify-center gap-3 pr-3"
 									>
 										<AnimatePresence initial={false}>
 											{selectedPaths.map((path) => {
@@ -282,7 +369,7 @@ export function Dropzone({
 														animate={{ opacity: 1, scale: 1 }}
 														exit={{ opacity: 0, scale: 0.94 }}
 														transition={{ duration: 0.16 }}
-														className="group relative min-w-0"
+														className="group relative w-44 shrink-0"
 													>
 														<div className="p-1">
 															<div className="relative flex h-36 w-full items-center justify-center overflow-hidden">
