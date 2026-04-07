@@ -65,6 +65,10 @@ export function getPreviewFileIcon(
 		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
 	}
 
+	if (mimeType === 'application/x-iroh-collection') {
+		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
+	}
+
 	// When image thumbnail fails to load, fallback to generic image icon.
 	if (mimeType?.startsWith('image/')) {
 		return <ImageIcon size="md" className={`${BASE_ICON_CLASS} mt-1`} />
@@ -75,10 +79,6 @@ export function getPreviewFileIcon(
 		['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v'].includes(ext)
 	) {
 		return <Film className="h-16 w-16 text-muted-foreground" />
-	}
-
-	if (mimeType === 'application/x-iroh-collection') {
-		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
 	}
 
 	return <DefaultFileIcon size="md" className={BASE_ICON_CLASS} />

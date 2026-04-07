@@ -434,87 +434,43 @@ fn dedup_name(name: &str, seen: &mut BTreeMap<String, usize>) -> String {
     }
 }
 
-fn collect_path_preview_files(
-    path: &Path,
-    root_name: &str,
-) -> Result<Vec<(String, PathBuf)>, String> {
-    if path.is_file() {
-        return Ok(vec![(root_name.to_string(), path.to_path_buf())]);
-    }
-
-    if path.is_dir() {
-        let mut out = Vec::new();
-        for entry in walkdir::WalkDir::new(path) {
-            let entry = entry.map_err(|e| format!("Failed to traverse {}: {e}", path.display()))?;
-            if !entry.file_type().is_file() {
-                continue;
-            }
-
-            let rel = entry.path().strip_prefix(path).map_err(|e| {
-                format!(
-                    "Failed to strip prefix for {} against {}: {e}",
-                    entry.path().display(),
-                    path.display()
-                )
-            })?;
-
-            let relative_path = if rel.as_os_str().is_empty() {
-                PathBuf::from(root_name)
-            } else {
-                let mut prefixed = PathBuf::from(root_name);
-                prefixed.push(rel);
-                prefixed
-            };
-            let safe_name = relative_path.to_string_lossy().replace('\\', "/");
-            out.push((safe_name, entry.path().to_path_buf()));
-        }
-        return Ok(out);
-    }
-
-    Err(format!(
-        "Path is neither a file nor a directory: {}",
-        path.display()
-    ))
-}
-
 async fn collect_preview_items(paths: &[PathBuf]) -> Result<Vec<FilePreviewItem>, String> {
-    let mut entries: Vec<(String, PathBuf)> = Vec::new();
+    let mut items = Vec::with_capacity(paths.len());
     let mut seen_names = BTreeMap::new();
 
     for path in paths {
-        let root_name = path
+        let file_name = path
             .file_name()
             .and_then(|name| name.to_str())
             .filter(|name| !name.is_empty())
-            .unwrap_or("item");
-
-        let collected = collect_path_preview_files(path, root_name)?;
-        for (name, file_path) in collected {
-            let final_name = dedup_name(&name, &mut seen_names);
-            entries.push((final_name, file_path));
-        }
-    }
-
-    entries.sort_by(|a, b| a.0.cmp(&b.0));
-
-    let mut items = Vec::with_capacity(entries.len());
-    for (file_name, file_path) in entries {
-        let metadata = std::fs::metadata(&file_path)
-            .map_err(|e| format!("Failed to read metadata for {}: {e}", file_path.display()))?;
-        let mime_type = Some(
-            mime_guess::from_path(&file_path)
-                .first_or_octet_stream()
-                .essence_str()
-                .to_string(),
-        );
-        let thumbnail = generate_thumbnail(&file_path).await;
+            .unwrap_or("item")
+            .to_string();
+        let final_name = dedup_name(&file_name, &mut seen_names);
+        let size = get_total_size(path)?;
+        let mime_type = if path.is_dir() {
+            Some("inode/directory".to_string())
+        } else {
+            Some(
+                mime_guess::from_path(path)
+                    .first_or_octet_stream()
+                    .essence_str()
+                    .to_string(),
+            )
+        };
+        let thumbnail = if path.is_file() {
+            generate_thumbnail(path).await
+        } else {
+            None
+        };
         items.push(FilePreviewItem {
-            file_name,
-            size: metadata.len(),
+            file_name: final_name,
+            size,
             thumbnail,
             mime_type,
         });
     }
+
+    items.sort_by(|a, b| a.file_name.cmp(&b.file_name));
 
     Ok(items)
 }
