@@ -50,15 +50,17 @@ function TicketPreviewCard({
       ? `${previewMetadata.fileName}:${previewMetadata.thumbnail}`
       : null;
   const previewThumbnailSrc = getThumbnailSrc(previewMetadata.thumbnail);
-  const previewDisplayName =
-    previewMetadata.itemCount > 1
-      ? t("common:receiver.previewMultipleItems", {
-          name: previewMetadata.fileName,
-          count: previewMetadata.itemCount - 1,
-        })
-      : previewMetadata.fileName;
   const previewItems = previewMetadata.items ?? [];
   const canExpandPreviewList = previewItems.length > 1;
+  const previewDisplayName =
+    canExpandPreviewList && isPreviewListExpanded
+      ? t("common:receiver.multipleFilesFound")
+      : previewMetadata.itemCount > 1
+        ? t("common:receiver.previewMultipleItems", {
+            name: previewMetadata.fileName,
+            count: previewMetadata.itemCount - 1,
+          })
+        : previewMetadata.fileName;
 
   const hasFailedThumbnail = (key: string | null) =>
     Boolean(key && failedThumbnailKeys[key]);

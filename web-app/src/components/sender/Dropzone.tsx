@@ -13,6 +13,11 @@ import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
 import { getPreviewFileIcon } from '../../lib/fileIcons'
 
+const getPathBaseName = (path: string) => {
+	const normalized = path.replace(/\\/g, '/')
+	return normalized.split('/').pop() ?? path
+}
+
 export function Dropzone({
 	isDragActive,
 	selectedPaths,
@@ -109,7 +114,7 @@ export function Dropzone({
 		if (isLoading) return t('common:sender.pleaseWaitProcessing')
 		if (selectedPaths.length > 1) {
 			const firstPath = selectedPaths[0]
-			const firstName = firstPath?.split('/').pop() ?? ''
+			const firstName = firstPath ? getPathBaseName(firstPath) : ''
 			const extraCount = selectedPaths.length - 1
 			return (
 				<div>
@@ -126,7 +131,7 @@ export function Dropzone({
 			)
 		}
 		if (selectedPath) {
-			const fileName = selectedPath.split('/').pop() ?? ''
+			const fileName = getPathBaseName(selectedPath)
 			const displayName =
 				fileName.length > 60 ? `${fileName.slice(0, 60)}…` : fileName
 			return (
@@ -160,7 +165,7 @@ export function Dropzone({
 	}
 
 	const renderPathIcon = (path: string) => {
-		const fileName = path.split('/').pop() ?? path
+		const fileName = getPathBaseName(path)
 		const mimeType = mimeTypesByPath[path]
 		return (
 			<div className="origin-center scale-[1.85]">
@@ -258,17 +263,17 @@ export function Dropzone({
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: 6 }}
 							transition={{ duration: 0.2 }}
-							className="h-full w-full flex flex-col justify-center pt-12"
+							className="h-full w-full flex flex-col pt-12"
 						>
-							<div className="relative">
-								<div className="overflow-x-auto overflow-y-hidden pb-3 px-1">
+							<div className="relative flex-1 min-h-0">
+								<div className="h-full overflow-y-auto overflow-x-hidden pb-3 px-1">
 									<motion.div
 										layout
-										className="inline-flex min-w-full justify-center gap-3 pr-3"
+										className="grid grid-cols-2 gap-3 pr-1 sm:grid-cols-3 lg:grid-cols-4"
 									>
 										<AnimatePresence initial={false}>
 											{selectedPaths.map((path) => {
-												const fileName = path.split('/').pop() ?? path
+												const fileName = getPathBaseName(path)
 												return (
 													<motion.div
 														key={path}
@@ -277,7 +282,7 @@ export function Dropzone({
 														animate={{ opacity: 1, scale: 1 }}
 														exit={{ opacity: 0, scale: 0.94 }}
 														transition={{ duration: 0.16 }}
-														className="group relative w-44 shrink-0"
+														className="group relative min-w-0"
 													>
 														<div className="p-1">
 															<div className="relative flex h-36 w-full items-center justify-center overflow-hidden">
