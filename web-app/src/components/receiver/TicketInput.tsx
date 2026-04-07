@@ -49,7 +49,11 @@ function TicketPreviewCard({
     previewMetadata.thumbnail && previewMetadata.fileName
       ? `${previewMetadata.fileName}:${previewMetadata.thumbnail}`
       : null;
-  const previewThumbnailSrc = getThumbnailSrc(previewMetadata.thumbnail);
+  const shouldShowCollectionIcon =
+    previewMetadata.mimeType === "application/x-iroh-collection";
+  const previewThumbnailSrc = shouldShowCollectionIcon
+    ? null
+    : getThumbnailSrc(previewMetadata.thumbnail);
   const previewItems = previewMetadata.items ?? [];
   const canExpandPreviewList = previewItems.length > 1;
   const previewDisplayName =

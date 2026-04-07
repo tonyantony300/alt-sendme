@@ -10,6 +10,7 @@ import {
 	XlsxIcon,
 	ZipIcon,
 } from '@/components/illustration'
+import { Film } from 'lucide-react'
 import type { ReactElement } from 'react'
 
 const BASE_ICON_CLASS = 'scale-60 origin-center'
@@ -69,7 +70,13 @@ export function getPreviewFileIcon(
 		return <ImageIcon size="md" className={`${BASE_ICON_CLASS} mt-1`} />
 	}
 
-	// For new collection type, use folder icon as default
+	if (
+		mimeType?.startsWith('video/') ||
+		['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v'].includes(ext)
+	) {
+		return <Film className="h-16 w-16 text-muted-foreground" />
+	}
+
 	if (mimeType === 'application/x-iroh-collection') {
 		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
 	}
