@@ -23,6 +23,14 @@ interface BackendFileMetadata {
 	size: number
 	thumbnail?: string | null
 	mime_type?: string | null
+	items?:
+		| {
+				file_name: string
+				size: number
+				thumbnail?: string | null
+				mime_type?: string | null
+		  }[]
+		| null
 }
 
 export interface UseReceiverReturn {
@@ -183,6 +191,12 @@ export function useReceiver(): UseReceiverReturn {
 					size: payload.size,
 					thumbnail: payload.thumbnail ?? undefined,
 					mimeType: payload.mime_type ?? undefined,
+					items: payload.items?.map((item) => ({
+						fileName: item.file_name,
+						size: item.size,
+						thumbnail: item.thumbnail ?? undefined,
+						mimeType: item.mime_type ?? undefined,
+					})),
 				})
 			} catch (error) {
 				if (previewRequestSeqRef.current !== seq) {

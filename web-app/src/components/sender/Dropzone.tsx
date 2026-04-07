@@ -114,7 +114,13 @@ export function Dropzone({
 			return (
 				<div>
 					<div className="font-medium flex items-center justify-center">
-						{`${firstName} ... 等${extraCount}个文件`}
+						{t('common:sender.multipleItemsSelected', {
+							count: extraCount,
+							firstName:
+								firstName.length > 40
+									? `${firstName.slice(0, 40)}…`
+									: firstName,
+						})}
 					</div>
 				</div>
 			)

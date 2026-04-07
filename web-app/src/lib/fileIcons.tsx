@@ -69,5 +69,10 @@ export function getPreviewFileIcon(
 		return <ImageIcon size="md" className={`${BASE_ICON_CLASS} mt-1`} />
 	}
 
+	// For new collection type, use folder icon as default
+	if (mimeType === 'application/x-iroh-collection') {
+		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
+	}
+
 	return <DefaultFileIcon size="md" className={BASE_ICON_CLASS} />
 }

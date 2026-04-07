@@ -28,6 +28,14 @@ export interface TicketPreviewMetadata {
 	size: number
 	thumbnail?: string
 	mimeType?: string
+	items?: TicketPreviewItem[]
+}
+
+export interface TicketPreviewItem {
+	fileName: string
+	size: number
+	thumbnail?: string
+	mimeType?: string
 }
 
 export interface SuccessScreenProps {

@@ -623,6 +623,7 @@ mod tests {
             size: 25,
             thumbnail: Some("data:image/jpeg;base64,e2e_test_thumbnail=".into()),
             mime_type: Some("text/plain".into()),
+            items: None,
         };
 
         let send_opts = SendOptions {

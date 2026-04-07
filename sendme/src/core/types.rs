@@ -74,6 +74,16 @@ impl From<RelayModeOption> for iroh::RelayMode {
 /// Represents metadata about a file being shared,
 /// including file_name, size, optional thumbnail, and MIME type.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FilePreviewItem {
+    pub file_name: String,
+    pub size: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thumbnail: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileMetadata {
     pub file_name: String,
     pub item_count: u32,
@@ -82,6 +92,8 @@ pub struct FileMetadata {
     pub thumbnail: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mime_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub items: Option<Vec<FilePreviewItem>>,
 }
 
 #[derive(

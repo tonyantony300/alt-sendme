@@ -73,6 +73,8 @@
 		"keepAppOpen": "Keep this app open while downloading files",
 		"connectingToSender": "Connecting to sender",
 		"previewMultipleItems": "{{name}} ... and {{count}} more",
+		"expandPreviewList": "Show file list",
+		"collapsePreviewList": "Hide file list",
 		"downloadingInProgress": "Downloading in progress",
 		"downloadCompleted": "Download completed",
 		"stopReceiving": "Stop receiving",

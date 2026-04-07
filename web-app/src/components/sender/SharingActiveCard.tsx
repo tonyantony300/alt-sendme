@@ -187,7 +187,10 @@ export function SharingActiveCard({
 				<p className="text-xs mb-4 max-w-40 sm:max-w-120 truncate">
 					<strong className="mr-1">{t('common:sender.fileLabel')}</strong>{' '}
 					{selectedPaths.length > 1
-						? `${selectedPaths[0]?.split('/').pop() || ''} ... 等${selectedPaths.length - 1}个文件`
+						? t('common:sender.multipleFilesSelected', {
+								name: selectedPaths[0]?.split('/').pop() || '',
+								count: selectedPaths.length - 1,
+							})
 						: selectedPath?.split('/').pop()}
 				</p>
 
@@ -217,7 +220,6 @@ export function SharingActiveCard({
 					<div className="space-y-2">
 						<div className="flex items-center justify-between text-xs text-muted-foreground">
 							<span>{totalProgressLabel}</span>
-							<span>{progressToDisplay.percentage.toFixed(1)}%</span>
 						</div>
 						<TransferProgressBar progress={progressToDisplay} />
 					</div>
