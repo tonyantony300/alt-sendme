@@ -14,6 +14,6 @@ export interface TicketInputProps {
 	previewMetadata: TicketPreviewMetadata | null
 	isPreviewLoading: boolean
 	onTicketChange: (ticket: string) => void
-	onBrowseFolder: () => Promise<void>
+	onBrowseFolder: () => Promise<string | null | undefined>
 	onReceive: () => Promise<void>
 }

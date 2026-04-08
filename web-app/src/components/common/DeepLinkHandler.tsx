@@ -8,7 +8,6 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 interface DeepLinkPayload {
 	action: string
 	ticket: string | null
-	extra?: Record<string, unknown>
 }
 
 /**

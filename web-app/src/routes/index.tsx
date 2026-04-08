@@ -15,13 +15,19 @@ import {
 import { useTranslation } from '@/i18n'
 import { useSenderStore } from '@/store/sender-store'
 
+interface PendingDeepLinkPayload {
+	action: 'send' | 'receive'
+	ticket: string | null
+}
+
 export function IndexPage() {
 	const [searchParams, setSearchParams] = useSearchParams()
 	const tabParam = searchParams.get('tab')
 	const initialTab: 'send' | 'receive' =
 		tabParam === 'receive' ? 'receive' : 'send'
-	const initialTicket = searchParams.get('ticket')
+	const urlTicket = searchParams.get('ticket')
 	const [activeTab, setActiveTab] = useState<'send' | 'receive'>(initialTab)
+	const [initialTicket, setInitialTicket] = useState<string | null>(urlTicket)
 
 	useEffect(() => {
 		const tab = searchParams.get('tab')
@@ -30,6 +36,8 @@ export function IndexPage() {
 		} else {
 			setActiveTab('send')
 		}
+
+		setInitialTicket(searchParams.get('ticket'))
 
 		// Immediately remove ticket from URL to prevent accidental re-pasting
 		if (searchParams.has('ticket')) {
@@ -49,6 +57,9 @@ export function IndexPage() {
 	const setPathType = useSenderStore((state) => state.setPathType)
 
 	useEffect(() => {
+		if (isInitialRender.current) {
+			return
+		}
 		isInitialRender.current = true
 
 		const applyIntent = async (path: string) => {
@@ -62,9 +73,22 @@ export function IndexPage() {
 			}
 		}
 
-		invoke<string | null>('check_launch_intent')
-			.then((path) => {
-				if (path) applyIntent(path)
+		invoke<PendingDeepLinkPayload | null>('check_pending_deep_link')
+			.then((payload) => {
+				if (payload?.action === 'receive') {
+					// Cold-start deep links is prioritized over launch intents
+					setActiveTab('receive')
+					setInitialTicket(payload.ticket)
+					const newParams = new URLSearchParams(searchParams)
+					newParams.set('tab', 'receive')
+					newParams.delete('ticket')
+					setSearchParams(newParams, { replace: true })
+					return
+				}
+
+				return invoke<string | null>('check_launch_intent').then((path) => {
+					if (path) applyIntent(path)
+				})
 			})
 			.catch((e) => console.error('Failed to check launch intent:', e))
 
@@ -75,11 +99,7 @@ export function IndexPage() {
 		return () => {
 			unlistenPromise.then((unlisten) => unlisten())
 		}
-	}, [setSelectedPath, setPathType])
-
-	// Example: Routes can be accessed at different paths
-	// You can navigate using: import { useNavigate } from 'react-router-dom'
-	// const navigate = useNavigate(); navigate('/send') or navigate('/receive')
+	}, [searchParams, setPathType, setSearchParams, setSelectedPath])
 
 	return (
 		<SingleLayoutPage.SingleLayoutPage>

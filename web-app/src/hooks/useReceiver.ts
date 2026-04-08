@@ -38,7 +38,7 @@ export interface UseReceiverReturn {
 	fileNames: string[]
 
 	handleTicketChange: (ticket: string) => void
-	handleBrowseFolder: () => Promise<void>
+	handleBrowseFolder: () => Promise<string | null | undefined>
 	handleReceive: () => Promise<void>
 	handleOpenFolder: () => Promise<void>
 	showAlert: (title: string, description: string, type?: AlertType) => void
@@ -373,7 +373,7 @@ export function useReceiver(): UseReceiverReturn {
 			let selected: string | null
 			if (IS_ANDROID) {
 				const response = await selectDownloadFolder()
-				if (!response) return
+				if (!response) return null
 				selected = response.path.toString()
 				setDownloadsPath(selected)
 			} else {
@@ -386,6 +386,7 @@ export function useReceiver(): UseReceiverReturn {
 			if (selected) {
 				setSavePath(selected)
 			}
+			return selected
 		} catch (error) {
 			console.error('Failed to open folder dialog:', error)
 			showAlert(
@@ -393,11 +394,21 @@ export function useReceiver(): UseReceiverReturn {
 				`${t('common:errors.folderDialogFailedDesc')}: ${error}`,
 				'error'
 			)
+			return null
 		}
 	}
 
 	const handleReceive = async () => {
 		if (!ticket.trim()) return
+		let outputPath = savePath.trim()
+		if (!outputPath) {
+			// Deep-link entry can prefill the ticket before Android has a persisted folder
+			const selectedPath = await handleBrowseFolder()
+			if (!selectedPath?.trim()) {
+				return
+			}
+			outputPath = selectedPath.trim()
+		}
 
 		try {
 			previewRequestSeqRef.current += 1
@@ -413,7 +424,7 @@ export function useReceiver(): UseReceiverReturn {
 
 			await invoke<string>('receive_file', {
 				ticket: ticket.trim(),
-				outputPath: savePath,
+				outputPath,
 			})
 		} catch (error) {
 			console.error('Failed to receive file:', error)

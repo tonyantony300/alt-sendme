@@ -1,4 +1,5 @@
 use sendme::SendResult;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -80,6 +81,16 @@ pub type AppStateMutex = Arc<Mutex<AppState>>;
 /// Dedicated launch-intent state, independent from AppState async mutex contention.
 pub type LaunchIntentState = Arc<std::sync::Mutex<Option<String>>>;
 
+/// Pending deep-link state used to recover cold-start deep links after the frontend is ready.
+/// Kept separate from launch intents so deep links are not mistaken for send-file paths
+pub type PendingDeepLinkState = Arc<std::sync::Mutex<Option<PendingDeepLink>>>;
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PendingDeepLink {
+    pub action: String,
+    pub ticket: Option<String>,
+}
+
 pub fn set_launch_intent(state: &LaunchIntentState, value: String) {
     match state.lock() {
         Ok(mut guard) => {
@@ -102,9 +113,37 @@ pub fn take_launch_intent(state: &LaunchIntentState) -> Option<String> {
     }
 }
 
+pub fn set_pending_deep_link(state: &PendingDeepLinkState, value: PendingDeepLink) {
+    match state.lock() {
+        Ok(mut guard) => {
+            *guard = Some(value);
+        }
+        Err(poisoned) => {
+            let mut guard = poisoned.into_inner();
+            *guard = Some(value);
+        }
+    }
+}
+
+/// Take the pending deep link from state.
+///
+/// Recovers the pending deep link when cold-starting from a deep link
+pub fn take_pending_deep_link(state: &PendingDeepLinkState) -> Option<PendingDeepLink> {
+    match state.lock() {
+        Ok(mut guard) => guard.take(),
+        Err(poisoned) => {
+            let mut guard = poisoned.into_inner();
+            guard.take()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{set_launch_intent, take_launch_intent, AppState, LaunchIntentState};
+    use super::{
+        set_launch_intent, set_pending_deep_link, take_launch_intent, take_pending_deep_link,
+        AppState, LaunchIntentState, PendingDeepLink, PendingDeepLinkState,
+    };
     use std::sync::Arc;
 
     #[tokio::test(flavor = "current_thread")]
@@ -118,6 +157,29 @@ mod tests {
         assert_eq!(
             take_launch_intent(&launch_intent),
             Some("ticket-under-lock".to_string())
+        );
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn pending_deep_link_is_available_under_app_state_contention() {
+        let app_state = Arc::new(tokio::sync::Mutex::new(AppState::default()));
+        let pending_deep_link: PendingDeepLinkState = Arc::new(std::sync::Mutex::new(None));
+
+        let _guard = app_state.lock().await;
+
+        set_pending_deep_link(
+            &pending_deep_link,
+            PendingDeepLink {
+                action: "receive".to_string(),
+                ticket: Some("ticket-under-lock".to_string()),
+            },
+        );
+        assert_eq!(
+            take_pending_deep_link(&pending_deep_link),
+            Some(PendingDeepLink {
+                action: "receive".to_string(),
+                ticket: Some("ticket-under-lock".to_string()),
+            })
         );
     }
 }

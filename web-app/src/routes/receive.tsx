@@ -1,34 +1,22 @@
-import { useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Receiver } from '@/components/receiver/Receiver'
+import { Navigate, useSearchParams } from 'react-router-dom'
 
 /**
- * Receive Page
- * Handles deep-link routing and auto-fills ticket parameter
- * Can be accessed via:
- * - /receive (empty)
- * - /receive?ticket=abc123 (pre-filled from deep link)
+ * Compatibility route for older /receive links.
+ *
+ * # Note
+ * The receive page is now on the index.tsx (UI, handling deep-links, etc).
+ * This route only serves as a compatibility layer to redirect old /receive links to the new location.
  */
 export function ReceivePage() {
-	const [searchParams, setSearchParams] = useSearchParams()
+	const [searchParams] = useSearchParams()
 	const initialTicket = searchParams.get('ticket')
-	useEffect(() => {
-		// Extract ticket from URL query params (from deep-link route)
-		const ticketParam = searchParams.get('ticket')
-		if (ticketParam) {
-			if (searchParams.has('ticket')) {
-				const newParams = new URLSearchParams(searchParams)
-				newParams.delete('ticket')
-				setSearchParams(newParams, { replace: true })
-			}
-		}
-	}, [searchParams, setSearchParams])
+	const targetParams = new URLSearchParams()
+	targetParams.set('tab', 'receive')
+	if (initialTicket) {
+		targetParams.set('ticket', initialTicket)
+	}
 
-	return (
-		<div className="w-full">
-			<Receiver initialTicket={initialTicket || undefined} />
-		</div>
-	)
+	return <Navigate replace to={`/?${targetParams.toString()}`} />
 }
 
 export default ReceivePage

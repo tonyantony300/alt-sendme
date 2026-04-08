@@ -1,8 +1,6 @@
 /// Deep Link URL parsing and handling module
 /// Handles parsing of sendme:// scheme URLs and extracting action/ticket parameters
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-use std::sync::Mutex;
 use url::Url;
 
 /// Maximum allowed length for ticket parameter
@@ -15,23 +13,15 @@ pub struct DeepLinkPayload {
     pub action: String,
     /// Ticket parameter, if provided
     pub ticket: Option<String>,
-    /// Extra metadata for future extensions
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extra: Option<serde_json::Value>,
 }
 
-/// Deep link parser with deduplication
-pub struct DeepLinkParser {
-    /// Track recently processed URLs to prevent duplicates
-    processed_urls: Mutex<HashSet<String>>,
-}
+/// Deep link parser
+pub struct DeepLinkParser;
 
 impl DeepLinkParser {
     /// Create a new deep link parser
     pub fn new() -> Self {
-        Self {
-            processed_urls: Mutex::new(HashSet::new()),
-        }
+        Self
     }
 
     /// Parse a deep link URL and extract payload
@@ -72,8 +62,6 @@ impl DeepLinkParser {
 
         // Parse query parameters
         let mut ticket: Option<String> = None;
-        let mut extra: Option<serde_json::Value> = None;
-
         for (key, value) in url.query_pairs() {
             match key.as_ref() {
                 "ticket" => {
@@ -86,36 +74,11 @@ impl DeepLinkParser {
                     }
                     ticket = Some(value.to_string());
                 }
-                _ => {
-                    // Store extra parameters
-                    if extra.is_none() {
-                        extra = Some(serde_json::json!({}));
-                    }
-                    if let Some(obj) = extra.as_mut() {
-                        if let serde_json::Value::Object(ref mut map) = obj {
-                            map.insert(
-                                key.to_string(),
-                                serde_json::Value::String(value.to_string()),
-                            );
-                        }
-                    }
-                }
+                _ => {}
             }
         }
 
-        Ok(DeepLinkPayload {
-            action,
-            ticket,
-            extra,
-        })
-    }
-
-    /// Atomically mark a URL as processed.
-    ///
-    /// Returns `true` when this URL is seen for the first time,
-    /// `false` when it was already processed before.
-    pub fn mark_processed_if_new(&self, url: &str) -> bool {
-        self.processed_urls.lock().unwrap().insert(url.to_string())
+        Ok(DeepLinkPayload { action, ticket })
     }
 
     /// Validate if action is supported

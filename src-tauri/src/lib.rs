@@ -9,8 +9,9 @@ mod tray;
 mod version;
 
 use commands::{
-    check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status,
-    get_transport_status, receive_file, start_sharing, stop_sharing, toggle_context_menu,
+    check_launch_intent, check_path_type, check_pending_deep_link, fetch_ticket_metadata,
+    get_file_size, get_sharing_status, get_transport_status, receive_file, start_sharing,
+    stop_sharing, toggle_context_menu,
 };
 use features::deep_link::{
     first_non_flag_arg, handle_deep_links, handle_deep_links_handle, DeepLinkParser,
@@ -55,39 +56,20 @@ pub fn run() {
 
     #[cfg(desktop)]
     let builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
-                let _ = window.unminimize();
-                let _ = window.set_focus();
-            }
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.show();
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+        }
 
-            // Check for deep links in the second instance argument list
-            let parser = DeepLinkParser::new();
-            let mut deep_link_handled = false;
-            for arg in &args {
-                if arg.starts_with("sendme://") {
-                    if let Ok(payload) = parser.parse(arg) {
-                        tracing::debug!(
-                            "Deep link intercepted by single-instance guard: action={}",
-                            payload.action
-                        );
-                        let _ = app.emit("deep-link", payload);
-                        deep_link_handled = true;
-                        break;
-                    }
-                }
-            }
-
-            // Only process launch intent if deep link was not handled
-            if !deep_link_handled {
-                let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
-                if let Some(path) = maybe_path {
-                    let state = app.state::<state::LaunchIntentState>();
-                    state::set_launch_intent(state.inner(), path.clone());
-                    let _ = app.emit("launch-intent", path);
-                }
-            }
-        }));
+        // if the second instance incomes with a path, emit it as a launch intent
+        let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
+        if let Some(path) = maybe_path {
+            let state = app.state::<state::LaunchIntentState>();
+            state::set_launch_intent(state.inner(), path.clone());
+            let _ = app.emit("launch-intent", path);
+        }
+    }));
 
     let builder = builder
         .plugin(tauri_plugin_dialog::init())
@@ -98,6 +80,9 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_native_utils::init())
         .plugin(tauri_plugin_deep_link::init())
+        .manage(Arc::new(std::sync::Mutex::new(
+            None::<state::PendingDeepLink>,
+        )))
         .manage(Arc::new(std::sync::Mutex::new(launch_intent_initial())))
         .manage(Arc::new(tokio::sync::Mutex::new(app_state_initial())))
         .invoke_handler(tauri::generate_handler![
@@ -109,6 +94,7 @@ pub fn run() {
             get_transport_status,
             get_file_size,
             check_launch_intent,
+            check_pending_deep_link,
             fetch_ticket_metadata,
             toggle_context_menu,
         ])

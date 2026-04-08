@@ -1,5 +1,7 @@
 use crate::features::thumbnail::generate_thumbnail;
-use crate::state::{AppStateMutex, LaunchIntentState, ShareHandle};
+use crate::state::{
+    AppStateMutex, LaunchIntentState, PendingDeepLink, PendingDeepLinkState, ShareHandle,
+};
 use sendme::{
     core::types::FileMetadata, download, fetch_metadata, start_share, AddrInfoOptions, AppHandle,
     EventEmitter, ReceiveOptions, RelayModeOption, SendOptions,
@@ -280,6 +282,15 @@ pub async fn check_launch_intent(
     state: State<'_, LaunchIntentState>,
 ) -> Result<Option<String>, String> {
     Ok(crate::state::take_launch_intent(state.inner()))
+}
+
+/// Check if there is a pending deep link from cold start.
+/// Returns the payload if present and clears it from state
+#[tauri::command]
+pub async fn check_pending_deep_link(
+    state: State<'_, PendingDeepLinkState>,
+) -> Result<Option<PendingDeepLink>, String> {
+    Ok(crate::state::take_pending_deep_link(state.inner()))
 }
 
 #[tauri::command]

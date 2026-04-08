@@ -1,10 +1,9 @@
 mod deep_link;
 use crate::state;
+pub use deep_link::DeepLinkParser;
 use tauri::Emitter;
 use tauri::Manager as _;
 use tracing::debug;
-
-pub use deep_link::DeepLinkParser;
 
 pub fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
     args.into_iter()
@@ -22,13 +21,6 @@ pub fn handle_deep_links(
         // Parse the deep link URL
         match parser.parse(&url) {
             Ok(payload) => {
-                if !parser.mark_processed_if_new(&url) {
-                    debug!(
-                        "Skipping duplicate deep link: {}",
-                        url.split('?').next().unwrap_or(&url)
-                    );
-                    continue;
-                }
                 debug!("Deep link parsed successfully");
 
                 // Emit event to all windows using Emitter trait
@@ -37,12 +29,16 @@ pub fn handle_deep_links(
                     let _ = window.emit("deep-link", &payload);
                 }
 
-                // For cold start, also update state if it's a receive ticket
-                if is_cold_start && payload.action == "receive" {
-                    if let Some(ticket) = &payload.ticket {
-                        if let Some(state) = app.try_state::<state::LaunchIntentState>() {
-                            state::set_launch_intent(state.inner(), ticket.clone());
-                        }
+                // Persist cold-start deep links until the webview is ready to consume them
+                if is_cold_start {
+                    if let Some(state) = app.try_state::<state::PendingDeepLinkState>() {
+                        state::set_pending_deep_link(
+                            state.inner(),
+                            state::PendingDeepLink {
+                                action: payload.action.clone(),
+                                ticket: payload.ticket.clone(),
+                            },
+                        );
                     }
                 }
             }
@@ -73,13 +69,6 @@ pub fn handle_deep_links_handle(
         // Parse the deep link URL
         match parser.parse(&url) {
             Ok(payload) => {
-                if !parser.mark_processed_if_new(&url) {
-                    debug!(
-                        "Skipping duplicate deep link: {}",
-                        url.split('?').next().unwrap_or(&url)
-                    );
-                    continue;
-                }
                 debug!("Deep link parsed successfully, actions={}", payload.action);
 
                 // Emit event to all windows using Emitter trait
@@ -88,12 +77,16 @@ pub fn handle_deep_links_handle(
                     let _ = window.emit("deep-link", &payload);
                 }
 
-                // For cold start, also update state if it's a receive ticket
-                if is_cold_start && payload.action == "receive" {
-                    if let Some(ticket) = &payload.ticket {
-                        if let Some(state) = app_handle.try_state::<state::LaunchIntentState>() {
-                            state::set_launch_intent(state.inner(), ticket.clone());
-                        }
+                // Persist cold-start deep links until the webview is ready to consume them.
+                if is_cold_start {
+                    if let Some(state) = app_handle.try_state::<state::PendingDeepLinkState>() {
+                        state::set_pending_deep_link(
+                            state.inner(),
+                            state::PendingDeepLink {
+                                action: payload.action.clone(),
+                                ticket: payload.ticket.clone(),
+                            },
+                        );
                     }
                 }
             }
