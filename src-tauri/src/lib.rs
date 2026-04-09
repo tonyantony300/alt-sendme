@@ -62,12 +62,50 @@ pub fn run() {
             let _ = window.set_focus();
         }
 
-        // if the second instance incomes with a path, emit it as a launch intent
-        let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
-        if let Some(path) = maybe_path {
-            let state = app.state::<state::LaunchIntentState>();
-            state::set_launch_intent(state.inner(), path.clone());
-            let _ = app.emit("launch-intent", path);
+        #[cfg(any(target_os = "windows", target_os = "linux"))]
+        let mut deep_link_handled = false;
+        #[cfg(not(any(target_os = "windows", target_os = "linux")))]
+        let deep_link_handled = false;
+
+        #[cfg(any(target_os = "windows", target_os = "linux"))]
+        {
+            let parser = DeepLinkParser::new();
+            for arg in &args {
+                if !arg.starts_with("sendme://") {
+                    continue;
+                }
+
+                match parser.parse(arg) {
+                    Ok(payload) => {
+                        tracing::debug!(
+                            "Deep link intercepted by single-instance guard: action={}",
+                            payload.action
+                        );
+                        let _ = app.emit("deep-link", payload);
+                        deep_link_handled = true;
+                        break;
+                    }
+                    Err(error) => {
+                        let error_payload = serde_json::json!({
+                            "error": error,
+                            "url": arg.split('?').next().unwrap_or(arg)
+                        });
+                        let _ = app.emit("deep-link-error", error_payload);
+                        deep_link_handled = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if !deep_link_handled {
+            // If the second instance comes with a file path, emit it as a launch intent.
+            let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
+            if let Some(path) = maybe_path {
+                let state = app.state::<state::LaunchIntentState>();
+                state::set_launch_intent(state.inner(), path.clone());
+                let _ = app.emit("launch-intent", path);
+            }
         }
     }));
 
