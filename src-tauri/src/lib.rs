@@ -64,8 +64,6 @@ pub fn run() {
 
         #[cfg(any(target_os = "windows", target_os = "linux"))]
         let mut deep_link_handled = false;
-        #[cfg(not(any(target_os = "windows", target_os = "linux")))]
-        let deep_link_handled = false;
 
         #[cfg(any(target_os = "windows", target_os = "linux"))]
         {
@@ -96,10 +94,19 @@ pub fn run() {
                     }
                 }
             }
-        }
 
-        if !deep_link_handled {
-            // If the second instance comes with a file path, emit it as a launch intent.
+            if !deep_link_handled {
+                // If the second instance comes with a file path, emit it as a launch intent.
+                let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
+                if let Some(path) = maybe_path {
+                    let state = app.state::<state::LaunchIntentState>();
+                    state::set_launch_intent(state.inner(), path.clone());
+                    let _ = app.emit("launch-intent", path);
+                }
+            }
+        }
+        #[cfg(not(any(target_os = "windows", target_os = "linux")))]
+        {
             let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
             if let Some(path) = maybe_path {
                 let state = app.state::<state::LaunchIntentState>();
