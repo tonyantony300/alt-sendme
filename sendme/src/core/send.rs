@@ -4,8 +4,9 @@ use crate::core::types::{
 };
 use anyhow::Context;
 use data_encoding::HEXLOWER;
+use iroh::endpoint::presets;
 use iroh::protocol::{AcceptError, ProtocolHandler};
-use iroh::{discovery::pkarr::PkarrPublisher, Endpoint, RelayMode};
+use iroh::{address_lookup::pkarr::PkarrPublisher, Endpoint, RelayMode};
 use iroh_blobs::{
     api::{
         blobs::{AddPathOptions, ImportMode},
@@ -176,7 +177,7 @@ pub async fn start_share(
 
     let relay_mode: RelayMode = options.relay_mode.clone().into();
 
-    let mut builder = Endpoint::builder()
+    let mut builder = Endpoint::builder(presets::N0)
         .alpns(vec![
             iroh_blobs::protocol::ALPN.to_vec(),
             METADATA_ALPN.to_vec(),
@@ -185,13 +186,13 @@ pub async fn start_share(
         .relay_mode(relay_mode.clone());
 
     if options.ticket_type == AddrInfoOptions::Id {
-        builder = builder.discovery(PkarrPublisher::n0_dns());
+        builder = builder.address_lookup(PkarrPublisher::n0_dns());
     }
     if let Some(addr) = options.magic_ipv4_addr {
-        builder = builder.bind_addr_v4(addr);
+        builder = builder.bind_addr(addr)?;
     }
     if let Some(addr) = options.magic_ipv6_addr {
-        builder = builder.bind_addr_v6(addr);
+        builder = builder.bind_addr(addr)?;
     }
 
     let suffix = rand::rng().random::<[u8; 16]>();
