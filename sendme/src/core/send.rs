@@ -696,10 +696,20 @@ async fn show_provide_progress_with_logging(
     struct TransferState {
         start_time: Instant,
         total_size: u64,
+        last_offset: u64,
+    }
+
+    #[derive(Default)]
+    struct AggregateProgressState {
+        completed_bytes: u64,
+        last_emitted_bytes: u64,
+        last_update_time: Option<Instant>,
     }
 
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> =
         Arc::new(Mutex::new(std::collections::HashMap::new()));
+
+    let aggregate_progress = Arc::new(Mutex::new(AggregateProgressState::default()));
 
     let active_requests = Arc::new(AtomicUsize::new(0));
     let completed_requests = Arc::new(AtomicUsize::new(0));
@@ -736,6 +746,7 @@ async fn show_provide_progress_with_logging(
                         let completed_requests_task = completed_requests.clone();
                         let has_emitted_started_task = has_emitted_started.clone();
                         let has_any_transfer_task = has_any_transfer.clone();
+                        let aggregate_progress_task = aggregate_progress.clone();
                         let last_request_time_task = last_request_time.clone();
                         let entry_type_task = entry_type.clone();
 
@@ -755,6 +766,7 @@ async fn show_provide_progress_with_logging(
                                                     TransferState {
                                                         start_time: Instant::now(),
                                                         total_size: total_collection_size,
+                                                        last_offset: 0
                                                     }
                                                 );
                                                 states.len()
@@ -779,6 +791,7 @@ async fn show_provide_progress_with_logging(
                                                     TransferState {
                                                         start_time: Instant::now(),
                                                         total_size: total_collection_size,
+                                                        last_offset: 0
                                                     }
                                                 );
                                                 states.len()
@@ -793,20 +806,51 @@ async fn show_provide_progress_with_logging(
                                             has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
 
-                                        if let Some((total_size, elapsed)) = {
-                                            let states = transfer_states_task.lock().await;
-                                            states.get(&(connection_id, request_id)).map(|state| {
-                                                (state.total_size, state.start_time.elapsed().as_secs_f64())
-                                            })
-                                        } {
-                                            let speed_bps = if elapsed > 0.0 {
-                                                m.end_offset as f64 / elapsed
+                                        if let Some((total_size, _elapsed)) = {
+                                            let mut states = transfer_states_task.lock().await;
+                                            if let Some(state) = states.get_mut(&(connection_id, request_id)) {
+                                                state.last_offset = m.end_offset.min(state.total_size);
+                                                Some((state.total_size, state.start_time.elapsed().as_secs_f64()))
                                             } else {
-                                                0.0
+                                                None
+                                            }
+                                        } {
+                                            let (current_bytes, speed_bps) = {
+                                                let states = transfer_states_task.lock().await;
+                                                let mut aggregate = aggregate_progress_task.lock().await;
+
+                                                let active_bytes = states
+                                                    .values()
+                                                    .map(|state| state.last_offset.min(state.total_size))
+                                                    .sum::<u64>();
+                                                let current_bytes = aggregate
+                                                    .completed_bytes
+                                                    .saturating_add(active_bytes)
+                                                    .min(total_collection_size);
+
+                                                let now = Instant::now();
+                                                let speed_bps = if let Some(last_update_time) = aggregate.last_update_time {
+                                                    let elapsed_secs = now.duration_since(last_update_time).as_secs_f64();
+                                                    if elapsed_secs > 0.0 {
+                                                        current_bytes
+                                                            .saturating_sub(aggregate.last_emitted_bytes) as f64
+                                                            / elapsed_secs
+                                                    } else {
+                                                        0.0
+                                                    }
+                                                } else {
+                                                    0.0
+                                                };
+
+                                                aggregate.last_update_time = Some(now);
+                                                aggregate.last_emitted_bytes = current_bytes;
+
+                                                (current_bytes, speed_bps)
                                             };
+
                                             emit_progress_event(
                                                 &app_handle_task,
-                                                m.end_offset.min(total_size),
+                                                current_bytes,
                                                 total_size,
                                                 speed_bps,
                                             );
@@ -814,10 +858,30 @@ async fn show_provide_progress_with_logging(
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         if transfer_started && !request_completed {
-                                            let active_count = {
+                                            let (active_count, _request_total_size, _current_bytes) = {
                                                 let mut states = transfer_states_task.lock().await;
-                                                states.remove(&(connection_id, request_id));
-                                                states.len()
+                                                let request_total_size = states
+                                                .remove(&(connection_id, request_id))
+                                                .map(|state| state.total_size)
+                                                .unwrap_or(0);
+                                                let active_count = states.len();
+                                                let active_bytes = states
+                                                .values()
+                                                .map(|state| state.last_offset.min(state.total_size))
+                                                .sum::<u64>();
+                                                let current_bytes =  {
+                                                    let mut aggregate = aggregate_progress_task.lock().await;
+                                                    if request_total_size > 0 {
+                                                        aggregate.completed_bytes = aggregate.completed_bytes.saturating_add(request_total_size);
+                                                    }
+                                                    let current_bytes = aggregate
+                                                    .completed_bytes
+                                                    .saturating_add(active_bytes)
+                                                    .min(total_collection_size);
+                                                    aggregate.last_emitted_bytes = current_bytes;
+                                                    current_bytes
+                                                };
+                                                (active_count, request_total_size, current_bytes)
                                             };
 
                                             emit_active_connection_count(&app_handle_task, active_count);
@@ -877,6 +941,21 @@ async fn show_provide_progress_with_logging(
                                                 states.len()
                                             };
 
+                                            let _current_bytes = {
+                                                let status = transfer_states_task.lock().await;
+                                                let active_bytes = status
+                                                .values()
+                                                .map(|state| state.last_offset.min(state.total_size))
+                                                .sum::<u64>();
+                                                let mut aggregate = aggregate_progress_task.lock().await;
+                                                let current_bytes = aggregate
+                                                .completed_bytes
+                                                .saturating_add(active_bytes)
+                                                .min(total_collection_size);
+                                                aggregate.last_emitted_bytes = current_bytes;
+                                                current_bytes
+                                            };
+
                                             emit_active_connection_count(&app_handle_task, active_count);
 
                                             request_completed = true;
@@ -915,6 +994,21 @@ async fn show_provide_progress_with_logging(
                                     let has_active_transfers = {
                                         let states = transfer_states_task.lock().await;
                                         !states.is_empty()
+                                    };
+
+                                    let _current_bytes = {
+                                        let states = transfer_states_task.lock().await;
+                                        let active_bytes = states
+                                        .values()
+                                        .map(|state| state.last_offset.min(state.total_size))
+                                        .sum::<u64>();
+                                        let mut aggregate = aggregate_progress_task.lock().await;
+                                        let current_bytes = aggregate
+                                        .completed_bytes
+                                        .saturating_add(active_bytes)
+                                        .min(total_collection_size);
+                                        aggregate.last_emitted_bytes = current_bytes;
+                                        current_bytes
                                     };
 
                                     let last_request_recent = {

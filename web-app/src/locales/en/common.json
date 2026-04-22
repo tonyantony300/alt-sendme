@@ -41,6 +41,7 @@
 		"fileSelected": "File selected",
 		"folderSelected": "Folder selected",
 		"itemSelected": "Item selected",
+		"multipleFilesSelected": "{{name}} ... and {{count}} more",
 		"browseFile": "Browse File",
 		"browseFolder": "Browse Folder",
 		"copyToClipboard": "Copy to clipboard",
