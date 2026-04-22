@@ -127,7 +127,7 @@ pub async fn download(
 
     let secret_key = get_or_create_secret()?;
 
-    let mut builder = Endpoint::builder(presets::N0)
+    let mut builder = Endpoint::builder(presets::Minimal)
         .alpns(vec![])
         .secret_key(secret_key)
         .relay_mode(options.relay_mode.clone().into());
