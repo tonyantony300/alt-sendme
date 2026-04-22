@@ -148,8 +148,10 @@ AltSendme uses open-source public relay servers to support establishing direct c
 
 ## Roadmap 🚧
 
-- Improving usability for Linux distros, Windows and mac
-- Unthrottled, Reliable transfers with self-hosted relays
+- Cross-platform Mobile versions
+- Phrase-based Addressing via Iroh-gossip and PAKE
+- Unthrottled, Reliable transfers with fully self-hosted relays
+- Web version (Send and receive from browser)
 - Better system/network insights into transfer process
 
 
