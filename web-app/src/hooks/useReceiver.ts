@@ -33,6 +33,38 @@ interface BackendFileMetadata {
 		| null
 }
 
+const isAbsolutePath = (path: string) => {
+	if (!path) return false
+	return path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path)
+}
+
+const normalizeSeparators = (path: string) => path.replace(/\\/g, '/')
+
+const countTopLevelItems = (names: string[]) => {
+	const topLevelItems = new Set<string>()
+
+	for (const name of names) {
+		const normalized = normalizeSeparators(name)
+		if (!normalized) continue
+
+		if (isAbsolutePath(normalized)) {
+			const segments = normalized.split('/').filter(Boolean)
+			const lastSegment = segments[segments.length - 1]
+			if (lastSegment) {
+				topLevelItems.add(lastSegment)
+			}
+			continue
+		}
+
+		const [topLevel] = normalized.split('/')
+		if (topLevel) {
+			topLevelItems.add(topLevel)
+		}
+	}
+
+	return topLevelItems.size
+}
+
 export interface UseReceiverReturn {
 	ticket: string
 	isReceiving: boolean
@@ -75,6 +107,12 @@ export function useReceiver(): UseReceiverReturn {
 	const [previewMetadata, setPreviewMetadata] =
 		useState<TicketPreviewMetadata | null>(null)
 	const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
+		isOpen: false,
+		title: '',
+		description: '',
+		type: 'info',
+	})
 	const pendingConflictNoticeRef = useRef<string | null>(null)
 
 	const fileNamesRef = useRef<string[]>([])
@@ -84,13 +122,7 @@ export function useReceiver(): UseReceiverReturn {
 	const folderOpenTriggeredRef = useRef(false)
 	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 	const previewRequestSeqRef = useRef(0)
-
-	const isAbsolutePath = (path: string) => {
-		if (!path) return false
-		return path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path)
-	}
-
-	const normalizeSeparators = (path: string) => path.replace(/\\/g, '/')
+	const transferItemCountRef = useRef<number | undefined>(undefined)
 
 	const resolveRevealPath = async (basePath: string, names: string[]) => {
 		if (!basePath) return null
@@ -215,13 +247,6 @@ export function useReceiver(): UseReceiverReturn {
 			window.clearTimeout(timer)
 		}
 	}, [ticket, isReceiving])
-
-	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
-		isOpen: false,
-		title: '',
-		description: '',
-		type: 'info',
-	})
 
 	const showAlert = useCallback(
 		(title: string, description: string, type: AlertType = 'info') => {
@@ -361,19 +386,21 @@ export function useReceiver(): UseReceiverReturn {
 					: 0
 
 				const currentFileNames = fileNamesRef.current
+				const itemCount =
+					transferItemCountRef.current ?? countTopLevelItems(currentFileNames)
 				let displayName = 'Downloaded File'
 
 				if (currentFileNames.length > 0) {
-					if (currentFileNames.length === 1) {
+					if (itemCount <= 1) {
 						const fullPath = currentFileNames[0]
 						displayName = fullPath.split('/').pop() || fullPath
 					} else {
 						const firstPath = currentFileNames[0]
 						const pathParts = firstPath.split('/')
 						if (pathParts.length > 1) {
-							displayName = pathParts[0] || `${currentFileNames.length} files`
+							displayName = pathParts[0] || `${itemCount} files`
 						} else {
-							displayName = `${currentFileNames.length} files`
+							displayName = `${itemCount} files`
 						}
 					}
 				}
@@ -385,8 +412,7 @@ export function useReceiver(): UseReceiverReturn {
 					startTime: transferStartTimeRef.current || endTime,
 					endTime,
 					downloadPath: savePathRef.current,
-					itemCount:
-						currentFileNames.length > 1 ? currentFileNames.length : undefined,
+					itemCount: itemCount > 1 ? itemCount : undefined,
 				}
 				setTransferMetadata(metadata)
 
@@ -455,6 +481,7 @@ export function useReceiver(): UseReceiverReturn {
 		if (!ticket.trim()) return
 
 		try {
+			transferItemCountRef.current = previewMetadata?.itemCount
 			previewRequestSeqRef.current += 1
 			setIsReceiving(true)
 			setIsTransporting(false)
@@ -494,6 +521,7 @@ export function useReceiver(): UseReceiverReturn {
 		setIsPreviewLoading(false)
 		pendingConflictNoticeRef.current = null
 		folderOpenTriggeredRef.current = false
+		transferItemCountRef.current = undefined
 	}
 
 	const handleOpenFolder = async () => {

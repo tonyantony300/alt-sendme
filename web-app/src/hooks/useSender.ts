@@ -1,724 +1,722 @@
-import { useEffect, useRef } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { useTranslation } from "../i18n/react-i18next-compat";
-import type { AlertType } from "../types/ui";
-import type { TransferMetadata, TransferProgress } from "../types/transfer";
-import { SpeedAverager, calculateETA } from "../utils/etaUtils";
-import { useSenderStore } from "../store/sender-store";
+import { useEffect, useRef } from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import { listen, type UnlistenFn } from '@tauri-apps/api/event'
+import { useTranslation } from '../i18n/react-i18next-compat'
+import type { AlertType } from '../types/ui'
+import type { TransferMetadata, TransferProgress } from '../types/transfer'
+import { SpeedAverager, calculateETA } from '../utils/etaUtils'
+import { useSenderStore } from '../store/sender-store'
 
 export interface UseSenderReturn {
-  // View state (replaces isSharing, isTransporting, isCompleted)
-  viewState: "IDLE" | "SHARING" | "TRANSPORTING" | "SUCCESS";
+	// View state (replaces isSharing, isTransporting, isCompleted)
+	viewState: 'IDLE' | 'SHARING' | 'TRANSPORTING' | 'SUCCESS'
 
-  // Derived states for backward compatibility
-  isSharing: boolean;
-  isTransporting: boolean;
-  isCompleted: boolean;
+	// Derived states for backward compatibility
+	isSharing: boolean
+	isTransporting: boolean
+	isCompleted: boolean
 
-  ticket: string | null;
-  selectedPaths: string[];
-  selectedPath: string | null;
-  pathType: "file" | "directory" | null;
-  isLoading: boolean;
-  copySuccess: boolean;
-  alertDialog: any;
-  transferMetadata: TransferMetadata | null;
-  transferProgress: TransferProgress | null;
-  isBroadcastMode: boolean;
-  activeConnectionCount: number;
+	ticket: string | null
+	selectedPaths: string[]
+	selectedPath: string | null
+	pathType: 'file' | 'directory' | null
+	isLoading: boolean
+	copySuccess: boolean
+	alertDialog: any
+	transferMetadata: TransferMetadata | null
+	transferProgress: TransferProgress | null
+	isBroadcastMode: boolean
+	activeConnectionCount: number
 
-  handleFileSelect: (
-    path: string,
-    pathType?: "file" | "directory",
-  ) => Promise<void>;
-  handleFilesSelect: (
-    paths: string[],
-    pathType?: "file" | "directory",
-  ) => Promise<void>;
-  clearSelectedPath: () => void;
-  removeSelectedPath: (path: string) => void;
-  startSharing: () => Promise<void>;
-  stopSharing: () => Promise<void>;
-  copyTicket: () => Promise<void>;
-  showAlert: (title: string, description: string, type?: AlertType) => void;
-  closeAlert: () => void;
-  resetForNewTransfer: () => Promise<void>;
+	handleFileSelect: (
+		path: string,
+		pathType?: 'file' | 'directory'
+	) => Promise<void>
+	handleFilesSelect: (
+		paths: string[],
+		pathType?: 'file' | 'directory'
+	) => Promise<void>
+	clearSelectedPath: () => void
+	removeSelectedPath: (path: string) => void
+	startSharing: () => Promise<void>
+	stopSharing: () => Promise<void>
+	copyTicket: () => Promise<void>
+	showAlert: (title: string, description: string, type?: AlertType) => void
+	closeAlert: () => void
+	resetForNewTransfer: () => Promise<void>
 }
 
 export function useSender(): UseSenderReturn {
-  const { t } = useTranslation();
-
-  // Get store state and actions
-  const {
-    viewState,
-    ticket,
-    selectedPaths,
-    selectedPath,
-    pathType,
-    isLoading,
-    copySuccess,
-    alertDialog,
-    transferMetadata,
-    transferProgress,
-    isBroadcastMode,
-    activeConnectionCount,
-    setViewState,
-    setTicket,
-    setSelectedPaths,
-    addSelectedPaths,
-    removeSelectedPath: removeSelectedPathFromStore,
-    setSelectedPath,
-    setPathType,
-    setIsLoading,
-    setCopySuccess,
-    setTransferMetadata,
-    setTransferProgress,
-    setIsBroadcastMode,
-    showAlert,
-    closeAlert,
-    resetToIdle,
-    resetForBroadcast,
-    setActiveConnectionCount,
-  } = useSenderStore();
-
-  // Refs for event listeners
-  const latestProgressRef = useRef<TransferProgress | null>(null);
-  const transferStartTimeRef = useRef<number | null>(null);
-  const progressUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const wasManuallyStoppedRef = useRef(false);
-  const selectedPathRef = useRef<string | null>(null);
-  const pathTypeRef = useRef<"file" | "directory" | null>(null);
-  const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10));
-
-  useEffect(() => {
-    // console.log('[useSender] selectedPath changed, updating ref:', {
-    // 	from: selectedPathRef.current,
-    // 	to: selectedPath,
-    // 	currentViewState: useSenderStore.getState().viewState,
-    // })
-    selectedPathRef.current = selectedPath;
-  }, [selectedPath]);
-
-  useEffect(() => {
-    pathTypeRef.current = pathType;
-  }, [pathType]);
-
-  useEffect(() => {
-    let unlistenStart: UnlistenFn | undefined;
-    let unlistenProgress: UnlistenFn | undefined;
-    let unlistenComplete: UnlistenFn | undefined;
-    let unlistenFailed: UnlistenFn | undefined;
-    let unlistenActiveCount: UnlistenFn | undefined;
-
-    const setupListeners = async () => {
-      unlistenActiveCount = await listen(
-        "active-connection-count",
-        (event: any) => {
-          try {
-            const count = parseInt(event.payload as string, 10);
-            if (!Number.isNaN(count)) {
-              // console.log('[useSender] active-connection-count event received:', count)
-              setActiveConnectionCount(count);
-            }
-          } catch (error) {
-            console.error(
-              "Failed to parse active connection count event:",
-              error,
-            );
-          }
-        },
-      );
-
-      unlistenStart = await listen("transfer-started", () => {
-        const storeState = useSenderStore.getState();
-        // console.log('[useSender] transfer-started event received:', {
-        // 	currentViewState: storeState.viewState,
-        // 	selectedPath: selectedPathRef.current,
-        // 	isBroadcastMode: storeState.isBroadcastMode,
-        // })
-
-        transferStartTimeRef.current = Date.now();
-        latestProgressRef.current = null;
-        speedAveragerRef.current.reset();
-
-        // In broadcast mode, stay in SHARING state instead of transitioning to TRANSPORTING
-        if (storeState.isBroadcastMode) {
-          // console.log('[useSender] transfer-started: broadcast mode - staying in SHARING state')
-          setTransferProgress(null);
-          setTransferMetadata(null);
-          wasManuallyStoppedRef.current = false;
-
-          if (progressUpdateIntervalRef.current) {
-            clearInterval(progressUpdateIntervalRef.current);
-          }
-          progressUpdateIntervalRef.current = setInterval(() => {
-            const currentViewState = useSenderStore.getState().viewState;
-            if (latestProgressRef.current && currentViewState === "SHARING") {
-              setTransferProgress(latestProgressRef.current);
-            }
-          }, 50);
-        } else {
-          // console.log('[useSender] transfer-started: setting state to TRANSPORTING')
-          setViewState("TRANSPORTING");
-          setTransferProgress(null);
-          setTransferMetadata(null);
-          wasManuallyStoppedRef.current = false;
-
-          if (progressUpdateIntervalRef.current) {
-            clearInterval(progressUpdateIntervalRef.current);
-          }
-          progressUpdateIntervalRef.current = setInterval(() => {
-            const currentViewState = useSenderStore.getState().viewState;
-            if (
-              latestProgressRef.current &&
-              currentViewState === "TRANSPORTING"
-            ) {
-              setTransferProgress(latestProgressRef.current);
-            }
-          }, 50);
-        }
-      });
-
-      unlistenProgress = await listen("transfer-progress", (event: any) => {
-        try {
-          const rawPayload = event.payload as string;
-
-          const parts = rawPayload.split(":");
-
-          if (parts.length === 3) {
-            const bytesTransferred = parseInt(parts[0], 10);
-            const totalBytes = parseInt(parts[1], 10);
-            const speedInt = parseInt(parts[2], 10);
-            const speedBps = speedInt / 1000.0;
-            const percentage =
-              totalBytes > 0
-                ? Math.min((bytesTransferred / totalBytes) * 100, 100)
-                : 0;
-
-            // Add speed sample and calculate ETA
-            speedAveragerRef.current.addSample(speedBps);
-            const avgSpeed = speedAveragerRef.current.getAverage();
-            const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0);
-            const eta = calculateETA(bytesRemaining, avgSpeed);
-
-            latestProgressRef.current = {
-              bytesTransferred,
-              totalBytes,
-              speedBps,
-              percentage,
-              etaSeconds: eta ?? undefined,
-            };
-          }
-        } catch (error) {
-          console.error("Failed to parse progress event:", error);
-        }
-      });
-
-      unlistenComplete = await listen("transfer-completed", async () => {
-        const storeState = useSenderStore.getState();
-        // console.log('[useSender] transfer-completed event received:', {
-        // 	wasManuallyStopped: wasManuallyStoppedRef.current,
-        // 	currentViewState: storeState.viewState,
-        // 	selectedPath: selectedPathRef.current,
-        // 	storeSelectedPath: storeState.selectedPath,
-        // 	hasLatestProgress: !!latestProgressRef.current,
-        // })
-
-        // Guard: Skip if manually stopped
-        if (wasManuallyStoppedRef.current) {
-          // console.log('[useSender] transfer-completed: skipping (was manually stopped)')
-          return;
-        }
-
-        // Guard: Skip if already reset to IDLE (delayed event after reset)
-        if (storeState.viewState === "IDLE") {
-          // console.log('[useSender] transfer-completed: skipping (already in IDLE state - likely delayed event after reset)')
-          return;
-        }
-
-        // Guard: Skip if selectedPath is null in store (already reset)
-        if (!storeState.selectedPath) {
-          // console.log('[useSender] transfer-completed: skipping (selectedPath is null in store - already reset)')
-          return;
-        }
-
-        if (progressUpdateIntervalRef.current) {
-          clearInterval(progressUpdateIntervalRef.current);
-          progressUpdateIntervalRef.current = null;
-        }
-
-        if (latestProgressRef.current) {
-          setTransferProgress(latestProgressRef.current);
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 10));
-
-        const endTime = Date.now();
-        const duration = transferStartTimeRef.current
-          ? endTime - transferStartTimeRef.current
-          : 0;
-
-        const currentPath = selectedPathRef.current;
-        const currentPathType = pathTypeRef.current;
-        const currentBroadcastMode = storeState.isBroadcastMode;
-
-        // console.log('[useSender] transfer-completed: processing:', {
-        // 	currentPath,
-        // 	currentPathType,
-        // 	currentBroadcastMode,
-        // 	duration,
-        // 	storeSelectedPath: storeState.selectedPath,
-        // 	storeViewState: storeState.viewState,
-        // 	storeHasMetadata: !!storeState.transferMetadata,
-        // 	refVsStoreMatch: currentPath === storeState.selectedPath,
-        // })
-
-        // Use store's selectedPath as source of truth (not the ref)
-        const pathToUse = storeState.selectedPath || currentPath;
-        if (pathToUse) {
-          const fileName = pathToUse.split("/").pop() || "Unknown";
-          const estimatedFileSize = latestProgressRef.current?.totalBytes || 0;
-          const pathTypeToUse = storeState.pathType || currentPathType;
-          const itemCount = storeState.selectedPaths.length;
-          const shouldResolveExactSize = itemCount <= 1;
-
-          // console.log('[useSender] transfer-completed: setting initial metadata:', {
-          // 	fileName,
-          // 	estimatedFileSize,
-          // })
-
-          setTransferMetadata({
-            fileName,
-            fileSize: estimatedFileSize,
-            duration,
-            startTime: transferStartTimeRef.current || endTime,
-            endTime,
-            pathType: pathTypeToUse,
-            itemCount,
-          });
-
-          // Check if broadcast mode is enabled
-          if (currentBroadcastMode) {
-            // console.log('[useSender] transfer-completed: broadcast mode - will reset after delay')
-            // In broadcast mode: reset to listening state after a brief delay
-            // Note: active connection count is now managed by active-connection-count event
-            setTimeout(() => {
-              // console.log('[useSender] transfer-completed: broadcast mode timeout - resetting')
-              resetForBroadcast();
-              latestProgressRef.current = null;
-              transferStartTimeRef.current = null;
-            }, 2000);
-          } else {
-            // console.log('[useSender] transfer-completed: normal mode - setting SUCCESS state')
-            // Normal mode: show success screen
-            setViewState("SUCCESS");
-            setTransferProgress(null);
-          }
-
-          try {
-            if (shouldResolveExactSize) {
-              const fileSize = await invoke<number>("get_file_size", {
-                path: pathToUse,
-              });
-              // console.log('[useSender] transfer-completed: got file size, updating metadata:', {
-              // 	fileSize,
-              // 	currentViewState: useSenderStore.getState().viewState,
-              // })
-              setTransferMetadata({
-                fileName,
-                fileSize,
-                duration,
-                startTime: transferStartTimeRef.current || endTime,
-                endTime,
-                pathType: pathTypeToUse,
-                itemCount,
-              });
-            }
-          } catch (error) {
-            console.error(
-              "[useSender] transfer-completed: failed to get file size:",
-              error,
-            );
-          }
-        } else {
-          // This should never happen now due to guards above, but log if it does
-          console.error(
-            "[useSender] transfer-completed: ⚠️ NO PATH AVAILABLE - this should not happen due to guards!",
-            {
-              selectedPathRef: selectedPathRef.current,
-              storeSelectedPath: storeState.selectedPath,
-              storeViewState: storeState.viewState,
-              storeHasMetadata: !!storeState.transferMetadata,
-              wasManuallyStopped: wasManuallyStoppedRef.current,
-              stackTrace: new Error().stack,
-            },
-          );
-          // Don't set SUCCESS without metadata - just log the error
-          // The guards above should prevent this path from being reached
-        }
-      });
-
-      unlistenFailed = await listen("transfer-failed", async () => {
-        const storeState = useSenderStore.getState();
-        // console.log('[useSender] transfer-failed event received:', {
-        // 	wasManuallyStopped: wasManuallyStoppedRef.current,
-        // 	currentViewState: storeState.viewState,
-        // 	selectedPath: selectedPathRef.current,
-        // 	storeSelectedPath: storeState.selectedPath,
-        // 	isBroadcastMode: storeState.isBroadcastMode,
-        // })
-
-        // Guard: Skip if manually stopped
-        if (wasManuallyStoppedRef.current) {
-          // console.log('[useSender] transfer-failed: skipping (was manually stopped)')
-          return;
-        }
-
-        // Guard: Skip if already reset to IDLE (delayed event after reset)
-        if (storeState.viewState === "IDLE") {
-          // console.log('[useSender] transfer-failed: skipping (already in IDLE state - likely delayed event after reset)')
-          return;
-        }
-
-        // Guard: Skip if selectedPath is null in store (already reset)
-        if (!storeState.selectedPath) {
-          // console.log('[useSender] transfer-failed: skipping (selectedPath is null in store - already reset)')
-          return;
-        }
-
-        if (progressUpdateIntervalRef.current) {
-          clearInterval(progressUpdateIntervalRef.current);
-          progressUpdateIntervalRef.current = null;
-        }
-
-        const currentPath = selectedPathRef.current;
-        const currentPathType = pathTypeRef.current;
-        const pathToUse = storeState.selectedPath || currentPath;
-        const pathTypeToUse = storeState.pathType || currentPathType;
-
-        // In broadcast mode, reset to SHARING instead of showing SUCCESS
-        if (storeState.isBroadcastMode) {
-          // console.log('[useSender] transfer-failed: broadcast mode - resetting to SHARING')
-          // Note: active connection count is now managed by active-connection-count event
-          resetForBroadcast();
-          latestProgressRef.current = null;
-          transferStartTimeRef.current = null;
-          return;
-        }
-
-        // console.log('[useSender] transfer-failed: setting SUCCESS state:', {
-        // 	currentPath,
-        // 	pathToUse,
-        // 	pathTypeToUse,
-        // })
-
-        const endTime = Date.now();
-        const duration = transferStartTimeRef.current
-          ? endTime - transferStartTimeRef.current
-          : 0;
-
-        if (pathToUse) {
-          const fileName = pathToUse.split("/").pop() || "Unknown";
-          // console.log('[useSender] transfer-failed: setting metadata:', {
-          // 	fileName,
-          // 	wasStopped: true,
-          // })
-          setTransferMetadata({
-            fileName,
-            fileSize: 0,
-            duration,
-            startTime: transferStartTimeRef.current || endTime,
-            endTime,
-            wasStopped: true,
-            pathType: pathTypeToUse,
-          });
-          setViewState("SUCCESS");
-          setTransferProgress(null);
-        } else {
-          console.warn(
-            "[useSender] transfer-failed: NO PATH AVAILABLE - this should not happen due to guards!",
-          );
-          // Don't set SUCCESS without metadata - guards should prevent this
-        }
-      });
-    };
-
-    setupListeners().catch((error) => {
-      console.error("Failed to set up event listeners:", error);
-    });
-
-    return () => {
-      if (progressUpdateIntervalRef.current) {
-        clearInterval(progressUpdateIntervalRef.current);
-      }
-      if (unlistenStart) unlistenStart();
-      if (unlistenProgress) unlistenProgress();
-      if (unlistenComplete) unlistenComplete();
-      if (unlistenFailed) unlistenFailed();
-      if (unlistenActiveCount) unlistenActiveCount();
-    };
-  }, [
-    setViewState,
-    setTransferMetadata,
-    setTransferProgress,
-    resetForBroadcast,
-    setActiveConnectionCount,
-  ]);
-
-  const handleFilesSelect = async (
-    paths: string[],
-    providedPathType?: "file" | "directory",
-  ) => {
-    if (!paths.length) {
-      return;
-    }
-
-    addSelectedPaths(paths);
-
-    if (providedPathType) {
-      setPathType(providedPathType);
-      return;
-    }
-
-    if (pathTypeRef.current) {
-      return;
-    }
-
-    try {
-      const type = await invoke<string>("check_path_type", { path: paths[0] });
-      setPathType(type as "file" | "directory");
-    } catch (error) {
-      console.error("Failed to check path type:", error);
-      setPathType(null);
-    }
-  };
-
-  const handleFileSelect = async (
-    path: string,
-    providedPathType?: "file" | "directory",
-  ) => {
-    await handleFilesSelect([path], providedPathType);
-  };
-
-  const clearSelectedPath = () => {
-    setSelectedPaths([]);
-    setSelectedPath(null);
-    setPathType(null);
-  };
-
-  const removeSelectedPath = (path: string) => {
-    removeSelectedPathFromStore(path);
-  };
-
-  const startSharing = async () => {
-    // console.log('[useSender] startSharing called:', {
-    // 	selectedPath,
-    // 	currentViewState: viewState,
-    // 	hasTransferMetadata: !!transferMetadata,
-    // })
-
-    if (!selectedPaths.length) {
-      console.warn(
-        "[useSender] startSharing: no selectedPath, returning early",
-      );
-      return;
-    }
-
-    try {
-      // console.log('[useSender] startSharing: resetting state to IDLE')
-      setViewState("IDLE");
-      setTransferMetadata(null);
-      setTransferProgress(null);
-      setActiveConnectionCount(0);
-      transferStartTimeRef.current = null;
-      wasManuallyStoppedRef.current = false;
-      latestProgressRef.current = null;
-
-      setIsLoading(true);
-      const result = await invoke<string>("send_items", {
-        paths: selectedPaths,
-      });
-      // console.log('[useSender] startSharing: got ticket, setting state to SHARING')
-      setTicket(result);
-      setViewState("SHARING");
-    } catch (error) {
-      console.error("[useSender] startSharing: failed:", error);
-      showAlert(
-        t("common:errors.sharingFailed"),
-        `${t("common:errors.sharingFailedDesc")}: ${error}`,
-        "error",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const stopSharing = async () => {
-    // console.log('[useSender] stopSharing called:', {
-    // 	currentViewState: viewState,
-    // 	hasTransferMetadata: !!transferMetadata,
-    // 	transferMetadataWasStopped: transferMetadata?.wasStopped,
-    // 	selectedPath: selectedPathRef.current,
-    // 	storeSelectedPath: selectedPath,
-    // })
-
-    // Always disable broadcast mode when stopping
-    setIsBroadcastMode(false);
-
-    try {
-      const wasActiveTransfer =
-        viewState === "TRANSPORTING" &&
-        (!transferMetadata || !transferMetadata.wasStopped);
-      const isCompletedTransfer = viewState === "SUCCESS" && transferMetadata;
-
-      // console.log('[useSender] stopSharing: conditions:', {
-      // 	wasActiveTransfer,
-      // 	isCompletedTransfer,
-      // 	viewState,
-      // 	hasTransferMetadata: !!transferMetadata,
-      // })
-
-      const currentSelectedPath = selectedPathRef.current;
-      const currentTransferStartTime = transferStartTimeRef.current;
-      const storeState = useSenderStore.getState();
-
-      if (wasActiveTransfer && currentSelectedPath) {
-        // In broadcast mode, reset to SHARING instead of showing SUCCESS
-        if (storeState.isBroadcastMode) {
-          // console.log('[useSender] stopSharing: active transfer in broadcast mode - resetting to SHARING')
-          wasManuallyStoppedRef.current = true;
-
-          if (progressUpdateIntervalRef.current) {
-            clearInterval(progressUpdateIntervalRef.current);
-            progressUpdateIntervalRef.current = null;
-          }
-
-          resetForBroadcast();
-          latestProgressRef.current = null;
-          transferStartTimeRef.current = null;
-        } else {
-          // console.log('[useSender] stopSharing: active transfer detected - setting SUCCESS with stopped metadata')
-          wasManuallyStoppedRef.current = true;
-
-          if (progressUpdateIntervalRef.current) {
-            clearInterval(progressUpdateIntervalRef.current);
-            progressUpdateIntervalRef.current = null;
-          }
-
-          const endTime = Date.now();
-          const fileName = currentSelectedPath.split("/").pop() || "Unknown";
-          const currentPathType = pathTypeRef.current;
-
-          const stoppedMetadata: TransferMetadata = {
-            fileName,
-            fileSize: 0,
-            duration: 0,
-            startTime: currentTransferStartTime || endTime,
-            endTime,
-            wasStopped: true,
-            pathType: currentPathType,
-          };
-
-          setTransferMetadata(stoppedMetadata);
-          setViewState("SUCCESS");
-        }
-      }
-
-      if (isCompletedTransfer) {
-        // console.log('[useSender] stopSharing: completed transfer - resetting to idle')
-        wasManuallyStoppedRef.current = false;
-        resetToIdle();
-        transferStartTimeRef.current = null;
-
-        invoke("stop_sharing").catch((error) => {
-          console.warn("Background cleanup failed (non-critical):", error);
-        });
-        return;
-      }
-
-      await invoke("stop_sharing");
-
-      // If no active transfer (just sharing, waiting for acceptance), reset to idle
-      if (!wasActiveTransfer || !currentSelectedPath) {
-        // console.log('[useSender] stopSharing: no active transfer - resetting to idle')
-        wasManuallyStoppedRef.current = false;
-        setActiveConnectionCount(0);
-        resetToIdle();
-        transferStartTimeRef.current = null;
-        return;
-      }
-
-      // console.log('[useSender] stopSharing: clearing transfer state')
-      setTicket(null);
-      setSelectedPaths([]);
-      setSelectedPath(null);
-      setPathType(null);
-      setTransferProgress(null);
-      transferStartTimeRef.current = null;
-    } catch (error) {
-      console.error("Failed to stop sharing:", error);
-      showAlert(
-        t("common:errors.stopSharingFailed"),
-        `${t("common:errors.stopSharingFailedDesc")}: ${error}`,
-        "error",
-      );
-    }
-  };
-
-  const resetForNewTransfer = async () => {
-    // console.log('[useSender] resetForNewTransfer called')
-    await stopSharing();
-  };
-
-  const copyTicket = async () => {
-    if (ticket) {
-      try {
-        await navigator.clipboard.writeText(ticket);
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-      } catch (error) {
-        console.error("Failed to copy ticket:", error);
-        showAlert(
-          t("common:errors.copyFailed"),
-          `${t("common:errors.copyFailedDesc")}: ${error}`,
-          "error",
-        );
-      }
-    }
-  };
-
-  // Derived states for backward compatibility
-  const isSharing = viewState === "SHARING" || viewState === "TRANSPORTING";
-  const isTransporting = viewState === "TRANSPORTING";
-  const isCompleted = viewState === "SUCCESS";
-
-  return {
-    viewState,
-    isSharing,
-    isTransporting,
-    isCompleted,
-    ticket,
-    selectedPaths,
-    selectedPath,
-    pathType,
-    isLoading,
-    copySuccess,
-    alertDialog,
-    transferMetadata,
-    transferProgress,
-    isBroadcastMode,
-    activeConnectionCount,
-
-    handleFileSelect,
-    handleFilesSelect,
-    clearSelectedPath,
-    removeSelectedPath,
-    startSharing,
-    stopSharing,
-    copyTicket,
-    showAlert,
-    closeAlert,
-    resetForNewTransfer,
-  };
+	const { t } = useTranslation()
+
+	// Get store state and actions
+	const {
+		viewState,
+		ticket,
+		selectedPaths,
+		selectedPath,
+		pathType,
+		isLoading,
+		copySuccess,
+		alertDialog,
+		transferMetadata,
+		transferProgress,
+		isBroadcastMode,
+		activeConnectionCount,
+		setViewState,
+		setTicket,
+		setSelectedPaths,
+		addSelectedPaths,
+		removeSelectedPath: removeSelectedPathFromStore,
+		setSelectedPath,
+		setPathType,
+		setIsLoading,
+		setCopySuccess,
+		setTransferMetadata,
+		setTransferProgress,
+		setIsBroadcastMode,
+		showAlert,
+		closeAlert,
+		resetToIdle,
+		resetForBroadcast,
+		setActiveConnectionCount,
+	} = useSenderStore()
+
+	// Refs for event listeners
+	const latestProgressRef = useRef<TransferProgress | null>(null)
+	const transferStartTimeRef = useRef<number | null>(null)
+	const progressUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null)
+	const wasManuallyStoppedRef = useRef(false)
+	const selectedPathRef = useRef<string | null>(null)
+	const pathTypeRef = useRef<'file' | 'directory' | null>(null)
+	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
+
+	useEffect(() => {
+		// console.log('[useSender] selectedPath changed, updating ref:', {
+		// 	from: selectedPathRef.current,
+		// 	to: selectedPath,
+		// 	currentViewState: useSenderStore.getState().viewState,
+		// })
+		selectedPathRef.current = selectedPath
+	}, [selectedPath])
+
+	useEffect(() => {
+		pathTypeRef.current = pathType
+	}, [pathType])
+
+	useEffect(() => {
+		let unlistenStart: UnlistenFn | undefined
+		let unlistenProgress: UnlistenFn | undefined
+		let unlistenComplete: UnlistenFn | undefined
+		let unlistenFailed: UnlistenFn | undefined
+		let unlistenActiveCount: UnlistenFn | undefined
+
+		const setupListeners = async () => {
+			unlistenActiveCount = await listen(
+				'active-connection-count',
+				(event: any) => {
+					try {
+						const count = parseInt(event.payload as string, 10)
+						if (!Number.isNaN(count)) {
+							// console.log('[useSender] active-connection-count event received:', count)
+							setActiveConnectionCount(count)
+						}
+					} catch (error) {
+						console.error(
+							'Failed to parse active connection count event:',
+							error
+						)
+					}
+				}
+			)
+
+			unlistenStart = await listen('transfer-started', () => {
+				const storeState = useSenderStore.getState()
+				// console.log('[useSender] transfer-started event received:', {
+				// 	currentViewState: storeState.viewState,
+				// 	selectedPath: selectedPathRef.current,
+				// 	isBroadcastMode: storeState.isBroadcastMode,
+				// })
+
+				transferStartTimeRef.current = Date.now()
+				latestProgressRef.current = null
+				speedAveragerRef.current.reset()
+
+				// In broadcast mode, stay in SHARING state instead of transitioning to TRANSPORTING
+				if (storeState.isBroadcastMode) {
+					// console.log('[useSender] transfer-started: broadcast mode - staying in SHARING state')
+					setTransferProgress(null)
+					setTransferMetadata(null)
+					wasManuallyStoppedRef.current = false
+
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
+					}
+					progressUpdateIntervalRef.current = setInterval(() => {
+						const currentViewState = useSenderStore.getState().viewState
+						if (latestProgressRef.current && currentViewState === 'SHARING') {
+							setTransferProgress(latestProgressRef.current)
+						}
+					}, 50)
+				} else {
+					// console.log('[useSender] transfer-started: setting state to TRANSPORTING')
+					setViewState('TRANSPORTING')
+					setTransferProgress(null)
+					setTransferMetadata(null)
+					wasManuallyStoppedRef.current = false
+
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
+					}
+					progressUpdateIntervalRef.current = setInterval(() => {
+						const currentViewState = useSenderStore.getState().viewState
+						if (
+							latestProgressRef.current &&
+							currentViewState === 'TRANSPORTING'
+						) {
+							setTransferProgress(latestProgressRef.current)
+						}
+					}, 50)
+				}
+			})
+
+			unlistenProgress = await listen('transfer-progress', (event: any) => {
+				try {
+					const rawPayload = event.payload as string
+
+					const parts = rawPayload.split(':')
+
+					if (parts.length === 3) {
+						const bytesTransferred = parseInt(parts[0], 10)
+						const totalBytes = parseInt(parts[1], 10)
+						const speedInt = parseInt(parts[2], 10)
+						const speedBps = speedInt / 1000.0
+						const percentage =
+							totalBytes > 0
+								? Math.min((bytesTransferred / totalBytes) * 100, 100)
+								: 0
+
+						// Add speed sample and calculate ETA
+						speedAveragerRef.current.addSample(speedBps)
+						const avgSpeed = speedAveragerRef.current.getAverage()
+						const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0)
+						const eta = calculateETA(bytesRemaining, avgSpeed)
+
+						latestProgressRef.current = {
+							bytesTransferred,
+							totalBytes,
+							speedBps,
+							percentage,
+							etaSeconds: eta ?? undefined,
+						}
+					}
+				} catch (error) {
+					console.error('Failed to parse progress event:', error)
+				}
+			})
+
+			unlistenComplete = await listen('transfer-completed', async () => {
+				const storeState = useSenderStore.getState()
+				// console.log('[useSender] transfer-completed event received:', {
+				// 	wasManuallyStopped: wasManuallyStoppedRef.current,
+				// 	currentViewState: storeState.viewState,
+				// 	selectedPath: selectedPathRef.current,
+				// 	storeSelectedPath: storeState.selectedPath,
+				// 	hasLatestProgress: !!latestProgressRef.current,
+				// })
+
+				// Guard: Skip if manually stopped
+				if (wasManuallyStoppedRef.current) {
+					// console.log('[useSender] transfer-completed: skipping (was manually stopped)')
+					return
+				}
+
+				// Guard: Skip if already reset to IDLE (delayed event after reset)
+				if (storeState.viewState === 'IDLE') {
+					// console.log('[useSender] transfer-completed: skipping (already in IDLE state - likely delayed event after reset)')
+					return
+				}
+
+				// Guard: Skip if selectedPath is null in store (already reset)
+				if (!storeState.selectedPath) {
+					// console.log('[useSender] transfer-completed: skipping (selectedPath is null in store - already reset)')
+					return
+				}
+
+				if (progressUpdateIntervalRef.current) {
+					clearInterval(progressUpdateIntervalRef.current)
+					progressUpdateIntervalRef.current = null
+				}
+
+				if (latestProgressRef.current) {
+					setTransferProgress(latestProgressRef.current)
+				}
+
+				await new Promise((resolve) => setTimeout(resolve, 10))
+
+				const endTime = Date.now()
+				const duration = transferStartTimeRef.current
+					? endTime - transferStartTimeRef.current
+					: 0
+
+				const currentPath = selectedPathRef.current
+				const currentPathType = pathTypeRef.current
+				const currentBroadcastMode = storeState.isBroadcastMode
+
+				// console.log('[useSender] transfer-completed: processing:', {
+				// 	currentPath,
+				// 	currentPathType,
+				// 	currentBroadcastMode,
+				// 	duration,
+				// 	storeSelectedPath: storeState.selectedPath,
+				// 	storeViewState: storeState.viewState,
+				// 	storeHasMetadata: !!storeState.transferMetadata,
+				// 	refVsStoreMatch: currentPath === storeState.selectedPath,
+				// })
+
+				// Use store's selectedPath as source of truth (not the ref)
+				const pathToUse = storeState.selectedPath || currentPath
+				if (pathToUse) {
+					const fileName = pathToUse.split('/').pop() || 'Unknown'
+					const estimatedFileSize = latestProgressRef.current?.totalBytes || 0
+					const pathTypeToUse = storeState.pathType || currentPathType
+					const itemCount = storeState.selectedPaths.length
+					const shouldResolveExactSize = itemCount <= 1
+
+					// console.log('[useSender] transfer-completed: setting initial metadata:', {
+					// 	fileName,
+					// 	estimatedFileSize,
+					// })
+
+					setTransferMetadata({
+						fileName,
+						fileSize: estimatedFileSize,
+						duration,
+						startTime: transferStartTimeRef.current || endTime,
+						endTime,
+						pathType: pathTypeToUse,
+						itemCount,
+					})
+
+					// Check if broadcast mode is enabled
+					if (currentBroadcastMode) {
+						// console.log('[useSender] transfer-completed: broadcast mode - will reset after delay')
+						// In broadcast mode: reset to listening state after a brief delay
+						// Note: active connection count is now managed by active-connection-count event
+						setTimeout(() => {
+							// console.log('[useSender] transfer-completed: broadcast mode timeout - resetting')
+							resetForBroadcast()
+							latestProgressRef.current = null
+							transferStartTimeRef.current = null
+						}, 2000)
+					} else {
+						// console.log('[useSender] transfer-completed: normal mode - setting SUCCESS state')
+						// Normal mode: show success screen
+						setViewState('SUCCESS')
+						setTransferProgress(null)
+					}
+
+					try {
+						if (shouldResolveExactSize) {
+							const fileSize = await invoke<number>('get_file_size', {
+								path: pathToUse,
+							})
+							// console.log('[useSender] transfer-completed: got file size, updating metadata:', {
+							// 	fileSize,
+							// 	currentViewState: useSenderStore.getState().viewState,
+							// })
+							setTransferMetadata({
+								fileName,
+								fileSize,
+								duration,
+								startTime: transferStartTimeRef.current || endTime,
+								endTime,
+								pathType: pathTypeToUse,
+								itemCount,
+							})
+						}
+					} catch (error) {
+						console.error(
+							'[useSender] transfer-completed: failed to get file size:',
+							error
+						)
+					}
+				} else {
+					// This should never happen now due to guards above, but log if it does
+					console.error(
+						'[useSender] transfer-completed: ⚠️ NO PATH AVAILABLE - this should not happen due to guards!',
+						{
+							selectedPathRef: selectedPathRef.current,
+							storeSelectedPath: storeState.selectedPath,
+							storeViewState: storeState.viewState,
+							storeHasMetadata: !!storeState.transferMetadata,
+							wasManuallyStopped: wasManuallyStoppedRef.current,
+							stackTrace: new Error().stack,
+						}
+					)
+					// Don't set SUCCESS without metadata - just log the error
+					// The guards above should prevent this path from being reached
+				}
+			})
+
+			unlistenFailed = await listen('transfer-failed', async () => {
+				const storeState = useSenderStore.getState()
+				// console.log('[useSender] transfer-failed event received:', {
+				// 	wasManuallyStopped: wasManuallyStoppedRef.current,
+				// 	currentViewState: storeState.viewState,
+				// 	selectedPath: selectedPathRef.current,
+				// 	storeSelectedPath: storeState.selectedPath,
+				// 	isBroadcastMode: storeState.isBroadcastMode,
+				// })
+
+				// Guard: Skip if manually stopped
+				if (wasManuallyStoppedRef.current) {
+					// console.log('[useSender] transfer-failed: skipping (was manually stopped)')
+					return
+				}
+
+				// Guard: Skip if already reset to IDLE (delayed event after reset)
+				if (storeState.viewState === 'IDLE') {
+					// console.log('[useSender] transfer-failed: skipping (already in IDLE state - likely delayed event after reset)')
+					return
+				}
+
+				// Guard: Skip if selectedPath is null in store (already reset)
+				if (!storeState.selectedPath) {
+					// console.log('[useSender] transfer-failed: skipping (selectedPath is null in store - already reset)')
+					return
+				}
+
+				if (progressUpdateIntervalRef.current) {
+					clearInterval(progressUpdateIntervalRef.current)
+					progressUpdateIntervalRef.current = null
+				}
+
+				const currentPath = selectedPathRef.current
+				const currentPathType = pathTypeRef.current
+				const pathToUse = storeState.selectedPath || currentPath
+				const pathTypeToUse = storeState.pathType || currentPathType
+
+				// In broadcast mode, reset to SHARING instead of showing SUCCESS
+				if (storeState.isBroadcastMode) {
+					// console.log('[useSender] transfer-failed: broadcast mode - resetting to SHARING')
+					// Note: active connection count is now managed by active-connection-count event
+					resetForBroadcast()
+					latestProgressRef.current = null
+					transferStartTimeRef.current = null
+					return
+				}
+
+				// console.log('[useSender] transfer-failed: setting SUCCESS state:', {
+				// 	currentPath,
+				// 	pathToUse,
+				// 	pathTypeToUse,
+				// })
+
+				const endTime = Date.now()
+				const duration = transferStartTimeRef.current
+					? endTime - transferStartTimeRef.current
+					: 0
+
+				if (pathToUse) {
+					const fileName = pathToUse.split('/').pop() || 'Unknown'
+					// console.log('[useSender] transfer-failed: setting metadata:', {
+					// 	fileName,
+					// 	wasStopped: true,
+					// })
+					setTransferMetadata({
+						fileName,
+						fileSize: 0,
+						duration,
+						startTime: transferStartTimeRef.current || endTime,
+						endTime,
+						wasStopped: true,
+						pathType: pathTypeToUse,
+					})
+					setViewState('SUCCESS')
+					setTransferProgress(null)
+				} else {
+					console.warn(
+						'[useSender] transfer-failed: NO PATH AVAILABLE - this should not happen due to guards!'
+					)
+					// Don't set SUCCESS without metadata - guards should prevent this
+				}
+			})
+		}
+
+		setupListeners().catch((error) => {
+			console.error('Failed to set up event listeners:', error)
+		})
+
+		return () => {
+			if (progressUpdateIntervalRef.current) {
+				clearInterval(progressUpdateIntervalRef.current)
+			}
+			if (unlistenStart) unlistenStart()
+			if (unlistenProgress) unlistenProgress()
+			if (unlistenComplete) unlistenComplete()
+			if (unlistenFailed) unlistenFailed()
+			if (unlistenActiveCount) unlistenActiveCount()
+		}
+	}, [
+		setViewState,
+		setTransferMetadata,
+		setTransferProgress,
+		resetForBroadcast,
+		setActiveConnectionCount,
+	])
+
+	const handleFilesSelect = async (
+		paths: string[],
+		providedPathType?: 'file' | 'directory'
+	) => {
+		if (!paths.length) {
+			return
+		}
+
+		addSelectedPaths(paths)
+
+		if (providedPathType) {
+			setPathType(providedPathType)
+			return
+		}
+
+		if (pathTypeRef.current) {
+			return
+		}
+
+		try {
+			const type = await invoke<string>('check_path_type', { path: paths[0] })
+			setPathType(type as 'file' | 'directory')
+		} catch (error) {
+			console.error('Failed to check path type:', error)
+			setPathType(null)
+		}
+	}
+
+	const handleFileSelect = async (
+		path: string,
+		providedPathType?: 'file' | 'directory'
+	) => {
+		await handleFilesSelect([path], providedPathType)
+	}
+
+	const clearSelectedPath = () => {
+		setSelectedPaths([])
+		setSelectedPath(null)
+		setPathType(null)
+	}
+
+	const removeSelectedPath = (path: string) => {
+		removeSelectedPathFromStore(path)
+	}
+
+	const startSharing = async () => {
+		// console.log('[useSender] startSharing called:', {
+		// 	selectedPath,
+		// 	currentViewState: viewState,
+		// 	hasTransferMetadata: !!transferMetadata,
+		// })
+
+		if (!selectedPaths.length) {
+			console.warn('[useSender] startSharing: no selectedPath, returning early')
+			return
+		}
+
+		try {
+			// console.log('[useSender] startSharing: resetting state to IDLE')
+			setViewState('IDLE')
+			setTransferMetadata(null)
+			setTransferProgress(null)
+			setActiveConnectionCount(0)
+			transferStartTimeRef.current = null
+			wasManuallyStoppedRef.current = false
+			latestProgressRef.current = null
+
+			setIsLoading(true)
+			const result = await invoke<string>('send_items', {
+				paths: selectedPaths,
+			})
+			// console.log('[useSender] startSharing: got ticket, setting state to SHARING')
+			setTicket(result)
+			setViewState('SHARING')
+		} catch (error) {
+			console.error('[useSender] startSharing: failed:', error)
+			showAlert(
+				t('common:errors.sharingFailed'),
+				`${t('common:errors.sharingFailedDesc')}: ${error}`,
+				'error'
+			)
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
+	const stopSharing = async () => {
+		// console.log('[useSender] stopSharing called:', {
+		// 	currentViewState: viewState,
+		// 	hasTransferMetadata: !!transferMetadata,
+		// 	transferMetadataWasStopped: transferMetadata?.wasStopped,
+		// 	selectedPath: selectedPathRef.current,
+		// 	storeSelectedPath: selectedPath,
+		// })
+
+		// Always disable broadcast mode when stopping
+		setIsBroadcastMode(false)
+
+		try {
+			const wasActiveTransfer =
+				viewState === 'TRANSPORTING' &&
+				(!transferMetadata || !transferMetadata.wasStopped)
+			const isCompletedTransfer = viewState === 'SUCCESS' && transferMetadata
+
+			// console.log('[useSender] stopSharing: conditions:', {
+			// 	wasActiveTransfer,
+			// 	isCompletedTransfer,
+			// 	viewState,
+			// 	hasTransferMetadata: !!transferMetadata,
+			// })
+
+			const currentSelectedPath = selectedPathRef.current
+			const currentTransferStartTime = transferStartTimeRef.current
+			const storeState = useSenderStore.getState()
+
+			if (wasActiveTransfer && currentSelectedPath) {
+				// In broadcast mode, reset to SHARING instead of showing SUCCESS
+				if (storeState.isBroadcastMode) {
+					// console.log('[useSender] stopSharing: active transfer in broadcast mode - resetting to SHARING')
+					wasManuallyStoppedRef.current = true
+
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
+						progressUpdateIntervalRef.current = null
+					}
+
+					resetForBroadcast()
+					latestProgressRef.current = null
+					transferStartTimeRef.current = null
+				} else {
+					// console.log('[useSender] stopSharing: active transfer detected - setting SUCCESS with stopped metadata')
+					wasManuallyStoppedRef.current = true
+
+					if (progressUpdateIntervalRef.current) {
+						clearInterval(progressUpdateIntervalRef.current)
+						progressUpdateIntervalRef.current = null
+					}
+
+					const endTime = Date.now()
+					const fileName = currentSelectedPath.split('/').pop() || 'Unknown'
+					const currentPathType = pathTypeRef.current
+
+					const stoppedMetadata: TransferMetadata = {
+						fileName,
+						fileSize: 0,
+						duration: 0,
+						startTime: currentTransferStartTime || endTime,
+						endTime,
+						wasStopped: true,
+						pathType: currentPathType,
+					}
+
+					setTransferMetadata(stoppedMetadata)
+					setViewState('SUCCESS')
+				}
+			}
+
+			if (isCompletedTransfer) {
+				// console.log('[useSender] stopSharing: completed transfer - resetting to idle')
+				wasManuallyStoppedRef.current = false
+				resetToIdle()
+				transferStartTimeRef.current = null
+
+				invoke('stop_sharing').catch((error) => {
+					console.warn('Background cleanup failed (non-critical):', error)
+				})
+				return
+			}
+
+			await invoke('stop_sharing')
+
+			// If no active transfer (just sharing, waiting for acceptance), reset to idle
+			if (!wasActiveTransfer || !currentSelectedPath) {
+				// console.log('[useSender] stopSharing: no active transfer - resetting to idle')
+				wasManuallyStoppedRef.current = false
+				setActiveConnectionCount(0)
+				resetToIdle()
+				transferStartTimeRef.current = null
+				return
+			}
+
+			// console.log('[useSender] stopSharing: clearing transfer state')
+			setTicket(null)
+			setSelectedPaths([])
+			setSelectedPath(null)
+			setPathType(null)
+			setTransferProgress(null)
+			transferStartTimeRef.current = null
+		} catch (error) {
+			console.error('Failed to stop sharing:', error)
+			showAlert(
+				t('common:errors.stopSharingFailed'),
+				`${t('common:errors.stopSharingFailedDesc')}: ${error}`,
+				'error'
+			)
+		}
+	}
+
+	const resetForNewTransfer = async () => {
+		// console.log('[useSender] resetForNewTransfer called')
+		await stopSharing()
+	}
+
+	const copyTicket = async () => {
+		if (ticket) {
+			try {
+				await navigator.clipboard.writeText(ticket)
+				setCopySuccess(true)
+				setTimeout(() => setCopySuccess(false), 2000)
+			} catch (error) {
+				console.error('Failed to copy ticket:', error)
+				showAlert(
+					t('common:errors.copyFailed'),
+					`${t('common:errors.copyFailedDesc')}: ${error}`,
+					'error'
+				)
+			}
+		}
+	}
+
+	// Derived states for backward compatibility
+	const isSharing = viewState === 'SHARING' || viewState === 'TRANSPORTING'
+	const isTransporting = viewState === 'TRANSPORTING'
+	const isCompleted = viewState === 'SUCCESS'
+
+	return {
+		viewState,
+		isSharing,
+		isTransporting,
+		isCompleted,
+		ticket,
+		selectedPaths,
+		selectedPath,
+		pathType,
+		isLoading,
+		copySuccess,
+		alertDialog,
+		transferMetadata,
+		transferProgress,
+		isBroadcastMode,
+		activeConnectionCount,
+
+		handleFileSelect,
+		handleFilesSelect,
+		clearSelectedPath,
+		removeSelectedPath,
+		startSharing,
+		stopSharing,
+		copyTicket,
+		showAlert,
+		closeAlert,
+		resetForNewTransfer,
+	}
 }

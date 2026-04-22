@@ -167,7 +167,8 @@ export function SharingActiveCard({
 							transferProgress.totalBytes > 0
 								? (totalTransferredBytes / transferProgress.totalBytes) * 100
 								: 0,
-						etaSeconds: calculateETA(bytesRemaining, calculatedSpeed) ?? undefined,
+						etaSeconds:
+							calculateETA(bytesRemaining, calculatedSpeed) ?? undefined,
 					}
 				})()
 			: null
