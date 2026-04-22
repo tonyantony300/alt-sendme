@@ -695,15 +695,18 @@ async fn show_provide_progress_with_logging(
     #[derive(Clone)]
     struct TransferState {
         start_time: Instant,
-        total_size: u64,
         last_offset: u64,
     }
 
     #[derive(Default)]
     struct AggregateProgressState {
-        completed_bytes: u64,
+        bytes_transferred: u64,
         last_emitted_bytes: u64,
         last_update_time: Option<Instant>,
+    }
+
+    fn needs_multiple_requests(entry_type: &str) -> bool {
+        entry_type == "directory" || entry_type == "collection"
     }
 
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> =
@@ -765,7 +768,6 @@ async fn show_provide_progress_with_logging(
                                                     (connection_id, request_id),
                                                     TransferState {
                                                         start_time: Instant::now(),
-                                                        total_size: total_collection_size,
                                                         last_offset: 0
                                                     }
                                                 );
@@ -790,7 +792,6 @@ async fn show_provide_progress_with_logging(
                                                     (connection_id, request_id),
                                                     TransferState {
                                                         start_time: Instant::now(),
-                                                        total_size: total_collection_size,
                                                         last_offset: 0
                                                     }
                                                 );
@@ -806,27 +807,24 @@ async fn show_provide_progress_with_logging(
                                             has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
 
-                                        if let Some((total_size, _elapsed)) = {
+                                        if let Some((_elapsed, delta)) = {
                                             let mut states = transfer_states_task.lock().await;
                                             if let Some(state) = states.get_mut(&(connection_id, request_id)) {
-                                                state.last_offset = m.end_offset.min(state.total_size);
-                                                Some((state.total_size, state.start_time.elapsed().as_secs_f64()))
+                                                let next_offset = m.end_offset;
+                                                let delta = next_offset.saturating_sub(state.last_offset);
+                                                state.last_offset = next_offset;
+                                                Some((state.start_time.elapsed().as_secs_f64(), delta))
                                             } else {
                                                 None
                                             }
                                         } {
                                             let (current_bytes, speed_bps) = {
-                                                let states = transfer_states_task.lock().await;
                                                 let mut aggregate = aggregate_progress_task.lock().await;
-
-                                                let active_bytes = states
-                                                    .values()
-                                                    .map(|state| state.last_offset.min(state.total_size))
-                                                    .sum::<u64>();
-                                                let current_bytes = aggregate
-                                                    .completed_bytes
-                                                    .saturating_add(active_bytes)
+                                                aggregate.bytes_transferred = aggregate
+                                                    .bytes_transferred
+                                                    .saturating_add(delta)
                                                     .min(total_collection_size);
+                                                let current_bytes = aggregate.bytes_transferred;
 
                                                 let now = Instant::now();
                                                 let speed_bps = if let Some(last_update_time) = aggregate.last_update_time {
@@ -851,37 +849,18 @@ async fn show_provide_progress_with_logging(
                                             emit_progress_event(
                                                 &app_handle_task,
                                                 current_bytes,
-                                                total_size,
+                                                total_collection_size,
                                                 speed_bps,
                                             );
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         if transfer_started && !request_completed {
-                                            let (active_count, _request_total_size, _current_bytes) = {
+                                            let active_count = {
                                                 let mut states = transfer_states_task.lock().await;
-                                                let request_total_size = states
-                                                .remove(&(connection_id, request_id))
-                                                .map(|state| state.total_size)
-                                                .unwrap_or(0);
+                                                states.remove(&(connection_id, request_id));
                                                 let active_count = states.len();
-                                                let active_bytes = states
-                                                .values()
-                                                .map(|state| state.last_offset.min(state.total_size))
-                                                .sum::<u64>();
-                                                let current_bytes =  {
-                                                    let mut aggregate = aggregate_progress_task.lock().await;
-                                                    if request_total_size > 0 {
-                                                        aggregate.completed_bytes = aggregate.completed_bytes.saturating_add(request_total_size);
-                                                    }
-                                                    let current_bytes = aggregate
-                                                    .completed_bytes
-                                                    .saturating_add(active_bytes)
-                                                    .min(total_collection_size);
-                                                    aggregate.last_emitted_bytes = current_bytes;
-                                                    current_bytes
-                                                };
-                                                (active_count, request_total_size, current_bytes)
+                                                active_count
                                             };
 
                                             emit_active_connection_count(&app_handle_task, active_count);
@@ -893,7 +872,7 @@ async fn show_provide_progress_with_logging(
 
                                             // For directories, require at least 2 completed requests
                                             // to avoid false completion from metadata transfer
-                                            let min_required = if entry_type_task == "directory" { 2 } else { 1 };
+                                            let min_required = if needs_multiple_requests(&entry_type_task) { 2 } else { 1 };
 
                                             if completed >= active
                                                 && completed >= min_required
@@ -941,21 +920,6 @@ async fn show_provide_progress_with_logging(
                                                 states.len()
                                             };
 
-                                            let _current_bytes = {
-                                                let status = transfer_states_task.lock().await;
-                                                let active_bytes = status
-                                                .values()
-                                                .map(|state| state.last_offset.min(state.total_size))
-                                                .sum::<u64>();
-                                                let mut aggregate = aggregate_progress_task.lock().await;
-                                                let current_bytes = aggregate
-                                                .completed_bytes
-                                                .saturating_add(active_bytes)
-                                                .min(total_collection_size);
-                                                aggregate.last_emitted_bytes = current_bytes;
-                                                current_bytes
-                                            };
-
                                             emit_active_connection_count(&app_handle_task, active_count);
 
                                             request_completed = true;
@@ -977,7 +941,7 @@ async fn show_provide_progress_with_logging(
 
                                 // For directories, require at least 2 completed requests
                                 // to avoid false completion from metadata transfer
-                                let min_required = if entry_type_task == "directory" { 2 } else { 1 };
+                                let min_required = if needs_multiple_requests(&entry_type_task) { 2 } else { 1 };
 
                                 if completed >= active
                                     && completed >= min_required
@@ -994,21 +958,6 @@ async fn show_provide_progress_with_logging(
                                     let has_active_transfers = {
                                         let states = transfer_states_task.lock().await;
                                         !states.is_empty()
-                                    };
-
-                                    let _current_bytes = {
-                                        let states = transfer_states_task.lock().await;
-                                        let active_bytes = states
-                                        .values()
-                                        .map(|state| state.last_offset.min(state.total_size))
-                                        .sum::<u64>();
-                                        let mut aggregate = aggregate_progress_task.lock().await;
-                                        let current_bytes = aggregate
-                                        .completed_bytes
-                                        .saturating_add(active_bytes)
-                                        .min(total_collection_size);
-                                        aggregate.last_emitted_bytes = current_bytes;
-                                        current_bytes
                                     };
 
                                     let last_request_recent = {
@@ -1048,7 +997,11 @@ async fn show_provide_progress_with_logging(
 
         // For directories, require at least 2 completed requests
         // to avoid false completion from metadata transfer
-        let min_required = if entry_type == "directory" { 2 } else { 1 };
+        let min_required = if needs_multiple_requests(&entry_type) {
+            2
+        } else {
+            1
+        };
 
         if completed >= active && completed >= min_required && completed > 0 {
             emit_event(&app_handle, "transfer-completed");
