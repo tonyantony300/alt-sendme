@@ -21,6 +21,12 @@ export function getPreviewFileIcon(
 ): ReactElement {
 	const ext = fileName?.split('.').pop()?.toLowerCase() || ''
 	if (
+		mimeType === 'application/x-iroh-collection' ||
+		mimeType === 'inode/directory'
+	) {
+		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
+	}
+	if (
 		mimeType?.includes('word') ||
 		mimeType?.includes('document') ||
 		['doc', 'docx'].includes(ext)
@@ -61,14 +67,6 @@ export function getPreviewFileIcon(
 	) {
 		return <ZipIcon size="md" className={BASE_ICON_CLASS} />
 	}
-	if (mimeType === 'inode/directory') {
-		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
-	}
-
-	if (mimeType === 'application/x-iroh-collection') {
-		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
-	}
-
 	// When image thumbnail fails to load, fallback to generic image icon.
 	if (mimeType?.startsWith('image/')) {
 		return <ImageIcon size="md" className={`${BASE_ICON_CLASS} mt-1`} />

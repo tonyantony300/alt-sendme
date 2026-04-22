@@ -45,9 +45,10 @@ function TicketPreviewCard({
 		previewMetadata.thumbnail && previewMetadata.fileName
 			? `${previewMetadata.fileName}:${previewMetadata.thumbnail}`
 			: null
-	const shouldShowCollectionIcon =
+	const isCollectionPreview =
+		previewMetadata.itemCount > 1 ||
 		previewMetadata.mimeType === 'application/x-iroh-collection'
-	const previewThumbnailSrc = shouldShowCollectionIcon
+	const previewThumbnailSrc = isCollectionPreview
 		? null
 		: getThumbnailSrc(previewMetadata.thumbnail)
 	const previewItems = previewMetadata.items ?? []
@@ -83,7 +84,9 @@ function TicketPreviewCard({
 						/>
 					) : (
 						getPreviewFileIcon(
-							previewMetadata.mimeType,
+							isCollectionPreview
+								? 'application/x-iroh-collection'
+								: previewMetadata.mimeType,
 							previewMetadata.fileName
 						)
 					)}

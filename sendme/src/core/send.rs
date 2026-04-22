@@ -695,24 +695,11 @@ async fn show_provide_progress_with_logging(
     #[derive(Clone)]
     struct TransferState {
         start_time: Instant,
-        last_offset: u64,
-    }
-
-    #[derive(Default)]
-    struct AggregateProgressState {
-        bytes_transferred: u64,
-        last_emitted_bytes: u64,
-        last_update_time: Option<Instant>,
-    }
-
-    fn needs_multiple_requests(entry_type: &str) -> bool {
-        entry_type == "directory" || entry_type == "collection"
+        total_size: u64,
     }
 
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> =
         Arc::new(Mutex::new(std::collections::HashMap::new()));
-
-    let aggregate_progress = Arc::new(Mutex::new(AggregateProgressState::default()));
 
     let active_requests = Arc::new(AtomicUsize::new(0));
     let completed_requests = Arc::new(AtomicUsize::new(0));
@@ -749,7 +736,6 @@ async fn show_provide_progress_with_logging(
                         let completed_requests_task = completed_requests.clone();
                         let has_emitted_started_task = has_emitted_started.clone();
                         let has_any_transfer_task = has_any_transfer.clone();
-                        let aggregate_progress_task = aggregate_progress.clone();
                         let last_request_time_task = last_request_time.clone();
                         let entry_type_task = entry_type.clone();
 
@@ -768,7 +754,7 @@ async fn show_provide_progress_with_logging(
                                                     (connection_id, request_id),
                                                     TransferState {
                                                         start_time: Instant::now(),
-                                                        last_offset: 0
+                                                        total_size: total_collection_size,
                                                     }
                                                 );
                                                 states.len()
@@ -792,7 +778,7 @@ async fn show_provide_progress_with_logging(
                                                     (connection_id, request_id),
                                                     TransferState {
                                                         start_time: Instant::now(),
-                                                        last_offset: 0
+                                                        total_size: total_collection_size,
                                                     }
                                                 );
                                                 states.len()
@@ -807,49 +793,21 @@ async fn show_provide_progress_with_logging(
                                             has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
 
-                                        if let Some((_elapsed, delta)) = {
-                                            let mut states = transfer_states_task.lock().await;
-                                            if let Some(state) = states.get_mut(&(connection_id, request_id)) {
-                                                let next_offset = m.end_offset;
-                                                let delta = next_offset.saturating_sub(state.last_offset);
-                                                state.last_offset = next_offset;
-                                                Some((state.start_time.elapsed().as_secs_f64(), delta))
-                                            } else {
-                                                None
-                                            }
+                                        if let Some((total_size, elapsed)) = {
+                                            let states = transfer_states_task.lock().await;
+                                            states.get(&(connection_id, request_id)).map(|state| {
+                                                (state.total_size, state.start_time.elapsed().as_secs_f64())
+                                            })
                                         } {
-                                            let (current_bytes, speed_bps) = {
-                                                let mut aggregate = aggregate_progress_task.lock().await;
-                                                aggregate.bytes_transferred = aggregate
-                                                    .bytes_transferred
-                                                    .saturating_add(delta)
-                                                    .min(total_collection_size);
-                                                let current_bytes = aggregate.bytes_transferred;
-
-                                                let now = Instant::now();
-                                                let speed_bps = if let Some(last_update_time) = aggregate.last_update_time {
-                                                    let elapsed_secs = now.duration_since(last_update_time).as_secs_f64();
-                                                    if elapsed_secs > 0.0 {
-                                                        current_bytes
-                                                            .saturating_sub(aggregate.last_emitted_bytes) as f64
-                                                            / elapsed_secs
-                                                    } else {
-                                                        0.0
-                                                    }
-                                                } else {
-                                                    0.0
-                                                };
-
-                                                aggregate.last_update_time = Some(now);
-                                                aggregate.last_emitted_bytes = current_bytes;
-
-                                                (current_bytes, speed_bps)
+                                            let speed_bps = if elapsed > 0.0 {
+                                                m.end_offset as f64 / elapsed
+                                            } else {
+                                                0.0
                                             };
-
                                             emit_progress_event(
                                                 &app_handle_task,
-                                                current_bytes,
-                                                total_collection_size,
+                                                m.end_offset.min(total_size),
+                                                total_size,
                                                 speed_bps,
                                             );
                                         }
@@ -872,7 +830,7 @@ async fn show_provide_progress_with_logging(
 
                                             // For directories, require at least 2 completed requests
                                             // to avoid false completion from metadata transfer
-                                            let min_required = if needs_multiple_requests(&entry_type_task) { 2 } else { 1 };
+                                            let min_required = if entry_type_task == "directory" { 2 } else { 1 };
 
                                             if completed >= active
                                                 && completed >= min_required
@@ -941,7 +899,7 @@ async fn show_provide_progress_with_logging(
 
                                 // For directories, require at least 2 completed requests
                                 // to avoid false completion from metadata transfer
-                                let min_required = if needs_multiple_requests(&entry_type_task) { 2 } else { 1 };
+                                let min_required = if entry_type_task == "directory" { 2 } else { 1 };
 
                                 if completed >= active
                                     && completed >= min_required
@@ -997,11 +955,7 @@ async fn show_provide_progress_with_logging(
 
         // For directories, require at least 2 completed requests
         // to avoid false completion from metadata transfer
-        let min_required = if needs_multiple_requests(&entry_type) {
-            2
-        } else {
-            1
-        };
+        let min_required = if entry_type == "directory" { 2 } else { 1 };
 
         if completed >= active && completed >= min_required && completed > 0 {
             emit_event(&app_handle, "transfer-completed");

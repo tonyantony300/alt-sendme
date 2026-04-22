@@ -281,6 +281,7 @@ export function useSender(): UseSenderReturn {
           const estimatedFileSize = latestProgressRef.current?.totalBytes || 0;
           const pathTypeToUse = storeState.pathType || currentPathType;
           const itemCount = storeState.selectedPaths.length;
+          const shouldResolveExactSize = itemCount <= 1;
 
           // console.log('[useSender] transfer-completed: setting initial metadata:', {
           // 	fileName,
@@ -316,21 +317,24 @@ export function useSender(): UseSenderReturn {
           }
 
           try {
-            const fileSize = await invoke<number>("get_file_size", {
-              path: pathToUse,
-            });
-            // console.log('[useSender] transfer-completed: got file size, updating metadata:', {
-            // 	fileSize,
-            // 	currentViewState: useSenderStore.getState().viewState,
-            // })
-            setTransferMetadata({
-              fileName,
-              fileSize,
-              duration,
-              startTime: transferStartTimeRef.current || endTime,
-              endTime,
-              pathType: pathTypeToUse,
-            });
+            if (shouldResolveExactSize) {
+              const fileSize = await invoke<number>("get_file_size", {
+                path: pathToUse,
+              });
+              // console.log('[useSender] transfer-completed: got file size, updating metadata:', {
+              // 	fileSize,
+              // 	currentViewState: useSenderStore.getState().viewState,
+              // })
+              setTransferMetadata({
+                fileName,
+                fileSize,
+                duration,
+                startTime: transferStartTimeRef.current || endTime,
+                endTime,
+                pathType: pathTypeToUse,
+                itemCount,
+              });
+            }
           } catch (error) {
             console.error(
               "[useSender] transfer-completed: failed to get file size:",

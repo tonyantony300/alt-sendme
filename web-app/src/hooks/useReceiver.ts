@@ -385,6 +385,8 @@ export function useReceiver(): UseReceiverReturn {
 					startTime: transferStartTimeRef.current || endTime,
 					endTime,
 					downloadPath: savePathRef.current,
+					itemCount:
+						currentFileNames.length > 1 ? currentFileNames.length : undefined,
 				}
 				setTransferMetadata(metadata)
 

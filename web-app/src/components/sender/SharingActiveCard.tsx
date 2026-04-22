@@ -5,6 +5,7 @@ import type {
 	SharingControlsProps,
 	TicketDisplayProps,
 } from '../../types/sender'
+import { calculateETA } from '../../utils/etaUtils'
 import { TransferProgressBar } from '../common/TransferProgressBar'
 import { StatusIndicator } from '../common/StatusIndicator'
 import { Button } from '../ui/button'
@@ -72,20 +73,21 @@ export function SharingActiveCard({
 	)
 	const previousBytesRef = useRef<number>(0)
 	const maxBytesRef = useRef<number>(0)
-	const isFolderTransfer = pathType === 'directory' && isTransporting
+	const isMultiItemTransfer =
+		isTransporting && (pathType === 'directory' || selectedPaths.length > 1)
 
 	useEffect(() => {
-		if (isTransporting && pathType === 'directory') {
+		if (isMultiItemTransfer) {
 			setCumulativeBytesTransferred(0)
 			setTransferStartTime(Date.now())
 			previousBytesRef.current = 0
 			maxBytesRef.current = 0
 		}
-	}, [isTransporting, pathType])
+	}, [isMultiItemTransfer])
 
 	useEffect(() => {
 		if (
-			isFolderTransfer &&
+			isMultiItemTransfer &&
 			typeof transferProgress?.bytesTransferred !== 'undefined'
 		) {
 			const currentBytes = transferProgress.bytesTransferred
@@ -117,17 +119,17 @@ export function SharingActiveCard({
 				previousBytesRef.current = currentBytes
 			}
 		}
-	}, [isFolderTransfer, transferProgress?.bytesTransferred])
+	}, [isMultiItemTransfer, transferProgress?.bytesTransferred])
 
 	const totalTransferredBytes =
-		isFolderTransfer && transferProgress
+		isMultiItemTransfer && transferProgress
 			? cumulativeBytesTransferred + transferProgress.bytesTransferred
 			: (transferProgress?.bytesTransferred ?? 0)
 
 	const [calculatedSpeed, setCalculatedSpeed] = useState(0)
 
 	useEffect(() => {
-		if (isFolderTransfer && transferProgress && transferStartTime) {
+		if (isMultiItemTransfer && transferProgress && transferStartTime) {
 			const updateSpeed = () => {
 				const elapsed = (Date.now() - transferStartTime) / 1000.0
 				const speed = elapsed > 0 ? totalTransferredBytes / elapsed : 0
@@ -143,24 +145,31 @@ export function SharingActiveCard({
 			setCalculatedSpeed(0)
 		}
 	}, [
-		isFolderTransfer,
+		isMultiItemTransfer,
 		transferProgress,
 		transferStartTime,
 		totalTransferredBytes,
 	])
 
-	// Calculate percentage and create progress object for folders
+	// Aggregate multi-request transfers so the bar does not jump backwards
 	const folderProgress =
-		isFolderTransfer && transferProgress
-			? {
-					bytesTransferred: totalTransferredBytes,
-					totalBytes: transferProgress.totalBytes,
-					speedBps: calculatedSpeed,
-					percentage:
-						transferProgress.totalBytes > 0
-							? (totalTransferredBytes / transferProgress.totalBytes) * 100
-							: 0,
-				}
+		isMultiItemTransfer && transferProgress
+			? (() => {
+					const bytesRemaining = Math.max(
+						transferProgress.totalBytes - totalTransferredBytes,
+						0
+					)
+					return {
+						bytesTransferred: totalTransferredBytes,
+						totalBytes: transferProgress.totalBytes,
+						speedBps: calculatedSpeed,
+						percentage:
+							transferProgress.totalBytes > 0
+								? (totalTransferredBytes / transferProgress.totalBytes) * 100
+								: 0,
+						etaSeconds: calculateETA(bytesRemaining, calculatedSpeed) ?? undefined,
+					}
+				})()
 			: null
 
 	// Default progress object when transferProgress is not yet available
