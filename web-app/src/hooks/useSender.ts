@@ -420,6 +420,7 @@ export function useSender(): UseSenderReturn {
 
 				if (pathToUse) {
 					const fileName = pathToUse.split('/').pop() || 'Unknown'
+					const itemCount = storeState.selectedPaths.length
 					// console.log('[useSender] transfer-failed: setting metadata:', {
 					// 	fileName,
 					// 	wasStopped: true,
@@ -432,6 +433,7 @@ export function useSender(): UseSenderReturn {
 						endTime,
 						wasStopped: true,
 						pathType: pathTypeToUse,
+						itemCount,
 					})
 					setViewState('SUCCESS')
 					setTransferProgress(null)
@@ -474,8 +476,8 @@ export function useSender(): UseSenderReturn {
 			return
 		}
 
-		const nextSelectedCount = new Set([...selectedPaths, ...paths]).size
 		addSelectedPaths(paths)
+		const nextSelectedCount = useSenderStore.getState().selectedPaths.length
 
 		if (nextSelectedCount > 1) {
 			setPathType(null)
@@ -612,6 +614,7 @@ export function useSender(): UseSenderReturn {
 					const endTime = Date.now()
 					const fileName = currentSelectedPath.split('/').pop() || 'Unknown'
 					const currentPathType = pathTypeRef.current
+					const itemCount = storeState.selectedPaths.length
 
 					const stoppedMetadata: TransferMetadata = {
 						fileName,
@@ -621,6 +624,7 @@ export function useSender(): UseSenderReturn {
 						endTime,
 						wasStopped: true,
 						pathType: currentPathType,
+						itemCount,
 					}
 
 					setTransferMetadata(stoppedMetadata)

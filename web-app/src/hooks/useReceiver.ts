@@ -357,9 +357,8 @@ export function useReceiver(): UseReceiverReturn {
 
 					if (conflicts.length === 0) return
 
-					const basename = (p: string) => {
+					const basename = (p: string) =>
 						normalizeSeparators(p).split('/').pop() || p
-					}
 					const preview = conflicts
 						.slice(0, 3)
 						.map((c) => `${basename(c.original)} → ${basename(c.resolved)}`)
