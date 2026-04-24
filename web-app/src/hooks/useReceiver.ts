@@ -357,13 +357,12 @@ export function useReceiver(): UseReceiverReturn {
 
 					if (conflicts.length === 0) return
 
+					const basename = (p: string) => {
+						normalizeSeparators(p).split('/').pop() || p
+					}
 					const preview = conflicts
 						.slice(0, 3)
-						.map((c) => {
-							const from = c.original.split('/').pop() || c.original
-							const to = c.resolved.split('/').pop() || c.resolved
-							return `${from} -> ${to}`
-						})
+						.map((c) => `${basename(c.original)} → ${basename(c.resolved)}`)
 						.join('\n')
 
 					pendingConflictNoticeRef.current =
@@ -418,7 +417,7 @@ export function useReceiver(): UseReceiverReturn {
 
 				if (pendingConflictNoticeRef.current) {
 					showAlert(
-						'Name conflicts resolved',
+						t('common:receiver.downloadCompletedWithConflicts'),
 						pendingConflictNoticeRef.current,
 						'info'
 					)

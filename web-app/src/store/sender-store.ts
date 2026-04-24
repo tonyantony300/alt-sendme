@@ -114,7 +114,8 @@ export const useSenderStore = create<SenderStore>()((set) => ({
 				pathType: selectedPaths.length ? state.pathType : null,
 			}
 		}),
-	setSelectedPath: (selectedPath) => set({ selectedPath }),
+	setSelectedPath: (selectedPath) =>
+		set({ selectedPath, selectedPaths: selectedPath ? [selectedPath] : [] }),
 	setPathType: (pathType) => set({ pathType }),
 	setThumbnailUrl: (thumbnailUrl) => set({ thumbnailUrl }),
 	setTransferMetadata: (transferMetadata) => {

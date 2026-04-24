@@ -76,7 +76,9 @@ export function getPreviewFileIcon(
 		mimeType?.startsWith('video/') ||
 		['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v'].includes(ext)
 	) {
-		return <Film className="h-16 w-16 text-muted-foreground" />
+		return (
+			<Film className={`${BASE_ICON_CLASS} h-16 w-16 text-muted-foreground`} />
+		)
 	}
 
 	return <DefaultFileIcon size="md" className={BASE_ICON_CLASS} />

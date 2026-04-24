@@ -474,7 +474,13 @@ export function useSender(): UseSenderReturn {
 			return
 		}
 
+		const nextSelectedCount = new Set([...selectedPaths, ...paths]).size
 		addSelectedPaths(paths)
+
+		if (nextSelectedCount > 1) {
+			setPathType(null)
+			return
+		}
 
 		if (providedPathType) {
 			setPathType(providedPathType)
@@ -566,8 +572,7 @@ export function useSender(): UseSenderReturn {
 
 		try {
 			const wasActiveTransfer =
-				viewState === 'TRANSPORTING' &&
-				(!transferMetadata || !transferMetadata.wasStopped)
+				viewState === 'TRANSPORTING' && !transferMetadata?.wasStopped
 			const isCompletedTransfer = viewState === 'SUCCESS' && transferMetadata
 
 			// console.log('[useSender] stopSharing: conditions:', {

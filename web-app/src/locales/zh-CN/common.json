@@ -60,7 +60,7 @@
 		"instruction5": "文件将保存到您选择的文件夹",
 		"keepAppOpen": "在下载文件时请保持应用打开",
 		"connectingToSender": "正在连接到发送者",
-		"previewMultipleItems": "{{name}} ... 等{{count}}个文件",
+		"previewMultipleItems": "{{name}} ... 等{{count}}个项目",
 		"multipleFilesFound": "找到多个文件",
 		"expandPreviewList": "显示文件列表",
 		"collapsePreviewList": "隐藏文件列表",

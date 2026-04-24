@@ -27,7 +27,6 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::{select, sync::mpsc};
-use tracing::trace;
 use walkdir::WalkDir;
 
 // To avoid encoding thumbnail into ticket causing excessively long tickets, we use a custom metadata protocol to
@@ -175,130 +174,11 @@ pub async fn start_share(
     app_handle: AppHandle,
     metadata: Option<FileMetadata>,
 ) -> anyhow::Result<SendResult> {
-    let secret_key = get_or_create_secret()?;
-
-    let relay_mode: RelayMode = options.relay_mode.clone().into();
-
-    let mut builder = Endpoint::builder()
-        .alpns(vec![
-            iroh_blobs::protocol::ALPN.to_vec(),
-            METADATA_ALPN.to_vec(),
-        ])
-        .secret_key(secret_key)
-        .relay_mode(relay_mode.clone());
-
-    if options.ticket_type == AddrInfoOptions::Id {
-        builder = builder.discovery(PkarrPublisher::n0_dns());
-    }
-    if let Some(addr) = options.magic_ipv4_addr {
-        builder = builder.bind_addr_v4(addr);
-    }
-    if let Some(addr) = options.magic_ipv6_addr {
-        builder = builder.bind_addr_v6(addr);
-    }
-
-    let suffix = rand::rng().random::<[u8; 16]>();
-    let temp_base = std::env::temp_dir();
-    let blobs_data_dir = temp_base.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
-    if blobs_data_dir.exists() {
-        anyhow::bail!(
-            "can not share twice from the same directory: {}",
-            temp_base.display(),
-        );
-    }
-    let cwd = std::env::current_dir()?;
-    if cwd.join(&path) == cwd {
-        anyhow::bail!("can not share from the current directory");
-    }
-
-    let path2 = path.clone();
-    let blobs_data_dir2 = blobs_data_dir.clone();
-    let (progress_tx, progress_rx) = mpsc::channel(32);
-    let app_handle_clone = app_handle.clone();
-    let entry_type = if path.is_file() { "file" } else { "directory" };
-    let entry_type_for_progress = entry_type.to_string();
-
-    let setup = async move {
-        let t0 = Instant::now();
-        tokio::fs::create_dir_all(&blobs_data_dir2).await?;
-
-        let endpoint = builder.bind().await?;
-
-        let store = FsStore::load(&blobs_data_dir2).await?;
-
-        let blobs = BlobsProtocol::new(
-            &store,
-            Some(EventSender::new(
-                progress_tx,
-                EventMask {
-                    connected: ConnectMode::Notify,
-                    get: RequestMode::NotifyLog,
-                    ..EventMask::DEFAULT
-                },
-            )),
-        );
-
-        let import_result = import(path2, blobs.store()).await?;
-        let dt = t0.elapsed();
-
-        let (ref _temp_tag, size, ref _collection) = import_result;
-        let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
-            progress_rx,
-            app_handle_clone,
-            size,
-            entry_type_for_progress,
-        ));
-
-        let router = iroh::protocol::Router::builder(endpoint)
-            .accept(iroh_blobs::ALPN, blobs.clone())
-            .accept(METADATA_ALPN, MetadataProtocol { metadata })
-            .spawn();
-
-        let ep = router.endpoint();
-        tokio::time::timeout(Duration::from_secs(30), async move {
-            if !matches!(relay_mode, RelayMode::Disabled) {
-                let _ = ep.online().await;
-            }
-        })
-        .await?;
-
-        anyhow::Ok((
-            router,
-            import_result,
-            dt,
-            blobs_data_dir2,
-            store,
-            progress_handle,
-        ))
-    };
-
-    let (router, (temp_tag, size, _collection), _dt, _blobs_data_dir, store, progress_handle) = select! {
-        x = setup => x?,
-        _ = tokio::signal::ctrl_c() => {
-            anyhow::bail!("Operation cancelled");
-        }
-    };
-    let hash = temp_tag.hash();
-
-    let mut addr = router.endpoint().addr();
-
-    apply_options(&mut addr, options.ticket_type);
-
-    let ticket = BlobTicket::new(addr, hash, BlobFormat::HashSeq);
-
-    Ok(SendResult {
-        ticket: ticket.to_string(),
-        hash: hash.to_hex().to_string(),
-        size,
-        entry_type: entry_type.to_string(),
-        router,
-        temp_tag,
-        blobs_data_dir,
-        _progress_handle: AbortOnDropHandle::new(progress_handle),
-        _store: store,
-    })
+    start_share_items(vec![path], options, &app_handle, metadata).await
 }
 
+/// Starts sharing the provided paths (files or directories).
+/// If multiple paths are provided, they will be shared as a collection.
 pub async fn start_share_items(
     paths: Vec<PathBuf>,
     options: SendOptions,
@@ -336,9 +216,12 @@ pub async fn start_share_items(
     let is_collection = canonical_paths.len() > 1;
     let entry_type_for_progress = if is_collection {
         "collection".to_string()
+    } else if canonical_paths[0].is_dir() {
+        "directory".to_string()
     } else {
         "file".to_string()
     };
+    let entry_type = entry_type_for_progress.clone();
 
     let setup = async move {
         tokio::fs::create_dir_all(&blobs_data_dir2).await?;
@@ -407,107 +290,13 @@ pub async fn start_share_items(
         ticket: ticket.to_string(),
         hash: hash.to_hex().to_string(),
         size,
-        entry_type: if is_collection {
-            "collection".to_string()
-        } else {
-            "file".to_string()
-        },
+        entry_type: entry_type.to_string(),
         router,
         temp_tag,
         blobs_data_dir,
         _progress_handle: AbortOnDropHandle::new(progress_handle),
         _store: store,
     })
-}
-
-async fn import(path: PathBuf, db: &Store) -> anyhow::Result<(TempTag, u64, Collection)> {
-    let parallelism = num_cpus::get();
-    let path = path.canonicalize()?;
-    anyhow::ensure!(path.exists(), "path {} does not exist", path.display());
-    let root = path.parent().context("context get parent")?;
-    let files = WalkDir::new(path.clone()).into_iter();
-    let data_sources: Vec<(String, PathBuf)> = files
-        .filter_map(|entry| {
-            let entry = match entry {
-                Ok(e) => e,
-                Err(e) => {
-                    tracing::warn!("skipping inaccessible entry: {}", e);
-                    return None;
-                }
-            };
-            if !entry.file_type().is_file() {
-                return None;
-            }
-            let path = entry.into_path();
-            let relative = match path.strip_prefix(root) {
-                Ok(r) => r,
-                Err(e) => {
-                    tracing::warn!("skipping {}: {}", path.display(), e);
-                    return None;
-                }
-            };
-            match canonicalized_path_to_string(relative, true) {
-                Ok(name) => Some((name, path)),
-                Err(e) => {
-                    tracing::warn!("skipping {}: {}", path.display(), e);
-                    None
-                }
-            }
-        })
-        .collect();
-
-    anyhow::ensure!(!data_sources.is_empty(), "no valid files to share");
-
-    let mut names_and_tags = n0_future::stream::iter(data_sources)
-        .map(|(name, path)| {
-            let db = db.clone();
-            async move {
-                let import = db.add_path_with_opts(AddPathOptions {
-                    path,
-                    mode: ImportMode::TryReference,
-                    format: iroh_blobs::BlobFormat::Raw,
-                });
-                let mut stream = import.stream().await;
-                let mut item_size = 0;
-                let temp_tag = loop {
-                    let item = stream
-                        .next()
-                        .await
-                        .context("import stream ended without a tag")?;
-                    trace!("importing {name} {item:?}");
-                    match item {
-                        iroh_blobs::api::blobs::AddProgressItem::Size(size) => {
-                            item_size = size;
-                        }
-                        iroh_blobs::api::blobs::AddProgressItem::CopyProgress(_) => {}
-                        iroh_blobs::api::blobs::AddProgressItem::CopyDone => {}
-                        iroh_blobs::api::blobs::AddProgressItem::OutboardProgress(_) => {}
-                        iroh_blobs::api::blobs::AddProgressItem::Error(cause) => {
-                            anyhow::bail!("error importing {}: {}", name, cause);
-                        }
-                        iroh_blobs::api::blobs::AddProgressItem::Done(tt) => {
-                            break tt;
-                        }
-                    }
-                };
-                anyhow::Ok((name, temp_tag, item_size))
-            }
-        })
-        .buffered_unordered(parallelism)
-        .collect::<Vec<_>>()
-        .await
-        .into_iter()
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    names_and_tags.sort_by(|(a, _, _), (b, _, _)| a.cmp(b));
-    let size = names_and_tags.iter().map(|(_, _, size)| *size).sum::<u64>();
-    let (collection, tags) = names_and_tags
-        .into_iter()
-        .map(|(name, tag, _)| ((name, tag.hash()), tag))
-        .unzip::<_, _, Collection, Vec<_>>();
-    let temp_tag = collection.clone().store(db).await?;
-    drop(tags);
-    Ok((temp_tag, size, collection))
 }
 
 async fn import_paths(
@@ -527,7 +316,9 @@ async fn import_paths(
             .unwrap_or_else(|| "item".to_string());
 
         let import = collect_path_files(&path, &stem)?;
-        ensure!(!import.is_empty(), "no valid files found.");
+        if import.is_empty() {
+            tracing::warn!("no valid files found in path {}, skipping", path.display());
+        }
 
         let mut local = n0_future::stream::iter(import)
             .map(|(name, file_path)| {
@@ -570,6 +361,10 @@ async fn import_paths(
     }
 
     entries.sort_by(|a, b| a.0.cmp(&b.0));
+    ensure!(
+        !entries.is_empty(),
+        "no valid files found in provided paths"
+    );
     let total_size = entries.iter().map(|(_, _, size)| *size).sum::<u64>();
     let (collection, tags) = entries
         .into_iter()
@@ -828,9 +623,9 @@ async fn show_provide_progress_with_logging(
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                             let active = active_requests_task.load(Ordering::SeqCst);
 
-                                            // For directories, require at least 2 completed requests
+                                            // For directories and collections, require at least 2 completed requests
                                             // to avoid false completion from metadata transfer
-                                            let min_required = if entry_type_task == "directory" { 2 } else { 1 };
+                                            let min_required = if entry_type_task == "directory" || entry_type_task == "collection" { 2 } else { 1 };
 
                                             if completed >= active
                                                 && completed >= min_required
@@ -897,9 +692,9 @@ async fn show_provide_progress_with_logging(
                                 let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                 let active = active_requests_task.load(Ordering::SeqCst);
 
-                                // For directories, require at least 2 completed requests
+                                // For directories and collections, require at least 2 completed requests
                                 // to avoid false completion from metadata transfer
-                                let min_required = if entry_type_task == "directory" { 2 } else { 1 };
+                                let min_required = if entry_type_task == "directory" || entry_type_task == "collection" { 2 } else { 1 };
 
                                 if completed >= active
                                     && completed >= min_required
@@ -953,9 +748,13 @@ async fn show_provide_progress_with_logging(
         let completed = completed_requests.load(Ordering::SeqCst);
         let active = active_requests.load(Ordering::SeqCst);
 
-        // For directories, require at least 2 completed requests
+        // For directories and collections, require at least 2 completed requests
         // to avoid false completion from metadata transfer
-        let min_required = if entry_type == "directory" { 2 } else { 1 };
+        let min_required = if entry_type == "directory" || entry_type == "collection" {
+            2
+        } else {
+            1
+        };
 
         if completed >= active && completed >= min_required && completed > 0 {
             emit_event(&app_handle, "transfer-completed");
