@@ -388,7 +388,10 @@ export function useReceiver(): UseReceiverReturn {
 				const currentFileNames = fileNamesRef.current
 				const itemCount =
 					transferItemCountRef.current ?? countTopLevelItems(currentFileNames)
-				let displayName = 'Downloaded File'
+				const multipleFilesLabel = t('common:transfer.multipleFiles', {
+					count: itemCount,
+				})
+				let displayName = t('common:receiver.downloadedFile')
 
 				if (currentFileNames.length > 0) {
 					if (itemCount <= 1) {
@@ -398,9 +401,9 @@ export function useReceiver(): UseReceiverReturn {
 						const firstPath = currentFileNames[0]
 						const pathParts = firstPath.split('/')
 						if (pathParts.length > 1) {
-							displayName = pathParts[0] || `${itemCount} files`
+							displayName = pathParts[0] || multipleFilesLabel
 						} else {
-							displayName = `${itemCount} files`
+							displayName = multipleFilesLabel
 						}
 					}
 				}

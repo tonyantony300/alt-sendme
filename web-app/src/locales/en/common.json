@@ -80,6 +80,7 @@
 		"collapsePreviewList": "Hide file list",
 		"downloadingInProgress": "Downloading in progress",
 		"downloadCompleted": "Download completed",
+		"downloadedFile": "Downloaded File",
 		"stopReceiving": "Stop receiving",
 		"download": "Download"
 	},
