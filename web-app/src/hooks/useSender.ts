@@ -515,6 +515,26 @@ export function useSender(): UseSenderReturn {
 
 	const removeSelectedPath = (path: string) => {
 		removeSelectedPathFromStore(path)
+		const remaining = useSenderStore.getState().selectedPaths
+
+		if (remaining.length === 0) {
+			setPathType(null)
+			return
+		}
+
+		if (remaining.length === 1) {
+			invoke<string>('check_path_type', { path: remaining[0] })
+				.then((type) => {
+					setPathType(type as 'file' | 'directory')
+				})
+				.catch((error) => {
+					console.error('Failed to check path type:', error)
+					setPathType(null)
+				})
+			return
+		}
+
+		setPathType(null)
 	}
 
 	const startSharing = async () => {
