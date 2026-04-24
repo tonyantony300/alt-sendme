@@ -1,11 +1,9 @@
 import { CheckCircle, Copy, Square } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type {
 	SharingControlsProps,
 	TicketDisplayProps,
 } from '../../types/sender'
-import { calculateETA } from '../../utils/etaUtils'
 import { TransferProgressBar } from '../common/TransferProgressBar'
 import { StatusIndicator } from '../common/StatusIndicator'
 import { Button } from '../ui/button'
@@ -17,7 +15,6 @@ import { toastManager } from '../ui/toast'
 export function SharingActiveCard({
 	selectedPaths,
 	selectedPath,
-	pathType,
 	ticket,
 	copySuccess,
 	transferProgress,
@@ -66,112 +63,16 @@ export function SharingActiveCard({
 
 	const statusText = getStatusText()
 
-	const [cumulativeBytesTransferred, setCumulativeBytesTransferred] =
-		useState(0)
-	const [transferStartTime, setTransferStartTime] = useState<number | null>(
-		null
-	)
-	const previousBytesRef = useRef<number>(0)
-	const maxBytesRef = useRef<number>(0)
-	const isMultiItemTransfer =
-		isTransporting && (pathType === 'directory' || selectedPaths.length > 1)
-
-	useEffect(() => {
-		if (isMultiItemTransfer) {
-			setCumulativeBytesTransferred(0)
-			setTransferStartTime(Date.now())
-			previousBytesRef.current = 0
-			maxBytesRef.current = 0
-		}
-	}, [isMultiItemTransfer])
-
-	useEffect(() => {
-		if (
-			isMultiItemTransfer &&
-			typeof transferProgress?.bytesTransferred !== 'undefined'
-		) {
-			const currentBytes = transferProgress.bytesTransferred
-			const previousBytes = previousBytesRef.current
-			const maxBytes = maxBytesRef.current
-
-			if (currentBytes > maxBytes) {
-				maxBytesRef.current = currentBytes
+	const clampedProgress = transferProgress
+		? {
+				...transferProgress,
+				bytesTransferred: Math.min(
+					Math.max(transferProgress.bytesTransferred, 0),
+					transferProgress.totalBytes
+				),
+				percentage: Math.min(Math.max(transferProgress.percentage, 0), 100),
 			}
-
-			if (
-				previousBytes > 0 &&
-				currentBytes < previousBytes * 0.5 &&
-				maxBytes > 0
-			) {
-				setCumulativeBytesTransferred((prev) => prev + maxBytes)
-				maxBytesRef.current = currentBytes
-				previousBytesRef.current = currentBytes
-			} else if (currentBytes === 0 && previousBytes > 0 && maxBytes > 0) {
-				setCumulativeBytesTransferred((prev) => prev + maxBytes)
-				maxBytesRef.current = 0
-				previousBytesRef.current = 0
-			} else if (currentBytes > previousBytes) {
-				previousBytesRef.current = currentBytes
-			} else if (
-				currentBytes < previousBytes &&
-				currentBytes >= previousBytes * 0.5
-			) {
-				previousBytesRef.current = currentBytes
-			}
-		}
-	}, [isMultiItemTransfer, transferProgress?.bytesTransferred])
-
-	const totalTransferredBytes =
-		isMultiItemTransfer && transferProgress
-			? cumulativeBytesTransferred + transferProgress.bytesTransferred
-			: (transferProgress?.bytesTransferred ?? 0)
-
-	const [calculatedSpeed, setCalculatedSpeed] = useState(0)
-
-	useEffect(() => {
-		if (isMultiItemTransfer && transferProgress && transferStartTime) {
-			const updateSpeed = () => {
-				const elapsed = (Date.now() - transferStartTime) / 1000.0
-				const speed = elapsed > 0 ? totalTransferredBytes / elapsed : 0
-				setCalculatedSpeed(speed)
-			}
-
-			updateSpeed()
-			const interval = setInterval(updateSpeed, 500)
-			return () => clearInterval(interval)
-		} else if (transferProgress) {
-			setCalculatedSpeed(transferProgress.speedBps)
-		} else {
-			setCalculatedSpeed(0)
-		}
-	}, [
-		isMultiItemTransfer,
-		transferProgress,
-		transferStartTime,
-		totalTransferredBytes,
-	])
-
-	// Aggregate multi-request transfers so the bar does not jump backwards
-	const folderProgress =
-		isMultiItemTransfer && transferProgress
-			? (() => {
-					const bytesRemaining = Math.max(
-						transferProgress.totalBytes - totalTransferredBytes,
-						0
-					)
-					return {
-						bytesTransferred: totalTransferredBytes,
-						totalBytes: transferProgress.totalBytes,
-						speedBps: calculatedSpeed,
-						percentage:
-							transferProgress.totalBytes > 0
-								? (totalTransferredBytes / transferProgress.totalBytes) * 100
-								: 0,
-						etaSeconds:
-							calculateETA(bytesRemaining, calculatedSpeed) ?? undefined,
-					}
-				})()
-			: null
+		: null
 
 	// Default progress object when transferProgress is not yet available
 	const defaultProgress = {
@@ -183,7 +84,7 @@ export function SharingActiveCard({
 
 	// Determine which progress object to use
 	const progressToDisplay = isTransporting
-		? folderProgress || transferProgress || defaultProgress
+		? clampedProgress || defaultProgress
 		: null
 
 	const totalProgressLabel =

@@ -492,6 +492,10 @@ async fn show_provide_progress_with_logging(
     struct TransferState {
         start_time: Instant,
         total_size: u64,
+        accounted_payload_bytes: u64,
+        current_blob_size: u64,
+        current_blob_end_offset: u64,
+        ignore_current_blob: bool,
     }
 
     let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> =
@@ -501,6 +505,7 @@ async fn show_provide_progress_with_logging(
     let completed_requests = Arc::new(AtomicUsize::new(0));
     let has_emitted_started = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let has_any_transfer = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let has_emitted_completed = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let last_request_time: Arc<tokio::sync::Mutex<Option<Instant>>> =
         Arc::new(tokio::sync::Mutex::new(None));
 
@@ -518,13 +523,20 @@ async fn show_provide_progress_with_logging(
                     iroh_blobs::provider::events::ProviderMessage::ConnectionClosed(_msg) => {
                     }
                     iroh_blobs::provider::events::ProviderMessage::GetRequestReceivedNotify(msg) => {
+                        let is_sizes_probe_request =
+                            (entry_type == "directory" || entry_type == "collection")
+                                && msg.request.ranges
+                                    == iroh_blobs::protocol::ChunkRangesSeq::verified_child_sizes();
+
                         let connection_id = msg.connection_id;
                         let request_id = msg.request_id;
 
-                        active_requests.fetch_add(1, Ordering::SeqCst);
+                        if !is_sizes_probe_request {
+                            active_requests.fetch_add(1, Ordering::SeqCst);
 
-                        let mut last_time = last_request_time.lock().await;
-                        *last_time = Some(Instant::now());
+                            let mut last_time = last_request_time.lock().await;
+                            *last_time = Some(Instant::now());
+                        }
 
                         let app_handle_task = app_handle.clone();
                         let transfer_states_task = transfer_states.clone();
@@ -532,17 +544,23 @@ async fn show_provide_progress_with_logging(
                         let completed_requests_task = completed_requests.clone();
                         let has_emitted_started_task = has_emitted_started.clone();
                         let has_any_transfer_task = has_any_transfer.clone();
+                        let has_emitted_completed_task = has_emitted_completed.clone();
                         let last_request_time_task = last_request_time.clone();
                         let entry_type_task = entry_type.clone();
 
                         let mut rx = msg.rx;
                         tasks.push(async move {
+                            if is_sizes_probe_request {
+                                while let Ok(Some(_)) = rx.recv().await {}
+                                return;
+                            }
+
                             let mut transfer_started = false;
                             let mut request_completed = false;
 
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
-                                    iroh_blobs::provider::events::RequestUpdate::Started(_m) => {
+                                    iroh_blobs::provider::events::RequestUpdate::Started(m) => {
                                         if !transfer_started {
                                             let active_count = {
                                                 let mut states = transfer_states_task.lock().await;
@@ -551,6 +569,10 @@ async fn show_provide_progress_with_logging(
                                                     TransferState {
                                                         start_time: Instant::now(),
                                                         total_size: total_collection_size,
+                                                        accounted_payload_bytes: 0,
+                                                        current_blob_size: 0,
+                                                        current_blob_end_offset: 0,
+                                                        ignore_current_blob: false,
                                                     }
                                                 );
                                                 states.len()
@@ -563,7 +585,37 @@ async fn show_provide_progress_with_logging(
                                             }
 
                                             transfer_started = true;
+                                        }
+
+                                        let is_metadata_blob =
+                                            (entry_type_task == "directory" || entry_type_task == "collection")
+                                                && m.index == 0;
+
+                                        if !is_metadata_blob {
                                             has_any_transfer_task.store(true, Ordering::SeqCst);
+                                        }
+
+                                        {
+                                            let mut states = transfer_states_task.lock().await;
+                                            if let Some(state) = states.get_mut(&(connection_id, request_id)) {
+                                                let was_ignoring_current_blob = state.ignore_current_blob;
+
+                                                if !state.ignore_current_blob {
+                                                    state.accounted_payload_bytes = state
+                                                        .accounted_payload_bytes
+                                                        .saturating_add(state.current_blob_size)
+                                                        .min(state.total_size);
+                                                }
+
+                                                if was_ignoring_current_blob && !is_metadata_blob {
+                                                    state.start_time = Instant::now();
+                                                    state.accounted_payload_bytes = 0;
+                                                }
+
+                                                state.current_blob_size = m.size;
+                                                state.current_blob_end_offset = 0;
+                                                state.ignore_current_blob = is_metadata_blob;
+                                            }
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
@@ -575,6 +627,10 @@ async fn show_provide_progress_with_logging(
                                                     TransferState {
                                                         start_time: Instant::now(),
                                                         total_size: total_collection_size,
+                                                        accounted_payload_bytes: 0,
+                                                        current_blob_size: 0,
+                                                        current_blob_end_offset: 0,
+                                                        ignore_current_blob: true,
                                                     }
                                                 );
                                                 states.len()
@@ -586,23 +642,47 @@ async fn show_provide_progress_with_logging(
                                                 emit_event(&app_handle_task, "transfer-started");
                                             }
                                             transfer_started = true;
-                                            has_any_transfer_task.store(true, Ordering::SeqCst);
                                         }
 
-                                        if let Some((total_size, elapsed)) = {
-                                            let states = transfer_states_task.lock().await;
-                                            states.get(&(connection_id, request_id)).map(|state| {
-                                                (state.total_size, state.start_time.elapsed().as_secs_f64())
+                                        if let Some((transferred, total_size, elapsed, has_payload_progress)) = {
+                                            let mut states = transfer_states_task.lock().await;
+                                            states.get_mut(&(connection_id, request_id)).map(|state| {
+                                                if !state.ignore_current_blob {
+                                                    state.current_blob_end_offset = m
+                                                        .end_offset
+                                                        .min(state.current_blob_size)
+                                                        .max(state.current_blob_end_offset);
+                                                }
+
+                                                let transferred = if state.ignore_current_blob {
+                                                    state.accounted_payload_bytes
+                                                } else {
+                                                    state
+                                                        .accounted_payload_bytes
+                                                        .saturating_add(state.current_blob_end_offset)
+                                                        .min(state.total_size)
+                                                };
+
+                                                (
+                                                    transferred,
+                                                    state.total_size,
+                                                    state.start_time.elapsed().as_secs_f64(),
+                                                    !state.ignore_current_blob,
+                                                )
                                             })
                                         } {
+                                            if has_payload_progress {
+                                                has_any_transfer_task.store(true, Ordering::SeqCst);
+                                            }
+
                                             let speed_bps = if elapsed > 0.0 {
-                                                m.end_offset as f64 / elapsed
+                                                transferred as f64 / elapsed
                                             } else {
                                                 0.0
                                             };
                                             emit_progress_event(
                                                 &app_handle_task,
-                                                m.end_offset.min(total_size),
+                                                transferred.min(total_size),
                                                 total_size,
                                                 speed_bps,
                                             );
@@ -610,6 +690,18 @@ async fn show_provide_progress_with_logging(
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         if transfer_started && !request_completed {
+                                            {
+                                                let mut states = transfer_states_task.lock().await;
+                                                if let Some(state) = states.get_mut(&(connection_id, request_id)) {
+                                                    if !state.ignore_current_blob {
+                                                        state.accounted_payload_bytes = state
+                                                            .accounted_payload_bytes
+                                                            .saturating_add(state.current_blob_size)
+                                                            .min(state.total_size);
+                                                    }
+                                                }
+                                            }
+
                                             let active_count = {
                                                 let mut states = transfer_states_task.lock().await;
                                                 states.remove(&(connection_id, request_id));
@@ -659,7 +751,11 @@ async fn show_provide_progress_with_logging(
                                                     && !new_requests_arrived
                                                     && !has_active_transfers
                                                     && !last_request_recent {
-                                                    emit_event(&app_handle_task, "transfer-completed");
+                                                    if !has_emitted_completed_task
+                                                        .swap(true, Ordering::SeqCst)
+                                                    {
+                                                        emit_event(&app_handle_task, "transfer-completed");
+                                                    }
                                                 }
                                             }
                                         }
@@ -728,7 +824,11 @@ async fn show_provide_progress_with_logging(
                                         && !new_requests_arrived
                                         && !has_active_transfers
                                         && !last_request_recent {
-                                        emit_event(&app_handle_task, "transfer-completed");
+                                        if !has_emitted_completed_task
+                                            .swap(true, Ordering::SeqCst)
+                                        {
+                                            emit_event(&app_handle_task, "transfer-completed");
+                                        }
                                     }
                                 }
                             }
@@ -758,7 +858,9 @@ async fn show_provide_progress_with_logging(
         };
 
         if completed >= active && completed >= min_required && completed > 0 {
-            emit_event(&app_handle, "transfer-completed");
+            if !has_emitted_completed.swap(true, Ordering::SeqCst) {
+                emit_event(&app_handle, "transfer-completed");
+            }
         }
     }
 
