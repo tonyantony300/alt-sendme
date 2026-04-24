@@ -139,7 +139,7 @@ pub fn get_or_create_secret() -> anyhow::Result<iroh::SecretKey> {
     match std::env::var("IROH_SECRET") {
         Ok(secret) => iroh::SecretKey::from_str(&secret).context("invalid secret"),
         Err(_) => {
-            let key = iroh::SecretKey::generate(&mut rand::rng());
+            let key = iroh::SecretKey::generate();
             Ok(key)
         }
     }
