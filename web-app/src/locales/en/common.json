@@ -63,6 +63,7 @@
 		"subtitle": "Download files from sender using encrypted peer-to-peer connections over the internet.",
 		"saveToFolder": "Save to folder:",
 		"noFolderSelected": "No folder selected",
+		"conflictsMore": "... and {{count}} more",
 		"pasteTicket": "Paste the ticket here:",
 		"ticketPlaceholder": "sendme receive ticket...",
 		"howToReceive": "How to receive files",

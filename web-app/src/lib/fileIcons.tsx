@@ -10,7 +10,7 @@ import {
 	XlsxIcon,
 	ZipIcon,
 } from '@/components/illustration'
-import { Film } from 'lucide-react'
+import { VideoIcon } from 'lucide-react'
 import type { ReactElement } from 'react'
 
 const BASE_ICON_CLASS = 'scale-60 origin-center'
@@ -89,9 +89,7 @@ export function getPreviewFileIcon(
 			'ogv',
 		].includes(ext)
 	) {
-		return (
-			<Film className={`${BASE_ICON_CLASS} h-16 w-16 text-muted-foreground`} />
-		)
+		return <VideoIcon className={`${BASE_ICON_CLASS}`} />
 	}
 
 	return <DefaultFileIcon size="md" className={BASE_ICON_CLASS} />

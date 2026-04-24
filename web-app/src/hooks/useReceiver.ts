@@ -366,7 +366,9 @@ export function useReceiver(): UseReceiverReturn {
 
 					pendingConflictNoticeRef.current =
 						conflicts.length > 3
-							? `${preview}\n... and ${conflicts.length - 3} more`
+							? `${preview}\n${t('common:receiver.conflictsMore', {
+									count: conflicts.length - 3,
+								})}`
 							: preview
 				} catch (error) {
 					console.error('Failed to parse receive-conflicts event:', error)
