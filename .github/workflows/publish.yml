@@ -224,8 +224,8 @@ jobs:
             echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
           fi
 
-      - name: Set Rust 1.85 and Android targets
-        uses: dtolnay/rust-toolchain@1.85
+      - name: Set Rust 1.89 and Android targets
+        uses: dtolnay/rust-toolchain@1.89
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
