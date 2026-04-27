@@ -36,13 +36,14 @@
 			"index": "Yayın",
 			"on": {
 				"label": "Yayın yapıyorsunuz",
-				"description": "Anahtara sahip herkes dosyayı indirebilir."
+				"description": "Anahtara sahip birden fazla kişi yayın modunda dosyaları aynı anda indirebilir."
 			},
 			"off": {
 				"label": "Özel paylaşım",
 				"description": "Yalnızca anahtarı paylaştığınız kişi dosyayı indirebilir."
 			}
-		}
+		},
+		"description": "Açıklama (isteğe bağlı)"
 	},
 	"receiver": {
 		"title": "Dosya Al",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Dosya alınamadı",
 		"openFolderFailed": "Klasörü Açma Başarısız",
 		"openFolderFailedDesc": "İndirme klasörü açılamadı"
+	},
+	"comingSoon": "Çok yakında",
+	"undo": "Geri al",
+	"cancel": "İptal",
+	"confirm": "Onayla",
+	"privacyPolicy": "Gizlilik politikası",
+	"license": "Lisans",
+	"notFound": {
+		"title": "Sayfa bulunamadı",
+		"subtitle": "Aradığınız sayfa mevcut değil veya taşınmış.",
+		"goBack": "Geri",
+		"goHome": "Ana sayfa"
+	},
+	"settings": {
+		"title": "Ayarlar",
+		"navItems": {
+			"appearance": "Tema ve dil",
+			"general": "Genel",
+			"network": "Ağ",
+			"notification": "Bildirimler"
+		},
+		"theme": {
+			"description": "Tercih ettiğiniz temayı seçin",
+			"title": "Görünüm",
+			"light": "Açık",
+			"dark": "Koyu",
+			"auto": "Sistem"
+		},
+		"language": {
+			"title": "Dil",
+			"description": "Tercih ettiğiniz dili seçin",
+			"noResults": "Dil bulunamadı"
+		},
+		"general": {
+			"title": "Genel",
+			"autoCheckUpdates": {
+				"label": "Güncellemeleri otomatik denetle",
+				"description": "Uygulama başlarken güncellemeleri denetler"
+			},
+			"systembar": {
+				"title": "Sistem tepsisi",
+				"minimizeToTray": {
+					"label": "Sistem tepsisine küçült",
+					"description": "Kapatırken uygulamayı sonlandırmak yerine küçült"
+				},
+				"showProgressOnIcon": {
+					"label": "Simge üzerinde aktarım ilerlemesini göster",
+					"description": "İlerleme çubuğu uygulama simgesinde"
+				},
+				"runOnSystemStartup": {
+					"label": "Sistem başlangıcında çalıştır",
+					"description": "Sistem açıldığında uygulamayı otomatik başlat"
+				},
+				"contextMenu": {
+					"label": "Gezgin bağlam menüsü",
+					"description": "Windows Gezgini sağ tık menüsüne «AltSendme ile gönder» ekle"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Yeni güncelleme!",
+		"newVersionAvailable": "{{version}} sürümü kullanılabilir.",
+		"newVersionAvailableInline": "Yeni sürüm mevcut — {{version}}",
+		"updateNow": "Şimdi güncelle",
+		"later": "Sonra",
+		"checkForUpdates": "Güncellemeleri denetle",
+		"noUpdatesTitle": "Güncelleme yok",
+		"noUpdatesDescription": "Zaten en son sürümü kullanıyorsunuz",
+		"checkFailed": "Denetleme başarısız",
+		"checkFailedDesc": "Güncellemeler denetlenemedi",
+		"installFailed": "Kurulum başarısız",
+		"installFailedDesc": "Güncelleme kurulamadı"
 	}
 }

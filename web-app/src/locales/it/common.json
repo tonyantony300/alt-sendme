@@ -36,13 +36,14 @@
 			"index": "Trasmissione",
 			"on": {
 				"label": "Stai trasmettendo",
-				"description": "Chiunque abbia il ticket può scaricare il file."
+				"description": "Più persone con il ticket possono scaricare file contemporaneamente in modalità broadcast."
 			},
 			"off": {
 				"label": "Condivisione privata",
 				"description": "Solo la persona con cui condividi il ticket può scaricare il file."
 			}
-		}
+		},
+		"description": "Descrizione (facoltativa)"
 	},
 	"receiver": {
 		"title": "Ricevi File",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Impossibile ricevere il file",
 		"openFolderFailed": "Apertura Cartella Fallita",
 		"openFolderFailedDesc": "Impossibile aprire la cartella di download"
+	},
+	"comingSoon": "Prossimamente",
+	"undo": "Annulla",
+	"cancel": "Annulla",
+	"confirm": "Conferma",
+	"privacyPolicy": "Informativa sulla privacy",
+	"license": "Licenza",
+	"notFound": {
+		"title": "Pagina non trovata",
+		"subtitle": "La pagina che cerchi non esiste o è stata spostata.",
+		"goBack": "Indietro",
+		"goHome": "Vai alla home"
+	},
+	"settings": {
+		"title": "Impostazioni",
+		"navItems": {
+			"appearance": "Tema e lingua",
+			"general": "Generale",
+			"network": "Rete",
+			"notification": "Notifiche"
+		},
+		"theme": {
+			"description": "Seleziona il tema preferito",
+			"title": "Aspetto",
+			"light": "Chiaro",
+			"dark": "Scuro",
+			"auto": "Sistema"
+		},
+		"language": {
+			"title": "Lingua",
+			"description": "Seleziona la lingua preferita",
+			"noResults": "Nessuna lingua trovata"
+		},
+		"general": {
+			"title": "Generale",
+			"autoCheckUpdates": {
+				"label": "Cerca aggiornamenti automaticamente",
+				"description": "L’app cercherà aggiornamenti all’avvio"
+			},
+			"systembar": {
+				"title": "Area di notifica",
+				"minimizeToTray": {
+					"label": "Riduci a icona nell’area di notifica",
+					"description": "Alla chiusura riduci l’app invece di terminarla"
+				},
+				"showProgressOnIcon": {
+					"label": "Mostra l’avanzamento del trasferimento sull’icona",
+					"description": "Barra di avanzamento sull’icona per indicare il progresso"
+				},
+				"runOnSystemStartup": {
+					"label": "Esegui all’avvio del sistema",
+					"description": "Avvia automaticamente l’app all’accensione del sistema"
+				},
+				"contextMenu": {
+					"label": "Menu contestuale di Esplora risorse",
+					"description": "Aggiungi «Invia con AltSendme» al menu contestuale di Esplora risorse di Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Nuovo aggiornamento!",
+		"newVersionAvailable": "È disponibile la versione {{version}}.",
+		"newVersionAvailableInline": "È disponibile una nuova versione: {{version}}",
+		"updateNow": "Aggiorna ora",
+		"later": "Più tardi",
+		"checkForUpdates": "Cerca aggiornamenti",
+		"noUpdatesTitle": "Nessun aggiornamento",
+		"noUpdatesDescription": "Stai già usando l’ultima versione",
+		"checkFailed": "Verifica non riuscita",
+		"checkFailedDesc": "Impossibile cercare aggiornamenti",
+		"installFailed": "Installazione non riuscita",
+		"installFailedDesc": "Impossibile installare l’aggiornamento"
 	}
 }

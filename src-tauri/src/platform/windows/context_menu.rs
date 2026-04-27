@@ -1,5 +1,3 @@
-// TODO: Currently commands for unregistering the context menu is commented out, as it is not yet implemented when the settings route is built: create a toggle for context menu
-
 #[cfg(target_os = "windows")]
 use anyhow::Context;
 #[cfg(target_os = "windows")]
@@ -80,20 +78,14 @@ pub fn register_context_menu() -> anyhow::Result<()> {
     Ok(())
 }
 
-// #[cfg(target_os = "windows")]
-// pub fn unregister_context_menu() -> anyhow::Result<()> {
-//     // Remove for Files
-//     remove_registry_key("*", "Send with AltSendme")?;
-//
-//     // Remove for Directories
-//     remove_registry_key("Directory", "Send with AltSendme")?;
-//
-//     // Remove for Directory Backgrounds
-//     remove_registry_key("Directory\\Background", "Send with AltSendme")?;
-//
-//     notify_icon_change();
-//     Ok(())
-// }
+#[cfg(target_os = "windows")]
+pub fn unregister_context_menu() -> anyhow::Result<()> {
+    remove_registry_key("*", "Send with AltSendme")?;
+    remove_registry_key("Directory", "Send with AltSendme")?;
+    remove_registry_key("Directory\\Background", "Send with AltSendme")?;
+    notify_icon_change();
+    Ok(())
+}
 
 #[cfg(target_os = "windows")]
 fn write_registry_key(
@@ -130,19 +122,15 @@ fn write_registry_key(
     Ok(())
 }
 
-// #[cfg(target_os = "windows")]
-// fn remove_registry_key(base: &str, name: &str) -> anyhow::Result<()> {
-//     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-//     let path = format!("Software\\Classes\\{}\\shell", base);
-//
-//     match hkcu.open_subkey_with_flags(&path, KEY_READ | KEY_WRITE) {
-//         Ok(shell_key) => {
-//             let _ = shell_key.delete_subkey_all(name);
-//         }
-//         Err(_) => {}
-//     }
-//     Ok(())
-// }
+#[cfg(target_os = "windows")]
+fn remove_registry_key(base: &str, name: &str) -> anyhow::Result<()> {
+    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+    let path = format!("Software\\Classes\\{}\\shell", base);
+    if let Ok(shell_key) = hkcu.open_subkey_with_flags(&path, KEY_READ | KEY_WRITE) {
+        let _ = shell_key.delete_subkey_all(name);
+    }
+    Ok(())
+}
 
 #[cfg(target_os = "windows")]
 fn notify_icon_change() {
@@ -159,7 +147,9 @@ pub fn register_context_menu() -> anyhow::Result<()> {
     Ok(())
 }
 
-// #[cfg(not(target_os = "windows"))]
-// pub fn unregister_context_menu() -> anyhow::Result<()> {
-//     Ok(())
-// }
+// Stub for non-Windows platforms
+#[cfg(not(target_os = "windows"))]
+#[allow(dead_code)]
+pub fn unregister_context_menu() -> anyhow::Result<()> {
+    Ok(())
+}

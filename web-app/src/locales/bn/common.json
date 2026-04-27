@@ -36,13 +36,14 @@
 			"index": "ব্রডকাস্ট",
 			"on": {
 				"label": "আপনি ব্রডকাস্ট করছেন",
-				"description": "যার কাছে টিকিট আছে সে ফাইল ডাউনলোড করতে পারবে।"
+				"description": "টিকিট থাকা একাধিক ব্যক্তি ব্রডকাস্ট মোডে একই সময়ে ফাইল ডাউনলোড করতে পারেন।"
 			},
 			"off": {
 				"label": "ব্যক্তিগত শেয়ারিং",
 				"description": "শুধুমাত্র যার সাথে আপনি টিকিট শেয়ার করেছেন সে ফাইল ডাউনলোড করতে পারবে।"
 			}
-		}
+		},
+		"description": "বিবরণ (ঐচ্ছিক)"
 	},
 	"receiver": {
 		"title": "ফাইল গ্রহণ করুন",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "ফাইল গ্রহণ করা সম্ভব হয়নি",
 		"openFolderFailed": "ফোল্ডার খুলতে ব্যর্থ হয়েছে",
 		"openFolderFailedDesc": "ডাউনলোড ফোল্ডার খুলতে ব্যর্থ হয়েছে"
+	},
+	"comingSoon": "শীঘ্রই আসছে",
+	"undo": "পূর্বাবস্থা",
+	"cancel": "বাতিল",
+	"confirm": "নিশ্চিত করুন",
+	"privacyPolicy": "গোপনীয়তা নীতি",
+	"license": "লাইসেন্স",
+	"notFound": {
+		"title": "পৃষ্ঠা পাওয়া যায়নি",
+		"subtitle": "আপনি যে পৃষ্ঠাটি খুঁজছেন তা বিদ্যমান নয় বা সরানো হয়েছে।",
+		"goBack": "পিছনে",
+		"goHome": "হোমে যান"
+	},
+	"settings": {
+		"title": "সেটিংস",
+		"navItems": {
+			"appearance": "থিম ও ভাষা",
+			"general": "সাধারণ",
+			"network": "নেটওয়ার্ক",
+			"notification": "বিজ্ঞপ্তি"
+		},
+		"theme": {
+			"description": "আপনার পছন্দের থিম নির্বাচন করুন",
+			"title": "চেহারা",
+			"light": "হালকা",
+			"dark": "গাঢ়",
+			"auto": "সিস্টেম"
+		},
+		"language": {
+			"title": "ভাষা",
+			"description": "পছন্দের ভাষা নির্বাচন করুন",
+			"noResults": "কোনো ভাষা পাওয়া যায়নি"
+		},
+		"general": {
+			"title": "সাধারণ",
+			"autoCheckUpdates": {
+				"label": "স্বয়ংক্রিয়ভাবে আপডেট পরীক্ষা",
+				"description": "অ্যাপ চালু হলে আপডেট পরীক্ষা করা হবে"
+			},
+			"systembar": {
+				"title": "সিস্টেম ট্রে",
+				"minimizeToTray": {
+					"label": "সিস্টেম ট্রেতে ছোট করুন",
+					"description": "বন্ধ করলে অ্যাপ বন্ধ না করে ছোট করুন"
+				},
+				"showProgressOnIcon": {
+					"label": "আইকনে স্থানান্তরের অগ্রগতি দেখান",
+					"description": "অ্যাপ আইকনে অগ্রগতি বার"
+				},
+				"runOnSystemStartup": {
+					"label": "সিস্টেম শুরুতে চালু করুন",
+					"description": "সিস্টেম চালু হলে অ্যাপ স্বয়ংক্রিয়ভাবে চালু করুন"
+				},
+				"contextMenu": {
+					"label": "এক্সপ্লোরার প্রসঙ্গ মেনু",
+					"description": "উইন্ডোজ এক্সপ্লোরারের ডান-ক্লিক মেনুতে «AltSendme দিয়ে পাঠান» যোগ করুন"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "নতুন আপডেট!",
+		"newVersionAvailable": "সংস্করণ {{version}} উপলব্ধ।",
+		"newVersionAvailableInline": "নতুন সংস্করণ উপলব্ধ — {{version}}",
+		"updateNow": "এখন আপডেট করুন",
+		"later": "পরে",
+		"checkForUpdates": "আপডেট পরীক্ষা করুন",
+		"noUpdatesTitle": "কোনো আপডেট নেই",
+		"noUpdatesDescription": "আপনি ইতিমধ্যে সর্বশেষ সংস্করণ ব্যবহার করছেন",
+		"checkFailed": "পরীক্ষা ব্যর্থ",
+		"checkFailedDesc": "আপডেট পরীক্ষা করা যায়নি",
+		"installFailed": "ইনস্টল ব্যর্থ",
+		"installFailedDesc": "আপডেট ইনস্টল করা যায়নি"
 	}
 }

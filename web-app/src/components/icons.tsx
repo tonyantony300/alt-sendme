@@ -19,6 +19,7 @@ import {
 	FunnelSimpleXIcon,
 	InfoIcon,
 	CaretRightIcon,
+	TranslateIcon,
 } from '@phosphor-icons/react'
 
 export type IconName =
@@ -41,6 +42,7 @@ export type IconName =
 	| 'FunnelSimpleX'
 	| 'Info'
 	| 'CaretRight'
+	| 'Translate'
 
 const ICONS: Record<IconName, React.ComponentType<IconProps>> = {
 	ArrowLeft: ArrowLeftIcon,
@@ -62,6 +64,7 @@ const ICONS: Record<IconName, React.ComponentType<IconProps>> = {
 	FunnelSimpleX: FunnelSimpleXIcon,
 	Info: InfoIcon,
 	CaretRight: CaretRightIcon,
+	Translate: TranslateIcon,
 }
 
 export function LazyIcon(props: IconProps & { name: IconName }) {

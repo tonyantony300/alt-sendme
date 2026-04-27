@@ -36,13 +36,14 @@
 			"index": "ブロードキャスト",
 			"on": {
 				"label": "ブロードキャスト中",
-				"description": "チケットを持っている人は誰でもファイルをダウンロードできます。"
+				"description": "チケットを持つ複数の人が、ブロードキャストモードで同時にファイルをダウンロードできます。"
 			},
 			"off": {
 				"label": "プライベート共有",
 				"description": "チケットを共有した相手のみがファイルをダウンロードできます。"
 			}
-		}
+		},
+		"description": "説明（任意）"
 	},
 	"receiver": {
 		"title": "ファイルを受信",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "ファイルを受信できませんでした",
 		"openFolderFailed": "フォルダを開くのに失敗しました",
 		"openFolderFailedDesc": "ダウンロードフォルダを開けませんでした"
+	},
+	"comingSoon": "近日公開",
+	"undo": "元に戻す",
+	"cancel": "キャンセル",
+	"confirm": "確認",
+	"privacyPolicy": "プライバシーポリシー",
+	"license": "ライセンス",
+	"notFound": {
+		"title": "ページが見つかりません",
+		"subtitle": "お探しのページは存在しないか、移動されました。",
+		"goBack": "戻る",
+		"goHome": "ホームへ"
+	},
+	"settings": {
+		"title": "設定",
+		"navItems": {
+			"appearance": "テーマと言語",
+			"general": "一般",
+			"network": "ネットワーク",
+			"notification": "通知"
+		},
+		"theme": {
+			"description": "希望のテーマを選択してください",
+			"title": "外観",
+			"light": "ライト",
+			"dark": "ダーク",
+			"auto": "システムに合わせる"
+		},
+		"language": {
+			"title": "言語",
+			"description": "使用する言語を選択してください",
+			"noResults": "言語が見つかりません"
+		},
+		"general": {
+			"title": "一般",
+			"autoCheckUpdates": {
+				"label": "更新を自動的に確認",
+				"description": "起動時に更新を自動確認します"
+			},
+			"systembar": {
+				"title": "システムトレイ",
+				"minimizeToTray": {
+					"label": "システムトレイに最小化",
+					"description": "閉じるときは終了せずに最小化します"
+				},
+				"showProgressOnIcon": {
+					"label": "アイコンに転送の進捗を表示",
+					"description": "アプリアイコンに進捗バーを重ねて表示します"
+				},
+				"runOnSystemStartup": {
+					"label": "システム起動時に実行",
+					"description": "システムの起動時に自動でアプリを起動します"
+				},
+				"contextMenu": {
+					"label": "エクスプローラーの右クリックメニュー",
+					"description": "Windows エクスプローラーの右クリックに「AltSendme で送信」を追加します"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "新しいアップデートがあります",
+		"newVersionAvailable": "バージョン {{version}} が利用できます。",
+		"newVersionAvailableInline": "新しいバージョンがあります — {{version}}",
+		"updateNow": "今すぐ更新",
+		"later": "後で",
+		"checkForUpdates": "更新を確認",
+		"noUpdatesTitle": "更新はありません",
+		"noUpdatesDescription": "すでに最新バージョンを使用しています",
+		"checkFailed": "確認に失敗しました",
+		"checkFailedDesc": "更新を確認できませんでした",
+		"installFailed": "インストールに失敗しました",
+		"installFailedDesc": "更新をインストールできませんでした"
 	}
 }

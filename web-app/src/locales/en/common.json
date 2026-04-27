@@ -49,7 +49,7 @@
 			"index": "Broadcast",
 			"on": {
 				"label": "You are broadcasting",
-				"description": "Anyone with the ticket can download the file."
+				"description": "Multiple people with the ticket can download files concurrently in broadcast mode."
 			},
 			"off": {
 				"label": "Private sharing",
@@ -124,6 +124,7 @@
 			"notification": "Notifications"
 		},
 		"theme": {
+			"description": "Select your preferred theme",
 			"title": "Appearance",
 			"light": "Light",
 			"dark": "Dark",
@@ -153,6 +154,10 @@
 				"runOnSystemStartup": {
 					"label": "Run on system startup",
 					"description": "Automatically launch the app when the system starts"
+				},
+				"contextMenu": {
+					"label": "Explorer context menu",
+					"description": "Add 'Send with AltSendme' to the Windows Explorer right-click menu"
 				}
 			}
 		}

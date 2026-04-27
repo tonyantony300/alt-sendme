@@ -1,0 +1,179 @@
+{
+	"appTitle": "AltSendme",
+	"send": "ផ្ញើ",
+	"comingSoon": "មកដល់ឆាប់ៗនេះ",
+	"receive": "ទទួល",
+	"ok": "យល់ព្រម",
+	"undo": "មិនធ្វើវិញ",
+	"cancel": "បោះបង់",
+	"confirm": "បញ្ជាក់",
+	"loading": "កំពុងផ្ទុក...",
+	"browse": "រកមើល",
+	"donate": "បរិច្ចាគ",
+	"privacyPolicy": "គោលការណ៍ឯកជនភាព",
+	"license": "អាជ្ញាបណ្ណ",
+	"notFound": {
+		"title": "រកមិនឃើញទំព័រ",
+		"subtitle": "ទំព័រដែលអ្នកកំពុងស្វែងរកមិនមានទេ ឬត្រូវបានផ្លាស់ទី។",
+		"goBack": "ត្រលប់ក្រោយ",
+		"goHome": "ទៅទំព័រដើម"
+	},
+	"sender": {
+		"title": "ផ្ញើ",
+		"subtitle": "ចែករំលែកឯកសារ ឬថតឯកសារតាមការតភ្ជាប់ peer-to-peer ដែលបានអ៊ិនគ្រីបទិន្នន័យ។",
+		"stoppingTransmission": "កំពុងបញ្ឈប់ការផ្ញើ...",
+		"startSharing": "ចាប់ផ្តើមចែករំលែក",
+		"startingShare": "កំពុងចាប់ផ្តើមចែករំលែក...",
+		"stopSharing": "បញ្ឈប់ការចែករំលែក",
+		"shareThisTicket": "ចែករំលែកសំបុត្រនេះ៖",
+		"sendThisTicket": "ផ្ញើសំបុត្រនេះទៅមនុស្សដែលចង់ទទួលឯកសាររបស់អ្នក",
+		"keepAppOpen": "រក្សាឲ្យកម្មវិធីនេះបើកនៅពេលដែលអ្នកដទៃកំពុងទាញយកឯកសារ",
+		"fileLabel": "ឯកសារ៖",
+		"listeningForConnection": "កំពុងរង់ចាំការតភ្ជាប់",
+		"sharingInProgress": "កំពុងចែករំលែក",
+		"transferCompleted": "ការផ្ទេរបានបញ្ចប់",
+		"filesBeingTransmitted": "ឯកសារកំពុងផ្ញើ",
+		"preparingForTransport": "កំពុងរៀបចំសម្រាប់ការផ្ទេរ...",
+		"pleaseWaitProcessing": "សូមរង់ចាំ ខណៈពេលយើងកំពុងដំណើរការឯកសាររបស់អ្នកសម្រាប់ចែករំលែក...",
+		"dropFilesHere": "ទម្លាក់ទៅទីនេះ ឯកសារ ឬថតឯកសារ",
+		"dragAndDrop": "អូស និងទម្លាក់",
+		"orBrowse": "ឬរកមើលដើម្បីជ្រើសឯកសារ ឬថតឯកសារ",
+		"fileSelected": "ឯកសារត្រូវបានជ្រើសរើស",
+		"folderSelected": "ថតឯកសារត្រូវបានជ្រើសរើស",
+		"itemSelected": "ធាតុត្រូវបានជ្រើសរើស",
+		"browseFile": "រកមើលឯកសារ",
+		"browseFolder": "រកមើលថតឯកសារ",
+		"copyToClipboard": "ចម្លងទៅកាន់ក្តារចម្លង",
+		"description": "សេចក្តីពិពណ៌នា (ជាជម្រើស)",
+		"broadcastMode": {
+			"index": "ផ្សាយផ្ទាល់",
+			"on": {
+				"label": "អ្នកកំពុងផ្សាយ",
+				"description": "មនុស្សច្រើនអាចទាញយកឯកសារដូចគ្នាបានក្នុងពេលតែមួយ ប្រើរបៀបផ្សាយ។"
+			},
+			"off": {
+				"label": "ចែករំលែកឯកជន",
+				"description": "មានតែអ្នកដែលអ្នកចែកសំបុត្រទៅទើបអាចទាញយកឯកសារ។"
+			}
+		}
+	},
+	"receiver": {
+		"title": "ទទួលឯកសារ",
+		"subtitle": "ទាញយកឯកសារពីអ្នកផ្ញើ តាមការតភ្ជាប់ peer-to-peer ដែលមានសុវត្ថិភាពតាមអ៊ីនធឺណិត។",
+		"saveToFolder": "រក្សាទុកទៅថត៖",
+		"noFolderSelected": "មិនបានជ្រើសថតទេ",
+		"pasteTicket": "បិទភ្ជាប់សំបុត្រនៅទីនេះ៖",
+		"ticketPlaceholder": "sendme receive ticket...",
+		"howToReceive": "របៀបទទួលឯកសារ",
+		"instruction1": "អ្នកផ្ញើត្រូវតែតភ្ជាប់អ៊ីនធឺណិត និងកំពុងចែកឯកសារ",
+		"instruction2": "ទទួលសំបុត្រពីអ្នកផ្ញើ",
+		"instruction3": "បិទភ្ជាប់សំបុត្រនៅក្នុងប្រអប់អត្ថបទ",
+		"instruction4": "ចុច ‘ទាញយក’ ដើម្បីចាប់ផ្តើមទទួលឯកសារ",
+		"instruction5": "ឯកសារនឹងត្រូវបានរក្សាទុកក្នុងថតដែលអ្នកបានជ្រើស",
+		"keepAppOpen": "រក្សាឲ្យកម្មវិធីបើកនៅពេលកំពុងទាញយកឯកសារ",
+		"connectingToSender": "កំពុងភ្ជាប់ទៅអ្នកផ្ញើ",
+		"downloadingInProgress": "កំពុងទាញយក",
+		"downloadCompleted": "ការទាញយកបានបញ្ចប់",
+		"stopReceiving": "បញ្ឈប់ការទទួល",
+		"download": "ទាញយក"
+	},
+	"transfer": {
+		"progress": "វឌ្ឍនភាពនៃការផ្ទេរ",
+		"speed": "ល្បឿន",
+		"eta": "ពេលវេលាដល់ទីបញ្ចប់",
+		"timeRemaining": "ពេលវេលាសល់",
+		"calculating": "កំពុងគណនា...",
+		"complete": "ការផ្ទេរបានបញ្ចប់!",
+		"stopped": "ការផ្ញើត្រូវបានបញ្ឈប់",
+		"newTransfer": "ការផ្ទេរថ្មី",
+		"done": "រួចរាល់",
+		"open": "បើក",
+		"wasStopped": "ការផ្ទេរត្រូវបានបញ្ឈប់មុនពេលបញ្ចប់។",
+		"successMessage": "ការផ្ទេររបស់អ្នកបានបញ្ចប់ដោយជោគជ័យ។",
+		"file": "ឯកសារ",
+		"folder": "ថតឯកសារ",
+		"fileName": "ឈ្មោះឯកសារ",
+		"fileSize": "ទំហំឯកសារ",
+		"folderSize": "ទំហំថតឯកសារ",
+		"downloadPath": "ទីតាំងទាញយក",
+		"duration": "រយៈពេល",
+		"avgSpeed": "ល្បឿនមធ្យម"
+	},
+	"errors": {
+		"sharingFailed": "ការចែករំលែកបរាជ័យ",
+		"sharingFailedDesc": "បរាជ័យក្នុងការចាប់ផ្តើមចែករំលែក",
+		"stopSharingFailed": "បញ្ឈប់ការចែករំលែកបរាជ័យ",
+		"stopSharingFailedDesc": "មិនអាចបញ្ឈប់ការចែករំលែកបានទេ",
+		"copyFailed": "ចម្លងបរាជ័យ",
+		"copyFailedDesc": "មិនអាចចម្លងសំបុត្របានទេ",
+		"folderDialogFailed": "បើកប្រអប់ថតបរាជ័យ",
+		"folderDialogFailedDesc": "មិនអាចបើកប្រអប់ជ្រើសថតបានទេ",
+		"fileDialogFailed": "បើកប្រអប់ឯកសារបរាជ័យ",
+		"fileDialogFailedDesc": "មិនអាចបើកប្រអប់ជ្រើសឯកសារបានទេ",
+		"receiveFailed": "ការទទួលបរាជ័យ",
+		"receiveFailedDesc": "មិនអាចទទួលឯកសារបានទេ",
+		"openFolderFailed": "បើកថតបរាជ័យ",
+		"openFolderFailedDesc": "មិនអាចបើកថតទាញយកបានទេ"
+	},
+	"settings": {
+		"title": "ការកំណត់",
+		"navItems": {
+			"appearance": "រូបរាង និងភាសា",
+			"general": "ទូទៅ",
+			"network": "បណ្ដាញ",
+			"notification": "ការជូនដំណឹង"
+		},
+		"theme": {
+			"description": "ជ្រើសរូបរាងដែលអ្នកចូលចិត្ត",
+			"title": "រូបរាង",
+			"light": "ពន្លឺ",
+			"dark": "ងងឹត",
+			"auto": "ប្រព័ន្ធ"
+		},
+		"language": {
+			"title": "ភាសា",
+			"description": "ជ្រើសភាសាដែលអ្នកចូលចិត្ត",
+			"noResults": "រកមិនឃើញភាសា"
+		},
+		"general": {
+			"title": "ទូទៅ",
+			"autoCheckUpdates": {
+				"label": "ពិនិត្យការអាប់ដេតដោយស្វ័យប្រវត្តិ",
+				"description": "កម្មវិធីនឹងពិនិត្យការអាប់ដេតនៅពេលចាប់ផ្តើមដោយស្វ័យប្រវត្តិ"
+			},
+			"systembar": {
+				"title": "ប្រអប់ប្រព័ន្ធ",
+				"minimizeToTray": {
+					"label": "បង្រួមទៅប្រអប់ប្រព័ន្ធ",
+					"description": "នៅពេលបិទ ប្រើបង្រួមកម្មវិធី ជំនួសឱ្យបញ្ចប់"
+				},
+				"showProgressOnIcon": {
+					"label": "បង្ហាញពីដំណើរការការផ្ទេរនៅលើរូបតំណាងកម្មវិធី",
+					"description": "ប្រើរបារដំណើរការលើរូបតំណាង ដើម្បីបង្ហាញដំណើរការនៃការផ្ទេរ"
+				},
+				"runOnSystemStartup": {
+					"label": "ដំណើរការនៅពេលប្រព័ន្ធចាប់ផ្តើម",
+					"description": "បើកកម្មវិធីដោយស្វ័យប្រវត្តិនៅពេលប្រព័ន្ធចាប់ផ្តើម"
+				},
+				"contextMenu": {
+					"label": "ម៉ឺនុយតាមបរិបទក្នុង Explorer",
+					"description": "បន្ថែម ‘ផ្ញើដោយ AltSendme’ ទៅម៉ឺនុយចុចស្ដាំក្នុង Windows Explorer"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "មានការអាប់ដេតថ្មី!",
+		"newVersionAvailable": "មានកំណែថ្មី {{version}} អាចប្រើបាន។",
+		"newVersionAvailableInline": "មានកំណែថ្មីអាចប្រើបាន - {{version}}",
+		"updateNow": "អាប់ដេតឥឡូវนี้",
+		"later": "ពេលក្រោយ",
+		"checkForUpdates": "ពិនិត្យការអាប់ដេត",
+		"noUpdatesTitle": "គ្មានការអាប់ដេតថ្មីទេ",
+		"noUpdatesDescription": "អ្នកកំពុងប្រើកំណែចុងក្រោយរួចហើយ",
+		"checkFailed": "ពិនិត្យបរាជ័យ",
+		"checkFailedDesc": "មិនអាចពិនិត្យការអាប់ដេតបានទេ",
+		"installFailed": "ដំឡើងបរាជ័យ",
+		"installFailedDesc": "មិនអាចដំឡើងការអាប់ដេតបានទេ"
+	}
+}

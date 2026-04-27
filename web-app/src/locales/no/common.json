@@ -21,7 +21,7 @@
 		"sharingInProgress": "Deling pågår",
 		"transferCompleted": "Overføring fullført",
 		"filesBeingTransmitted": "Filer overføres",
-		"preparingForTransport": "Forbreder til overføring...",
+		"preparingForTransport": "Forbereder til overføring...",
 		"pleaseWaitProcessing": "Vennligst vent mens filene behandles for deling...",
 		"dropFilesHere": "Slipp filer eller mapper her",
 		"dragAndDrop": "Dra og slipp",
@@ -36,13 +36,14 @@
 			"index": "Kringkasting",
 			"on": {
 				"label": "Du kringkaster",
-				"description": "Alle med nøkkelen kan laste ned filen."
+				"description": "Flere personer med billetten kan laste ned filer samtidig i kringkastingsmodus."
 			},
 			"off": {
 				"label": "Privat deling",
 				"description": "Bare personen du deler nøkkelen med kan laste ned filen."
 			}
-		}
+		},
+		"description": "Beskrivelse (valgfritt)"
 	},
 	"receiver": {
 		"title": "Motta filer",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Kunne ikke overføre fil",
 		"openFolderFailed": "Kunne ikke åpne mappe",
 		"openFolderFailedDesc": "Kunne ikke åpne nedlastingsmappen"
+	},
+	"comingSoon": "Kommer snart",
+	"undo": "Angre",
+	"cancel": "Avbryt",
+	"confirm": "Bekreft",
+	"privacyPolicy": "Personvernerklæring",
+	"license": "Lisens",
+	"notFound": {
+		"title": "Siden ble ikke funnet",
+		"subtitle": "Siden du leter etter finnes ikke eller er flyttet.",
+		"goBack": "Tilbake",
+		"goHome": "Hjem"
+	},
+	"settings": {
+		"title": "Innstillinger",
+		"navItems": {
+			"appearance": "Tema og språk",
+			"general": "Generelt",
+			"network": "Nettverk",
+			"notification": "Varsler"
+		},
+		"theme": {
+			"description": "Velg ønsket tema",
+			"title": "Utseende",
+			"light": "Lyst",
+			"dark": "Mørkt",
+			"auto": "System"
+		},
+		"language": {
+			"title": "Språk",
+			"description": "Velg foretrukket språk",
+			"noResults": "Ingen språk funnet"
+		},
+		"general": {
+			"title": "Generelt",
+			"autoCheckUpdates": {
+				"label": "Se etter oppdateringer automatisk",
+				"description": "Appen sjekker etter oppdateringer ved oppstart"
+			},
+			"systembar": {
+				"title": "Systemkurv",
+				"minimizeToTray": {
+					"label": "Minimer til systemkurven",
+					"description": "Ved lukking minimer appen i stedet for å avslutte"
+				},
+				"showProgressOnIcon": {
+					"label": "Vis overføringsfremdrift på ikonet",
+					"description": "Fremdriftslinje over appikonet"
+				},
+				"runOnSystemStartup": {
+					"label": "Kjør ved systemstart",
+					"description": "Start appen automatisk når systemet starter"
+				},
+				"contextMenu": {
+					"label": "Hurtigmeny i Filutforsker",
+					"description": "Legg til «Send med AltSendme» i hurtigmenyen i Windows Filutforsker"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Ny oppdatering!",
+		"newVersionAvailable": "Versjon {{version}} er tilgjengelig.",
+		"newVersionAvailableInline": "En ny versjon er tilgjengelig — {{version}}",
+		"updateNow": "Oppdater nå",
+		"later": "Senere",
+		"checkForUpdates": "Se etter oppdateringer",
+		"noUpdatesTitle": "Ingen oppdateringer",
+		"noUpdatesDescription": "Du bruker allerede den nyeste versjonen",
+		"checkFailed": "Sjekk mislyktes",
+		"checkFailedDesc": "Kunne ikke sjekke etter oppdateringer",
+		"installFailed": "Installasjon mislyktes",
+		"installFailedDesc": "Kunne ikke installere oppdateringen"
 	}
 }

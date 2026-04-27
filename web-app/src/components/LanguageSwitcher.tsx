@@ -29,6 +29,7 @@ const LANGUAGES = [
 	{ value: 'hu', label: 'Magyar', countryCode: 'HU' },
 	{ value: 'it', label: 'Italiano', countryCode: 'IT' },
 	{ value: 'ja', label: '日本語', countryCode: 'JP' },
+	{ value: 'km', label: 'ខេមរភាសា', countryCode: 'KH' },
 	{ value: 'ko', label: '한국어', countryCode: 'KR' },
 	{ value: 'no', label: 'Norsk', countryCode: 'NO' },
 	{ value: 'pl', label: 'Polski', countryCode: 'PL' },

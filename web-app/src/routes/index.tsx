@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import { useEffect, useRef, useState } from 'react'
 import * as SingleLayoutPage from '@/components/common/SingleLayoutPage'
 import { Receiver } from '@/components/receiver/Receiver'
@@ -27,30 +28,30 @@ export function IndexPage() {
 	useEffect(() => {
 		isInitialRender.current = true
 
-		// Check for launch intent (file passed via right-click context menu)
-		const checkIntent = async () => {
+		const applyIntent = async (path: string) => {
+			setActiveTab('send')
+			setSelectedPath(path)
 			try {
-				const path = await invoke<string | null>('check_launch_intent')
-				if (path) {
-					console.log('Launch intent detected:', path)
-					setActiveTab('send')
-					setSelectedPath(path)
-
-					// Determine path type
-					try {
-						const type = await invoke<string>('check_path_type', { path })
-						setPathType(type as 'file' | 'directory')
-					} catch (e) {
-						console.error('Failed to check path type for intent:', e)
-						setPathType(null)
-					}
-				}
-			} catch (error) {
-				console.error('Failed to check launch intent:', error)
+				const type = await invoke<string>('check_path_type', { path })
+				setPathType(type as 'file' | 'directory')
+			} catch {
+				setPathType(null)
 			}
 		}
 
-		checkIntent()
+		invoke<string | null>('check_launch_intent')
+			.then((path) => {
+				if (path) applyIntent(path)
+			})
+			.catch((e) => console.error('Failed to check launch intent:', e))
+
+		const unlistenPromise = listen<string>('launch-intent', (event) => {
+			if (event.payload) applyIntent(event.payload)
+		})
+
+		return () => {
+			unlistenPromise.then((unlisten) => unlisten())
+		}
 	}, [setSelectedPath, setPathType])
 
 	// Example: Routes can be accessed at different paths

@@ -22,12 +22,12 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: lts/*
+          node-version: '24.x'
 
       - name: Set Rust toolchain
         shell: bash
@@ -61,18 +61,17 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: install frontend dependencies
-        run: cd web-app && npm install
-
       - name: Extract version from tag and sync
         shell: bash
         run: |
           VERSION="${GITHUB_REF#refs/tags/v}"
-          cd src-tauri
           npm pkg set version="$VERSION"
           npm run sync-version
-          node ../scripts/validate-version.js
+          node scripts/validate-version.js
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: install frontend dependencies
+        run: npm install
 
       - name: import certificate (macOS only)
         if: matrix.platform == 'macos-latest'
@@ -152,7 +151,7 @@ jobs:
           cat release_notes.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - uses: tauri-apps/tauri-action@v0.5
+      - uses: tauri-apps/tauri-action@v0.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_SIGNING_IDENTITY: "Developer ID Application: Tony Antony (9H7RVQAP36)"

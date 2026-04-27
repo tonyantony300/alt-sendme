@@ -12,6 +12,7 @@ export const defaultAppSettings: AppSettingsState = {
 	autoUpdate: true,
 	showProgressOnIcon: false,
 	downloadsPath: '',
+	windowsContextMenu: true,
 }
 export const localSettingStore = new LazyStore(SETTING_FILE, {
 	autoSave: true,

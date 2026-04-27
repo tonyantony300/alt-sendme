@@ -13,7 +13,7 @@
 		"startSharing": "بدء المشاركة",
 		"startingShare": "بدء المشاركة...",
 		"stopSharing": "إيقاف المشاركة",
-		"shareThisTicket": "شارك هذا التذكرة:",
+		"shareThisTicket": "شارك هذه التذكرة:",
 		"sendThisTicket": "أرسل هذه التذكرة للشخص الذي يريد استقبال ملفك",
 		"keepAppOpen": "احتفظ بهذا التطبيق مفتوحاً بينما يقوم الآخرون بتنزيل ملفاتك",
 		"fileLabel": "الملف:",
@@ -36,13 +36,14 @@
 			"index": "بث",
 			"on": {
 				"label": "أنت تبث",
-				"description": "أي شخص لديه التذكرة يمكنه تنزيل الملف."
+				"description": "يمكن لعدة أشخاص لديهم التذكرة تنزيل الملفات في الوقت نفسه في وضع البث."
 			},
 			"off": {
 				"label": "مشاركة خاصة",
 				"description": "فقط الشخص الذي تشارك معه التذكرة يمكنه تنزيل الملف."
 			}
-		}
+		},
+		"description": "الوصف (اختياري)"
 	},
 	"receiver": {
 		"title": "استقبال الملفات",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "فشل استقبال الملف",
 		"openFolderFailed": "فشل فتح المجلد",
 		"openFolderFailedDesc": "فشل فتح مجلد التنزيل"
+	},
+	"comingSoon": "قريبًا",
+	"undo": "تراجع",
+	"cancel": "إلغاء",
+	"confirm": "تأكيد",
+	"privacyPolicy": "سياسة الخصوصية",
+	"license": "الترخيص",
+	"notFound": {
+		"title": "الصفحة غير موجودة",
+		"subtitle": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+		"goBack": "رجوع",
+		"goHome": "الرئيسية"
+	},
+	"settings": {
+		"title": "الإعدادات",
+		"navItems": {
+			"appearance": "المظهر واللغة",
+			"general": "عام",
+			"network": "الشبكة",
+			"notification": "الإشعارات"
+		},
+		"theme": {
+			"description": "اختر المظهر المفضل لديك",
+			"title": "المظهر",
+			"light": "فاتح",
+			"dark": "داكن",
+			"auto": "النظام"
+		},
+		"language": {
+			"title": "اللغة",
+			"description": "اختر لغتك المفضلة",
+			"noResults": "لم يتم العثور على لغات"
+		},
+		"general": {
+			"title": "عام",
+			"autoCheckUpdates": {
+				"label": "التحقق من التحديثات تلقائيًا",
+				"description": "سيتم التحقق من التحديثات عند بدء التشغيل"
+			},
+			"systembar": {
+				"title": "منطقة الإعلام",
+				"minimizeToTray": {
+					"label": "تصغير إلى منطقة الإعلام",
+					"description": "عند الإغلاق، تصغير التطبيق بدلًا من الخروج"
+				},
+				"showProgressOnIcon": {
+					"label": "إظهار تقدم النقل على الأيقونة",
+					"description": "شريط تقدم فوق أيقونة التطبيق"
+				},
+				"runOnSystemStartup": {
+					"label": "التشغيل عند بدء النظام",
+					"description": "تشغيل التطبيق تلقائيًا عند بدء النظام"
+				},
+				"contextMenu": {
+					"label": "قائمة سياق مستكشف الملفات",
+					"description": "إضافة «إرسال باستخدام AltSendme» إلى قائمة النقر بزر الماوس الأيمن في مستكشف Windows"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "تحديث جديد!",
+		"newVersionAvailable": "يتوفر الإصدار {{version}}.",
+		"newVersionAvailableInline": "يتوفر إصدار جديد — {{version}}",
+		"updateNow": "تحديث الآن",
+		"later": "لاحقًا",
+		"checkForUpdates": "التحقق من التحديثات",
+		"noUpdatesTitle": "لا توجد تحديثات",
+		"noUpdatesDescription": "أنت تستخدم أحدث إصدار بالفعل",
+		"checkFailed": "فشل التحقق",
+		"checkFailedDesc": "تعذر التحقق من التحديثات",
+		"installFailed": "فشل التثبيت",
+		"installFailedDesc": "تعذر تثبيت التحديث"
 	}
 }

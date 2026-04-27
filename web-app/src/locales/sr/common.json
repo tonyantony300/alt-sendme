@@ -1,5 +1,5 @@
 {
-	"appTitle": "АлтПошаљиМи",
+	"appTitle": "AltSendme",
 	"send": "Пошаљи",
 	"receive": "Прими",
 	"ok": "У реду",
@@ -36,13 +36,14 @@
 			"index": "Емитовање",
 			"on": {
 				"label": "Емитујеш",
-				"description": "Свако са картом може преузети датотеку."
+				"description": "Више особа са картом може истовремено преузимати фајлове у режиму емитовања."
 			},
 			"off": {
 				"label": "Приватно дељење",
 				"description": "Само особа са којом делиш карту може преузети датотеку."
 			}
-		}
+		},
+		"description": "Опис (опционо)"
 	},
 	"receiver": {
 		"title": "Прими датотеке",
@@ -73,9 +74,9 @@
 		"complete": "Пренос је завршен!",
 		"stopped": "Пренос заустављен",
 		"newTransfer": "Нови пренос",
-		"done": "Gotovo",
-		"open": "Otvori",
-		"wasStopped": "Prenos je zaustavljen pre završetka.",
+		"done": "Готово",
+		"open": "Отвори",
+		"wasStopped": "Пренос је заустављен пре завршетка.",
 		"successMessage": "Твој пренос је успешно завршен.",
 		"file": "Датотека",
 		"folder": "Фасцикла",
@@ -101,5 +102,78 @@
 		"receiveFailedDesc": "Примање датотеке није успело",
 		"openFolderFailed": "Отварање фасцикле није успело",
 		"openFolderFailedDesc": "Отварање фасцикле за преузимање није успело"
+	},
+	"comingSoon": "Ускоро",
+	"undo": "Опозови",
+	"cancel": "Откажи",
+	"confirm": "Потврди",
+	"privacyPolicy": "Политика приватности",
+	"license": "Лиценца",
+	"notFound": {
+		"title": "Страница није пронађена",
+		"subtitle": "Страница коју тражите не постоји или је премештена.",
+		"goBack": "Назад",
+		"goHome": "Почетна"
+	},
+	"settings": {
+		"title": "Подешавања",
+		"navItems": {
+			"appearance": "Тема и језик",
+			"general": "Опште",
+			"network": "Мрежа",
+			"notification": "Обавештења"
+		},
+		"theme": {
+			"description": "Изаберите жељену тему",
+			"title": "Изглед",
+			"light": "Светла",
+			"dark": "Тамна",
+			"auto": "Систем"
+		},
+		"language": {
+			"title": "Језик",
+			"description": "Изаберите жељени језик",
+			"noResults": "Није пронађен ниједан језик"
+		},
+		"general": {
+			"title": "Опште",
+			"autoCheckUpdates": {
+				"label": "Аутоматски проверавај ажурирања",
+				"description": "Апликација ће при покретању проверити ажурирања"
+			},
+			"systembar": {
+				"title": "Системска трака",
+				"minimizeToTray": {
+					"label": "Смањи у системску траку",
+					"description": "При затварању смањи апликацију уместо изласка"
+				},
+				"showProgressOnIcon": {
+					"label": "Прикажи напредак преноса на икони",
+					"description": "Трака напретка преко иконе апликације"
+				},
+				"runOnSystemStartup": {
+					"label": "Покрени при старту система",
+					"description": "Аутоматски покрени апликацију при укључивању система"
+				},
+				"contextMenu": {
+					"label": "Контекстуални мени истраживача",
+					"description": "Додај „Пошаљи путем AltSendme” у контекстуални мени Windows истраживача"
+				}
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Ново ажурирање!",
+		"newVersionAvailable": "Верзија {{version}} је доступна.",
+		"newVersionAvailableInline": "Доступна је нова верзија — {{version}}",
+		"updateNow": "Ажурирај сада",
+		"later": "Касније",
+		"checkForUpdates": "Провери ажурирања",
+		"noUpdatesTitle": "Нема ажурирања",
+		"noUpdatesDescription": "Већ користите најновију верзију",
+		"checkFailed": "Провера није успела",
+		"checkFailedDesc": "Није могуће проверити ажурирања",
+		"installFailed": "Инсталација није успела",
+		"installFailedDesc": "Није могуће инсталирати ажурирање"
 	}
 }

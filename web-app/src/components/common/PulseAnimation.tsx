@@ -1,4 +1,4 @@
-import Lottie from 'lottie-react'
+import { useLottie } from 'lottie-react'
 import pulseAnimationOriginal from '../../assets/pulse.json'
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
@@ -50,14 +50,16 @@ export function PulseAnimation({
 		return modifyAnimationColor(pulseAnimationOriginal, color)
 	}, [isTransporting, hasActiveConnections])
 
+	const { View } = useLottie({
+		animationData,
+		loop: true,
+		autoplay: true,
+		style: { width: 180, height: 180 },
+	})
+
 	return (
 		<div className={cn(className, isTransporting && 'max-sm:hidden')}>
-			<Lottie
-				animationData={animationData}
-				loop={true}
-				autoplay={true}
-				style={{ width: 180, height: 180 }}
-			/>
+			{View}
 		</div>
 	)
 }
