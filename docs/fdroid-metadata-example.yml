@@ -1,7 +1,13 @@
 # F-Droid metadata reference for AltSendme (Tauri v2 Android).
-# Copy this to your fdroiddata fork as metadata/com.altsendme.android.yml
-# when opening a "New app: AltSendme" MR. Replace AllowedAPKSigningKeys
-# with the SHA-256 from your first signed build (see docs/android-release-build.md).
+#
+# Next steps:
+# 1. Fork https://gitlab.com/fdroid/fdroiddata and add metadata/com.altsendme.android.yml (this content).
+# 2. Update Builds[].commit to the release tag you build (e.g. v0.3.5).
+# 3. Align versionName / versionCode / CurrentVersion* with gen/android/app/tauri.properties from that tag.
+# 4. Replace AllowedAPKSigningKeys with the SHA-256 from your release cert (see docs/android-release-build.md).
+# 5. Finish NDK/sdkmanager lines in sudo: per https://f-droid.org/docs/ and current F-Droid Android image.
+#
+# AllowedAPKSigningKeys below is an illustrative placeholder only — replace before publishing.
 
 Categories:
   - Connectivity
@@ -16,9 +22,9 @@ RepoType: git
 Repo: https://github.com/tonyantony300/alt-sendme
 
 Builds:
-  - versionName: "0.3.4"
-    versionCode: 3004
-    commit: v0.3.4
+  - versionName: "0.3.5"
+    versionCode: 3005
+    commit: v0.3.5
     sudo:
       - apt-get update && apt-get install -y openjdk-17-jdk wget unzip nodejs npm
       - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.81
@@ -28,11 +34,12 @@ Builds:
     prebuild: |
       npm install
       npx tauri android build --apk
-      node scripts/patch-android-release-gradle.js
+      node scripts/apply-android-release-gradle-patches.js
     build: cd src-tauri/gen/android && ./gradlew assembleRelease
 
-AllowedAPKSigningKeys: b45e6274e96b4a7273ad93512dd51c0dc6daa5ca19149dc601b90f88938f0959
+# 64 hex chars; replace with output of apksigner verify --print-certs (see android-release-build.md)
+AllowedAPKSigningKeys: 0000000000000000000000000000000000000000000000000000000000000000
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: "0.3.4"
-CurrentVersionCode: 3004
+CurrentVersion: "0.3.5"
+CurrentVersionCode: 3005

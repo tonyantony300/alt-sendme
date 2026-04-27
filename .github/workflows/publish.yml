@@ -172,3 +172,101 @@ jobs:
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
+
+  # Uses repository secrets: ANDROID_KEY_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+  # (same names as https://v2.tauri.app/distribute/sign/android/). Needs publish-tauri so the draft release exists before upload.
+  android-universal-apk:
+    name: Android release APK
+    needs: publish-tauri
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24.x'
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          # Add ndk;… or platforms;android-36 to packages if the Gradle build says they are missing.
+          packages: build-tools;35.0.0 platform-tools platforms;android-35
+
+      - name: Set up NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r28b
+          local-cache: true
+
+      - name: NDK and SDK env
+        shell: bash
+        run: |
+          NDK_PATH="${{ steps.setup-ndk.outputs.ndk-path }}"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          if [ -n "${ANDROID_HOME:-}" ]; then
+            echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${ANDROID_SDK_ROOT:-}" ] && [ -z "${ANDROID_HOME:-}" ]; then
+            echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          fi
+
+      - name: Set Rust 1.81 and Android targets
+        uses: dtolnay/rust-toolchain@1.81
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Extract version from tag and sync
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          npm pkg set version="$VERSION"
+          npm run sync-version
+          node scripts/validate-version.js
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build release APK (Tauri + patches + apksigner)
+        env:
+          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: npm run android:build:release
+
+      - name: Upload Android APK to GitHub release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TAG="${{ github.ref_name }}"
+          APK="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
+          if [ ! -f "$APK" ]; then
+            echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
+            ls -la "src-tauri/gen/android/app/build/outputs/apk/universal/release/" 2>&1 || true
+            exit 1
+          fi
+          RENAME="AltSendme-${TAG}-universal.apk"
+          cp "$APK" "$RENAME"
+          echo "Uploading $RENAME to release $TAG"
+          gh release upload "$TAG" "$RENAME" --clobber

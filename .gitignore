@@ -118,7 +118,11 @@ src-tauri/gen/*
 !**/README
 !PRIVACY.md
 !CONTRIBUTING.md
-!docs/android-release-build.md
+
+# Project docs (kept local; not published)
+docs/
 
 .github-reference/
 .github-reference-readest/
+docs/fdroid-metadata-example.yml
+docs/fdroid-metadata-example.yml
