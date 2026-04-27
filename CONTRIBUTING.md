@@ -90,7 +90,7 @@ Feel free to reach out with questions, ideas, or just to say hello. Discussion a
 
 ### Prerequisites
 
-- Rust 1.81+
+- Rust 1.85+
 - Node.js 18+
 - npm or yarn
 

@@ -5,7 +5,7 @@ description = "P2P file sharing with NAT hole punching"
 authors = ["Tony Antony"]
 license = "AGPL 3.0"
 edition = "2021"
-rust-version = "1.81"
+rust-version = "1.85"
 
 [lib]
 name = "alt_sendme_lib"

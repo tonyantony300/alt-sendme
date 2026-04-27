@@ -1,4 +1,5 @@
 # Pin Rust version for reproducible builds (CI, F-Droid, local).
-# Must match src-tauri/Cargo.toml [package] rust-version and docs/fdroid-metadata-example.yml sudo block.
+# Must match src-tauri/Cargo.toml [package] rust-version (and local fdroid metadata rust line if you use one).
+# 1.85+ required for crates using Rust 2024 edition (e.g. transitive crypto crates).
 [toolchain]
-channel = "1.81"
+channel = "1.85"
