@@ -25,6 +25,26 @@ const signedApk = path.join(apkDir, 'app-universal-release.apk')
 
 const javaRoot = path.join(genAndroid, 'app/src/main/java')
 
+function readAndroidBundleIdentifier() {
+	const p = path.join(rootDir, 'src-tauri/tauri.android.conf.json')
+	if (!fs.existsSync(p)) {
+		throw new Error(`android-release-build: missing ${p}`)
+	}
+	const j = JSON.parse(fs.readFileSync(p, 'utf8'))
+	if (!j.identifier || typeof j.identifier !== 'string') {
+		throw new Error(
+			'android-release-build: tauri.android.conf.json must set "identifier"'
+		)
+	}
+	return j.identifier
+}
+
+/** e.g. com.altsendme.android -> .../java/com/altsendme/android (must exist after init). */
+function expectedAppJavaDir() {
+	const id = readAndroidBundleIdentifier()
+	return path.join(javaRoot, ...id.split('.'))
+}
+
 function run(cmd, args, opts = {}) {
 	const cwd = opts.cwd ?? rootDir
 	const env = { ...process.env, ...opts.env }
@@ -37,12 +57,27 @@ function run(cmd, args, opts = {}) {
 	}
 }
 
-// 0. CI / fresh clone has no gen/android (gitignored). Init scaffolds Java/Gradle; build alone can error.
-if (!fs.existsSync(javaRoot)) {
+// 0. CI / fresh clone has no gen/android (gitignored), or a stale/partial gen without the
+//    Java package tree for bundle identifier in tauri.android.conf.json. Tauri build checks
+//    .../java/<identifier segments>/ and errors if that path is missing.
+if (!fs.existsSync(expectedAppJavaDir())) {
+	if (fs.existsSync(genAndroid)) {
+		console.log(
+			'android-release-build: removing incomplete gen/android before tauri android init'
+		)
+		fs.rmSync(genAndroid, { recursive: true, force: true })
+	}
 	console.log(
-		'android-release-build: tauri android init (missing gen/android/.../java)'
+		'android-release-build: tauri android init (missing app Java package for identifier)'
 	)
-	run('npx', ['tauri', 'android', 'init'], { noCi: true })
+	run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
+}
+if (!fs.existsSync(expectedAppJavaDir())) {
+	console.error(
+		'android-release-build: after init, expected Java package dir is still missing:',
+		expectedAppJavaDir()
+	)
+	process.exit(1)
 }
 
 // 1. Populate gen/ and build once (unsigned)

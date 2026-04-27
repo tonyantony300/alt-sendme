@@ -210,8 +210,8 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          # Add ndk;… or platforms;android-36 to packages if the Gradle build says they are missing.
-          packages: build-tools;35.0.0 platform-tools platforms;android-35
+          # Match Tauri / plugin compileSdk 36 (see src-tauri/plugins/.../build.gradle.kts).
+          packages: build-tools;36.0.0 platform-tools platforms;android-36
 
       - name: Set up NDK
         uses: nttld/setup-ndk@v1
