@@ -29,11 +29,12 @@ jobs:
         with:
           node-version: '24.x'
 
-      # Must match rust-toolchain.toml so `rustup target add` applies to the same toolchain Cargo uses.
+      # Toolchain @rev = Rust version (see dtolnay/rust-toolchain README). Use full patch tag, not @1.89.
+      # Quote targets so YAML does not treat the comma as a flow-sequence separator (only aarch64 was installed before).
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.89
+        uses: dtolnay/rust-toolchain@1.89.0
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: "${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}"
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -69,6 +70,17 @@ jobs:
 
       - name: install frontend dependencies
         run: npm install
+
+      # Belt-and-suspenders: universal-apple-darwin needs both stdlibs on the active toolchain.
+      - name: Ensure macOS universal targets
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          set -eux
+          rustup show
+          rustup target add aarch64-apple-darwin
+          rustup target add x86_64-apple-darwin
+          rustup target list --installed
 
       - name: import certificate (macOS only)
         if: matrix.platform == 'macos-latest'
@@ -222,7 +234,7 @@ jobs:
           fi
 
       - name: Set Rust 1.89 and Android targets
-        uses: dtolnay/rust-toolchain@1.89
+        uses: dtolnay/rust-toolchain@1.89.0
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
