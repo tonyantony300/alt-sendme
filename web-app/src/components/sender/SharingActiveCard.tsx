@@ -87,11 +87,6 @@ export function SharingActiveCard({
 		? clampedProgress || defaultProgress
 		: null
 
-	const totalProgressLabel =
-		selectedPaths.length > 1
-			? `${selectedPaths.length} files total`
-			: t('common:transfer.progress')
-
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
@@ -127,14 +122,7 @@ export function SharingActiveCard({
 			)}
 
 			{isTransporting && progressToDisplay && (
-				<div className="space-y-3">
-					<div className="space-y-2">
-						<div className="flex items-center justify-between text-xs text-muted-foreground">
-							<span>{totalProgressLabel}</span>
-						</div>
-						<TransferProgressBar progress={progressToDisplay} />
-					</div>
-				</div>
+				<TransferProgressBar progress={progressToDisplay} />
 			)}
 
 			<Button
