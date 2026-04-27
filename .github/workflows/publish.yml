@@ -29,12 +29,9 @@ jobs:
         with:
           node-version: '24.x'
 
-      - name: Set Rust toolchain
-        shell: bash
-        run: echo "toolchain=stable" >> $GITHUB_ENV
-
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      # Must match rust-toolchain.toml so `rustup target add` applies to the same toolchain Cargo uses.
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.89
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
