@@ -23,17 +23,30 @@ const apkDir = path.join(genAndroid, 'app/build/outputs/apk/universal/release')
 const unsignedApk = path.join(apkDir, 'app-universal-release-unsigned.apk')
 const signedApk = path.join(apkDir, 'app-universal-release.apk')
 
+const javaRoot = path.join(genAndroid, 'app/src/main/java')
+
 function run(cmd, args, opts = {}) {
 	const cwd = opts.cwd ?? rootDir
 	const env = { ...process.env, ...opts.env }
+	if (opts.noCi) {
+		delete env.CI
+	}
 	const r = spawnSync(cmd, args, { stdio: 'inherit', cwd, env })
 	if (r.status !== 0) {
 		process.exit(r.status ?? 1)
 	}
 }
 
+// 0. CI / fresh clone has no gen/android (gitignored). Init scaffolds Java/Gradle; build alone can error.
+if (!fs.existsSync(javaRoot)) {
+	console.log(
+		'android-release-build: tauri android init (missing gen/android/.../java)'
+	)
+	run('npx', ['tauri', 'android', 'init'], { noCi: true })
+}
+
 // 1. Populate gen/ and build once (unsigned)
-run('npx', ['tauri', 'android', 'build', '--apk'])
+run('npx', ['tauri', 'android', 'build', '--apk'], { noCi: true })
 
 // 2. In CI, write keystore now (gen/ exists)
 const keyBase64 = process.env.ANDROID_KEY_BASE64
