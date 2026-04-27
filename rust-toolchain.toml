@@ -1,4 +1,4 @@
 # Pin Rust version for reproducible builds (CI, F-Droid, local).
-# Must match src-tauri/Cargo.toml [package] rust-version and F-Droid sudo block.
+# Must match src-tauri/Cargo.toml [package] rust-version and docs/fdroid-metadata-example.yml sudo block.
 [toolchain]
-channel = "stable"
+channel = "1.81"

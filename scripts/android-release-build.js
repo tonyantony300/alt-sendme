@@ -3,13 +3,12 @@
  * Builds a release APK for Android (F-Droid / signed release).
  * 1. Run "tauri android build --apk" to populate gen/ and produce an unsigned APK.
  * 2. In CI (ANDROID_KEY_BASE64 set), write keystore to gen/android/keystore.properties.
- * 3. Patch gen/android/app/build.gradle.kts (dependenciesInfo, universal APK, optional signing).
+ * 3. Apply scripts/patches/*.patch to app/build.gradle.kts (F-Droid + optional signing).
  * 4. If keystore is available, sign the unsigned APK with apksigner (no second Gradle run —
  *    gradlew assembleRelease would trigger Tauri CLI WebSocket and fail when run standalone).
  *
  * Output (signed): app-universal-release.apk
  * Output (unsigned): app-universal-release-unsigned.apk
- * See docs/android-release-build.md.
  */
 
 import { spawnSync } from 'node:child_process'
@@ -49,8 +48,8 @@ if (keyBase64 && keyAlias && keyPassword) {
 	)
 }
 
-// 3. Patch build.gradle.kts (for future runs / F-Droid recipe)
-run('node', [path.join(__dirname, 'patch-android-release-gradle.js')])
+// 3. Apply Gradle patches (git apply; see scripts/apply-android-release-gradle-patches.js)
+run('node', [path.join(__dirname, 'apply-android-release-gradle-patches.js')])
 
 // 4. Sign the unsigned APK with apksigner (do not run gradlew again — it would trigger Tauri CLI WebSocket)
 const keystorePropsPath = path.join(genAndroid, 'keystore.properties')

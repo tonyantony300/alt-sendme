@@ -118,6 +118,7 @@ src-tauri/gen/*
 !**/README
 !PRIVACY.md
 !CONTRIBUTING.md
+!docs/android-release-build.md
 
 .github-reference/
 .github-reference-readest/
