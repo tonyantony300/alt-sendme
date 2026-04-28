@@ -242,13 +242,14 @@ pub async fn start_share_items(
         );
 
         let import_result = import_paths(canonical_paths, blobs.store()).await?;
-        let (ref _temp_tag, size, ref _collection) = import_result;
+        let (ref _temp_tag, size, ref collection) = import_result;
 
         let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
             progress_rx,
             app_handle_clone,
             size,
             entry_type_for_progress,
+            collection.iter().count(),
         ));
 
         let router = iroh::protocol::Router::builder(endpoint)
@@ -480,6 +481,7 @@ async fn show_provide_progress_with_logging(
     app_handle: AppHandle,
     total_collection_size: u64,
     entry_type: String,
+    entry_count: usize,
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -547,6 +549,7 @@ async fn show_provide_progress_with_logging(
                         let has_emitted_completed_task = has_emitted_completed.clone();
                         let last_request_time_task = last_request_time.clone();
                         let entry_type_task = entry_type.clone();
+                        let entry_count_task = entry_count;
 
                         let mut rx = msg.rx;
                         tasks.push(async move {
@@ -717,8 +720,10 @@ async fn show_provide_progress_with_logging(
                                             let active = active_requests_task.load(Ordering::SeqCst);
 
                                             // For directories and collections, require at least 2 completed requests
-                                            // to avoid false completion from metadata transfer
-                                            let min_required = if entry_type_task == "directory" || entry_type_task == "collection" { 2 } else { 1 };
+                                            // to avoid false completion from metadata transfer, but only when
+                                            // the collection actually contains more than one item. For single-item
+                                            // collections/directories, allow a single completed request to finish.
+                                            let min_required = if (entry_type_task == "directory" || entry_type_task == "collection") && entry_count_task > 1 { 2 } else { 1 };
 
                                             if completed >= active
                                                 && completed >= min_required
@@ -790,8 +795,9 @@ async fn show_provide_progress_with_logging(
                                 let active = active_requests_task.load(Ordering::SeqCst);
 
                                 // For directories and collections, require at least 2 completed requests
-                                // to avoid false completion from metadata transfer
-                                let min_required = if entry_type_task == "directory" || entry_type_task == "collection" { 2 } else { 1 };
+                                // to avoid false completion from metadata transfer, but only when
+                                // the collection actually contains more than one item.
+                                let min_required = if (entry_type_task == "directory" || entry_type_task == "collection") && entry_count_task > 1 { 2 } else { 1 };
 
                                 if completed >= active
                                     && completed >= min_required
@@ -850,12 +856,14 @@ async fn show_provide_progress_with_logging(
         let active = active_requests.load(Ordering::SeqCst);
 
         // For directories and collections, require at least 2 completed requests
-        // to avoid false completion from metadata transfer
-        let min_required = if entry_type == "directory" || entry_type == "collection" {
-            2
-        } else {
-            1
-        };
+        // to avoid false completion from metadata transfer, but only when the
+        // collection actually contains more than one item.
+        let min_required =
+            if (entry_type == "directory" || entry_type == "collection") && entry_count > 1 {
+                2
+            } else {
+                1
+            };
 
         if completed >= active && completed >= min_required && completed > 0 {
             if !has_emitted_completed.swap(true, Ordering::SeqCst) {
