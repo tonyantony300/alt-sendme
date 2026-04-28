@@ -416,6 +416,19 @@ export function useReceiver(): UseReceiverReturn {
 					}
 				}
 
+				let pathType: 'file' | 'directory' | null = null
+				if (previewMetadataRef.current) {
+					if (previewMetadataRef.current.mimeType === 'inode/directory') {
+						pathType = 'directory'
+					} else {
+						pathType = 'file'
+					}
+				} else if (itemCount === 1 && currentFileNames.length > 1) {
+					pathType = 'directory'
+				} else if (itemCount === 1) {
+					pathType = 'file'
+				}
+
 				const metadata = {
 					fileName: displayName,
 					fileSize: transferProgressRef.current?.totalBytes || 0,
@@ -424,6 +437,7 @@ export function useReceiver(): UseReceiverReturn {
 					endTime,
 					downloadPath: savePathRef.current,
 					itemCount: itemCount > 1 ? itemCount : undefined,
+					pathType,
 				}
 				setTransferMetadata(metadata)
 

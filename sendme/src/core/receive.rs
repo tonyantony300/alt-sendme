@@ -290,6 +290,9 @@ pub async fn download(
             emit_event_with_payload(&app_handle, "receive-conflicts", &payload);
         }
 
+        // Explicit call endpoint.close() to gracefully shutdown the connection
+        endpoint.close().await;
+
         // Emit completion event AFTER everything is done
         emit_event(&app_handle, "receive-completed");
 
