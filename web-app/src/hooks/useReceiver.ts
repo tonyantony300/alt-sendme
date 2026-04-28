@@ -122,6 +122,7 @@ export function useReceiver(): UseReceiverReturn {
 	const folderOpenTriggeredRef = useRef(false)
 	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 	const previewRequestSeqRef = useRef(0)
+	const previewMetadataRef = useRef<TicketPreviewMetadata | null>(null)
 	const transferItemCountRef = useRef<number | undefined>(undefined)
 
 	const resolveRevealPath = async (basePath: string, names: string[]) => {
@@ -196,6 +197,7 @@ export function useReceiver(): UseReceiverReturn {
 		const trimmed = ticket.trim()
 		if (!trimmed) {
 			setPreviewMetadata(null)
+			previewMetadataRef.current = null
 			setIsPreviewLoading(false)
 			return
 		}
@@ -203,6 +205,7 @@ export function useReceiver(): UseReceiverReturn {
 		setIsPreviewLoading(true)
 		// Clear stale preview while typing/fetching
 		setPreviewMetadata(null)
+		previewMetadataRef.current = null
 
 		const timer = window.setTimeout(async () => {
 			try {
@@ -217,7 +220,7 @@ export function useReceiver(): UseReceiverReturn {
 					return
 				}
 
-				setPreviewMetadata({
+				const metadata = {
 					fileName: payload.file_name,
 					itemCount: payload.item_count,
 					size: payload.size,
@@ -229,13 +232,16 @@ export function useReceiver(): UseReceiverReturn {
 						thumbnail: item.thumbnail ?? undefined,
 						mimeType: item.mime_type ?? undefined,
 					})),
-				})
+				}
+				setPreviewMetadata(metadata)
+				previewMetadataRef.current = metadata
 			} catch (error) {
 				if (previewRequestSeqRef.current !== seq) {
 					return
 				}
 				console.warn('Failed to fetch ticket preview metadata:', error)
 				setPreviewMetadata(null)
+				previewMetadataRef.current = null
 			} finally {
 				if (previewRequestSeqRef.current === seq) {
 					setIsPreviewLoading(false)
@@ -390,7 +396,9 @@ export function useReceiver(): UseReceiverReturn {
 					transferItemCountRef.current ?? countTopLevelItems(currentFileNames)
 				let displayName = t('common:receiver.downloadedFile')
 
-				if (currentFileNames.length > 0) {
+				if (previewMetadataRef.current?.fileName) {
+					displayName = previewMetadataRef.current.fileName
+				} else if (currentFileNames.length > 0) {
 					if (itemCount <= 1) {
 						const fullPath = currentFileNames[0]
 						displayName = fullPath.split('/').pop() || fullPath

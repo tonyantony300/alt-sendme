@@ -242,14 +242,13 @@ pub async fn start_share_items(
         );
 
         let import_result = import_paths(canonical_paths, blobs.store()).await?;
-        let (ref _temp_tag, size, ref collection) = import_result;
+        let (ref _temp_tag, size, ref _collection) = import_result;
 
         let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
             progress_rx,
             app_handle_clone,
             size,
             entry_type_for_progress,
-            collection.iter().count(),
         ));
 
         let router = iroh::protocol::Router::builder(endpoint)
@@ -481,7 +480,7 @@ async fn show_provide_progress_with_logging(
     app_handle: AppHandle,
     total_collection_size: u64,
     entry_type: String,
-    entry_count: usize,
+
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -506,7 +505,6 @@ async fn show_provide_progress_with_logging(
     let active_requests = Arc::new(AtomicUsize::new(0));
     let completed_requests = Arc::new(AtomicUsize::new(0));
     let has_emitted_started = Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let has_any_transfer = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let has_emitted_completed = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let last_request_time: Arc<tokio::sync::Mutex<Option<Instant>>> =
         Arc::new(tokio::sync::Mutex::new(None));
@@ -545,11 +543,9 @@ async fn show_provide_progress_with_logging(
                         let active_requests_task = active_requests.clone();
                         let completed_requests_task = completed_requests.clone();
                         let has_emitted_started_task = has_emitted_started.clone();
-                        let has_any_transfer_task = has_any_transfer.clone();
                         let has_emitted_completed_task = has_emitted_completed.clone();
                         let last_request_time_task = last_request_time.clone();
                         let entry_type_task = entry_type.clone();
-                        let entry_count_task = entry_count;
 
                         let mut rx = msg.rx;
                         tasks.push(async move {
@@ -593,10 +589,6 @@ async fn show_provide_progress_with_logging(
                                         let is_metadata_blob =
                                             (entry_type_task == "directory" || entry_type_task == "collection")
                                                 && m.index == 0;
-
-                                        if !is_metadata_blob {
-                                            has_any_transfer_task.store(true, Ordering::SeqCst);
-                                        }
 
                                         {
                                             let mut states = transfer_states_task.lock().await;
@@ -647,7 +639,7 @@ async fn show_provide_progress_with_logging(
                                             transfer_started = true;
                                         }
 
-                                        if let Some((transferred, total_size, elapsed, has_payload_progress)) = {
+                                        if let Some((transferred, total_size, elapsed)) = {
                                             let mut states = transfer_states_task.lock().await;
                                             states.get_mut(&(connection_id, request_id)).map(|state| {
                                                 if !state.ignore_current_blob {
@@ -670,14 +662,9 @@ async fn show_provide_progress_with_logging(
                                                     transferred,
                                                     state.total_size,
                                                     state.start_time.elapsed().as_secs_f64(),
-                                                    !state.ignore_current_blob,
                                                 )
                                             })
                                         } {
-                                            if has_payload_progress {
-                                                has_any_transfer_task.store(true, Ordering::SeqCst);
-                                            }
-
                                             let speed_bps = if elapsed > 0.0 {
                                                 transferred as f64 / elapsed
                                             } else {
@@ -719,15 +706,13 @@ async fn show_provide_progress_with_logging(
                                             let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                             let active = active_requests_task.load(Ordering::SeqCst);
 
-                                            // For directories and collections, require at least 2 completed requests
-                                            // to avoid false completion from metadata transfer, but only when
-                                            // the collection actually contains more than one item. For single-item
-                                            // collections/directories, allow a single completed request to finish.
-                                            let min_required = if (entry_type_task == "directory" || entry_type_task == "collection") && entry_count_task > 1 { 2 } else { 1 };
+                                            // The receiver makes a single execute_get request for the entire transfer.
+                                            // The size probe request is ignored above and does not increment active/completed.
+                                            // Therefore, a single completed request always indicates the end of the transfer.
+                                            let min_required = 1;
 
                                             if completed >= active
-                                                && completed >= min_required
-                                                && has_any_transfer_task.load(Ordering::SeqCst) {
+                                                && completed >= min_required {
                                                 let active_before_wait = active;
 
                                                 tokio::time::sleep(Duration::from_millis(500)).await;
@@ -794,14 +779,13 @@ async fn show_provide_progress_with_logging(
                                 let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
                                 let active = active_requests_task.load(Ordering::SeqCst);
 
-                                // For directories and collections, require at least 2 completed requests
-                                // to avoid false completion from metadata transfer, but only when
-                                // the collection actually contains more than one item.
-                                let min_required = if (entry_type_task == "directory" || entry_type_task == "collection") && entry_count_task > 1 { 2 } else { 1 };
+                                // The receiver makes a single execute_get request for the entire transfer.
+                                // The size probe request is ignored above and does not increment active/completed.
+                                // Therefore, a single completed request always indicates the end of the transfer.
+                                let min_required = 1;
 
                                 if completed >= active
-                                    && completed >= min_required
-                                    && has_any_transfer_task.load(Ordering::SeqCst) {
+                                    && completed >= min_required {
                                     let active_before_wait = active;
 
                                     tokio::time::sleep(Duration::from_millis(500)).await;
@@ -851,24 +835,17 @@ async fn show_provide_progress_with_logging(
 
     while tasks.next().await.is_some() {}
 
-    if has_any_transfer.load(Ordering::SeqCst) {
-        let completed = completed_requests.load(Ordering::SeqCst);
-        let active = active_requests.load(Ordering::SeqCst);
+    let completed = completed_requests.load(Ordering::SeqCst);
+    let active = active_requests.load(Ordering::SeqCst);
 
-        // For directories and collections, require at least 2 completed requests
-        // to avoid false completion from metadata transfer, but only when the
-        // collection actually contains more than one item.
-        let min_required =
-            if (entry_type == "directory" || entry_type == "collection") && entry_count > 1 {
-                2
-            } else {
-                1
-            };
+    // The receiver makes a single execute_get request for the entire transfer.
+    // The size probe request is ignored above and does not increment active/completed.
+    // Therefore, a single completed request always indicates the end of the transfer.
+    let min_required = 1;
 
-        if completed >= active && completed >= min_required && completed > 0 {
-            if !has_emitted_completed.swap(true, Ordering::SeqCst) {
-                emit_event(&app_handle, "transfer-completed");
-            }
+    if completed >= active && completed >= min_required && completed > 0 {
+        if !has_emitted_completed.swap(true, Ordering::SeqCst) {
+            emit_event(&app_handle, "transfer-completed");
         }
     }
 
