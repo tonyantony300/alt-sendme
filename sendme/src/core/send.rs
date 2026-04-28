@@ -480,7 +480,6 @@ async fn show_provide_progress_with_logging(
     app_handle: AppHandle,
     total_collection_size: u64,
     entry_type: String,
-
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     use std::sync::atomic::{AtomicUsize, Ordering};
