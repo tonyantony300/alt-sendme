@@ -119,5 +119,10 @@ src-tauri/gen/*
 !PRIVACY.md
 !CONTRIBUTING.md
 
+# Project docs (kept local; not published)
+docs/
+
 .github-reference/
 .github-reference-readest/
+docs/fdroid-metadata-example.yml
+docs/fdroid-metadata-example.yml

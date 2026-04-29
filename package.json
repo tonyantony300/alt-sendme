@@ -1,7 +1,7 @@
 {
 	"name": "AltSendme",
 	"private": true,
-	"version": "0.3.5",
+	"version": "0.3.6",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -15,7 +15,9 @@
 		"validate-version": "node ./scripts/validate-version.js",
 		"lint": "biome lint && tsc --noEmit --skipLibCheck",
 		"lint:fix": "biome lint --fix",
-		"format": "biome format --write && cargo fmt --manifest-path sendme/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml"
+		"format": "biome format --write && cargo fmt --manifest-path sendme/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml",
+		"android:build:release": "node ./scripts/android-release-build.js",
+		"android:apply-gradle-patches": "node ./scripts/apply-android-release-gradle-patches.js"
 	},
 	"engines": {
 		"node": ">=20.19"
