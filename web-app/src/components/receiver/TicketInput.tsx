@@ -1,9 +1,10 @@
-import { Download } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { getPreviewFileIcon } from '../../lib/fileIcons'
 import { formatFileSize } from '../../lib/utils'
 import type { TicketInputProps } from '../../types/receiver'
+import type { TicketPreviewMetadata } from '../../types/transfer'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
@@ -22,6 +23,147 @@ const formatDisplayPath = (path: string | undefined | null) => {
 	return segments.slice(-2).join('/')
 }
 
+const getThumbnailSrc = (thumbnail?: string) => {
+	if (!thumbnail) return null
+	return thumbnail.startsWith('data:')
+		? thumbnail
+		: `data:image/jpeg;base64,${thumbnail}`
+}
+
+function TicketPreviewCard({
+	previewMetadata,
+}: {
+	previewMetadata: TicketPreviewMetadata
+}) {
+	const { t } = useTranslation()
+	const [failedThumbnailKeys, setFailedThumbnailKeys] = useState<
+		Record<string, true>
+	>({})
+	const [isPreviewListExpanded, setIsPreviewListExpanded] = useState(false)
+
+	const previewThumbnailKey =
+		previewMetadata.thumbnail && previewMetadata.fileName
+			? `${previewMetadata.fileName}:${previewMetadata.thumbnail}`
+			: null
+	const isCollectionPreview =
+		previewMetadata.itemCount > 1 ||
+		previewMetadata.mimeType === 'application/x-iroh-collection'
+	const previewThumbnailSrc = isCollectionPreview
+		? null
+		: getThumbnailSrc(previewMetadata.thumbnail)
+	const previewItems = previewMetadata.items ?? []
+	const canExpandPreviewList = previewItems.length > 1
+	const previewDisplayName =
+		canExpandPreviewList && isPreviewListExpanded
+			? t('common:receiver.multipleFilesFound')
+			: previewMetadata.itemCount > 1
+				? t('common:receiver.previewMultipleItems', {
+						name: previewMetadata.fileName,
+						count: previewMetadata.itemCount - 1,
+					})
+				: previewMetadata.fileName
+
+	const hasFailedThumbnail = (key: string | null) =>
+		Boolean(key && failedThumbnailKeys[key])
+
+	const markThumbnailFailed = (key: string | null) => {
+		if (!key) return
+		setFailedThumbnailKeys((prev) => ({ ...prev, [key]: true }))
+	}
+
+	return (
+		<div className="rounded-md border bg-card overflow-hidden">
+			<div className="p-3 flex gap-3 items-center">
+				<div className="w-14 h-14 rounded-md border bg-muted shrink-0 flex items-center justify-center relative overflow-hidden">
+					{previewThumbnailSrc && !hasFailedThumbnail(previewThumbnailKey) ? (
+						<img
+							src={previewThumbnailSrc}
+							alt={previewMetadata.fileName}
+							className="w-full h-full object-cover"
+							onError={() => markThumbnailFailed(previewThumbnailKey)}
+						/>
+					) : (
+						getPreviewFileIcon(
+							isCollectionPreview
+								? 'application/x-iroh-collection'
+								: previewMetadata.mimeType,
+							previewMetadata.fileName
+						)
+					)}
+				</div>
+				<div className="min-w-0 flex-1">
+					<p className="text-sm font-medium truncate">{previewDisplayName}</p>
+					<p className="text-xs text-muted-foreground">
+						{formatFileSize(previewMetadata.size)}
+					</p>
+				</div>
+				{canExpandPreviewList ? (
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon"
+						className="shrink-0 h-8 w-8"
+						aria-label={
+							isPreviewListExpanded
+								? t('common:receiver.collapsePreviewList')
+								: t('common:receiver.expandPreviewList')
+						}
+						onClick={() => setIsPreviewListExpanded((expanded) => !expanded)}
+					>
+						{isPreviewListExpanded ? (
+							<ChevronUp className="h-4 w-4" />
+						) : (
+							<ChevronDown className="h-4 w-4" />
+						)}
+					</Button>
+				) : null}
+			</div>
+			{canExpandPreviewList && isPreviewListExpanded ? (
+				<div className="border-t bg-muted/20">
+					<div className="max-h-64 overflow-y-auto p-2 space-y-2">
+						{previewItems.map((item) => {
+							const itemThumbnailKey =
+								item.thumbnail && item.fileName
+									? `${item.fileName}:${item.thumbnail}`
+									: null
+							const itemThumbnailSrc = getThumbnailSrc(item.thumbnail)
+
+							return (
+								<div
+									key={item.fileName}
+									className="flex items-center gap-3 rounded-md border bg-card px-2 py-2"
+								>
+									<div className="w-12 h-12 rounded-md border bg-muted shrink-0 flex items-center justify-center overflow-hidden">
+										{itemThumbnailSrc &&
+										!hasFailedThumbnail(itemThumbnailKey) ? (
+											<img
+												src={itemThumbnailSrc}
+												alt={item.fileName}
+												className="w-full h-full object-cover"
+												onError={() => markThumbnailFailed(itemThumbnailKey)}
+											/>
+										) : (
+											getPreviewFileIcon(item.mimeType, item.fileName)
+										)}
+									</div>
+									<div className="min-w-0 flex-1">
+										<p className="text-sm font-medium break-all line-clamp-2">
+											{item.fileName}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											{formatFileSize(item.size)}
+										</p>
+									</div>
+								</div>
+							)
+						})}
+					</div>
+				</div>
+			) : null}
+		</div>
+	)
+}
+
 export function TicketInput({
 	ticket,
 	isReceiving,
@@ -33,18 +175,9 @@ export function TicketInput({
 	onReceive,
 }: TicketInputProps) {
 	const { t } = useTranslation()
-	const [failedThumbnailKey, setFailedThumbnailKey] = useState<string | null>(
-		null
-	)
-	const previewThumbnailKey =
-		previewMetadata?.thumbnail && previewMetadata?.fileName
-			? `${previewMetadata.fileName}:${previewMetadata.thumbnail}`
-			: null
-	const previewThumbnailSrc = previewMetadata?.thumbnail
-		? previewMetadata.thumbnail.startsWith('data:')
-			? previewMetadata.thumbnail
-			: `data:image/jpeg;base64,${previewMetadata.thumbnail}`
-		: null
+	const previewMetadataKey = previewMetadata
+		? JSON.stringify(previewMetadata)
+		: 'no-preview'
 
 	return (
 		<div className="space-y-4">
@@ -101,32 +234,10 @@ export function TicketInput({
 
 			{/* Show preview if metadata is available*/}
 			{previewMetadata ? (
-				<div className="p-3 rounded-md border bg-card flex gap-3 items-center">
-					<div className="w-14 h-14 rounded-md border bg-muted shrink-0 flex items-center justify-center relative overflow-hidden">
-						{previewThumbnailSrc &&
-						previewThumbnailKey !== failedThumbnailKey ? (
-							<img
-								src={previewThumbnailSrc}
-								alt={previewMetadata.fileName}
-								className="w-full h-full object-cover"
-								onError={() => setFailedThumbnailKey(previewThumbnailKey)}
-							/>
-						) : (
-							getPreviewFileIcon(
-								previewMetadata.mimeType,
-								previewMetadata.fileName
-							)
-						)}
-					</div>
-					<div className="min-w-0 flex-1">
-						<p className="text-sm font-medium truncate">
-							{previewMetadata.fileName}
-						</p>
-						<p className="text-xs text-muted-foreground">
-							{formatFileSize(previewMetadata.size)}
-						</p>
-					</div>
-				</div>
+				<TicketPreviewCard
+					key={previewMetadataKey}
+					previewMetadata={previewMetadata}
+				/>
 			) : null}
 
 			<Button

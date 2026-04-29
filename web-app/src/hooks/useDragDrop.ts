@@ -15,6 +15,8 @@ export interface UseDragDropReturn {
 
 	toggleFullPath: () => void
 	browseFile: () => Promise<void>
+	addMoreFiles: () => Promise<void>
+	addMoreFolders: () => Promise<void>
 	browseFolder: () => Promise<void>
 	showAlert: (title: string, description: string, type?: AlertType) => void
 	closeAlert: () => void
@@ -27,6 +29,10 @@ export interface UseDragDropReturn {
 export function useDragDrop(
 	onFileSelect: (
 		path: string,
+		pathType?: 'file' | 'directory'
+	) => void | Promise<void>,
+	onFilesSelect?: (
+		paths: string[],
 		pathType?: 'file' | 'directory'
 	) => void | Promise<void>
 ): UseDragDropReturn {
@@ -90,22 +96,51 @@ export function useDragDrop(
 		[onFileSelect, showAlert, t]
 	)
 
-	const browseFile = async () => {
+	const triggerFilesSelect = useCallback(
+		async (paths: string[], pathType?: 'file' | 'directory') => {
+			if (!paths.length) {
+				return
+			}
+
+			if (onFilesSelect) {
+				try {
+					await Promise.resolve(onFilesSelect(paths, pathType))
+					return
+				} catch (error) {
+					console.error('Failed to handle selected paths:', error)
+					showAlert(
+						t('common:errors.fileDialogFailed'),
+						`${t('common:errors.fileDialogFailedDesc')}: ${error}`,
+						'error'
+					)
+					return
+				}
+			}
+
+			for (const path of paths) {
+				await triggerFileSelect(path, pathType)
+			}
+		},
+		[onFilesSelect, showAlert, t, triggerFileSelect]
+	)
+
+	const browseFile = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
 				const selected = await selectSendDocument()
 
 				if (selected) {
-					await triggerFileSelect(selected.cachedPath.toString(), 'file')
+					await triggerFilesSelect([selected.cachedPath.toString()], 'file')
 				}
 			} else {
 				const selected = await open({
-					multiple: false,
+					multiple: true,
 					directory: false,
 				})
 
 				if (selected) {
-					await triggerFileSelect(selected, 'file')
+					const paths = Array.isArray(selected) ? selected : [selected]
+					await triggerFilesSelect(paths, 'file')
 				}
 			}
 		} catch (error) {
@@ -116,15 +151,18 @@ export function useDragDrop(
 				'error'
 			)
 		}
-	}
+	}, [showAlert, t, triggerFilesSelect])
 
-	const browseFolder = async () => {
+	const browseFolder = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
 				const selected = await selectSendFolder()
 
 				if (selected) {
-					await triggerFileSelect(selected.cachedPath.toString(), 'directory')
+					await triggerFilesSelect(
+						[selected.cachedPath.toString()],
+						'directory'
+					)
 				}
 			} else {
 				const selected = await open({
@@ -133,7 +171,7 @@ export function useDragDrop(
 				})
 
 				if (selected) {
-					await triggerFileSelect(selected, 'directory')
+					await triggerFilesSelect([selected], 'directory')
 				}
 			}
 		} catch (error) {
@@ -144,7 +182,7 @@ export function useDragDrop(
 				'error'
 			)
 		}
-	}
+	}, [showAlert, t, triggerFilesSelect])
 
 	useEffect(() => {
 		const window = getCurrentWindow()
@@ -160,8 +198,7 @@ export function useDragDrop(
 					setIsDragActive(false)
 
 					if (event.payload?.paths && event.payload.paths.length > 0) {
-						const path = event.payload.paths[0]
-						void triggerFileSelect(path)
+						void triggerFilesSelect(event.payload.paths)
 					}
 				}
 			)
@@ -199,7 +236,44 @@ export function useDragDrop(
 			hoverUnlisten?.()
 			cancelUnlisten?.()
 		}
-	}, [triggerFileSelect])
+	}, [triggerFilesSelect])
+
+	const addMoreFiles = useCallback(async () => {
+		await browseFile()
+	}, [browseFile])
+
+	const addMoreFolders = useCallback(async () => {
+		try {
+			if (IS_ANDROID) {
+				const selected = await selectSendFolder()
+
+				if (selected) {
+					const selectedPath = selected.cachedPath.toString()
+					await triggerFilesSelect([selectedPath], 'directory')
+					return
+				}
+
+				return
+			}
+
+			const selected = await open({
+				multiple: true,
+				directory: true,
+			})
+
+			if (!selected) return
+
+			const paths = Array.isArray(selected) ? selected : [selected]
+			await triggerFilesSelect(paths, 'directory')
+		} catch (error) {
+			console.error('Failed to open folders dialog:', error)
+			showAlert(
+				t('common:errors.folderDialogFailed'),
+				`${t('common:errors.folderDialogFailedDesc')}: ${error}`,
+				'error'
+			)
+		}
+	}, [showAlert, t, triggerFilesSelect])
 
 	return {
 		isDragActive,
@@ -209,6 +283,8 @@ export function useDragDrop(
 
 		toggleFullPath,
 		browseFile,
+		addMoreFiles,
+		addMoreFolders,
 		browseFolder,
 		showAlert,
 		closeAlert,

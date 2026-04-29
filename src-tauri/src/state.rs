@@ -68,6 +68,11 @@ impl ShareHandle {
             }
         }
 
+        // Explicitly close the endpoint to avoid "Endpoint dropped without calling close" error
+        // This ensures graceful cleanup of the iroh endpoint resources
+        let endpoint = self.send_result.router.endpoint();
+        endpoint.close().await;
+
         // temp_tag, _store, and _progress_handle will be dropped automatically when the method ends
         // Cleanup of blobs directory will happen in Drop trait
 

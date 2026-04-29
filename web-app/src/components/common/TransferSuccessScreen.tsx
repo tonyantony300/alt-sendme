@@ -85,16 +85,22 @@ export function TransferSuccessScreen({
 				<div className="space-y-2">
 					<div className="flex justify-between items-center">
 						<span className="text-sm font-medium mr-2">
-							{isDirectory
-								? t('common:transfer.folder')
-								: t('common:transfer.file')}
+							{metadata.itemCount && metadata.itemCount > 1
+								? t('common:transfer.files')
+								: isDirectory
+									? t('common:transfer.folder')
+									: t('common:transfer.file')}
 							:
 						</span>
 						<span
 							className="text-sm truncate max-w-full"
 							title={metadata.fileName}
 						>
-							{metadata.fileName}
+							{metadata.itemCount && metadata.itemCount > 1
+								? t('common:transfer.multipleFiles', {
+										count: metadata.itemCount,
+									})
+								: metadata.fileName}
 						</span>
 					</div>
 
