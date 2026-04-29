@@ -27,13 +27,14 @@ Builds:
     commit: v0.3.5
     sudo:
       - apt-get update && apt-get install -y openjdk-17-jdk wget unzip nodejs npm
-      - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.81
+      - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.89
       - source $HOME/.cargo/env && rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
       # NDK: install via Android SDK (sdkmanager); set ANDROID_HOME/ANDROID_NDK_HOME per F-Droid docs
       # - sdkmanager "ndk;26.1.10909125"
     prebuild: |
       npm install
-      npx tauri android build --apk
+      env -u CI npx tauri android init
+      env -u CI npx tauri android build --apk
       node scripts/apply-android-release-gradle-patches.js
     build: cd src-tauri/gen/android && ./gradlew assembleRelease
 
