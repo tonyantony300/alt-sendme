@@ -191,6 +191,9 @@ fn attempt_avfoundation(file_path: &Path) -> Result<Vec<u8>, String> {
             let image_rep_ptr: *mut Object =
                 msg_send![image_rep_alloc, initWithCGImage: cg_image_ptr];
             image_rep.set(image_rep_ptr);
+            // After handing the CGImage to NSBitmapImageRep, clear our local owner to avoid
+            // releasing the same CGImage twice (NSBitmapImageRep may retain/release it).
+            cg_image.set(std::ptr::null_mut());
             if image_rep_ptr.is_null() {
                 return Err("Failed to create NSBitmapImageRep".to_string());
             }

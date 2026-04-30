@@ -1,13 +1,15 @@
 use crate::features::thumbnail::generate_thumbnail;
 use crate::state::{AppStateMutex, ShareHandle};
 use sendme::{
-    core::types::FileMetadata, download, fetch_metadata, start_share, AddrInfoOptions, AppHandle,
-    EventEmitter, ReceiveOptions, RelayModeOption, SendOptions,
+    core::types::{FileMetadata, FilePreviewItem},
+    download, fetch_metadata, AddrInfoOptions, AppHandle, EventEmitter, ReceiveOptions,
+    RelayModeOption, SendOptions,
 };
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{Emitter, State};
+use tauri::{Emitter, Manager, State};
 
 // Wrapper for Tauri AppHandle that implements EventEmitter
 struct TauriEventEmitter {
@@ -42,19 +44,51 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
         .map_err(|e| format!("Task join error: {}", e))?
 }
 
-/// Start sharing a file or directory
+#[tauri::command]
+pub async fn focus_main_window(app_handle: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app_handle.get_webview_window("main") {
+        window.show().map_err(|e| e.to_string())?;
+        if window.is_minimized().map_err(|e| e.to_string())? {
+            window.unminimize().map_err(|e| e.to_string())?;
+        }
+        window.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    if let Some(window) = app_handle.webview_windows().values().next() {
+        window.show().map_err(|e| e.to_string())?;
+        if window.is_minimized().map_err(|e| e.to_string())? {
+            window.unminimize().map_err(|e| e.to_string())?;
+        }
+        window.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    Err("No window available to focus".to_string())
+}
+
 #[tauri::command]
 pub async fn start_sharing(
     path: String,
     state: State<'_, AppStateMutex>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
-    let path = PathBuf::from(path);
+    send_items(vec![path], state, app_handle).await
+}
 
-    // Validate path exists before doing any work.
-    if !path.exists() {
-        return Err(format!("Path does not exist: {}", path.display()));
+/// New interface to start_sharing multiple items at once
+#[tauri::command]
+pub async fn send_items(
+    paths: Vec<String>,
+    state: State<'_, AppStateMutex>,
+    app_handle: tauri::AppHandle,
+) -> Result<String, String> {
+    // Validate input before doing any work.
+    if paths.is_empty() {
+        return Err("No paths provided".to_string());
     }
+
+    let path_bufs: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
 
     // Reserve slot before expensive setup to avoid concurrent start_sharing races.
     {
@@ -67,25 +101,93 @@ pub async fn start_sharing(
 
     let start_result = async {
         // Prepare metadata outside the state mutex.
+        let metadata = build_send_metadata(&path_bufs).await?;
+        tracing::info!(
+            first_path_stem = ?path_bufs[0].file_stem(),
+            total_size = metadata.size,
+            has_thumbnail = metadata.thumbnail.is_some(),
+            "share metadata prepared for multiple items"
+        );
+
+        // Create send options with defaults.
+        let options = SendOptions {
+            relay_mode: RelayModeOption::Default,
+            ticket_type: AddrInfoOptions::RelayAndAddresses,
+            magic_ipv4_addr: None,
+            magic_ipv6_addr: None,
+        };
+
+        // Wrap the app_handle in our EventEmitter implementation.
+        let emitter = Arc::new(TauriEventEmitter {
+            app_handle: app_handle.clone(),
+        });
+        let boxed_handle: AppHandle = Some(emitter);
+
+        // Start sharing multiple files/folders via core send pipeline.
+        let result = sendme::core::send::start_share_items(
+            path_bufs.clone(),
+            options,
+            &boxed_handle,
+            Some(metadata),
+        )
+        .await
+        .map_err(|e| format!("Failed to start sharing: {}", e))?;
+        Ok((result.ticket.clone(), path_bufs, result))
+    }
+    .await;
+
+    match start_result {
+        Ok((ticket, paths, result)) => {
+            let mut app_state = state.lock().await;
+            app_state.is_share_starting = false;
+
+            if app_state.current_share.is_some() {
+                return Err("Already sharing a file. Please stop current share first.".to_string());
+            }
+
+            // Keep full send result alive to preserve router/temp_tag lifecycle.
+            let primary = paths.first().cloned().unwrap_or_else(|| PathBuf::from("."));
+            app_state.current_share = Some(ShareHandle::new(ticket.clone(), primary, result));
+            Ok(ticket)
+        }
+        Err(e) => {
+            let mut app_state = state.lock().await;
+            app_state.is_share_starting = false;
+            Err(e)
+        }
+    }
+}
+
+async fn build_send_metadata(paths: &[PathBuf]) -> Result<FileMetadata, String> {
+    if paths.is_empty() {
+        return Err("No paths provided".to_string());
+    }
+
+    let total_size = {
+        let paths_for_size = paths.to_vec();
+        tokio::task::spawn_blocking(move || {
+            let mut total = 0u64;
+            for path in &paths_for_size {
+                total = total.saturating_add(get_total_size(path)?);
+            }
+            Ok::<u64, String>(total)
+        })
+        .await
+        .map_err(|e| format!("Task join error: {}", e))??
+    };
+
+    if paths.len() == 1 {
+        let path = &paths[0];
         let file_name = path
             .file_name()
             .unwrap_or_default()
             .to_string_lossy()
             .into_owned();
 
-        // Run heavy size calculation in a separate blocking thread
-        let path_clone = path.clone();
-        let size = tokio::task::spawn_blocking(move || get_total_size(&path_clone))
-            .await
-            .map_err(|e| format!("Task join error: {}", e))?;
-        let size = size?;
-
-        // Generate thumbnail (async, internally handles blocking operations)
-        let thumbnail = generate_thumbnail(&path).await;
-
+        let thumbnail = generate_thumbnail(path).await;
         let mime_type = if path.is_file() {
             Some(
-                mime_guess::from_path(&path)
+                mime_guess::from_path(path)
                     .first_or_octet_stream()
                     .essence_str()
                     .to_string(),
@@ -94,71 +196,33 @@ pub async fn start_sharing(
             Some("inode/directory".to_string())
         };
 
-        let metadata = FileMetadata {
+        return Ok(FileMetadata {
             file_name,
-            size,
+            item_count: 1,
+            size: total_size,
             thumbnail,
             mime_type,
-        };
-
-        tracing::info!(
-            path_stem = ?path.file_stem(),
-            size = metadata.size,
-            has_thumbnail = metadata.thumbnail.is_some(),
-            "share metadata prepared"
-        );
-
-        // Create send options with defaults
-        let options = SendOptions {
-            relay_mode: RelayModeOption::Default,
-            ticket_type: AddrInfoOptions::RelayAndAddresses,
-            magic_ipv4_addr: None,
-            magic_ipv6_addr: None,
-        };
-
-        // Wrap the app_handle in our EventEmitter implementation
-        let emitter = Arc::new(TauriEventEmitter {
-            app_handle: app_handle.clone(),
+            items: None,
         });
-        let boxed_handle: AppHandle = Some(emitter);
-
-        let result = start_share(path.clone(), options, boxed_handle, Some(metadata))
-            .await
-            .map_err(|e| format!("Failed to start sharing: {}", e))?;
-
-        let ticket = result.ticket.clone();
-        Ok((ticket, result))
     }
-    .await;
 
-    match start_result {
-        Ok((ticket, result)) => {
-            // Clear reservation and install active share atomically.
-            let mut app_state = state.lock().await;
-            app_state.is_share_starting = false;
+    // For multiple items
+    let first_name = paths[0]
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .into_owned();
+    let preview_items = collect_preview_items(paths).await?;
+    let thumbnail = preview_items.iter().find_map(|item| item.thumbnail.clone());
 
-            if app_state.current_share.is_some() {
-                drop(app_state);
-
-                // Defensive cleanup in case state was externally changed.
-                let mut orphan_share = ShareHandle::new(ticket, path, result);
-                if let Err(err) = orphan_share.stop().await {
-                    tracing::warn!(error = %err, "failed to stop concurrent orphan share");
-                }
-
-                return Err("Already sharing a file. Please stop current share first.".to_string());
-            }
-
-            // CRITICAL: Store the entire SendResult to keep router and temp_tag alive!
-            app_state.current_share = Some(ShareHandle::new(ticket.clone(), path, result));
-            Ok(ticket)
-        }
-        Err(err) => {
-            let mut app_state = state.lock().await;
-            app_state.is_share_starting = false;
-            Err(err)
-        }
-    }
+    Ok(FileMetadata {
+        file_name: first_name,
+        item_count: paths.len() as u32,
+        size: total_size,
+        thumbnail,
+        mime_type: Some("application/x-iroh-collection".to_string()),
+        items: Some(preview_items),
+    })
 }
 
 /// Fetch metadata from sender by ticket, without starting file download.
@@ -266,6 +330,30 @@ pub async fn check_path_type(path: String) -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+pub async fn get_paths_mime_types(paths: Vec<String>) -> Result<Vec<Option<String>>, String> {
+    let result = paths
+        .into_iter()
+        .map(|path| {
+            let path_buf = PathBuf::from(path);
+            if path_buf.is_dir() {
+                return Some("inode/directory".to_string());
+            }
+            if path_buf.is_file() {
+                return Some(
+                    mime_guess::from_path(path_buf)
+                        .first_or_octet_stream()
+                        .essence_str()
+                        .to_string(),
+                );
+            }
+            None
+        })
+        .collect();
+
+    Ok(result)
+}
+
 /// Get the current transport status (whether bytes are actively being transferred)
 #[tauri::command]
 pub async fn get_transport_status(state: State<'_, AppStateMutex>) -> Result<bool, String> {
@@ -333,6 +421,60 @@ fn get_total_size(path: &Path) -> Result<u64, String> {
     ))
 }
 
+fn dedup_name(name: &str, seen: &mut BTreeMap<String, usize>) -> String {
+    match seen.get_mut(name) {
+        Some(count) => {
+            *count += 1;
+            format!("{} ({})", name, count)
+        }
+        None => {
+            seen.insert(name.to_string(), 1);
+            name.to_string()
+        }
+    }
+}
+
+async fn collect_preview_items(paths: &[PathBuf]) -> Result<Vec<FilePreviewItem>, String> {
+    let mut items = Vec::with_capacity(paths.len());
+    let mut seen_names = BTreeMap::new();
+
+    for path in paths {
+        let file_name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .filter(|name| !name.is_empty())
+            .unwrap_or("item")
+            .to_string();
+        let final_name = dedup_name(&file_name, &mut seen_names);
+        let size = get_total_size(path)?;
+        let mime_type = if path.is_dir() {
+            Some("inode/directory".to_string())
+        } else {
+            Some(
+                mime_guess::from_path(path)
+                    .first_or_octet_stream()
+                    .essence_str()
+                    .to_string(),
+            )
+        };
+        let thumbnail = if path.is_file() {
+            generate_thumbnail(path).await
+        } else {
+            None
+        };
+        items.push(FilePreviewItem {
+            file_name: final_name,
+            size,
+            thumbnail,
+            mime_type,
+        });
+    }
+
+    items.sort_by(|a, b| a.file_name.cmp(&b.file_name));
+
+    Ok(items)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -357,9 +499,11 @@ mod tests {
 
         let expected_metadata = FileMetadata {
             file_name: "preview-source.txt".to_string(),
+            item_count: 1,
             size: 123,
             thumbnail: Some("data:image/jpeg;base64,ZmFrZS10aHVtYg==".to_string()),
             mime_type: Some("text/plain".to_string()),
+            items: None,
         };
 
         let options = SendOptions {

@@ -4,7 +4,7 @@ import { downloadDir, join } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { selectDownloadFolder } from '@/plugins/nativeUtils'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import { sendSystemNotification } from '../lib/systemNotification'
 import type { AlertDialogState, AlertType } from '../types/ui'
@@ -19,9 +19,50 @@ import { useAppSettingStore } from '@/store/app-setting'
 
 interface BackendFileMetadata {
 	file_name: string
+	item_count: number
 	size: number
 	thumbnail?: string | null
 	mime_type?: string | null
+	items?:
+		| {
+				file_name: string
+				size: number
+				thumbnail?: string | null
+				mime_type?: string | null
+		  }[]
+		| null
+}
+
+const isAbsolutePath = (path: string) => {
+	if (!path) return false
+	return path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path)
+}
+
+const normalizeSeparators = (path: string) => path.replace(/\\/g, '/')
+
+const countTopLevelItems = (names: string[]) => {
+	const topLevelItems = new Set<string>()
+
+	for (const name of names) {
+		const normalized = normalizeSeparators(name)
+		if (!normalized) continue
+
+		if (isAbsolutePath(normalized)) {
+			const segments = normalized.split('/').filter(Boolean)
+			const lastSegment = segments[segments.length - 1]
+			if (lastSegment) {
+				topLevelItems.add(lastSegment)
+			}
+			continue
+		}
+
+		const [topLevel] = normalized.split('/')
+		if (topLevel) {
+			topLevelItems.add(topLevel)
+		}
+	}
+
+	return topLevelItems.size
 }
 
 export interface UseReceiverReturn {
@@ -66,6 +107,13 @@ export function useReceiver(): UseReceiverReturn {
 	const [previewMetadata, setPreviewMetadata] =
 		useState<TicketPreviewMetadata | null>(null)
 	const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
+		isOpen: false,
+		title: '',
+		description: '',
+		type: 'info',
+	})
+	const pendingConflictNoticeRef = useRef<string | null>(null)
 
 	const fileNamesRef = useRef<string[]>([])
 	const transferProgressRef = useRef<TransferProgress | null>(null)
@@ -74,13 +122,8 @@ export function useReceiver(): UseReceiverReturn {
 	const folderOpenTriggeredRef = useRef(false)
 	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 	const previewRequestSeqRef = useRef(0)
-
-	const isAbsolutePath = (path: string) => {
-		if (!path) return false
-		return path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path)
-	}
-
-	const normalizeSeparators = (path: string) => path.replace(/\\/g, '/')
+	const previewMetadataRef = useRef<TicketPreviewMetadata | null>(null)
+	const transferItemCountRef = useRef<number | undefined>(undefined)
 
 	const resolveRevealPath = async (basePath: string, names: string[]) => {
 		if (!basePath) return null
@@ -154,6 +197,7 @@ export function useReceiver(): UseReceiverReturn {
 		const trimmed = ticket.trim()
 		if (!trimmed) {
 			setPreviewMetadata(null)
+			previewMetadataRef.current = null
 			setIsPreviewLoading(false)
 			return
 		}
@@ -161,6 +205,7 @@ export function useReceiver(): UseReceiverReturn {
 		setIsPreviewLoading(true)
 		// Clear stale preview while typing/fetching
 		setPreviewMetadata(null)
+		previewMetadataRef.current = null
 
 		const timer = window.setTimeout(async () => {
 			try {
@@ -175,18 +220,28 @@ export function useReceiver(): UseReceiverReturn {
 					return
 				}
 
-				setPreviewMetadata({
+				const metadata = {
 					fileName: payload.file_name,
+					itemCount: payload.item_count,
 					size: payload.size,
 					thumbnail: payload.thumbnail ?? undefined,
 					mimeType: payload.mime_type ?? undefined,
-				})
+					items: payload.items?.map((item) => ({
+						fileName: item.file_name,
+						size: item.size,
+						thumbnail: item.thumbnail ?? undefined,
+						mimeType: item.mime_type ?? undefined,
+					})),
+				}
+				setPreviewMetadata(metadata)
+				previewMetadataRef.current = metadata
 			} catch (error) {
 				if (previewRequestSeqRef.current !== seq) {
 					return
 				}
 				console.warn('Failed to fetch ticket preview metadata:', error)
 				setPreviewMetadata(null)
+				previewMetadataRef.current = null
 			} finally {
 				if (previewRequestSeqRef.current === seq) {
 					setIsPreviewLoading(false)
@@ -199,12 +254,16 @@ export function useReceiver(): UseReceiverReturn {
 		}
 	}, [ticket, isReceiving])
 
-	const [alertDialog, setAlertDialog] = useState<AlertDialogState>({
-		isOpen: false,
-		title: '',
-		description: '',
-		type: 'info',
-	})
+	const showAlert = useCallback(
+		(title: string, description: string, type: AlertType = 'info') => {
+			setAlertDialog({ isOpen: true, title, description, type })
+		},
+		[]
+	)
+
+	const closeAlert = useCallback(() => {
+		setAlertDialog((prev) => ({ ...prev, isOpen: false }))
+	}, [])
 
 	useEffect(() => {
 		const initializeSavePath = async () => {
@@ -294,6 +353,34 @@ export function useReceiver(): UseReceiverReturn {
 				}
 			})
 
+			await registerListener('receive-conflicts', (event: any) => {
+				try {
+					const payload = event.payload as string
+					const conflicts = JSON.parse(payload) as Array<{
+						original: string
+						resolved: string
+					}>
+
+					if (conflicts.length === 0) return
+
+					const basename = (p: string) =>
+						normalizeSeparators(p).split('/').pop() || p
+					const preview = conflicts
+						.slice(0, 3)
+						.map((c) => `${basename(c.original)} → ${basename(c.resolved)}`)
+						.join('\n')
+
+					pendingConflictNoticeRef.current =
+						conflicts.length > 3
+							? `${preview}\n${t('common:receiver.conflictsMore', {
+									count: conflicts.length - 3,
+								})}`
+							: preview
+				} catch (error) {
+					console.error('Failed to parse receive-conflicts event:', error)
+				}
+			})
+
 			await registerListener('receive-completed', () => {
 				setIsTransporting(false)
 				setIsCompleted(true)
@@ -305,21 +392,41 @@ export function useReceiver(): UseReceiverReturn {
 					: 0
 
 				const currentFileNames = fileNamesRef.current
-				let displayName = 'Downloaded File'
+				const itemCount =
+					transferItemCountRef.current ?? countTopLevelItems(currentFileNames)
+				let displayName = t('common:receiver.downloadedFile')
 
-				if (currentFileNames.length > 0) {
-					if (currentFileNames.length === 1) {
+				if (previewMetadataRef.current?.fileName) {
+					displayName = previewMetadataRef.current.fileName
+				} else if (currentFileNames.length > 0) {
+					if (itemCount <= 1) {
 						const fullPath = currentFileNames[0]
 						displayName = fullPath.split('/').pop() || fullPath
 					} else {
+						const multipleFilesLabel = t('common:transfer.multipleFiles', {
+							count: itemCount,
+						})
 						const firstPath = currentFileNames[0]
 						const pathParts = firstPath.split('/')
 						if (pathParts.length > 1) {
-							displayName = pathParts[0] || `${currentFileNames.length} files`
+							displayName = pathParts[0] || multipleFilesLabel
 						} else {
-							displayName = `${currentFileNames.length} files`
+							displayName = multipleFilesLabel
 						}
 					}
+				}
+
+				let pathType: 'file' | 'directory' | null = null
+				if (previewMetadataRef.current) {
+					if (previewMetadataRef.current.mimeType === 'inode/directory') {
+						pathType = 'directory'
+					} else {
+						pathType = 'file'
+					}
+				} else if (itemCount === 1 && currentFileNames.length > 1) {
+					pathType = 'directory'
+				} else if (itemCount === 1) {
+					pathType = 'file'
 				}
 
 				const metadata = {
@@ -329,8 +436,19 @@ export function useReceiver(): UseReceiverReturn {
 					startTime: transferStartTimeRef.current || endTime,
 					endTime,
 					downloadPath: savePathRef.current,
+					itemCount: itemCount > 1 ? itemCount : undefined,
+					pathType,
 				}
 				setTransferMetadata(metadata)
+
+				if (pendingConflictNoticeRef.current) {
+					showAlert(
+						t('common:receiver.downloadCompletedWithConflicts'),
+						pendingConflictNoticeRef.current,
+						'info'
+					)
+					pendingConflictNoticeRef.current = null
+				}
 
 				void sendSystemNotification({
 					title: t('common:receiver.downloadCompleted'),
@@ -349,19 +467,7 @@ export function useReceiver(): UseReceiverReturn {
 				unlisten()
 			})
 		}
-	}, [t])
-
-	const showAlert = (
-		title: string,
-		description: string,
-		type: AlertType = 'info'
-	) => {
-		setAlertDialog({ isOpen: true, title, description, type })
-	}
-
-	const closeAlert = () => {
-		setAlertDialog((prev) => ({ ...prev, isOpen: false }))
-	}
+	}, [t, showAlert])
 
 	const handleTicketChange = (newTicket: string) => {
 		setTicket(newTicket)
@@ -400,6 +506,7 @@ export function useReceiver(): UseReceiverReturn {
 		if (!ticket.trim()) return
 
 		try {
+			transferItemCountRef.current = previewMetadata?.itemCount
 			previewRequestSeqRef.current += 1
 			setIsReceiving(true)
 			setIsTransporting(false)
@@ -409,6 +516,7 @@ export function useReceiver(): UseReceiverReturn {
 			setTransferStartTime(null)
 			setPreviewMetadata(null)
 			setIsPreviewLoading(false)
+			pendingConflictNoticeRef.current = null
 			folderOpenTriggeredRef.current = false
 
 			await invoke<string>('receive_file', {
@@ -436,7 +544,9 @@ export function useReceiver(): UseReceiverReturn {
 		setFileNames([])
 		setPreviewMetadata(null)
 		setIsPreviewLoading(false)
+		pendingConflictNoticeRef.current = null
 		folderOpenTriggeredRef.current = false
+		transferItemCountRef.current = undefined
 	}
 
 	const handleOpenFolder = async () => {

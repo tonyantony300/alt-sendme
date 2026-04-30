@@ -283,15 +283,29 @@ pub async fn download(
             dirs::download_dir().unwrap_or_else(|| std::env::current_dir().unwrap())
         });
 
-        export(&db, collection, &output_dir).await?;
+        let conflicts = export(&db, collection, &output_dir).await?;
+
+        if !conflicts.is_empty() {
+            let payload = serde_json::to_string(&conflicts).unwrap_or_else(|_| "[]".to_string());
+            emit_event_with_payload(&app_handle, "receive-conflicts", &payload);
+        }
+
+        // Explicit call endpoint.close() to gracefully shutdown the connection
+        endpoint.close().await;
 
         // Emit completion event AFTER everything is done
         emit_event(&app_handle, "receive-completed");
 
-        anyhow::Ok((total_files, payload_size, stats, output_dir))
+        anyhow::Ok((
+            total_files,
+            payload_size,
+            stats,
+            output_dir,
+            conflicts.len(),
+        ))
     };
 
-    let (total_files, payload_size, _stats, output_dir) = select! {
+    let (total_files, payload_size, _stats, output_dir, conflict_count) = select! {
         x = fut => match x {
             Ok(x) => x,
             Err(e) => {
@@ -310,8 +324,17 @@ pub async fn download(
 
     tokio::fs::remove_dir_all(&iroh_data_dir).await?;
 
+    let message = if conflict_count > 0 {
+        format!(
+            "Downloaded {} files, {} bytes ({} name conflicts auto-resolved)",
+            total_files, payload_size, conflict_count
+        )
+    } else {
+        format!("Downloaded {} files, {} bytes", total_files, payload_size)
+    };
+
     Ok(ReceiveResult {
-        message: format!("Downloaded {} files, {} bytes", total_files, payload_size),
+        message,
         file_path: output_dir,
     })
 }
@@ -463,12 +486,39 @@ pub async fn fetch_metadata(
     Err(last_error.unwrap_or_else(|| anyhow::anyhow!("metadata fetch failed")))
 }
 
-async fn export(db: &Store, collection: Collection, output_dir: &Path) -> anyhow::Result<()> {
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ExportConflict {
+    original: String,
+    resolved: String,
+}
+
+async fn export(
+    db: &Store,
+    collection: Collection,
+    output_dir: &Path,
+) -> anyhow::Result<Vec<ExportConflict>> {
+    let mut conflicts = Vec::new();
+
     for (_i, (name, hash)) in collection.iter().enumerate() {
-        let target = get_export_path(output_dir, name)?;
-        if target.exists() {
-            anyhow::bail!("target {} already exists", target.display());
+        let desired_target = get_export_path(output_dir, name)?;
+        let target = if desired_target.exists() {
+            let resolved = resolve_conflict_path(&desired_target)?;
+            conflicts.push(ExportConflict {
+                original: desired_target.to_string_lossy().to_string(),
+                resolved: resolved.to_string_lossy().to_string(),
+            });
+            resolved
+        } else {
+            desired_target
+        };
+
+        if let Some(parent) = target.parent() {
+            tokio::fs::create_dir_all(parent).await.map_err(|e| {
+                anyhow::anyhow!("failed creating export parent {}: {}", parent.display(), e)
+            })?;
         }
+
         let mut stream = db
             .export_with_opts(ExportOptions {
                 hash: *hash,
@@ -495,7 +545,40 @@ async fn export(db: &Store, collection: Collection, output_dir: &Path) -> anyhow
             }
         }
     }
-    Ok(())
+
+    Ok(conflicts)
+}
+
+fn resolve_conflict_path(path: &Path) -> anyhow::Result<PathBuf> {
+    let parent = path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("path has no parent: {}", path.display()))?;
+
+    let file_name = path
+        .file_name()
+        .and_then(|x| x.to_str())
+        .ok_or_else(|| anyhow::anyhow!("invalid filename: {}", path.display()))?;
+
+    let stem = path
+        .file_stem()
+        .and_then(|x| x.to_str())
+        .ok_or_else(|| anyhow::anyhow!("invalid file stem: {}", path.display()))?;
+
+    let extension = path.extension().and_then(|x| x.to_str());
+
+    for index in 1..10_000u32 {
+        let candidate_name = if let Some(ext) = extension {
+            format!("{} ({}).{}", stem, index, ext)
+        } else {
+            format!("{} ({})", file_name, index)
+        };
+        let candidate = parent.join(candidate_name);
+        if !candidate.exists() {
+            return Ok(candidate);
+        }
+    }
+
+    anyhow::bail!("too many filename conflicts for {}", path.display())
 }
 
 fn get_export_path(root: &Path, name: &str) -> anyhow::Result<PathBuf> {
@@ -540,9 +623,11 @@ mod tests {
         // Setup metadata
         let expected_metadata = FileMetadata {
             file_name: "test_e2e_file.txt".into(),
+            item_count: 1,
             size: 25,
             thumbnail: Some("data:image/jpeg;base64,e2e_test_thumbnail=".into()),
             mime_type: Some("text/plain".into()),
+            items: None,
         };
 
         let send_opts = SendOptions {

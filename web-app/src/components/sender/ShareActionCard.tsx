@@ -4,12 +4,13 @@ import type { ShareActionProps } from '../../types/sender'
 import { Button } from '../ui/button'
 
 export function ShareActionCard({
+	selectedPaths,
 	selectedPath,
 	isLoading,
 	onStartSharing,
 }: ShareActionProps & { onStartSharing: () => Promise<void> }) {
 	const { t } = useTranslation()
-	if (!selectedPath) return null
+	if (!selectedPaths.length && !selectedPath) return null
 
 	return (
 		<div className="space-y-4">
