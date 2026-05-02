@@ -14,6 +14,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
 import { getPreviewFileIcon } from '../../lib/fileIcons'
+import { buttonVariants } from '../ui/button'
+import { ScrollArea } from '../ui/scroll-area'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '../ui/tooltip'
 
 const getPathBaseName = (path: string) => {
 	const normalized = path.replace(/\\/g, '/')
@@ -144,14 +152,12 @@ export function Dropzone({
 		if (selectedPath && !isLoading) {
 			return {
 				...baseStyles,
-				paddingBottom: '1.5rem',
 			}
 		}
 
 		if (isLoading) {
 			return {
 				...baseStyles,
-				paddingBottom: '4rem',
 			}
 		}
 
@@ -252,53 +258,94 @@ export function Dropzone({
 			layout
 			transition={{ duration: 0.3, ease: 'easeInOut' }}
 			style={getDropzoneStyles()}
-			className="relative border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground h-64 border-border overflow-hidden"
+			className="relative border-2 border-dashed rounded-lg text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground h-fit min-h-64 border-border overflow-hidden"
 		>
 			{selectedPath && !isLoading && (
-				<div className="absolute top-3 right-3 z-30 flex items-center gap-2 pointer-events-auto">
-					<motion.button
-						key="add-folder-button"
-						type="button"
-						initial={{ opacity: 0, filter: 'blur(4px)' }}
-						animate={{ opacity: 1, filter: 'blur(0px)' }}
-						onClick={(e) => {
-							e.stopPropagation()
-							void onAddFolders()
-						}}
-						className="p-1.5 rounded-md text-muted-foreground cursor-pointer"
-						aria-label="Add more folders"
-					>
-						<FolderPlus className="h-6 w-6" />
-					</motion.button>
-					<motion.button
-						key="add-button"
-						type="button"
-						initial={{ opacity: 0, filter: 'blur(4px)' }}
-						animate={{ opacity: 1, filter: 'blur(0px)' }}
-						onClick={(e) => {
-							e.stopPropagation()
-							void onAddFiles()
-						}}
-						className="p-1.5 rounded-md text-muted-foreground cursor-pointer"
-						aria-label="Add more files"
-					>
-						<FilePlus className="h-6 w-6" />
-					</motion.button>
-					<motion.button
-						key="clear-button"
-						type="button"
-						initial={{ opacity: 0, filter: 'blur(4px)' }}
-						animate={{ opacity: 1, filter: 'blur(0px)' }}
-						onClick={(e) => {
-							e.stopPropagation()
-							onClearSelection()
-						}}
-						className="p-1.5 rounded-md text-muted-foreground cursor-pointer"
-						aria-label="Clear selection"
-					>
-						<X className="h-6 w-6" />
-					</motion.button>
-				</div>
+				<TooltipProvider>
+					<div className="absolute top-3 right-3 z-30 flex items-center gap-2 pointer-events-auto">
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<motion.button
+										key="add-folder-button"
+										type="button"
+										initial={{
+											opacity: 0,
+											filter: 'blur(4px)',
+										}}
+										animate={{
+											opacity: 1,
+											filter: 'blur(0px)',
+										}}
+										onClick={(e) => {
+											e.stopPropagation()
+											void onAddFolders()
+										}}
+										className={buttonVariants({
+											variant: 'ghost',
+											size: 'icon',
+										})}
+										aria-label="Add more folders"
+									>
+										<FolderPlus strokeWidth={1.5} />
+									</motion.button>
+								}
+							></TooltipTrigger>
+							<TooltipContent>
+								<p>{t('common:sender.addMoreFolders')}</p>
+							</TooltipContent>
+						</Tooltip>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<motion.button
+										key="add-file-button"
+										type="button"
+										initial={{
+											opacity: 0,
+											filter: 'blur(4px)',
+										}}
+										animate={{
+											opacity: 1,
+											filter: 'blur(0px)',
+										}}
+										onClick={(e) => {
+											e.stopPropagation()
+											void onAddFiles()
+										}}
+										className={buttonVariants({
+											variant: 'ghost',
+											size: 'icon',
+										})}
+										aria-label="Add more files"
+									>
+										<FilePlus strokeWidth={1.5} />
+									</motion.button>
+								}
+							></TooltipTrigger>
+							<TooltipContent>
+								<p>{t('common:sender.addMoreFiles')}</p>
+							</TooltipContent>
+						</Tooltip>
+						<motion.button
+							key="clear-button"
+							type="button"
+							initial={{ opacity: 0, filter: 'blur(4px)' }}
+							animate={{ opacity: 1, filter: 'blur(0px)' }}
+							onClick={(e) => {
+								e.stopPropagation()
+								onClearSelection()
+							}}
+							className={buttonVariants({
+								variant: 'secondary',
+							})}
+							aria-label="Clear selection"
+						>
+							<X />
+							Clear ({selectedPaths.length})
+						</motion.button>
+					</div>
+				</TooltipProvider>
 			)}
 			<motion.div
 				key={selectedPath ? 'selected' : 'empty'}
@@ -306,7 +353,7 @@ export function Dropzone({
 				animate={{ opacity: 1, filter: 'blur(0px)' }}
 				exit={{ opacity: 0, filter: 'blur(4px)' }}
 				transition={{ duration: 0.25 }}
-				className="h-full w-full"
+				className="h-full w-full p-4 sm:p-6"
 			>
 				{!hasSelection && (
 					<div className="h-full w-full flex flex-col items-center justify-center space-y-4">
@@ -336,69 +383,81 @@ export function Dropzone({
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: 6 }}
 							transition={{ duration: 0.2 }}
-							className="h-full w-full flex flex-col justify-center pt-12"
+							className="h-full w-full flex flex-col justify-center pt-4 gap-4"
 						>
-							<div className="relative">
-								{canScrollLeft ? (
-									<div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex w-12 items-center justify-start bg-gradient-to-r from-accent via-accent/90 to-transparent pl-1">
-										<ChevronsLeft className="h-4 w-4 text-muted-foreground/80" />
-									</div>
-								) : null}
-								{canScrollRight ? (
-									<div className="pointer-events-none absolute inset-y-0 right-0 z-10 flex w-12 items-center justify-end bg-gradient-to-l from-accent via-accent/90 to-transparent pr-1">
-										<ChevronsRight className="h-4 w-4 text-muted-foreground/80" />
-									</div>
-								) : null}
-								<div
-									ref={attachPreviewScroller}
-									className="overflow-x-auto overflow-y-hidden pb-3 px-1"
-									onWheel={handlePreviewWheel}
+							<ScrollArea
+								ref={attachPreviewScroller}
+								className="overflow-x-auto overflow-y-hidden"
+								scrollFade
+								scrollbarGutter
+								onWheel={handlePreviewWheel}
+								aria-orientation="horizontal"
+							>
+								<motion.div
+									layout
+									className="inline-flex min-w-full justify-center gap-3 pr-3"
 								>
-									<motion.div
-										layout
-										className="inline-flex min-w-full justify-center gap-3 pr-3"
-									>
-										<AnimatePresence initial={false}>
-											{selectedPaths.map((path) => {
-												const fileName = getPathBaseName(path)
-												return (
-													<motion.div
-														key={path}
-														layout
-														initial={{ opacity: 0, scale: 0.94 }}
-														animate={{ opacity: 1, scale: 1 }}
-														exit={{ opacity: 0, scale: 0.94 }}
-														transition={{ duration: 0.16 }}
-														className="group relative w-44 shrink-0"
-													>
-														<div className="p-1">
-															<div className="relative flex h-36 w-full items-center justify-center overflow-hidden">
-																{renderPathIcon(path)}
-																<button
-																	type="button"
-																	onClick={(e) => {
-																		e.stopPropagation()
-																		onRemoveSelectedPath(path)
-																	}}
-																	className="absolute right-2 top-2 z-10 rounded-full border bg-background p-1 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
-																	aria-label={`Remove ${fileName}`}
-																	title="Remove from sharing"
-																>
-																	<X className="h-3.5 w-3.5" />
-																</button>
-															</div>
+									<AnimatePresence initial={false}>
+										{selectedPaths.map((path) => {
+											const fileName = getPathBaseName(path)
+											return (
+												<motion.div
+													key={path}
+													layout
+													initial={{
+														opacity: 0,
+														scale: 0.94,
+													}}
+													animate={{
+														opacity: 1,
+														scale: 1,
+													}}
+													exit={{
+														opacity: 0,
+														scale: 0.94,
+													}}
+													transition={{
+														duration: 0.16,
+													}}
+													className="group relative w-44 shrink-0"
+												>
+													<div className="p-1">
+														<div className="relative flex h-36 w-full items-center justify-center overflow-hidden">
+															{renderPathIcon(path)}
+															<Tooltip>
+																<TooltipTrigger
+																	render={
+																		<button
+																			type="button"
+																			onClick={(e) => {
+																				e.stopPropagation()
+																				onRemoveSelectedPath(path)
+																			}}
+																			className="absolute right-2 top-2 z-10 rounded-full border bg-background p-1 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
+																			aria-label={`Remove ${fileName}`}
+																		>
+																			<X className="h-3.5 w-3.5" />
+																		</button>
+																	}
+																></TooltipTrigger>
+																<TooltipContent>
+																	<p>
+																		{t('common:sender.removeFromSelection')}
+																	</p>
+																</TooltipContent>
+															</Tooltip>
 														</div>
+													</div>
 
-														<p className="mt-2 truncate text-base text-foreground">
-															{fileName}
-														</p>
-													</motion.div>
-												)
-											})}
-										</AnimatePresence>
-									</motion.div>
-								</div>
-							</div>
+													<p className="mt-2 truncate text-base text-foreground">
+														{fileName}
+													</p>
+												</motion.div>
+											)
+										})}
+									</AnimatePresence>
+								</motion.div>
+							</ScrollArea>
 						</motion.div>
 					)}
 				</AnimatePresence>

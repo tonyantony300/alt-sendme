@@ -11,6 +11,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { toastManager } from '../ui/toast'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 export function SharingActiveCard({
 	selectedPaths,
@@ -90,15 +91,28 @@ export function SharingActiveCard({
 	return (
 		<div className="space-y-4">
 			<div className="p-4 rounded-lg absolute top-0 left-0">
-				<p className="text-xs mb-4 max-w-40 sm:max-w-120 truncate">
-					<strong className="mr-1">{t('common:sender.fileLabel')}</strong>{' '}
-					{selectedPaths.length > 1
-						? t('common:sender.multipleFilesSelected', {
-								name: selectedPaths[0]?.split('/').pop() || '',
-								count: selectedPaths.length - 1,
-							})
-						: selectedPath?.split('/').pop()}
-				</p>
+				<Tooltip disabled={!selectedPath && selectedPaths.length <= 1}>
+					<TooltipTrigger>
+						<p className="text-xs mb-4 max-w-40 sm:max-w-120 truncate">
+							<strong className="mr-1">{t('common:sender.fileLabel')}</strong>{' '}
+							{selectedPaths.length > 1
+								? t('common:sender.multipleFilesSelected', {
+										name: selectedPaths[0]?.split('/').pop() || '',
+										count: selectedPaths.length - 1,
+									})
+								: selectedPath?.split('/').pop()}
+						</p>
+					</TooltipTrigger>
+					<TooltipContent className="max-w-xs" side="inline-end">
+						<ul className="list-disc pl-4 text-left max-h-60 overflow-auto">
+							{selectedPaths.map((path) => (
+								<li key={path} className="text-xs">
+									{path.split('/').pop()}
+								</li>
+							))}
+						</ul>
+					</TooltipContent>
+				</Tooltip>
 
 				<StatusIndicator
 					isCompleted={isCompleted}
