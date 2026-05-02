@@ -1,8 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { invoke } from '@tauri-apps/api/core'
 import {
-	ChevronsLeft,
-	ChevronsRight,
 	ChevronDown,
 	ChevronRight,
 	FolderPlus,
@@ -48,8 +46,8 @@ export function Dropzone({
 	>({})
 	const previewScrollerRef = useRef<HTMLDivElement | null>(null)
 	const previewScrollerCleanupRef = useRef<(() => void) | null>(null)
-	const [canScrollLeft, setCanScrollLeft] = useState(false)
-	const [canScrollRight, setCanScrollRight] = useState(false)
+	const [_canScrollLeft, setCanScrollLeft] = useState(false)
+	const [_canScrollRight, setCanScrollRight] = useState(false)
 
 	useEffect(() => {
 		if (!selectedPaths.length) {
