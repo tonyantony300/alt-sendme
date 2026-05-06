@@ -1,0 +1,80 @@
+mod common;
+
+use common::{MockEventEmitter, TestFixture};
+use sendme::{download, start_share, ReceiveOptions, SendOptions};
+
+#[tokio::test]
+async fn e2e_filename_conflict_resolved() {
+    let fixture = TestFixture::new();
+    let source = fixture.create_file("report.txt", b"new version of report");
+    let recv_dir = fixture.output_dir();
+
+    // Pre-create a conflicting file at the destination
+    std::fs::write(recv_dir.join("report.txt"), b"old version of report")
+        .expect("should create conflicting file");
+
+    let receiver_emitter = MockEventEmitter::new();
+
+    let share = start_share(source, SendOptions::default(), None, None)
+        .await
+        .expect("start_share should succeed");
+
+    download(
+        share.ticket.clone(),
+        ReceiveOptions {
+            output_dir: Some(recv_dir.clone()),
+            ..Default::default()
+        },
+        Some(receiver_emitter.clone()),
+    )
+    .await
+    .expect("download should succeed even with conflict");
+
+    // New file should be renamed to avoid overwriting
+    let renamed = std::fs::read_to_string(recv_dir.join("report (1).txt"))
+        .expect("renamed file should exist");
+    assert_eq!(renamed, "new version of report");
+
+    // Conflict event should have been emitted
+    assert!(
+        receiver_emitter.has_event("receive-conflicts"),
+        "should emit receive-conflicts event"
+    );
+
+    drop(share);
+}
+
+#[tokio::test]
+async fn e2e_original_file_preserved() {
+    let fixture = TestFixture::new();
+    let source = fixture.create_file("keep_me.txt", b"incoming data");
+    let recv_dir = fixture.output_dir();
+
+    // Pre-create the file that should NOT be overwritten
+    std::fs::write(recv_dir.join("keep_me.txt"), b"original data, do not touch")
+        .expect("should create original file");
+
+    let share = start_share(source, SendOptions::default(), None, None)
+        .await
+        .expect("start_share should succeed");
+
+    download(
+        share.ticket.clone(),
+        ReceiveOptions {
+            output_dir: Some(recv_dir.clone()),
+            ..Default::default()
+        },
+        None,
+    )
+    .await
+    .expect("download should succeed");
+
+    // Original file should be completely untouched
+    let original = std::fs::read_to_string(recv_dir.join("keep_me.txt")).unwrap();
+    assert_eq!(
+        original, "original data, do not touch",
+        "original file must NOT be overwritten"
+    );
+
+    drop(share);
+}

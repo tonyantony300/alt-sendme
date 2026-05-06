@@ -5,7 +5,7 @@ pub use core::{
     send::start_share,
     send::start_share_items,
     types::{
-        AddrInfoOptions, AppHandle, EventEmitter, ReceiveOptions, ReceiveResult, RelayModeOption,
-        SendOptions, SendResult,
+        AddrInfoOptions, AppHandle, EventEmitter, FileMetadata, FilePreviewItem, ReceiveOptions,
+        ReceiveResult, RelayModeOption, SendOptions, SendResult,
     },
 };
