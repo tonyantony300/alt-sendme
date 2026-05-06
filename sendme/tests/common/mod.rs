@@ -4,8 +4,6 @@ use sendme::EventEmitter;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-// ─── MockEventEmitter ───────────────────────────────────────────────
-
 #[derive(Debug, Clone)]
 pub struct MockEvent {
     pub name: String,
@@ -71,8 +69,6 @@ impl EventEmitter for MockEventEmitter {
         Ok(())
     }
 }
-
-// ─── TestFixture ────────────────────────────────────────────────────
 
 /// Helper to manage temp directories and files for E2E tests.
 pub struct TestFixture {

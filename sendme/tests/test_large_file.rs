@@ -6,7 +6,6 @@ use sendme::{download, start_share, ReceiveOptions, SendOptions};
 #[tokio::test]
 async fn e2e_large_file_integrity() {
     let fixture = TestFixture::new();
-    // 10MB deterministic pattern
     let source = fixture.create_large_file("large.bin", 10_000_000);
     let recv_dir = fixture.output_dir();
 
@@ -46,7 +45,6 @@ async fn e2e_large_file_integrity() {
 #[tokio::test]
 async fn e2e_progress_events_emitted() {
     let fixture = TestFixture::new();
-    // 5MB to ensure progress events fire (they trigger every 1MB)
     let source = fixture.create_large_file("progress.bin", 5_000_000);
     let recv_dir = fixture.output_dir();
 
@@ -67,16 +65,17 @@ async fn e2e_progress_events_emitted() {
     .await
     .expect("download should succeed");
 
-    // Progress events should have been emitted for a 5MB file
     let progress_events = receiver_emitter.events_with_name("receive-progress");
     assert!(
         !progress_events.is_empty(),
         "should have at least one progress event for a 5MB transfer"
     );
 
-    // Verify progress payload format: "bytes_transferred:total_bytes:speed_int"
     for event in &progress_events {
-        let payload = event.payload.as_ref().expect("progress event should have payload");
+        let payload = event
+            .payload
+            .as_ref()
+            .expect("progress event should have payload");
         let parts: Vec<&str> = payload.split(':').collect();
         assert_eq!(
             parts.len(),
@@ -86,7 +85,6 @@ async fn e2e_progress_events_emitted() {
         );
     }
 
-    // Verify completion event fired
     assert!(receiver_emitter.has_event("receive-completed"));
 
     drop(share);

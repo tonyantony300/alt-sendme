@@ -32,7 +32,6 @@ async fn e2e_directory_roundtrip() {
     .await
     .expect("download should succeed");
 
-    // Verify directory structure is preserved
     let root_content =
         std::fs::read(recv_dir.join("my_folder/root.txt")).expect("root.txt should exist");
     assert_eq!(root_content, b"root file content");

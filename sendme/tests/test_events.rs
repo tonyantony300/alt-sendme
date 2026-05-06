@@ -6,7 +6,6 @@ use sendme::{download, start_share, ReceiveOptions, SendOptions};
 #[tokio::test]
 async fn e2e_receiver_event_sequence() {
     let fixture = TestFixture::new();
-    // Use a larger file to ensure progress events fire between started and completed
     let source = fixture.create_large_file("sequence.bin", 2_000_000);
     let recv_dir = fixture.output_dir();
 
@@ -29,13 +28,11 @@ async fn e2e_receiver_event_sequence() {
 
     let names = receiver_emitter.event_names();
 
-    // receive-started must exist and come first among receive events
     let started_idx = names
         .iter()
         .position(|n| n == "receive-started")
         .expect("should have receive-started event");
 
-    // receive-completed must exist and come last
     let completed_idx = names
         .iter()
         .rposition(|n| n == "receive-completed")
@@ -48,7 +45,6 @@ async fn e2e_receiver_event_sequence() {
         completed_idx,
     );
 
-    // receive-file-names should come before completed
     let file_names_idx = names
         .iter()
         .position(|n| n == "receive-file-names")
@@ -92,10 +88,8 @@ async fn e2e_sender_events_on_transfer() {
     .await
     .expect("download should succeed");
 
-    // Give the sender a moment to process the transfer completion
     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
 
-    // Sender should have emitted transfer-completed after the receiver downloaded
     assert!(
         sender_emitter.has_event("transfer-completed"),
         "sender should emit transfer-completed. Events: {:?}",

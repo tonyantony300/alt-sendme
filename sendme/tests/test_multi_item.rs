@@ -33,8 +33,14 @@ async fn e2e_multi_file_roundtrip() {
     .await
     .expect("download should succeed");
 
-    assert_eq!(std::fs::read(recv_dir.join("doc.pdf")).unwrap(), vec![0xAA; 5000]);
-    assert_eq!(std::fs::read(recv_dir.join("photo.jpg")).unwrap(), vec![0xBB; 3000]);
+    assert_eq!(
+        std::fs::read(recv_dir.join("doc.pdf")).unwrap(),
+        vec![0xAA; 5000]
+    );
+    assert_eq!(
+        std::fs::read(recv_dir.join("photo.jpg")).unwrap(),
+        vec![0xBB; 3000]
+    );
     assert_eq!(
         std::fs::read(recv_dir.join("notes.txt")).unwrap(),
         b"some notes here"
@@ -56,14 +62,9 @@ async fn e2e_mixed_files_and_dirs() {
     );
     let recv_dir = fixture.output_dir();
 
-    let share = start_share_items(
-        vec![single_file, dir],
-        SendOptions::default(),
-        &None,
-        None,
-    )
-    .await
-    .expect("start_share_items should succeed");
+    let share = start_share_items(vec![single_file, dir], SendOptions::default(), &None, None)
+        .await
+        .expect("start_share_items should succeed");
 
     download(
         share.ticket.clone(),

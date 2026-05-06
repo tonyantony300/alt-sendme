@@ -39,12 +39,10 @@ async fn e2e_single_text_file_roundtrip() {
 
     let received = std::fs::read(recv_dir.join("hello.txt")).expect("received file should exist");
     assert_eq!(
-        received,
-        b"Hello from AltSendme E2E test!",
+        received, b"Hello from AltSendme E2E test!",
         "file content should match exactly"
     );
 
-    // Verify receiver events
     assert!(
         receiver_emitter.has_event("receive-started"),
         "should emit receive-started"
@@ -80,11 +78,7 @@ async fn e2e_binary_file_roundtrip() {
     .expect("download should succeed");
 
     let received = std::fs::read(recv_dir.join("data.bin")).expect("received file should exist");
-    assert_eq!(
-        received.len(),
-        binary_data.len(),
-        "file size should match"
-    );
+    assert_eq!(received.len(), binary_data.len(), "file size should match");
     assert_eq!(received, binary_data, "binary content should match exactly");
 
     drop(share);
