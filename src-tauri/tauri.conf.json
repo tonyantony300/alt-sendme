@@ -10,7 +10,6 @@
 		"beforeBuildCommand": "npm run build"
 	},
 	"app": {
-		"macOSPrivateApi": true,
 		"windows": [
 			{
 				"label": "main",
@@ -22,7 +21,6 @@
 				"maximizable": false,
 				"center": true,
 				"hiddenTitle": true,
-				"transparent": true,
 				"decorations": true,
 				"titleBarStyle": "Overlay",
 				"dragDropEnabled": true,
