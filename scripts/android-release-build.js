@@ -84,15 +84,20 @@ if (!fs.existsSync(expectedAppJavaDir())) {
 run('npx', ['tauri', 'android', 'build', '--apk'], { noCi: true })
 
 // 2. In CI, write keystore now (gen/ exists)
+// keystore.properties keys: keyAlias, keyPassword, storeFile, storePassword
 const keyBase64 = process.env.ANDROID_KEY_BASE64
 const keyAlias = process.env.ANDROID_KEY_ALIAS
 const keyPassword = process.env.ANDROID_KEY_PASSWORD
+const storePassword = process.env.ANDROID_STORE_PASSWORD || keyPassword
 if (keyBase64 && keyAlias && keyPassword) {
 	const keystorePath = path.join(rootDir, '.keystore.jks')
-	fs.writeFileSync(keystorePath, Buffer.from(keyBase64, 'base64'))
+	fs.writeFileSync(keystorePath, Buffer.from(keyBase64, 'base64'), {
+		mode: 0o600,
+	})
 	fs.writeFileSync(
 		path.join(genAndroid, 'keystore.properties'),
-		`keyAlias=${keyAlias}\npassword=${keyPassword}\nstoreFile=${path.resolve(keystorePath)}\n`
+		`keyAlias=${keyAlias}\nkeyPassword=${keyPassword}\nstoreFile=${path.resolve(keystorePath)}\nstorePassword=${storePassword}\n`,
+		{ mode: 0o600 }
 	)
 }
 
@@ -119,9 +124,10 @@ if (fs.existsSync(keystorePropsPath)) {
 	)
 	const storeFile = props.storeFile || props.store
 	const alias = props.keyAlias || props.alias
-	const password = props.password
+	const ksPassword = props.storePassword || props.password
+	const keyPass = props.keyPassword || props.password
 
-	if (storeFile && alias && password) {
+	if (storeFile && alias && ksPassword && keyPass) {
 		const androidHome =
 			process.env.ANDROID_HOME ||
 			process.env.ANDROID_SDK_ROOT ||
@@ -147,6 +153,8 @@ if (fs.existsSync(keystorePropsPath)) {
 			process.exit(1)
 		}
 
+		const ksPassEnvVar = 'ALTSENDME_APKSIGNER_KS_PASS'
+		const keyPassEnvVar = 'ALTSENDME_APKSIGNER_KEY_PASS'
 		const r = spawnSync(
 			apksigner,
 			[
@@ -156,12 +164,22 @@ if (fs.existsSync(keystorePropsPath)) {
 				'--ks-key-alias',
 				alias,
 				'--ks-pass',
-				`pass:${password}`,
+				`pass:env:${ksPassEnvVar}`,
+				'--key-pass',
+				`pass:env:${keyPassEnvVar}`,
 				'--out',
 				signedApk,
 				unsignedApk,
 			],
-			{ stdio: 'inherit', cwd: rootDir }
+			{
+				stdio: 'inherit',
+				cwd: rootDir,
+				env: {
+					...process.env,
+					[ksPassEnvVar]: ksPassword,
+					[keyPassEnvVar]: keyPass,
+				},
+			}
 		)
 		if (r.status !== 0) {
 			process.exit(r.status ?? 1)

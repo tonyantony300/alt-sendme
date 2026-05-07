@@ -30,6 +30,7 @@ tmp2/
 
 # Application specific
 .sendme-*
+.keystore.jks
 
 # IDE and editor files
 .vscode/

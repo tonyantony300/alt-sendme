@@ -8,7 +8,7 @@ index adf6718..46a71b3 100644
  
  plugins {
      id("com.android.application")
-@@ -24,6 +25,19 @@ android {
+@@ -24,6 +25,28 @@ android {
          versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
          versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
      }
@@ -19,16 +19,25 @@ index adf6718..46a71b3 100644
 +            if (keystorePropertiesFile.exists()) {
 +                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 +            }
-+            keyAlias = keystoreProperties["keyAlias"] as String
-+            keyPassword = keystoreProperties["password"] as String
-+            storeFile = file(keystoreProperties["storeFile"] as String)
-+            storePassword = keystoreProperties["password"] as String
++
++            fun requiredProp(name: String): String {
++                return keystoreProperties.getProperty(name)
++                    ?: throw GradleException(
++                        "Missing '$name' in ${keystorePropertiesFile.absolutePath}. " +
++                            "Expected keys: keyAlias, keyPassword, storeFile, storePassword"
++                    )
++            }
++
++            keyAlias = requiredProp("keyAlias")
++            keyPassword = requiredProp("keyPassword")
++            storeFile = file(requiredProp("storeFile"))
++            storePassword = requiredProp("storePassword")
 +        }
 +    }
      buildTypes {
          getByName("debug") {
              manifestPlaceholders["usesCleartextTraffic"] = "true"
-@@ -38,6 +52,7 @@ android {
+@@ -38,6 +60,7 @@ android {
              }
          }
          getByName("release") {
