@@ -8,12 +8,13 @@ use sendme::{
 #[tokio::test]
 async fn e2e_metadata_preview() {
     let fixture = TestFixture::new();
-    let source = fixture.create_file("preview_test.txt", b"preview content here");
+    let content = b"preview content here";
+    let source = fixture.create_file("preview_test.txt", content);
 
     let metadata = FileMetadata {
         file_name: "preview_test.txt".into(),
         item_count: 1,
-        size: 20,
+        size: content.len() as u64,
         thumbnail: Some("data:image/png;base64,dGVzdA==".into()),
         mime_type: Some("text/plain".into()),
         items: None,
@@ -28,7 +29,7 @@ async fn e2e_metadata_preview() {
         .expect("fetch_metadata should succeed");
 
     assert_eq!(fetched.file_name, "preview_test.txt");
-    assert_eq!(fetched.size, 20);
+    assert_eq!(fetched.size, content.len() as u64);
     assert_eq!(fetched.mime_type, Some("text/plain".into()));
     assert_eq!(
         fetched.thumbnail,
@@ -42,13 +43,15 @@ async fn e2e_metadata_preview() {
 #[tokio::test]
 async fn e2e_metadata_multi_item() {
     let fixture = TestFixture::new();
-    let file_a = fixture.create_file("a.txt", b"aaa");
-    let file_b = fixture.create_file("b.txt", b"bbb");
+    let content_a = b"aaa";
+    let content_b = b"bbb";
+    let file_a = fixture.create_file("a.txt", content_a);
+    let file_b = fixture.create_file("b.txt", content_b);
 
     let metadata = FileMetadata {
         file_name: "2 items".into(),
         item_count: 2,
-        size: 6,
+        size: (content_a.len() + content_b.len()) as u64,
         thumbnail: None,
         mime_type: None,
         items: None,
@@ -69,7 +72,7 @@ async fn e2e_metadata_multi_item() {
 
     assert_eq!(fetched.file_name, "2 items");
     assert_eq!(fetched.item_count, 2);
-    assert_eq!(fetched.size, 6);
+    assert_eq!(fetched.size, (content_a.len() + content_b.len()) as u64);
 
     drop(share);
 }

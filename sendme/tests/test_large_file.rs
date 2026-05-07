@@ -80,7 +80,7 @@ async fn e2e_progress_events_emitted() {
         assert_eq!(
             parts.len(),
             3,
-            "progress payload should have 3 colon-separated parts, got: {}",
+            "progress payload must be '<bytes_transferred>:<total_bytes>:<speed>', got: {}",
             payload
         );
     }

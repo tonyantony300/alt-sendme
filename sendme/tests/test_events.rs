@@ -88,13 +88,16 @@ async fn e2e_sender_events_on_transfer() {
     .await
     .expect("download should succeed");
 
-    tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
-
-    assert!(
-        sender_emitter.has_event("transfer-completed"),
-        "sender should emit transfer-completed. Events: {:?}",
-        sender_emitter.event_names(),
-    );
+    tokio::time::timeout(tokio::time::Duration::from_secs(5), async {
+        loop {
+            if sender_emitter.has_event("transfer-completed") {
+                break;
+            }
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .expect("timed out waiting for transfer-completed event");
 
     drop(share);
 }
