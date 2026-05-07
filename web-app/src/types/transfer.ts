@@ -8,6 +8,7 @@ export interface TransferMetadata {
 	wasStopped?: boolean
 	pathType?: 'file' | 'directory' | null
 	thumbnailUrl?: string
+	itemCount?: number
 }
 
 export interface TransferProgress {
@@ -15,10 +16,23 @@ export interface TransferProgress {
 	totalBytes: number
 	speedBps: number
 	percentage: number
+	scope?: 'total' | 'file'
+	currentFileName?: string
+	fileIndex?: number
+	totalFiles?: number
 	etaSeconds?: number
 }
 
 export interface TicketPreviewMetadata {
+	fileName: string
+	itemCount: number
+	size: number
+	thumbnail?: string
+	mimeType?: string
+	items?: TicketPreviewItem[]
+}
+
+export interface TicketPreviewItem {
 	fileName: string
 	size: number
 	thumbnail?: string

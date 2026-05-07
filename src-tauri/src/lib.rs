@@ -11,9 +11,11 @@ mod version;
 pub use version::get_app_version;
 
 use commands::{
-    check_launch_intent, check_path_type, fetch_ticket_metadata, get_file_size, get_sharing_status,
-    get_transport_status, receive_file, start_sharing, stop_sharing, toggle_context_menu,
+    check_launch_intent, check_path_type, fetch_ticket_metadata, focus_main_window, get_file_size,
+    get_paths_mime_types, get_sharing_status, get_transport_status, receive_file, send_items,
+    start_sharing, stop_sharing, toggle_context_menu,
 };
+
 use state::AppState;
 use std::fs;
 use std::sync::Arc;
@@ -82,12 +84,15 @@ pub fn run() {
         .manage(Arc::new(tokio::sync::Mutex::new(app_state_initial())))
         .invoke_handler(tauri::generate_handler![
             start_sharing,
+            send_items,
             stop_sharing,
             receive_file,
             get_sharing_status,
             check_path_type,
+            get_paths_mime_types,
             get_transport_status,
             get_file_size,
+            focus_main_window,
             check_launch_intent,
             fetch_ticket_metadata,
             toggle_context_menu,

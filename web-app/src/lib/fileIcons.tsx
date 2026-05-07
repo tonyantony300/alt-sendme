@@ -10,15 +10,23 @@ import {
 	XlsxIcon,
 	ZipIcon,
 } from '@/components/illustration'
+import { VideoIcon } from 'lucide-react'
 import type { ReactElement } from 'react'
 
 const BASE_ICON_CLASS = 'scale-60 origin-center'
+const VIDEO_ICON_SIZE = 64
 
 export function getPreviewFileIcon(
 	mimeType?: string,
 	fileName?: string
 ): ReactElement {
 	const ext = fileName?.split('.').pop()?.toLowerCase() || ''
+	if (
+		mimeType === 'application/x-iroh-collection' ||
+		mimeType === 'inode/directory'
+	) {
+		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
+	}
 	if (
 		mimeType?.includes('word') ||
 		mimeType?.includes('document') ||
@@ -60,13 +68,29 @@ export function getPreviewFileIcon(
 	) {
 		return <ZipIcon size="md" className={BASE_ICON_CLASS} />
 	}
-	if (mimeType === 'inode/directory') {
-		return <FolderIcon size="md" className={BASE_ICON_CLASS} />
-	}
-
 	// When image thumbnail fails to load, fallback to generic image icon.
 	if (mimeType?.startsWith('image/')) {
 		return <ImageIcon size="md" className={`${BASE_ICON_CLASS} mt-1`} />
+	}
+
+	if (
+		mimeType?.startsWith('video/') ||
+		[
+			'mp4',
+			'mov',
+			'avi',
+			'mkv',
+			'webm',
+			'm4v',
+			'wmv',
+			'flv',
+			'mpeg',
+			'mpg',
+			'3gp',
+			'ogv',
+		].includes(ext)
+	) {
+		return <VideoIcon size={VIDEO_ICON_SIZE} className={BASE_ICON_CLASS} />
 	}
 
 	return <DefaultFileIcon size="md" className={BASE_ICON_CLASS} />

@@ -72,6 +72,11 @@ The easiest way to get started is by downloading one of the following versions f
     <td><b>Linux </b></td>
     <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.5/AltSendme_0.3.5_amd64.deb'>AltSendme.deb</a></td>
   </tr>
+  <tr>
+    <td><b>Android</b></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.6-beta.1/AltSendme-v0.3.6-beta-universal.apk'>AltSendme-beta.apk</a></td>
+  </tr>
+
 </table>
 
 **Windows (Scoop)**  
@@ -300,7 +305,7 @@ Thank you for checking out this project! If you find it useful, consider giving 
 [badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
 [badge-version]: https://img.shields.io/badge/version-0.3.5-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
-[badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20-green
+[badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
 
 
