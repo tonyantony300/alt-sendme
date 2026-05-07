@@ -118,4 +118,12 @@ impl TestFixture {
         std::fs::create_dir_all(&out).expect("failed to create output dir");
         out
     }
+
+    /// Returns a fresh named output directory for receiving files.
+    /// Use this when a single test needs multiple independent receive directories.
+    pub fn output_dir_named(&self, name: &str) -> PathBuf {
+        let out = self.dir.path().join(name);
+        std::fs::create_dir_all(&out).expect("failed to create output dir");
+        out
+    }
 }
