@@ -11,7 +11,7 @@ description = "AltSendme - Frictionless peer-to-peer file transfer desktop appli
 readme = "README.md"
 
 # Sadly this also needs to be updated in .github/workflows/ci.yml
-rust-version = "1.81"
+rust-version = "1.89"
 
 
 [lib]

@@ -1,0 +1,15 @@
+AltSendme is a free and open-source file transfer app that uses peer-to-peer networking to send files directly between devices—no cloud storage, no accounts, no personal data required.
+
+Features:
+• Send anywhere — Works on local networks or across the internet
+• Peer-to-peer direct transfer — Files go straight between devices
+• End-to-end encryption — QUIC + TLS 1.3, always on
+• No accounts or sign-ups — Transfer without revealing personal info
+• Transfer anything — Files or folders, any size, any format; verified with BLAKE3
+• Resumable transfers — Interrupted downloads resume automatically
+• Fast & reliable — Built on Iroh networking
+• NAT traversal — Works across different networks via QUIC hole punching
+• CLI integration — Works with the Sendme CLI
+• Free & open source — AGPL-3.0; no upload costs or size limits
+
+The Android build has no analytics. For privacy details see the project’s PRIVACY.md.

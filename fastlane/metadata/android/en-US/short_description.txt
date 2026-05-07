@@ -1,0 +1,1 @@
+P2P file transfer with end-to-end encryption. No cloud, no accounts.
