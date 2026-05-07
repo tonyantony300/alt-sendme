@@ -34,6 +34,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@1.89.0
         with:
+          components: rustfmt
           targets: "${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}"
 
       - name: install dependencies (ubuntu only)
@@ -236,6 +237,7 @@ jobs:
       - name: Set Rust 1.89 and Android targets
         uses: dtolnay/rust-toolchain@1.89.0
         with:
+          components: rustfmt
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
       - name: Rust cache
