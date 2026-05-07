@@ -33,6 +33,13 @@ async fn e2e_filename_conflict_resolved() {
         .expect("renamed file should exist");
     assert_eq!(renamed, "new version of report");
 
+    let original = std::fs::read_to_string(recv_dir.join("report.txt"))
+        .expect("original file should still exist");
+    assert_eq!(
+        original, "old version of report",
+        "original file must NOT be overwritten during conflict resolution"
+    );
+
     assert!(
         receiver_emitter.has_event("receive-conflicts"),
         "should emit receive-conflicts event"

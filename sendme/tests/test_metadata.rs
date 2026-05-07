@@ -73,6 +73,8 @@ async fn e2e_metadata_multi_item() {
     assert_eq!(fetched.file_name, "2 items");
     assert_eq!(fetched.item_count, 2);
     assert_eq!(fetched.size, (content_a.len() + content_b.len()) as u64);
+    assert_eq!(fetched.thumbnail, None, "multi-item share should have no thumbnail");
+    assert_eq!(fetched.mime_type, None, "multi-item share should have no mime_type");
 
     drop(share);
 }
