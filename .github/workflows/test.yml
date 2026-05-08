@@ -1,0 +1,25 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - dev
+      - release
+
+jobs:
+  rust-e2e:
+    name: Rust E2E Transfer Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './sendme -> target'
+      - name: Run sendme E2E tests
+        run: cargo test --manifest-path sendme/Cargo.toml -- --test-threads=1
+        timeout-minutes: 10
