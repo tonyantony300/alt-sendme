@@ -44,6 +44,10 @@
 		"multipleFilesSelected": "{{name}} ... and {{count}} more",
 		"browseFile": "Browse File",
 		"browseFolder": "Browse Folder",
+		"addMoreFiles": "Add more files",
+		"addMoreFolders": "Add more folders",
+		"multipleItemsSelected": "{{firstName}} and {{count}} more",
+		"removeFromSelection": "Remove from selection",
 		"copyToClipboard": "Copy to clipboard",
 		"description": "Description (optional)",
 		"broadcastMode": {
