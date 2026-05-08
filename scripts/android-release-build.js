@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
  * Builds a release APK for Android (F-Droid / signed release).
- * 1. Run "tauri android build --apk" to populate gen/ and produce an unsigned APK.
+ * 1. Ensure gen/android exists and identifier Java package path is present.
  * 2. In CI (ANDROID_KEY_BASE64 set), write keystore to gen/android/keystore.properties.
  * 3. Apply scripts/patches/*.patch to app/build.gradle.kts (F-Droid + optional signing).
- * 4. If keystore is available, sign the unsigned APK with apksigner (no second Gradle run —
+ * 4. Run "tauri android build --apk" once, after patching, to produce an unsigned APK.
+ * 5. If keystore is available, sign the unsigned APK with apksigner (no second Gradle run —
  *    gradlew assembleRelease would trigger Tauri CLI WebSocket and fail when run standalone).
  *
  * Output (signed): app-universal-release.apk
@@ -80,10 +81,7 @@ if (!fs.existsSync(expectedAppJavaDir())) {
 	process.exit(1)
 }
 
-// 1. Populate gen/ and build once (unsigned)
-run('npx', ['tauri', 'android', 'build', '--apk'], { noCi: true })
-
-// 2. In CI, write keystore now (gen/ exists)
+// 1. In CI, write keystore now (gen/ exists after init)
 // keystore.properties keys: keyAlias, keyPassword, storeFile, storePassword
 const keyBase64 = process.env.ANDROID_KEY_BASE64
 const keyAlias = process.env.ANDROID_KEY_ALIAS
@@ -101,10 +99,13 @@ if (keyBase64 && keyAlias && keyPassword) {
 	)
 }
 
-// 3. Apply Gradle patches (git apply; see scripts/apply-android-release-gradle-patches.js)
+// 2. Apply Gradle patches before building so they affect the current APK
 run('node', [path.join(__dirname, 'apply-android-release-gradle-patches.js')])
 
-// 4. Sign the unsigned APK with apksigner (do not run gradlew again — it would trigger Tauri CLI WebSocket)
+// 3. Build once the generated Gradle files are in their final state
+run('npx', ['tauri', 'android', 'build', '--apk'], { noCi: true })
+
+// 4. Sign the unsigned APK with apksigner
 const keystorePropsPath = path.join(genAndroid, 'keystore.properties')
 if (!fs.existsSync(unsignedApk)) {
 	console.error('android-release-build: unsigned APK not found:', unsignedApk)
