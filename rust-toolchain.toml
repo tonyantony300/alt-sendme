@@ -3,3 +3,4 @@
 # 1.89+ required by current lockfile (iroh 0.98.x, icu 2.2, hickory beta, etc.); bump when Cargo reports higher MSRV.
 [toolchain]
 channel = "1.89"
+components = ["rustfmt"]
