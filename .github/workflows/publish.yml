@@ -7,6 +7,9 @@ on:
 
 jobs:
   publish-tauri:
+    # Emergency platform gate: skip macOS publishing for known-bad tags only.
+    # This keeps other platforms releasable while macOS users remain on the previous stable update.
+    if: ${{ matrix.platform != 'macos-latest' || !contains(fromJson('["v0.3.6"]'), github.ref_name) }}
     permissions:
       contents: write
     strategy:
