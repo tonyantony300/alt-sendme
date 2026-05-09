@@ -7,9 +7,6 @@ on:
 
 jobs:
   publish-tauri:
-    # Emergency platform gate: skip macOS publishing for known-bad tags only.
-    # This keeps other platforms releasable while macOS users remain on the previous stable update.
-    if: ${{ matrix.platform != 'macos-latest' || !contains(fromJson('["v0.3.6"]'), github.ref_name) }}
     permissions:
       contents: write
     strategy:
@@ -113,7 +110,7 @@ jobs:
           echo "Certificate imported successfully"
 
       - name: Validate notarization requirements (macOS only)
-        if: matrix.platform == 'macos-latest'
+        if: ${{ matrix.platform == 'macos-latest' && !contains(fromJson('["v0.3.6"]'), github.ref_name) }}
         shell: bash
         run: |
           if [ -z "${{ secrets.APPLE_ID }}" ] || [ -z "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" ] || [ -z "${{ secrets.APPLE_TEAM_ID }}" ]; then
@@ -165,6 +162,9 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - uses: tauri-apps/tauri-action@v0.6
+        # Emergency platform gate: skip macOS publishing for known-bad tags only.
+        # This keeps other platforms releasable while macOS users remain on the previous stable update.
+        if: ${{ matrix.platform != 'macos-latest' || !contains(fromJson('["v0.3.6"]'), github.ref_name) }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_SIGNING_IDENTITY: "Developer ID Application: Tony Antony (9H7RVQAP36)"
