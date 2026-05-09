@@ -1,0 +1,39 @@
+import type { FC } from 'react'
+import React, { useLayoutEffect } from 'react'
+import { cn } from '../../lib/utils'
+import { useSidebar } from '../ui/sidebar'
+import { Button } from '../ui/button'
+import { LazyIcon } from '../icons'
+
+type MobileSettingSidebarProps = React.ComponentPropsWithoutRef<'div'>
+const GAP = 32
+
+const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
+	className,
+	...rest
+}) => {
+	const { isMobile, toggleSidebar } = useSidebar()
+
+	return (
+		<>
+			<header
+				className={cn(
+					isMobile ? 'flex' : 'hidden',
+					'gap-2 py-2.5 border-b fixed border-border inset-x-0 top-0 items-center bg-muted backdrop-blur-md z-10 px-3',
+					className
+				)}
+				{...rest}
+			>
+				<Button size="icon-sm" variant="ghost" onClick={toggleSidebar}>
+					<LazyIcon name="Sidebar" weight={'fill'} />
+				</Button>
+				<div className="text-lg font-medium">{rest.children}</div>
+			</header>
+			<div className="h-8" data-slot="header-slot">
+				&nbsp;
+			</div>
+		</>
+	)
+}
+
+export default MobileSettingSidebar
