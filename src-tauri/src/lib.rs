@@ -20,7 +20,9 @@ use state::AppState;
 use std::fs;
 use std::sync::Arc;
 
+#[cfg(desktop)]
 use tauri::Emitter as _;
+#[cfg(desktop)]
 use tauri::Manager as _;
 
 /// Clean up any orphaned .sendme-* directories from previous runs

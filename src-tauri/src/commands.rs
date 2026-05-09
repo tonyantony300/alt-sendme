@@ -46,6 +46,8 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
 
 #[tauri::command]
 pub async fn focus_main_window(app_handle: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(desktop)]
+    {
     if let Some(window) = app_handle.get_webview_window("main") {
         window.show().map_err(|e| e.to_string())?;
         if window.is_minimized().map_err(|e| e.to_string())? {
@@ -65,6 +67,13 @@ pub async fn focus_main_window(app_handle: tauri::AppHandle) -> Result<(), Strin
     }
 
     Err("No window available to focus".to_string())
+    }
+
+    #[cfg(not(desktop))]
+    {
+        let _ = app_handle;
+        Ok(())
+    }
 }
 
 #[tauri::command]
