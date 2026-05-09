@@ -37,28 +37,30 @@ export default function PdfIcon({ size, className }: PdfIconProps) {
 
 			{/* Document Icon Body */}
 			<div className={cn(pdfVariants({ size }))}>
-				<div className="space-y-1.5">
-					<div className="flex gap-2">
-						<div className="bg-foreground/10 h-0.5 w-full rounded-full" />
+				<div className="relative h-16">
+					<div className="space-y-1.5">
+						<div className="flex gap-2">
+							<div className="bg-foreground/10 h-0.5 w-full rounded-full" />
+						</div>
+						<div className="flex gap-1">
+							<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
+							<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
+							<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
+						</div>
+						<div className="flex gap-1">
+							<div className="bg-foreground/10 h-0.5 w-1/2 rounded-full" />
+							<div className="bg-foreground/10 h-0.5 w-1/2 rounded-full" />
+						</div>
+						<div className="flex gap-1">
+							<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
+							<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
+							<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
+						</div>
 					</div>
-					<div className="flex gap-1">
-						<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
-						<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
-						<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
-					</div>
-					<div className="flex gap-1">
-						<div className="bg-foreground/10 h-0.5 w-1/2 rounded-full" />
-						<div className="bg-foreground/10 h-0.5 w-1/2 rounded-full" />
-					</div>
-					<div className="flex gap-1">
-						<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
-						<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
-						<div className="bg-foreground/10 h-0.5 w-1/3 rounded-full" />
-					</div>
-				</div>
 
-				<div className="flex gap-1 pt-1">
-					<div className="bg-foreground h-0.5 w-4 rounded-full" />
+					<div className="absolute bottom-0 flex gap-1">
+						<div className="bg-foreground h-0.5 w-4 rounded-full" />
+					</div>
 				</div>
 			</div>
 		</div>

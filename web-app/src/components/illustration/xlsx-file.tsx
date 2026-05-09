@@ -13,8 +13,8 @@ const xlsxVariants = cva(
 		variants: {
 			size: {
 				sm: 'w-12 p-2 space-y-2',
-				md: 'w-16 p-2 space-y-2',
-				lg: 'w-24 p-3 space-y-3',
+				md: 'w-16 p-3 space-y-3',
+				lg: 'w-24 p-5 space-y-4',
 			},
 		},
 		defaultVariants: {
@@ -37,32 +37,34 @@ export default function XlsxIcon({ size, className }: XlsxIconProps) {
 
 			{/* Spreadsheet Icon Body */}
 			<div className={cn(xlsxVariants({ size }))}>
-				<div className="border-foreground/10 corner-tr-bevel grid grid-cols-3 gap-px overflow-hidden rounded-tr">
-					<div className="bg-foreground/5 col-span-3 grid grid-cols-3 gap-px">
-						<div className="bg-foreground/10 h-2" />
-						<div className="bg-foreground/10 h-2" />
-						<div className="bg-foreground/10 h-2" />
+				<div className="relative h-16">
+					<div className="border-foreground/10 corner-tr-bevel grid grid-cols-3 gap-px overflow-hidden rounded-tr">
+						<div className="bg-foreground/5 col-span-3 grid grid-cols-3 gap-px">
+							<div className="bg-foreground/10 h-2" />
+							<div className="bg-foreground/10 h-2" />
+							<div className="bg-foreground/10 h-2" />
+						</div>
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
+						<div className="bg-foreground/5 h-2" />
 					</div>
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
-					<div className="bg-foreground/5 h-2" />
 				</div>
 			</div>
 		</div>

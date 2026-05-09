@@ -6,6 +6,7 @@ import JsonIcon from './json-file'
 import PptIcon from './ppt-file'
 import ZipIcon from './zip-file'
 import ImageIcon from './image-file'
+import VideoIcon from './video-file'
 import DefaultFileIcon from './default-file'
 import PdfIcon from './pdf-file'
 import FolderIcon from './folder'
@@ -18,6 +19,7 @@ export {
 	PptIcon,
 	ZipIcon,
 	ImageIcon,
+	VideoIcon,
 	DefaultFileIcon,
 	PdfIcon,
 	FolderIcon,
@@ -62,6 +64,20 @@ const ICON_MAP: Record<string, FileIconComponent> = {
 	gif: ImageIcon,
 	webp: ImageIcon,
 	svg: ImageIcon,
+
+	// Video files
+	mp4: VideoIcon,
+	mov: VideoIcon,
+	avi: VideoIcon,
+	mkv: VideoIcon,
+	webm: VideoIcon,
+	m4v: VideoIcon,
+	wmv: VideoIcon,
+	flv: VideoIcon,
+	mpeg: VideoIcon,
+	mpg: VideoIcon,
+	'3gp': VideoIcon,
+	ogv: VideoIcon,
 
 	// PDF files
 	pdf: PdfIcon,
