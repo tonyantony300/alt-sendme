@@ -3,7 +3,7 @@
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
+import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -53,21 +53,25 @@ interface ButtonProps extends useRender.ComponentProps<'button'> {
 	size?: VariantProps<typeof buttonVariants>['size']
 }
 
-function Button({ className, variant, size, render, ...props }: ButtonProps) {
-	const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] =
-		render ? undefined : 'button'
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+	({ className, variant, size, render, ...props }, ref) => {
+		const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] =
+			render ? undefined : 'button'
 
-	const defaultProps = {
-		className: cn(buttonVariants({ className, size, variant })),
-		'data-slot': 'button',
-		type: typeValue,
+		const defaultProps = {
+			className: cn(buttonVariants({ className, size, variant })),
+			'data-slot': 'button',
+			ref,
+			type: typeValue,
+		}
+
+		return useRender({
+			defaultTagName: 'button',
+			props: mergeProps<'button'>(defaultProps, props),
+			render,
+		})
 	}
-
-	return useRender({
-		defaultTagName: 'button',
-		props: mergeProps<'button'>(defaultProps, props),
-		render,
-	})
-}
+)
+Button.displayName = 'Button'
 
 export { Button, buttonVariants }
