@@ -12,9 +12,9 @@ const jsonVariants = cva(
 	{
 		variants: {
 			size: {
-				sm: 'w-12 p-2 space-y-1.5',
-				md: 'w-16 p-2.5 space-y-1.5',
-				lg: 'w-24 p-4 space-y-2',
+				sm: 'w-12 p-2 space-y-2',
+				md: 'w-16 p-3 space-y-3',
+				lg: 'w-24 p-5 space-y-4',
 			},
 		},
 		defaultVariants: {
@@ -37,32 +37,38 @@ export default function JsonIcon({ size, className }: JsonIconProps) {
 
 			{/* JSON Icon Body */}
 			<div className={cn(jsonVariants({ size }))}>
-				<div className="space-y-1">
-					<div className="flex items-center gap-1">
-						<div className="text-foreground/40 font-mono text-[6px]">{'{'}</div>
-					</div>
-					<div className="flex items-center gap-1 pl-1.5">
-						<div className="h-[3px] w-3 rounded-full bg-sky-400/60" />
-						<div className="text-foreground/30 text-[5px]">:</div>
-						<div className="h-[3px] w-4 rounded-full bg-emerald-400/60" />
-					</div>
-					<div className="flex items-center gap-1 pl-1.5">
-						<div className="h-[3px] w-4 rounded-full bg-sky-400/60" />
-						<div className="text-foreground/30 text-[5px]">:</div>
-						<div className="h-[3px] w-2 rounded-full bg-amber-400/60" />
-					</div>
-					<div className="flex items-center gap-1 pl-1.5">
-						<div className="h-[3px] w-2.5 rounded-full bg-sky-400/60" />
-						<div className="text-foreground/30 text-[5px]">:</div>
-						<div className="h-[3px] w-5 rounded-full bg-violet-400/60" />
-					</div>
-					<div className="flex items-center gap-1 pl-1.5">
-						<div className="h-[3px] w-3.5 rounded-full bg-sky-400/60" />
-						<div className="text-foreground/30 text-[5px]">:</div>
-						<div className="h-[3px] w-3 rounded-full bg-rose-400/60" />
-					</div>
-					<div className="flex items-center gap-1">
-						<div className="text-foreground/40 font-mono text-[6px]">{'}'}</div>
+				<div className="relative h-16 flex items-center">
+					<div className="space-y-1">
+						<div className="flex items-center gap-1">
+							<div className="text-foreground/40 font-mono text-[6px]">
+								{'{'}
+							</div>
+						</div>
+						<div className="flex items-center gap-1 pl-1.5">
+							<div className="h-[3px] w-3 rounded-full bg-sky-400/60" />
+							<div className="text-foreground/30 text-[5px]">:</div>
+							<div className="h-[3px] w-4 rounded-full bg-emerald-400/60" />
+						</div>
+						<div className="flex items-center gap-1 pl-1.5">
+							<div className="h-[3px] w-4 rounded-full bg-sky-400/60" />
+							<div className="text-foreground/30 text-[5px]">:</div>
+							<div className="h-[3px] w-2 rounded-full bg-amber-400/60" />
+						</div>
+						<div className="flex items-center gap-1 pl-1.5">
+							<div className="h-[3px] w-2.5 rounded-full bg-sky-400/60" />
+							<div className="text-foreground/30 text-[5px]">:</div>
+							<div className="h-[3px] w-5 rounded-full bg-violet-400/60" />
+						</div>
+						<div className="flex items-center gap-1 pl-1.5">
+							<div className="h-[3px] w-3.5 rounded-full bg-sky-400/60" />
+							<div className="text-foreground/30 text-[5px]">:</div>
+							<div className="h-[3px] w-3 rounded-full bg-rose-400/60" />
+						</div>
+						<div className="flex items-center gap-1">
+							<div className="text-foreground/40 font-mono text-[6px]">
+								{'}'}
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

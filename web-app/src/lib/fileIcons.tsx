@@ -7,14 +7,13 @@ import {
 	PdfIcon,
 	PptIcon,
 	TxtIcon,
+	VideoIcon,
 	XlsxIcon,
 	ZipIcon,
 } from '@/components/illustration'
-import { VideoIcon } from 'lucide-react'
 import type { ReactElement } from 'react'
 
 const BASE_ICON_CLASS = 'scale-60 origin-center'
-const VIDEO_ICON_SIZE = 64
 
 export function getPreviewFileIcon(
 	mimeType?: string,
@@ -90,7 +89,7 @@ export function getPreviewFileIcon(
 			'ogv',
 		].includes(ext)
 	) {
-		return <VideoIcon size={VIDEO_ICON_SIZE} className={BASE_ICON_CLASS} />
+		return <VideoIcon size="md" className={BASE_ICON_CLASS} />
 	}
 
 	return <DefaultFileIcon size="md" className={BASE_ICON_CLASS} />

@@ -20,31 +20,11 @@ import {
 	InfoIcon,
 	CaretRightIcon,
 	TranslateIcon,
+	SidebarIcon,
+	XIcon,
 } from '@phosphor-icons/react'
 
-export type IconName =
-	| 'ArrowLeft'
-	| 'ArrowRight'
-	| 'Palette'
-	| 'BellRinging'
-	| 'Network'
-	| 'House'
-	| 'CheckCircle'
-	| 'XCircle'
-	| 'User'
-	| 'Users'
-	| 'MagnifyingGlass'
-	| 'GearSix'
-	| 'CaretDown'
-	| 'CaretUp'
-	| 'CaretLeft'
-	| 'Hexagon'
-	| 'FunnelSimpleX'
-	| 'Info'
-	| 'CaretRight'
-	| 'Translate'
-
-const ICONS: Record<IconName, React.ComponentType<IconProps>> = {
+const ICONS = {
 	ArrowLeft: ArrowLeftIcon,
 	ArrowRight: ArrowRightIcon,
 	Palette: PaletteIcon,
@@ -65,7 +45,11 @@ const ICONS: Record<IconName, React.ComponentType<IconProps>> = {
 	Info: InfoIcon,
 	CaretRight: CaretRightIcon,
 	Translate: TranslateIcon,
-}
+	Sidebar: SidebarIcon,
+	X: XIcon,
+} as const satisfies Record<string, React.ComponentType<IconProps>>
+
+export type IconName = keyof typeof ICONS
 
 export function LazyIcon(props: IconProps & { name: IconName }) {
 	const Icon = ICONS[props.name]

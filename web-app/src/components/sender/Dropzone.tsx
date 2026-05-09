@@ -393,7 +393,7 @@ export function Dropzone({
 							>
 								<motion.div
 									layout
-									className="inline-flex min-w-full justify-center gap-3 pr-3"
+									className="inline-flex min-w-full justify-center gap-3 pr-3 pb-2.5"
 								>
 									<AnimatePresence initial={false}>
 										{selectedPaths.map((path) => {
@@ -447,7 +447,7 @@ export function Dropzone({
 														</div>
 													</div>
 
-													<p className="mt-2 truncate text-base text-foreground">
+													<p className="mt-1 truncate text-sm text-muted-foreground">
 														{fileName}
 													</p>
 												</motion.div>

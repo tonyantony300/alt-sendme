@@ -12,9 +12,9 @@ const zipVariants = cva(
 	{
 		variants: {
 			size: {
-				sm: 'w-12 p-2',
-				md: 'w-16 p-2.5',
-				lg: 'w-24 p-4',
+				sm: 'w-12 p-2 space-y-2',
+				md: 'w-16 p-3 space-y-3',
+				lg: 'w-24 p-5 space-y-4',
 			},
 		},
 		defaultVariants: {

@@ -12,9 +12,9 @@ const pptVariants = cva(
 	{
 		variants: {
 			size: {
-				sm: 'w-12 p-2 space-y-3',
-				md: 'w-16 p-2.5 space-y-4',
-				lg: 'w-24 p-4 space-y-6',
+				sm: 'w-12 p-2 space-y-2',
+				md: 'w-16 p-3 space-y-3',
+				lg: 'w-24 p-5 space-y-4',
 			},
 		},
 		defaultVariants: {
@@ -37,21 +37,25 @@ export default function PptIcon({ size, className }: PptIconProps) {
 
 			{/* Presentation Icon Body */}
 			<div className={cn(pptVariants({ size }))}>
-				<div className="bg-foreground/5 space-y-1.5 rounded border p-1.5">
-					<div className="bg-foreground/15 mx-auto h-[3px] w-8 rounded-full" />
-					<div className="flex justify-center gap-1">
-						<div className="size-3 rounded-sm bg-orange-400/40" />
-						<div className="size-3 rounded-full bg-sky-400/40" />
+				<div className="relative h-16 flex items-center justify-center">
+					<div className="space-y-2">
+						<div className="bg-foreground/5 space-y-1.5 rounded border p-1.5">
+							<div className="bg-foreground/15 mx-auto h-[3px] w-8 rounded-full" />
+							<div className="flex justify-center gap-1">
+								<div className="size-3 rounded-sm bg-orange-400/40" />
+								<div className="size-3 rounded-full bg-sky-400/40" />
+							</div>
+							<div className="space-y-0.5">
+								<div className="bg-foreground/10 mx-auto h-0.5 w-9 rounded-full" />
+								<div className="bg-foreground/10 mx-auto h-0.5 w-6 rounded-full" />
+							</div>
+						</div>
+						<div className="flex justify-center gap-1">
+							<div className="bg-foreground/20 rounded-0.5 size-1.5" />
+							<div className="bg-foreground/10 rounded-0.5 size-1.5" />
+							<div className="bg-foreground/10 rounded-0.5 size-1.5" />
+						</div>
 					</div>
-					<div className="space-y-0.5">
-						<div className="bg-foreground/10 mx-auto h-0.5 w-9 rounded-full" />
-						<div className="bg-foreground/10 mx-auto h-0.5 w-6 rounded-full" />
-					</div>
-				</div>
-				<div className="flex justify-center gap-1">
-					<div className="bg-foreground/20 rounded-0.5 size-1.5" />
-					<div className="bg-foreground/10 rounded-0.5 size-1.5" />
-					<div className="bg-foreground/10 rounded-0.5 size-1.5" />
 				</div>
 			</div>
 		</div>

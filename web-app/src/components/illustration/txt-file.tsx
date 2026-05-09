@@ -13,8 +13,8 @@ const txtVariants = cva(
 		variants: {
 			size: {
 				sm: 'w-12 p-2 space-y-2',
-				md: 'w-18 px-3 pb-3 space-y-2.5',
-				lg: 'w-28 px-4 pb-4 space-y-3',
+				md: 'w-16 p-3 space-y-3',
+				lg: 'w-24 p-5 space-y-4',
 			},
 		},
 		defaultVariants: {
@@ -37,26 +37,28 @@ export default function TxtIcon({ size, className }: TxtIconProps) {
 
 			{/* Text Icon Body */}
 			<div className={cn(txtVariants({ size }))}>
-				<div className="space-y-[5px]">
-					<div className="decoration-foreground/50 text-xs text-transparent underline decoration-wavy decoration-2">
-						Theqe
+				<div className="relative h-16">
+					<div className="space-y-[5px]">
+						<div className="decoration-foreground/50 text-xs text-transparent underline decoration-wavy decoration-2">
+							Theqe
+						</div>
+						<div className="decoration-foreground/50 h-1 text-xs text-transparent underline decoration-wavy">
+							Irung
+						</div>
+						<div className="bg-foreground/15 h-[0.5px] w-10 -rotate-[0.5deg] rounded-full" />
+						<div className="bg-foreground/15 h-[0.5px] w-8 translate-x-px rotate-[0.3deg] rounded-full" />
+						<div className="decoration-foreground/50 h-1 text-xs text-transparent underline decoration-wavy">
+							Theqe
+						</div>
+						<div className="bg-foreground/15 h-[0.5px] w-10 -rotate-[0.3deg] rounded-full" />
+						<div className="bg-foreground/15 h-[0.5px] w-6 translate-x-px rotate-[0.2deg] rounded-full" />
+						<div className="bg-foreground/15 h-[0.5px] w-9 -rotate-[0.4deg] rounded-full" />
+						<div className="bg-foreground/15 h-[0.5px] w-full translate-x-0.5 rotate-[0.5deg] rounded-full" />
+						<div className="bg-foreground/15 h-[0.5px] w-9 -rotate-[0.4deg] rounded-full" />
+						<div className="bg-foreground/15 h-[0.5px] w-8 translate-x-0.5 rotate-[0.5deg] rounded-full" />
 					</div>
-					<div className="decoration-foreground/50 h-1 text-xs text-transparent underline decoration-wavy">
-						Irung
-					</div>
-					<div className="bg-foreground/15 h-[0.5px] w-10 -rotate-[0.5deg] rounded-full" />
-					<div className="bg-foreground/15 h-[0.5px] w-8 translate-x-px rotate-[0.3deg] rounded-full" />
-					<div className="decoration-foreground/50 h-1 text-xs text-transparent underline decoration-wavy">
-						Theqe
-					</div>
-					<div className="bg-foreground/15 h-[0.5px] w-10 -rotate-[0.3deg] rounded-full" />
-					<div className="bg-foreground/15 h-[0.5px] w-6 translate-x-px rotate-[0.2deg] rounded-full" />
-					<div className="bg-foreground/15 h-[0.5px] w-9 -rotate-[0.4deg] rounded-full" />
-					<div className="bg-foreground/15 h-[0.5px] w-full translate-x-0.5 rotate-[0.5deg] rounded-full" />
-					<div className="bg-foreground/15 h-[0.5px] w-9 -rotate-[0.4deg] rounded-full" />
-					<div className="bg-foreground/15 h-[0.5px] w-8 translate-x-0.5 rotate-[0.5deg] rounded-full" />
+					<div className="bg-foreground/30 absolute bottom-0 h-[0.5px] w-5 -rotate-[0.3deg] rounded-full" />
 				</div>
-				<div className="bg-foreground/30 h-[0.5px] w-5 -rotate-[0.3deg] rounded-full" />
 			</div>
 		</div>
 	)
