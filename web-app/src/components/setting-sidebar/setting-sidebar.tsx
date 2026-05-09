@@ -1,4 +1,10 @@
-import { ArrowLeft } from 'lucide-react'
+import { Link, NavLink } from 'react-router-dom'
+import { handleExternalLinkClick } from '@/lib/openExternalUrl'
+import { useTranslation } from '../../i18n'
+import { cn } from '../../lib/utils'
+import { LICENSE_LINK, PRIVACY_LINK, VERSION_DISPLAY } from '../../lib/version'
+import { LazyIcon } from '../icons'
+import { Badge } from '../ui/badge'
 import {
 	Sidebar,
 	SidebarContent,
@@ -10,13 +16,6 @@ import {
 	SidebarMenuItem,
 } from '../ui/sidebar'
 import { settingSidebarConfig } from './config'
-import { Link, NavLink } from 'react-router-dom'
-import { LazyIcon } from '../icons'
-import { useTranslation } from '../../i18n'
-import { cn } from '../../lib/utils'
-import { LICENSE_LINK, PRIVACY_LINK, VERSION_DISPLAY } from '../../lib/version'
-import { Badge } from '../ui/badge'
-import { handleExternalLinkClick } from '@/lib/openExternalUrl'
 
 function SettingSidebarRoot(props: React.ComponentProps<typeof Sidebar>) {
 	return <Sidebar {...props} />
@@ -34,13 +33,17 @@ function SettingSidebarTitle({
 	...props
 }: React.ComponentProps<'div'> & { prev: string }) {
 	const { t } = useTranslation()
+
 	return (
 		<Link to={prev}>
 			<div
 				{...props}
-				className={cn('group/sheader flex items-center gap-4', className)}
+				className={cn(
+					'group/sheader flex items-center gap-2 px-1.5',
+					className
+				)}
 			>
-				<ArrowLeft size="18" className="" />
+				<LazyIcon name="House" size="18" className="" weight="duotone" />
 				<h3 className="text-lg font-medium">{t('settings.title')}</h3>
 			</div>
 		</Link>

@@ -10,10 +10,7 @@ import { SettingSidebarUpdateAlert } from './setting-sidebar-update-alert'
 
 export default function SettingSidebar() {
 	return (
-		<SettingSidebarRoot
-			className="h-[calc(100svh-2.5rem)] mt-10"
-			variant="floating"
-		>
+		<SettingSidebarRoot className="h-[calc(100svh)]" variant="floating">
 			<SettingSidebarHeader className="border-b">
 				<SettingSidebarTitle prev="/" />
 			</SettingSidebarHeader>
