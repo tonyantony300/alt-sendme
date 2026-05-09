@@ -28,9 +28,11 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 				</Button>
 				<div className="text-lg font-medium">{rest.children}</div>
 			</header>
-			<div className="h-8" data-slot="header-slot">
-				&nbsp;
-			</div>
+			{isMobile && (
+				<div className="h-8" data-slot="header-slot">
+					&nbsp;
+				</div>
+			)}
 		</>
 	)
 }
