@@ -1,12 +1,11 @@
 import type { FC } from 'react'
-import React, { useLayoutEffect } from 'react'
+import type React from 'react'
 import { cn } from '../../lib/utils'
 import { useSidebar } from '../ui/sidebar'
 import { Button } from '../ui/button'
 import { LazyIcon } from '../icons'
 
 type MobileSettingSidebarProps = React.ComponentPropsWithoutRef<'div'>
-const GAP = 32
 
 const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 	className,
