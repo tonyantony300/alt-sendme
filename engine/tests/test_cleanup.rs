@@ -14,7 +14,7 @@ async fn e2e_sender_temp_dir_cleanup() {
         .expect("start_share should succeed");
 
     // Capture the temp directory path created by start_share
-    let temp_dir_path = share.blobs_data_dir.path.clone();
+    let temp_dir_path = share.blobs_data_dir.path().to_path_buf();
 
     // Verify it exists while share is active
     assert!(
