@@ -11,6 +11,24 @@ pub trait EventEmitter: Send + Sync {
 // Type alias for the app handle - we use Arc<dyn EventEmitter> to allow cloning and avoid direct tauri dependency in core
 pub type AppHandle = Option<Arc<dyn EventEmitter>>;
 
+#[derive(Debug)]
+pub struct AutoCleanupDir {
+    pub path: PathBuf,
+}
+
+impl AutoCleanupDir {
+    pub fn new(path: PathBuf) -> Self {
+        Self { path }
+    }
+}
+
+impl Drop for AutoCleanupDir {
+    fn drop(&mut self) {
+        // Synchronous cleanup ensures reliable teardown (e.g. for tests)
+        let _ = std::fs::remove_dir_all(&self.path);
+    }
+}
+
 pub struct SendResult {
     pub ticket: String,
     pub hash: String,
@@ -20,7 +38,7 @@ pub struct SendResult {
     // CRITICAL: These fields must be kept alive for the duration of the share
     pub router: iroh::protocol::Router, // Keeps the server running and protocols active
     pub temp_tag: iroh_blobs::api::TempTag, // Prevents data from being garbage collected
-    pub blobs_data_dir: PathBuf,        // Path for cleanup when share stops
+    pub blobs_data_dir: AutoCleanupDir,        // Path for cleanup when share stops
     pub _progress_handle: n0_future::task::AbortOnDropHandle<anyhow::Result<()>>, // Keeps event channel open
     pub _store: iroh_blobs::store::fs::FsStore, // Keeps the blob storage alive
 }

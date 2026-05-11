@@ -1,6 +1,6 @@
 use crate::core::send::METADATA_ALPN;
 use crate::core::types::{
-    get_or_create_secret, AppHandle, FileMetadata, ReceiveOptions, ReceiveResult,
+    get_or_create_secret, AppHandle, AutoCleanupDir, FileMetadata, ReceiveOptions, ReceiveResult,
 };
 use iroh::endpoint::presets;
 use iroh::{address_lookup::dns::DnsAddressLookup, Endpoint, TransportAddr};
@@ -149,6 +149,7 @@ pub async fn download(
     let dir_name = format!(".sendme-recv-{}", ticket.hash().to_hex());
     let temp_base = std::env::temp_dir();
     let iroh_data_dir = temp_base.join(&dir_name);
+    let _cleanup_guard = AutoCleanupDir::new(iroh_data_dir.clone());
     let db = FsStore::load(&iroh_data_dir).await?;
     let db2 = db.clone();
 
@@ -321,9 +322,6 @@ pub async fn download(
             anyhow::bail!("Operation cancelled");
         }
     };
-
-    tokio::fs::remove_dir_all(&iroh_data_dir).await?;
-
     let message = if conflict_count > 0 {
         format!(
             "Downloaded {} files, {} bytes ({} name conflicts auto-resolved)",
