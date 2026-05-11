@@ -13,19 +13,25 @@ pub type AppHandle = Option<Arc<dyn EventEmitter>>;
 
 #[derive(Debug)]
 pub struct AutoCleanupDir {
-    pub path: PathBuf,
+    path: PathBuf,
 }
 
 impl AutoCleanupDir {
     pub fn new(path: PathBuf) -> Self {
         Self { path }
     }
+
+    pub fn path(&self) -> &std::path::Path {
+        &self.path
+    }
 }
 
 impl Drop for AutoCleanupDir {
     fn drop(&mut self) {
         // Synchronous cleanup ensures reliable teardown (e.g. for tests)
-        let _ = std::fs::remove_dir_all(&self.path);
+        if let Err(e) = std::fs::remove_dir_all(&self.path) {
+            tracing::warn!("Failed to cleanup directory {:?}: {}", self.path, e);
+        }
     }
 }
 
