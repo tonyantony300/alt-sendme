@@ -43,20 +43,25 @@ async fn e2e_receiver_temp_dir_cleanup_on_failure() {
     // But iroh's BlobTicket parsing will fail early if it's completely invalid.
     // Let's create a technically valid ticket but to a non-existent sender.
     // Or simpler, just check the global temp directory before and after.
-    
+
     // Instead of doing global temp directory diffing which could be flaky,
     // let's pass a ticket that will timeout or fail during fetch_metadata.
     // Wait, download uses fetch_metadata? No, download connects.
     // Let's create a real ticket but drop the sender so connection fails.
-    
+
     let source = fixture.create_file("fail.txt", b"will fail");
-    let share = start_share(source, SendOptions::default(), None, None).await.unwrap();
+    let share = start_share(source, SendOptions::default(), None, None)
+        .await
+        .unwrap();
     let ticket = share.ticket.clone();
-    
+
     // Calculate expected receiver temp dir path
     // Let's parse the ticket locally to get the hash
     let parsed_ticket = iroh_blobs::ticket::BlobTicket::from_str(&ticket).unwrap();
-    let expected_dir_name = format!(".sendme-recv-{}", data_encoding::HEXLOWER.encode(parsed_ticket.hash().as_bytes()));
+    let expected_dir_name = format!(
+        ".sendme-recv-{}",
+        data_encoding::HEXLOWER.encode(parsed_ticket.hash().as_bytes())
+    );
     let expected_path = std::env::temp_dir().join(expected_dir_name);
 
     // Drop the sender immediately so the receiver cannot connect
@@ -67,7 +72,10 @@ async fn e2e_receiver_temp_dir_cleanup_on_failure() {
 
     // The download should fail because the sender is gone
     let result = download(ticket, options, None).await;
-    assert!(result.is_err(), "Download should fail since sender was dropped");
+    assert!(
+        result.is_err(),
+        "Download should fail since sender was dropped"
+    );
 
     // The temp directory should have been cleaned up on the error path
     assert!(
