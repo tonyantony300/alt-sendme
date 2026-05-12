@@ -80,7 +80,10 @@ async fn e2e_original_file_preserved() {
 
     let renamed = std::fs::read_to_string(recv_dir.join("keep_me (1).txt"))
         .expect("incoming file should have been saved under a conflict-resolved name");
-    assert_eq!(renamed, "incoming data", "incoming content must be preserved");
+    assert_eq!(
+        renamed, "incoming data",
+        "incoming content must be preserved"
+    );
 
     drop(share);
 }

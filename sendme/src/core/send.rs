@@ -1,6 +1,6 @@
 use crate::core::types::{
-    apply_options, get_or_create_secret, AddrInfoOptions, AppHandle, FileMetadata, SendOptions,
-    SendResult,
+    apply_options, get_or_create_secret, AddrInfoOptions, AppHandle, AutoCleanupDir, FileMetadata,
+    SendOptions, SendResult,
 };
 use anyhow::{ensure, Context};
 use data_encoding::HEXLOWER;
@@ -294,7 +294,7 @@ pub async fn start_share_items(
         entry_type: entry_type.to_string(),
         router,
         temp_tag,
-        blobs_data_dir,
+        blobs_data_dir: AutoCleanupDir::new(blobs_data_dir),
         _progress_handle: AbortOnDropHandle::new(progress_handle),
         _store: store,
     })
