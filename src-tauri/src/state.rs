@@ -20,27 +20,6 @@ pub struct ShareHandle {
     pub send_result: SendResult, // This keeps router and temp_tag alive!
 }
 
-impl Drop for ShareHandle {
-    fn drop(&mut self) {
-        // Clean up the temporary blobs directory when share is stopped
-        // Use blocking cleanup since Drop is synchronous
-        // Spawn a thread to avoid blocking the async runtime
-        let blobs_dir = self.send_result.blobs_data_dir.clone();
-        std::thread::spawn(move || {
-            // Use blocking std::fs instead of tokio::fs for cleanup in Drop
-            match std::fs::remove_dir_all(&blobs_dir) {
-                Ok(_) => {}
-                Err(e) => {
-                    tracing::warn!(
-                        "Failed to clean up blobs directory {}: {}",
-                        blobs_dir.display(),
-                        e
-                    );
-                }
-            }
-        });
-    }
-}
 
 impl ShareHandle {
     pub fn new(ticket: String, path: PathBuf, send_result: SendResult) -> Self {
