@@ -1,5 +1,5 @@
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, ipc::Channel, plugin::PluginApi};
 
 use crate::models::*;
 
@@ -20,13 +20,19 @@ impl<R: Runtime> NativeUtils<R> {
 }
 
 impl<R: Runtime> NativeUtils<R> {
-    pub fn select_send_document(&self) -> crate::Result<SelectedSendItemResponse> {
+    pub fn select_send_document(&self, _: Channel) -> crate::Result<bool> {
         Err(crate::Error::UnsupportedPlafrormError)
     }
 }
 
 impl<R: Runtime> NativeUtils<R> {
-    pub fn select_send_folder(&self) -> crate::Result<SelectedSendItemResponse> {
+    pub fn select_send_folder(&self, _: Channel) -> crate::Result<bool> {
+        Err(crate::Error::UnsupportedPlafrormError)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn cancel_job(&self, _: AsyncJob) -> crate::Result<()> {
         Err(crate::Error::UnsupportedPlafrormError)
     }
 }

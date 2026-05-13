@@ -2,6 +2,7 @@ const COMMANDS: &[&str] = &[
     "select_download_folder",
     "select_send_document",
     "select_send_folder",
+    "cancel_job"
 ];
 
 fn main() {

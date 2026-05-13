@@ -127,11 +127,19 @@ export function useDragDrop(
 	const browseFile = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
-				const selected = await selectSendDocument()
-
-				if (selected) {
-					await triggerFilesSelect([selected.cachedPath.toString()], 'file')
-				}
+				const _handler = await selectSendDocument(
+					(path, size) => {
+						// TODO: Show UI
+						console.log(path, size)
+					},
+					(event) => {
+						// TODO: Update progress
+						console.log(event)
+					},
+					(path) => {
+						triggerFilesSelect([path], 'file')
+					}
+				)
 			} else {
 				const selected = await open({
 					multiple: true,
@@ -156,14 +164,19 @@ export function useDragDrop(
 	const browseFolder = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
-				const selected = await selectSendFolder()
-
-				if (selected) {
-					await triggerFilesSelect(
-						[selected.cachedPath.toString()],
-						'directory'
-					)
-				}
+				const _handler = await selectSendFolder(
+					(path, size) => {
+						// TODO: Show UI
+						console.log(path, size)
+					},
+					(event) => {
+						// TODO: Update progress
+						console.log(event)
+					},
+					(path) => {
+						triggerFilesSelect([path], 'directory')
+					}
+				)
 			} else {
 				const selected = await open({
 					multiple: false,
@@ -245,13 +258,19 @@ export function useDragDrop(
 	const addMoreFolders = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
-				const selected = await selectSendFolder()
-
-				if (selected) {
-					const selectedPath = selected.cachedPath.toString()
-					await triggerFilesSelect([selectedPath], 'directory')
-					return
-				}
+				const _handler = await selectSendFolder(
+					(path, size) => {
+						// TODO: Show UI
+						console.log(path, size)
+					},
+					(event) => {
+						// TODO: Update progress
+						console.log(event)
+					},
+					(path) => {
+						triggerFilesSelect([path], 'directory')
+					}
+				)
 
 				return
 			}

@@ -295,6 +295,18 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the cancel_job command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-cancel-job",
+          "markdownDescription": "Enables the cancel_job command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the cancel_job command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-cancel-job",
+          "markdownDescription": "Denies the cancel_job command without any pre-configured scope."
+        },
+        {
           "description": "Enables the select_download_folder command without any pre-configured scope.",
           "type": "string",
           "const": "allow-select-download-folder",
@@ -331,10 +343,10 @@
           "markdownDescription": "Denies the select_send_folder command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`",
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-cancel-job`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`"
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-cancel-job`"
         }
       ]
     }
