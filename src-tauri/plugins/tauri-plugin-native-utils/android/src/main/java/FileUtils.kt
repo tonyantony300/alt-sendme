@@ -6,12 +6,14 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 object FileUtils {
     private const val TAG = "FileUtils"
 
-    fun getFileName(uri: Uri, context: Context): String? {
+    suspend fun getFileName(uri: Uri, context: Context): String? = withContext(Dispatchers.IO) {
         var result: String? = null
 
         try {
@@ -40,10 +42,14 @@ object FileUtils {
             )
         }
 
-        return result
+        result
     }
 
-    fun cacheDirectory(uri: Uri, cachePath: File, contentResolver: ContentResolver) {
+    suspend fun cacheDirectory(
+        uri: Uri,
+        cachePath: File,
+        contentResolver: ContentResolver
+    ): Unit = withContext(Dispatchers.IO) {
         cachePath.mkdirs()
         val rootDocId = DocumentsContract.getTreeDocumentId(uri)
         traverseAndCopy(uri, rootDocId, cachePath, contentResolver)

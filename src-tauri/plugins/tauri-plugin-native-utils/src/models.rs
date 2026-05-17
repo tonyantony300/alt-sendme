@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tauri::ipc::Channel;
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -7,10 +8,13 @@ pub struct SelectDonwloadFolderResponse {
     pub path: String,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[derive(Serialize)]
+pub struct SelectItemArgs {
+    pub channel: Channel,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SelectedSendItemResponse {
-    pub uri: String,
-    pub path: String,
-    pub cached_path: String,
+pub struct AsyncJob {
+    pub channel_id:  i64
 }

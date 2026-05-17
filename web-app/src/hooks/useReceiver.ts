@@ -480,7 +480,7 @@ export function useReceiver(): UseReceiverReturn {
 			if (IS_ANDROID) {
 				const response = await selectDownloadFolder()
 				if (!response) return
-				selected = response.path.toString()
+				selected = response.path
 				setDownloadsPath(selected)
 			} else {
 				selected = await open({

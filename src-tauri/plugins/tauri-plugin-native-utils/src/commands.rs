@@ -1,3 +1,4 @@
+use tauri::ipc::Channel;
 use tauri::{command, AppHandle, Runtime};
 
 use crate::models::*;
@@ -14,13 +15,23 @@ pub(crate) async fn select_download_folder<R: Runtime>(
 #[command]
 pub(crate) async fn select_send_document<R: Runtime>(
     app: AppHandle<R>,
-) -> Result<SelectedSendItemResponse> {
-    app.native_utils().select_send_document()
+    channel: Channel,
+) -> Result<bool> {
+    app.native_utils().select_send_document(channel)
 }
 
 #[command]
 pub(crate) async fn select_send_folder<R: Runtime>(
     app: AppHandle<R>,
-) -> Result<SelectedSendItemResponse> {
-    app.native_utils().select_send_folder()
+    channel: Channel,
+) -> Result<bool> {
+    app.native_utils().select_send_folder(channel)
+}
+
+#[command]
+pub(crate) async fn cancel_job<R: Runtime>(
+    app: tauri::AppHandle<R>,
+    job: AsyncJob,
+) -> Result<()> {
+    app.native_utils().cancel_job(job)
 }

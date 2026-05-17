@@ -1,5 +1,6 @@
 use serde::de::DeserializeOwned;
 use tauri::{
+    ipc::Channel,
     plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
 };
@@ -33,17 +34,25 @@ impl<R: Runtime> NativeUtils<R> {
 }
 
 impl<R: Runtime> NativeUtils<R> {
-    pub fn select_send_document(&self) -> crate::Result<SelectedSendItemResponse> {
+    pub fn select_send_document(&self, channel: Channel) -> crate::Result<bool> {
         self.0
-            .run_mobile_plugin("select_send_document", ())
+            .run_mobile_plugin("select_send_document", SelectItemArgs { channel })
             .map_err(Into::into)
     }
 }
 
 impl<R: Runtime> NativeUtils<R> {
-    pub fn select_send_folder(&self) -> crate::Result<SelectedSendItemResponse> {
+    pub fn select_send_folder(&self, channel: Channel) -> crate::Result<bool> {
         self.0
-            .run_mobile_plugin("select_send_folder", ())
+            .run_mobile_plugin("select_send_folder", SelectItemArgs { channel })
+            .map_err(Into::into)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn cancel_job(&self, job: AsyncJob) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("cancel_job", job)
             .map_err(Into::into)
     }
 }

@@ -17,7 +17,13 @@ const ScrollArea = React.forwardRef<
 	ScrollAreaProps
 >(
 	(
-		{ className, children, scrollFade = false, scrollbarGutter = false, ...props },
+		{
+			className,
+			children,
+			scrollFade = false,
+			scrollbarGutter = false,
+			...props
+		},
 		ref
 	) => {
 		return (

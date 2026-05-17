@@ -45,6 +45,7 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
 }
 
 #[tauri::command]
+#[cfg(desktop)]
 pub async fn focus_main_window(app_handle: tauri::AppHandle) -> Result<(), String> {
     if let Some(window) = app_handle.get_webview_window("main") {
         window.show().map_err(|e| e.to_string())?;
