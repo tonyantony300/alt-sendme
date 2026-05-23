@@ -74,6 +74,7 @@ fun copyUri(
     )
 
     var copiedBytes = 0L
+    val totalBytes = source.length()
 
     context.contentResolver.openInputStream(uri)?.use { input ->
         target.outputStream().use { output ->
@@ -86,7 +87,7 @@ fun copyUri(
                 emit(
                     CopyProgress(
                         copiedBytes = copiedBytes,
-                        totalBytes = source.length(),
+                        totalBytes = totalBytes,
                         null
                     )
                 )
@@ -96,8 +97,8 @@ fun copyUri(
 
     emit(
         CopyProgress(
-            copiedBytes = source.length(),
-            totalBytes = source.length(),
+            copiedBytes = totalBytes,
+            totalBytes = totalBytes,
             target.absolutePath,
         )
     )
@@ -128,11 +129,12 @@ private fun copyUriTreeWithProgress(
     )
 
     var copiedBytes = 0L
+    var lastProgress = .0F
 
     for ((file, relativePath) in allFiles) {
         currentCoroutineContext().ensureActive()
 
-        val target = destination.resolve(relativePath)
+        val target = targetFolder.resolve(relativePath)
         target.parentFile?.mkdirs()
             ?: throw IOException("Cannot create parent directory for: ${target.path}")
 
@@ -144,13 +146,17 @@ private fun copyUriTreeWithProgress(
                     currentCoroutineContext().ensureActive()
                     output.write(buffer, 0, bytesRead)
                     copiedBytes += bytesRead
-                    emit(
-                        CopyProgress(
-                            copiedBytes = copiedBytes,
-                            totalBytes = totalBytes,
-                            null
-                        )
+                    val progress = CopyProgress(
+                        copiedBytes = copiedBytes,
+                        totalBytes = totalBytes,
+                        null
                     )
+                    if(progress.progress >= lastProgress + .01) {
+                        emit(
+                            progress
+                        )
+                        lastProgress = progress.progress
+                    }
                 }
             }
         } ?: throw IOException("Cannot open stream for: ${file.uri}")

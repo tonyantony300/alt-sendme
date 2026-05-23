@@ -2,6 +2,7 @@ package com.altsendme.plugin.native_utils
 
 import android.app.Activity
 import android.content.Intent
+import android.webkit.WebView
 import androidx.activity.result.ActivityResult
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
@@ -9,7 +10,6 @@ import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Channel
 import app.tauri.plugin.Invoke
-import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +20,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
-import java.io.Serializable
+import java.util.concurrent.ConcurrentHashMap
 
 @InvokeArg
 class SelectorArgs {
@@ -40,7 +40,7 @@ data class DownloadFolderSelectionResponse(
 @TauriPlugin
 class NativeUtils(private val activity: Activity) : Plugin(activity) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val jobs = mutableMapOf<Long, Pair<Job, String>>()
+    private val jobs = ConcurrentHashMap<Long, Pair<Job, String>>()
 
     companion object {
         private const val RW_PERMISSION_FLAGS =
@@ -163,7 +163,7 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         jobs.forEach { _, (job, tempFolder) ->
             try {
                 job.cancel()
-                File(tempFolder).delete()
+                File(tempFolder).deleteRecursively()
             } catch (_: Exception) {}
         }
 

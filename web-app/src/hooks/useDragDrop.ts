@@ -139,12 +139,15 @@ export function useDragDrop(
 	)
 
 	const cancelCopy = useCallback(async () => {
-		await cancelRef.current?.()
-		setIsCopying(false)
-		setCopyProgress(0)
-		setCopyFileName('')
-		setCopyTotalBytes('0')
-		cancelRef.current = null
+		try {
+			await cancelRef.current?.()
+		} finally {
+			setIsCopying(false)
+			setCopyProgress(0)
+			setCopyFileName('')
+			setCopyTotalBytes('0')
+			cancelRef.current = null
+		}
 	}, [])
 
 	const browseFile = useCallback(async () => {

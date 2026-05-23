@@ -61,7 +61,7 @@ export function FileCopyProgressDialog({
 		}
 	}, [open])
 
-	if (!open && !visible) return null
+	if (!visible) return null
 
 	return createPortal(
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/32 backdrop-blur-sm p-4">

@@ -20,12 +20,11 @@ export class FileSelectedHandler {
 	}
 
 	public async cancelJob() {
-		if (this.active) {
-			this.active = false
-			return await invoke<void>('plugin:native-utils|cancel_job', {
-				job: { channelId: this.channelId },
-			})
-		}
+		if (!this.active) return
+		await invoke<void>('plugin:native-utils|cancel_job', {
+			job: { channelId: this.channelId },
+		})
+		this.active = false
 	}
 }
 
