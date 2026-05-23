@@ -151,6 +151,14 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         jobs[channel.id] = job to tempFolder.absolutePath
     }
 
+    override fun load(webView: WebView) {
+        super.load(webView)
+
+        scope.launch {
+            activity.cacheDir.resolve("file_cache").deleteRecursively()
+        }
+    }
+
     override fun onDestroy() {
         jobs.forEach { _, (job, tempFolder) ->
             try {
