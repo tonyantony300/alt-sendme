@@ -11,17 +11,16 @@ import app.tauri.plugin.Channel
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import java.io.Serializable
-import kotlin.Long
 
 @InvokeArg
 class SelectorArgs {
@@ -29,18 +28,18 @@ class SelectorArgs {
 }
 
 @InvokeArg
-data class CancelJobArgs(
-    val channelId: Long
+class CancelJobArgs(
+    var channelId: Long = 0
 )
 
 data class DownloadFolderSelectionResponse(
     val uri: String,
     val path: String,
-) : Serializable
+)
 
 @TauriPlugin
 class NativeUtils(private val activity: Activity) : Plugin(activity) {
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val jobs = mutableMapOf<Long, Pair<Job, String>>()
 
     companion object {
@@ -73,13 +72,14 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
     @Command
     fun cancel_job(invoke: Invoke) {
-        val (channelId) = invoke.parseArgs(CancelJobArgs::class.java)
+        val args = invoke.parseArgs(CancelJobArgs::class.java)
+        val channelId = args.channelId
         val (job, tempFolder) = jobs.remove(channelId)
             ?: return invoke.reject("Trying to cancel a non existing job")
         scope.launch {
             try {
                 job.cancelAndJoin()
-                File(tempFolder).delete()
+                File(tempFolder).deleteRecursively()
                 invoke.resolve()
             } catch (e: Exception) {
                 invoke.reject(e.message)
@@ -119,9 +119,9 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         val args = invoke.parseArgs(SelectorArgs::class.java)
         val channel = args.channel
 
-        if (Activity.RESULT_OK != result.resultCode) return invoke.resolve(null)
+        if (Activity.RESULT_OK != result.resultCode) return invoke.resolveObject(false)
 
-        val uri = result.data?.data ?: return invoke.resolve(null)
+        val uri = result.data?.data ?: return invoke.resolveObject(false)
 
         val path = listOf(
             activity.cacheDir.absolutePath,
@@ -149,5 +149,17 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         }
 
         jobs[channel.id] = job to tempFolder.absolutePath
+    }
+
+    override fun onDestroy() {
+        jobs.forEach { _, (job, tempFolder) ->
+            try {
+                job.cancel()
+                File(tempFolder).delete()
+            } catch (_: Exception) {}
+        }
+
+        scope.cancel()
+        super.onDestroy()
     }
 }

@@ -23,7 +23,7 @@ export class FileSelectedHandler {
 		if (this.active) {
 			this.active = false
 			return await invoke<void>('plugin:native-utils|cancel_job', {
-				channelId: this.channelId,
+				job: { channelId: this.channelId },
 			})
 		}
 	}
@@ -75,7 +75,7 @@ export async function selectSendFolder(
 			onEvent(event)
 		}
 	}
-	const response = await invoke<boolean | undefined>(
+	const response = await invoke<boolean>(
 		'plugin:native-utils|select_send_folder',
 		{
 			channel: channel,

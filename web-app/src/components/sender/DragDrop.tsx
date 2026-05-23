@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Dropzone } from './Dropzone'
 import { BrowseButtons } from './BrowseButtons'
 import { AppAlertDialog } from '../AppAlertDialog'
+import { FileCopyProgressDialog } from '../common/FileCopyProgressDialog'
 import { useDragDrop } from '../../hooks/useDragDrop'
 
 interface DragDropProps {
@@ -31,6 +32,11 @@ export function DragDrop({
 		pathType,
 		showFullPath,
 		alertDialog,
+		isCopying,
+		copyProgress,
+		copyFileName,
+		copyTotalBytes,
+		cancelCopy,
 		toggleFullPath,
 		browseFile,
 		addMoreFiles,
@@ -76,6 +82,14 @@ export function DragDrop({
 				description={alertDialog.description}
 				type={alertDialog.type}
 				onClose={closeAlert}
+			/>
+
+			<FileCopyProgressDialog
+				open={isCopying}
+				fileName={copyFileName}
+				progress={copyProgress}
+				totalBytes={copyTotalBytes}
+				onCancel={cancelCopy}
 			/>
 		</div>
 	)

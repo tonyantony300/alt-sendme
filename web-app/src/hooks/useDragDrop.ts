@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-dialog'
 import { selectSendDocument, selectSendFolder } from '@/plugins/nativeUtils'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
 import { IS_ANDROID } from '@/lib/platform'
@@ -12,6 +12,13 @@ export interface UseDragDropReturn {
 	pathType: 'file' | 'directory' | null
 	showFullPath: boolean
 	alertDialog: AlertDialogState
+
+	// Android SAF copy progress (runtime-only, never persisted)
+	isCopying: boolean
+	copyProgress: number
+	copyFileName: string
+	copyTotalBytes: string
+	cancelCopy: () => Promise<void>
 
 	toggleFullPath: () => void
 	browseFile: () => Promise<void>
@@ -46,6 +53,13 @@ export function useDragDrop(
 		description: '',
 		type: 'info',
 	})
+
+	// Android SAF copy progress (runtime-only, never persisted)
+	const [isCopying, setIsCopying] = useState(false)
+	const [copyProgress, setCopyProgress] = useState(0)
+	const [copyFileName, setCopyFileName] = useState('')
+	const [copyTotalBytes, setCopyTotalBytes] = useState('0')
+	const cancelRef = useRef<(() => Promise<void>) | null>(null)
 
 	const showAlert = useCallback(
 		(title: string, description: string, type: AlertType = 'info') => {
@@ -124,22 +138,42 @@ export function useDragDrop(
 		[onFilesSelect, showAlert, t, triggerFileSelect]
 	)
 
+	const cancelCopy = useCallback(async () => {
+		await cancelRef.current?.()
+		setIsCopying(false)
+		setCopyProgress(0)
+		setCopyFileName('')
+		setCopyTotalBytes('0')
+		cancelRef.current = null
+	}, [])
+
 	const browseFile = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
-				const _handler = await selectSendDocument(
+				const handler = await selectSendDocument(
 					(path, size) => {
-						// TODO: Show UI
-						console.log(path, size)
+						setCopyFileName(path.split(/[/\\]/).filter(Boolean).pop() || path)
+						setCopyTotalBytes(size.toString())
+						setCopyProgress(0)
+						setIsCopying(true)
+						if (handler) {
+							cancelRef.current = () => handler.cancelJob()
+						}
 					},
 					(event) => {
-						// TODO: Update progress
-						console.log(event)
+						setCopyProgress(event.progress)
 					},
-					(path) => {
-						triggerFilesSelect([path], 'file')
+					async (path) => {
+						setIsCopying(false)
+						setCopyProgress(0)
+						setCopyFileName('')
+						setCopyTotalBytes('0')
+						cancelRef.current = null
+						await triggerFilesSelect([path], 'file')
 					}
 				)
+
+				if (!handler) return
 			} else {
 				const selected = await open({
 					multiple: true,
@@ -164,19 +198,30 @@ export function useDragDrop(
 	const browseFolder = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
-				const _handler = await selectSendFolder(
+				const handler = await selectSendFolder(
 					(path, size) => {
-						// TODO: Show UI
-						console.log(path, size)
+						setCopyFileName(path.split(/[/\\]/).filter(Boolean).pop() || path)
+						setCopyTotalBytes(size.toString())
+						setCopyProgress(0)
+						setIsCopying(true)
+						if (handler) {
+							cancelRef.current = () => handler.cancelJob()
+						}
 					},
 					(event) => {
-						// TODO: Update progress
-						console.log(event)
+						setCopyProgress(event.progress)
 					},
-					(path) => {
-						triggerFilesSelect([path], 'directory')
+					async (path) => {
+						setIsCopying(false)
+						setCopyProgress(0)
+						setCopyFileName('')
+						setCopyTotalBytes('0')
+						cancelRef.current = null
+						await triggerFilesSelect([path], 'directory')
 					}
 				)
+
+				if (!handler) return
 			} else {
 				const selected = await open({
 					multiple: false,
@@ -258,20 +303,30 @@ export function useDragDrop(
 	const addMoreFolders = useCallback(async () => {
 		try {
 			if (IS_ANDROID) {
-				const _handler = await selectSendFolder(
+				const handler = await selectSendFolder(
 					(path, size) => {
-						// TODO: Show UI
-						console.log(path, size)
+						setCopyFileName(path.split(/[/\\]/).filter(Boolean).pop() || path)
+						setCopyTotalBytes(size.toString())
+						setCopyProgress(0)
+						setIsCopying(true)
+						if (handler) {
+							cancelRef.current = () => handler.cancelJob()
+						}
 					},
 					(event) => {
-						// TODO: Update progress
-						console.log(event)
+						setCopyProgress(event.progress)
 					},
-					(path) => {
-						triggerFilesSelect([path], 'directory')
+					async (path) => {
+						setIsCopying(false)
+						setCopyProgress(0)
+						setCopyFileName('')
+						setCopyTotalBytes('0')
+						cancelRef.current = null
+						await triggerFilesSelect([path], 'directory')
 					}
 				)
 
+				if (!handler) return
 				return
 			}
 
@@ -299,6 +354,12 @@ export function useDragDrop(
 		pathType,
 		showFullPath,
 		alertDialog,
+
+		isCopying,
+		copyProgress,
+		copyFileName,
+		copyTotalBytes,
+		cancelCopy,
 
 		toggleFullPath,
 		browseFile,
