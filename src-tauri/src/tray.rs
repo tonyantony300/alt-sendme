@@ -87,18 +87,17 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             _ => {}
         });
 
-   let icon_path = app
+ let icon_path = app
     .path()
-    .resource_dir()
-    .unwrap()
+    .resource_dir()?             
     .join("icons/128x128.png");
 
 let icon = tauri::image::Image::from_path(&icon_path)
-    .unwrap_or_else(|_| {
+    .or_else(|_| {
         app.default_window_icon()
-            .unwrap()
-            .clone()
-    });
+            .ok_or_else(|| tauri::Error::InvalidIcon)
+            .map(|i| i.clone())
+    })?;
 
 builder = builder.icon(icon);
 
