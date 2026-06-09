@@ -4,4 +4,5 @@ permissions = [
     "allow-select-download-folder",
     "allow-select-send-document",
     "allow-select-send-folder",
+    "allow-cancel-job"
 ]

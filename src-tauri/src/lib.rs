@@ -10,11 +10,7 @@ mod version;
 
 pub use version::get_app_version;
 
-use commands::{
-    check_launch_intent, check_path_type, fetch_ticket_metadata, focus_main_window, get_file_size,
-    get_paths_mime_types, get_sharing_status, get_transport_status, receive_file, send_items,
-    start_sharing, stop_sharing, toggle_context_menu,
-};
+use commands::*;
 
 use state::AppState;
 use std::fs;
@@ -92,6 +88,7 @@ pub fn run() {
             get_paths_mime_types,
             get_transport_status,
             get_file_size,
+            #[cfg(desktop)]
             focus_main_window,
             check_launch_intent,
             fetch_ticket_metadata,

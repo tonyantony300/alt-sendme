@@ -189,5 +189,8 @@
 		"checkFailedDesc": "Failed to check for updates",
 		"installFailed": "Installation Failed",
 		"installFailedDesc": "Failed to install update"
+	},
+	"android": {
+		"preparingFile": "Preparing file..."
 	}
 }

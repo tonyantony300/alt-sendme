@@ -2,21 +2,45 @@ package com.altsendme.plugin.native_utils
 
 import android.app.Activity
 import android.content.Intent
+import android.webkit.WebView
 import androidx.activity.result.ActivityResult
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
+import app.tauri.plugin.Channel
 import app.tauri.plugin.Invoke
-import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
+import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
+
+@InvokeArg
+class SelectorArgs {
+    lateinit var channel: Channel
+}
+
+@InvokeArg
+class CancelJobArgs(
+    var channelId: Long = 0
+)
+
+data class DownloadFolderSelectionResponse(
+    val uri: String,
+    val path: String,
+)
 
 @TauriPlugin
 class NativeUtils(private val activity: Activity) : Plugin(activity) {
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val jobs = ConcurrentHashMap<Long, Pair<Job, String>>()
 
     companion object {
         private const val RW_PERMISSION_FLAGS =
@@ -36,15 +60,32 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             type = "*/*"
         },
-        this::handleSendFileSelection.name
+        this::handleSendSelection.name
     )
 
     @Command
     fun select_send_folder(invoke: Invoke) = startActivityForResult(
         invoke,
         Intent(Intent.ACTION_OPEN_DOCUMENT_TREE),
-        this::handleSendFolderSelection.name
+        this::handleSendSelection.name
     )
+
+    @Command
+    fun cancel_job(invoke: Invoke) {
+        val args = invoke.parseArgs(CancelJobArgs::class.java)
+        val channelId = args.channelId
+        val (job, tempFolder) = jobs.remove(channelId)
+            ?: return invoke.reject("Trying to cancel a non existing job")
+        scope.launch {
+            try {
+                job.cancelAndJoin()
+                File(tempFolder).deleteRecursively()
+                invoke.resolve()
+            } catch (e: Exception) {
+                invoke.reject(e.message)
+            }
+        }
+    }
 
     @ActivityCallback
     fun handleDownloadFolderSelection(invoke: Invoke, result: ActivityResult) {
@@ -55,10 +96,10 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         try {
             activity.contentResolver.takePersistableUriPermission(uri, RW_PERMISSION_FLAGS)
 
-            invoke.resolve(JSObject().apply {
-                put("uri", uri.toString())
-                put("path", uri.extractFolderOsPath())
-            })
+            invoke.resolveObject(DownloadFolderSelectionResponse(
+                uri.toString(),
+                uri.extractFolderOsPath(),
+            ))
 
             activity.contentResolver.persistedUriPermissions.stream()
                 .filter { it.uri != uri }
@@ -74,78 +115,59 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
     }
 
     @ActivityCallback
-    fun handleSendFileSelection(invoke: Invoke, result: ActivityResult) {
-        if (Activity.RESULT_OK != result.resultCode) return invoke.resolve(null)
+    fun handleSendSelection(invoke: Invoke, result: ActivityResult) {
+        val args = invoke.parseArgs(SelectorArgs::class.java)
+        val channel = args.channel
 
-        val uri = result.data?.data ?: return invoke.resolve(null)
+        if (Activity.RESULT_OK != result.resultCode) return invoke.resolveObject(false)
 
-        try {
-            val fileName = FileUtils.getFileName(uri, activity)
+        val uri = result.data?.data ?: return invoke.resolveObject(false)
 
-            val path = listOf(
-                activity.cacheDir.absolutePath,
-                "file_cache",
-                System.currentTimeMillis().toString(),
-                fileName ?: "unknown"
-            ).joinToString(File.separator)
+        val path = listOf(
+            activity.cacheDir.absolutePath,
+            "file_cache",
+            System.currentTimeMillis().toString(),
+        ).joinToString(File.separator)
 
-            val tempFile = File(path)
+        invoke.resolveObject(true)
 
-            CoroutineScope(Dispatchers.IO).launch {
-                tempFile.parentFile?.mkdirs()
+        val tempFolder = File(path)
 
-                activity.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    FileOutputStream(tempFile).use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+        val job = scope.launch {
+            try {
+                tempFolder.parentFile?.mkdirs()
+                    ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
+
+                copyUri(activity, uri, tempFolder).collect {
+                    channel.sendObject(it)
                 }
+            } catch (_: Exception) {
+                tempFolder.delete()
+            } finally {
+                jobs.remove(channel.id)
             }
+        }
 
-            invoke.resolve(JSObject().apply {
-                put("uri", uri.toString())
-                put("path", fileName ?: "Unknown")
-                put("cachedPath", tempFile.absolutePath)
-            })
-        } catch (e: Exception) {
-            invoke.reject(e.message)
+        jobs[channel.id] = job to tempFolder.absolutePath
+    }
+
+    override fun load(webView: WebView) {
+        super.load(webView)
+
+        scope.launch {
+            activity.cacheDir.resolve("file_cache").deleteRecursively()
         }
     }
 
-    @ActivityCallback
-    fun handleSendFolderSelection(invoke: Invoke, result: ActivityResult) {
-        if (Activity.RESULT_OK != result.resultCode) return invoke.resolve(null)
-
-        val uri = result.data?.data ?: return invoke.resolve(null)
-
-        try {
-            val fileName = uri.extractFolderOsPath()?.let {
-                if(it.endsWith("/")) {
-                    it.substringBeforeLast("/").substringAfterLast("/")
-                } else {
-                    it.substringAfterLast("/")
-                }
-            }
-
-            val path = listOf(
-                activity.cacheDir.absolutePath,
-                "file_cache",
-                System.currentTimeMillis().toString(),
-                fileName ?: "unknown"
-            ).joinToString(File.separator)
-
-            val cachedFolder = File(path)
-
-            CoroutineScope(Dispatchers.IO).launch {
-                FileUtils.cacheDirectory(uri, cachedFolder, activity.contentResolver)
-            }
-
-            invoke.resolve(JSObject().apply {
-                put("uri", uri.toString())
-                put("path", fileName ?: "Unknown")
-                put("cachedPath", cachedFolder.absolutePath)
-            })
-        } catch (e: Exception) {
-            invoke.reject(e.message)
+    override fun onDestroy() {
+        jobs.forEach { _, (job, tempFolder) ->
+            try {
+                job.cancel()
+                File(tempFolder).deleteRecursively()
+            } catch (_: Exception) {}
         }
+
+        scope.cancel()
+        super.onDestroy()
     }
 }

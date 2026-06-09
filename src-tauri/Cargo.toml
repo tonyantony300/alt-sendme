@@ -38,9 +38,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"
 tauri-plugin-store = "2.4.2"
 tauri-plugin-notification = "2.3.3"
+reqwest = "0.13.2"
 
 [features]
-default = ["custom-protocol"]
+default = ["custom-protocol", "default-tls"]
+default-tls = ["reqwest/default-tls"]
 custom-protocol = ["tauri/custom-protocol"]
 linux-gstreamer = ["dep:gstreamer", "dep:gstreamer-app", "dep:gstreamer-video"]
 cargo-clippy = []

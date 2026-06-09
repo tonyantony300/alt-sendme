@@ -11,7 +11,7 @@ pluginManagement {
                     useVersion("8.0.2")
                     break
                 case "org.jetbrains.kotlin.android":
-                    useVersion("1.8.20")
+                    useVersion("1.9.25")
                     break
             }
         }
