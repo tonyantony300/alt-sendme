@@ -89,6 +89,30 @@ scoop install extras/altsendme
 
 More download options in [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
 
+## Partners
+
+<table align="center">
+  <tbody>
+  <tr>
+    <td>
+      <a href="https://www.coderabbit.ai/?via=tanstack&dub_id=aCcEEdAOqqutX6OS" rel="nofollow">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="https://tanstack.com/assets/coderabbit-dark-D643Zkrv.svg">
+          <source media="(prefers-color-scheme: light)" srcset="https://tanstack.com/assets/coderabbit-light-CIzGLYU_.svg">
+          <img src="https://tanstack.com/assets/coderabbit-light-CIzGLYU_.svg" height="40" alt="CodeRabbit">
+        </picture>
+      </a>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<div align="center">
+  <p>
+    We're looking for Partners to join our mission! Partner with us to push the boundaries of peer-to-peer file transfer and support building amazing things together.
+  </p>
+  <a href="https://www.altsendme.com/en/contact"><b>LET'S CHAT</b></a>
+</div>
 
 ## Supported Languages
  🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭
