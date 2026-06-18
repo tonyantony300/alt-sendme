@@ -158,46 +158,6 @@ AltSendme uses open-source public relay servers to support establishing direct c
 [📫 Drop your Email to recieve updates](https://tally.so/r/ob2Vkx)
 
 
-
-
-## Troubleshooting
-
-### 1. AltSendme Won't Launch on Windows (Missing Edge WebView2 Runtime)
-
-#### Symptom
-
-- When you double-click `AltSendme.exe`, nothing happens. No window appears, and Task Manager does not show the process.
-- This can affect both the standard installer and the portable version.
-
-#### Cause
-
-- Microsoft Edge WebView2 Runtime is either missing, outdated, or improperly installed on your system.  
-  AltSendme depends on WebView2 to render the interface on Windows.
-
-#### How to Fix
-
-1. **Check if WebView2 is installed**
-   - Open **Add or Remove Programs** (a.k.a. *Apps & features*) on Windows.
-   - Look for **Microsoft Edge WebView2 Runtime**.
-
-2. **Install or Update WebView2**
-   - Download the WebView2 Runtime directly from Microsoft: [link](https://developer.microsoft.com/en-us/microsoft-edge/webview2?form=MA13LH).
-   - If you prefer an offline installer, download the offline package and run it as an Administrator.
-
-3. **Re-run AltSendme**
-   - After installing/updating WebView2, launch `AltSendme.exe` again.
-   - If you still encounter problems, reboot your PC and try again.
-
-#### Additional Tips
-
-- If reinstalling once doesn’t work, uninstall Edge WebView2 completely, then reinstall it with Administrator privileges.
-- Verify your Windows installation has the latest updates from Microsoft.
-
-#### Still Stuck?
-
-- Head over to our [Discord](https://discord.gg/xwb7z22Eve) server and open a support discussion with detailed logs of your environment and the steps you’ve taken.
-
-
 ## Development Setup
 
 ### Prerequisites
@@ -252,7 +212,7 @@ AltSendme uses open-source public relay servers to support establishing direct c
 
 ## Testing Locally
 
-Install [Sendme CLI](https://www.iroh.computer/sendme) tool and you can share files within same device to test the whole transfer process. Files don't leave your device just works like a copy operation.
+Install [Sendme CLI](https://www.iroh.computer/sendme) tool and you can share files within same device to test the whole transfer process. Files don't leave your device it works like a copy operation.
 
 ## Join our [Discord](https://discord.gg/xwb7z22Eve) to contribute
 
@@ -278,19 +238,23 @@ See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your da
 </a>
 
 
-## Acknowledgements
-
-
-- [Iroh](https://www.iroh.computer)
-- [Tauri](https://v2.tauri.app)
-
-
 ## Contact
 
 Reach me [here](https://www.altsendme.com/en/contact) for suggestions, feedback or media related communication.
 
 
 Thank you for checking out this project! If you find it useful, consider giving it a star and helping spread the word.
+
+
+
+
+## Built on
+
+<div align="left">
+  <a href="https://iroh.computer">
+    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
+  </a>
+</div>
 
 
 
