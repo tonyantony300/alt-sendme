@@ -99,7 +99,7 @@ More download options in [GitHub Releases](https://github.com/tonyantony300/alt-
   </picture>
 </a>
 
-We're looking for Partners to join our mission! Partner with us to push the boundaries of peer-to-peer file transfer and support building amazing things together.
+We're looking for Partners to join our mission! Partner with us and support while we push the boundaries of peer-to-peer file transfer.
 
 [**LET'S CHAT**](https://www.altsendme.com/en/contact)
 
