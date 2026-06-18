@@ -91,15 +91,15 @@ More download options in [GitHub Releases](https://github.com/tonyantony300/alt-
 
 ## Partners
 
-<table align="center">
+<table align="left">
   <tbody>
   <tr>
     <td>
-      <a href="https://www.coderabbit.ai/?via=tanstack&dub_id=aCcEEdAOqqutX6OS" rel="nofollow">
+      <a href="https://www.testmuai.com" rel="nofollow">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://tanstack.com/assets/coderabbit-dark-D643Zkrv.svg">
-          <source media="(prefers-color-scheme: light)" srcset="https://tanstack.com/assets/coderabbit-light-CIzGLYU_.svg">
-          <img src="https://tanstack.com/assets/coderabbit-light-CIzGLYU_.svg" height="40" alt="CodeRabbit">
+          <source media="(prefers-color-scheme: dark)" srcset="https://www.altsendme.com/assets/sponsors/testmu-light.svg">
+          <source media="(prefers-color-scheme: light)" srcset="https://www.altsendme.com/assets/sponsors/testmu-dark.svg">
+          <img src="https://www.altsendme.com/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
         </picture>
       </a>
     </td>
@@ -107,7 +107,9 @@ More download options in [GitHub Releases](https://github.com/tonyantony300/alt-
   </tbody>
 </table>
 
-<div align="center">
+<div style="clear: both;"></div>
+
+<div align="left">
   <p>
     We're looking for Partners to join our mission! Partner with us to push the boundaries of peer-to-peer file transfer and support building amazing things together.
   </p>
