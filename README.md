@@ -9,7 +9,7 @@
 
 <div align="center">
 
-![AltSendme working demo](assets/animation.gif)
+![AltSendme working demo](assets/demo.gif)
 
 </div>
 
