@@ -180,7 +180,7 @@ AltSendme uses open-source public relay servers to support establishing direct c
 
 ### Prerequisites
 
-- Rust 1.89+
+- Rust 1.91+
 - Node.js 18+
 - npm or yarn
 
