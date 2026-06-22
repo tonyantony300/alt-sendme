@@ -389,7 +389,7 @@ jobs:
             exit 1
           fi
           declare -A APKS=(
-            [universal]="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
+            [universal]="build/android-apks/app-universal-release.apk"
             [arm64]="build/android-apks/app-arm64-release.apk"
             [armv7]="build/android-apks/app-armv7-release.apk"
             [x86]="build/android-apks/app-x86-release.apk"

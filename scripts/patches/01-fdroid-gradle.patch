@@ -2,7 +2,7 @@ diff --git a/src-tauri/gen/android/app/build.gradle.kts b/src-tauri/gen/android/
 index 66f3c7a..15c4118 100644
 --- a/src-tauri/gen/android/app/build.gradle.kts
 +++ b/src-tauri/gen/android/app/build.gradle.kts
-@@ -51,6 +51,16 @@ android {
+@@ -51,6 +51,11 @@ android {
      buildFeatures {
          buildConfig = true
      }
@@ -10,11 +10,6 @@ index 66f3c7a..15c4118 100644
 +    dependenciesInfo {
 +        includeInApk = false
 +        includeInBundle = false
-+    }
-+    splits {
-+        abi {
-+            isEnable = false
-+        }
 +    }
  }
  
