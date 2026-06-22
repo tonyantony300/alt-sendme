@@ -415,14 +415,14 @@ jobs:
           done
 
   finalize-release:
-    name: Publish release
+    name: Finalize draft release
     needs: [prepare-release, publish-tauri, android-release-apks]
     permissions:
       contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Publish draft release
+      - name: Leave release as draft for manual review
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -434,11 +434,7 @@ jobs:
             echo "ERROR: release id missing"
             exit 1
           fi
-          if [ "$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" --jq .draft)" = "true" ]; then
-            echo "Publishing release $TAG"
-            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
-              -F draft=false \
-              -F prerelease=false >/dev/null
-          else
-            echo "Release $TAG is already published"
-          fi
+          RELEASE_URL=$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" --jq .html_url)
+          echo "Release $TAG is ready for review as a draft."
+          echo "Edit the release notes and assets, then click Publish release to make it latest:"
+          echo "$RELEASE_URL"
