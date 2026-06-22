@@ -6,7 +6,102 @@ on:
       - 'v*.*.*'
 
 jobs:
+  prepare-release:
+    name: Prepare release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.release.outputs.release_id }}
+      release_body: ${{ steps.release_notes.outputs.notes }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: setup node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24.x'
+
+      - name: Extract version from tag and validate
+        id: version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          npm pkg set version="$VERSION"
+          npm run sync-version
+          node scripts/validate-version.js
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes from commits
+        id: release_notes
+        shell: bash
+        run: |
+          git fetch --tags --force --prune origin
+
+          CURRENT_TAG="${{ github.ref_name }}"
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1 || true)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, showing all commits"
+            COMMIT_RANGE="HEAD"
+          else
+            echo "Comparing ${PREVIOUS_TAG}...${CURRENT_TAG}"
+            COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
+          fi
+
+          CHANGELOG=$(git log ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges | head -50)
+
+          {
+            echo "## What's Changed"
+            echo ""
+            if [ -z "$CHANGELOG" ]; then
+              echo "- Initial release"
+            else
+              echo "$CHANGELOG"
+            fi
+            echo ""
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "See the assets below to download and install this version."
+          } > release_notes.txt
+
+          echo "notes<<EOF" >> "$GITHUB_OUTPUT"
+          cat release_notes.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create or resolve draft GitHub release
+        id: release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          VERSION="${{ steps.version.outputs.version }}"
+
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release for $TAG already exists"
+          else
+            echo "Creating draft release for $TAG"
+            gh release create "$TAG" \
+              --draft \
+              --title "AltSendme ${VERSION}" \
+              --notes-file release_notes.txt
+          fi
+
+          RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .id)
+          echo "release_id=${RELEASE_ID}" >> "$GITHUB_OUTPUT"
+
   publish-tauri:
+    needs: prepare-release
     permissions:
       contents: write
     strategy:
@@ -63,7 +158,7 @@ jobs:
       - name: Extract version from tag and sync
         shell: bash
         run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          VERSION="${{ needs.prepare-release.outputs.version }}"
           npm pkg set version="$VERSION"
           npm run sync-version
           node scripts/validate-version.js
@@ -93,20 +188,20 @@ jobs:
             echo "Apple certificate secrets not set, skipping certificate import"
             exit 0
           fi
-          
+
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          
+
           echo -n "$APPLE_CERTIFICATE" | base64 --decode > $CERTIFICATE_PATH
-          
+
           security create-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
-          
+
           security import $CERTIFICATE_PATH -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains | sed 's/["]//g')
           security set-key-partition-list -S apple-tool:,apple: -s -k "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
-          
+
           echo "Certificate imported successfully"
 
       - name: Validate notarization requirements (macOS only)
@@ -119,47 +214,6 @@ jobs:
             exit 1
           fi
           echo "All notarization secrets present"
-
-      - name: Generate release notes from commits
-        id: release_notes
-        shell: bash
-        run: |
-          git fetch --tags --force --prune origin
-          
-          CURRENT_TAG="${{ github.ref_name }}"
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1 || true)
-          
-          if [ -z "$PREVIOUS_TAG" ]; then
-            echo "No previous tag found, showing all commits"
-            COMMIT_RANGE="HEAD"
-          else
-            echo "Comparing ${PREVIOUS_TAG}...${CURRENT_TAG}"
-            COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
-          fi
-          
-          CHANGELOG=$(git log ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges | head -50)
-          
-          {
-            echo "## What's Changed"
-            echo ""
-            if [ -z "$CHANGELOG" ]; then
-              echo "- Initial release"
-            else
-              echo "$CHANGELOG"
-            fi
-            echo ""
-            if [ -n "$PREVIOUS_TAG" ]; then
-              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
-            fi
-            echo ""
-            echo "---"
-            echo ""
-            echo "See the assets below to download and install this version."
-          } > release_notes.txt
-          
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          cat release_notes.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
       - uses: tauri-apps/tauri-action@v0.6
         env:
@@ -175,19 +229,18 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: ./src-tauri
+          releaseId: ${{ needs.prepare-release.outputs.release_id }}
           tagName: ${{ github.ref_name }}
-          releaseName: 'AltSendme ${{ env.VERSION }}'
           args: ${{ matrix.args }}
-          releaseBody: ${{ steps.release_notes.outputs.notes }}
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
 
   # Uses repository secrets: ANDROID_KEY_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
-  # (same names as https://v2.tauri.app/distribute/sign/android/). 
+  # (same names as https://v2.tauri.app/distribute/sign/android/).
   android-universal-apk:
     name: Android release APK
-    needs: publish-tauri
+    needs: prepare-release
     permissions:
       contents: write
     runs-on: ubuntu-22.04
@@ -248,7 +301,7 @@ jobs:
       - name: Extract version from tag and sync
         shell: bash
         run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          VERSION="${{ needs.prepare-release.outputs.version }}"
           npm pkg set version="$VERSION"
           npm run sync-version
           node scripts/validate-version.js
@@ -269,7 +322,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
+          set -euo pipefail
           TAG="${{ github.ref_name }}"
           APK="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
           if [ ! -f "$APK" ]; then
@@ -277,7 +330,36 @@ jobs:
             ls -la "src-tauri/gen/android/app/build/outputs/apk/universal/release/" 2>&1 || true
             exit 1
           fi
+          if ! gh release view "$TAG" &>/dev/null; then
+            echo "ERROR: draft release for $TAG not found (prepare-release should have created it)"
+            exit 1
+          fi
           RENAME="AltSendme-${TAG}-universal.apk"
           cp "$APK" "$RENAME"
           echo "Uploading $RENAME to release $TAG"
           gh release upload "$TAG" "$RENAME" --clobber
+
+  finalize-release:
+    name: Publish release
+    needs: [prepare-release, publish-tauri, android-universal-apk]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish draft release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          if ! gh release view "$TAG" &>/dev/null; then
+            echo "ERROR: release $TAG not found"
+            exit 1
+          fi
+          if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" = "true" ]; then
+            echo "Publishing release $TAG"
+            gh release edit "$TAG" --draft=false
+          else
+            echo "Release $TAG is already published"
+          fi
