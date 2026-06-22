@@ -214,6 +214,14 @@ jobs:
           rustup target add x86_64-apple-darwin
           rustup target list --installed
 
+      - name: Ensure Windows ARM64 target
+        if: matrix.platform == 'windows-latest' && matrix.arch == 'aarch64'
+        shell: bash
+        run: |
+          set -eux
+          rustup target add aarch64-pc-windows-msvc
+          rustup target list --installed
+
       - name: import certificate (macOS only)
         if: matrix.platform == 'macos-latest'
         env:
