@@ -6,7 +6,7 @@ use anyhow::{ensure, Context};
 use data_encoding::HEXLOWER;
 use iroh::endpoint::presets;
 use iroh::protocol::{AcceptError, ProtocolHandler};
-use iroh::{address_lookup::pkarr::PkarrPublisher, Endpoint, RelayMode};
+use iroh::{address_lookup::pkarr::PkarrPublisher, endpoint::RelayMode, Endpoint};
 use iroh_blobs::api::blobs::AddProgressItem;
 use iroh_blobs::{
     api::{
@@ -21,7 +21,7 @@ use iroh_blobs::{
 };
 use n0_future::StreamExt;
 use n0_future::{task::AbortOnDropHandle, BufferedStreamExt};
-use rand::Rng;
+use rand::RngExt;
 use std::io::ErrorKind;
 use std::{
     path::{Component, Path, PathBuf},
