@@ -7,35 +7,6 @@ use tauri::{
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
 };
 
-#[cfg(not(target_os = "macos"))]
-fn load_tray_icon(app: &AppHandle) -> tauri::Result<tauri::image::Image<'static>> {
-    if let Ok(icon_path) = app
-        .path()
-        .resolve("icons/128x128.png", BaseDirectory::Resource)
-    {
-        match tauri::image::Image::from_path(&icon_path) {
-            Ok(icon) => return Ok(icon),
-            Err(error) => {
-                tracing::warn!(
-                    path = %icon_path.display(),
-                    error = %error,
-                    "Failed to load 128x128 tray icon, falling back to default window icon"
-                );
-            }
-        }
-    } else {
-        tracing::warn!("Resource directory unavailable, falling back to default window icon");
-    }
-
-    app.default_window_icon()
-        .cloned()
-        .ok_or_else(|| {
-            tauri::Error::InvalidIcon(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                "tray icon not found",
-            ))
-        })
-}
 
 // to show confirmation dialog box for quit event from tray
 // use tauri_plugin_dialog::DialogExt;
@@ -118,7 +89,23 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             _ => {}
         });
 
-    let icon = load_tray_icon(app)?;
+    let icon = match app
+        .path()
+        .resolve("icons/128x128.png", BaseDirectory::Resource)
+        .ok()
+        .and_then(|p| tauri::image::Image::from_path(&p).ok())
+    {
+        Some(img) => img,
+        None => {
+            tracing::warn!("Could not load 128x128 tray icon, falling back to default window icon");
+            app.default_window_icon()
+                .cloned()
+                .ok_or_else(|| tauri::Error::InvalidIcon(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "tray icon not found",
+                )))?
+        }
+    };
 
     builder = builder.icon(icon);
 
