@@ -53,7 +53,95 @@ for (const [name, target] of Object.entries({
 }
 
 const javaRoot = path.join(genAndroid, 'app/src/main/java')
-const unsignedApkName = 'app-universal-release-unsigned.apk'
+
+/** Gradle ABI output folders for per-target builds */
+const PROFILE_ABI_DIRS = {
+	arm64: 'arm64-v8a',
+	armv7: 'armeabi-v7a',
+	x86: 'x86',
+	x86_64: 'x86_64',
+}
+
+function outputDirForProfile(profileName) {
+	if (profileName === 'universal') {
+		return universalApkDir
+	}
+	const abi = PROFILE_ABI_DIRS[profileName]
+	if (!abi) {
+		throw new Error(`android-release-build: no APK output dir for profile "${profileName}"`)
+	}
+	return path.join(genAndroid, 'app/build/outputs/apk', abi, 'release')
+}
+
+/** @returns {{ apk: string, gradleSigned: boolean } | null} */
+function findApkInDir(dir) {
+	if (!fs.existsSync(dir)) {
+		return null
+	}
+	const files = fs.readdirSync(dir).filter((f) => f.endsWith('.apk'))
+	const unsigned = files.find((f) => f.endsWith('-unsigned.apk'))
+	if (unsigned) {
+		return { apk: path.join(dir, unsigned), gradleSigned: false }
+	}
+	const signed = files.find((f) => !f.endsWith('-unsigned.apk'))
+	if (signed) {
+		return { apk: path.join(dir, signed), gradleSigned: true }
+	}
+	return null
+}
+
+/** @returns {{ apk: string, gradleSigned: boolean } | null} */
+function resolveApkAfterBuild(profileName, buildStartedAt) {
+	const preferred = findApkInDir(outputDirForProfile(profileName))
+	if (preferred) {
+		return preferred
+	}
+
+	if (profileName !== 'universal') {
+		const fromUniversal = findApkInDir(universalApkDir)
+		if (
+			fromUniversal &&
+			fs.statSync(fromUniversal.apk).mtimeMs >= buildStartedAt - 2000
+		) {
+			return fromUniversal
+		}
+	}
+
+	const apkRoot = path.join(genAndroid, 'app/build/outputs/apk')
+	let newest = null
+	/** @param {string} dir */
+	function walk(dir) {
+		if (!fs.existsSync(dir)) {
+			return
+		}
+		for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+			const p = path.join(dir, ent.name)
+			if (ent.isDirectory()) {
+				walk(p)
+				continue
+			}
+			if (!ent.name.endsWith('.apk')) {
+				continue
+			}
+			const mtime = fs.statSync(p).mtimeMs
+			if (mtime < buildStartedAt - 2000) {
+				continue
+			}
+			if (!newest || mtime > newest.mtime) {
+				newest = {
+					apk: p,
+					gradleSigned: !ent.name.endsWith('-unsigned.apk'),
+					mtime,
+				}
+			}
+		}
+	}
+	walk(apkRoot)
+	if (!newest) {
+		return null
+	}
+	return { apk: newest.apk, gradleSigned: newest.gradleSigned }
+}
 
 function readAndroidBundleIdentifier() {
 	const p = path.join(rootDir, 'src-tauri/tauri.android.conf.json')
@@ -240,28 +328,35 @@ const profiles = selectedProfiles()
 
 for (const profile of profiles) {
 	console.log(`\nandroid-release-build: building profile "${profile.name}"`)
+	const buildStartedAt = Date.now()
 	run(
 		'npx',
 		['tauri', 'android', 'build', ...profile.buildArgs],
 		{ noCi: true }
 	)
 
-	const unsignedApk = path.join(universalApkDir, unsignedApkName)
-	if (!fs.existsSync(unsignedApk)) {
+	const built = resolveApkAfterBuild(profile.name, buildStartedAt)
+	if (!built) {
 		console.error(
-			`android-release-build: unsigned APK not found for profile "${profile.name}":`,
-			unsignedApk
+			`android-release-build: APK not found for profile "${profile.name}"`,
+			`(checked ${outputDirForProfile(profile.name)} and recent outputs under gen/android/app/build/outputs/apk)`
 		)
 		process.exit(1)
 	}
 
 	const signedApk = path.join(profile.signedDir, profile.signedFileName)
-	if (keystore) {
-		signApk(unsignedApk, signedApk, keystore)
+	if (built.gradleSigned) {
+		fs.mkdirSync(path.dirname(signedApk), { recursive: true })
+		if (path.resolve(built.apk) !== path.resolve(signedApk)) {
+			fs.copyFileSync(built.apk, signedApk)
+		}
+		console.log('\nSigned APK (Gradle):', signedApk)
+	} else if (keystore) {
+		signApk(built.apk, signedApk, keystore)
 	} else {
 		const dest = signedApk.replace(/\.apk$/, '-unsigned.apk')
 		fs.mkdirSync(path.dirname(dest), { recursive: true })
-		fs.copyFileSync(unsignedApk, dest)
+		fs.copyFileSync(built.apk, dest)
 		console.log(`\nUnsigned APK (no keystore): ${dest}`)
 	}
 }
