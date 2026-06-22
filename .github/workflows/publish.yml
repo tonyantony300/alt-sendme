@@ -41,10 +41,11 @@ jobs:
       - name: Generate release notes from commits
         id: release_notes
         shell: bash
+        env:
+          CURRENT_TAG: ${{ github.ref_name }}
         run: |
           git fetch --tags --force --prune origin
 
-          CURRENT_TAG="${{ github.ref_name }}"
           PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1 || true)
 
           if [ -z "$PREVIOUS_TAG" ]; then
@@ -84,9 +85,9 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          TAG="${{ github.ref_name }}"
           VERSION="${{ steps.version.outputs.version }}"
 
           if gh release view "$TAG" &>/dev/null; then
@@ -352,9 +353,9 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          TAG="${{ github.ref_name }}"
           if ! gh release view "$TAG" &>/dev/null; then
             echo "ERROR: draft release for $TAG not found (prepare-release should have created it)"
             exit 1
@@ -391,9 +392,9 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          TAG="${{ github.ref_name }}"
           if ! gh release view "$TAG" &>/dev/null; then
             echo "ERROR: release $TAG not found"
             exit 1
