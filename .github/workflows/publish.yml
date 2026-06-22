@@ -6,10 +6,105 @@ on:
       - 'v*.*.*'
 
 jobs:
+  prepare-release:
+    name: Prepare release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      release_id: ${{ steps.release.outputs.release_id }}
+      release_body: ${{ steps.release_notes.outputs.notes }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+
+      - name: setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Extract version from tag and validate
+        id: version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          npm pkg set version="$VERSION"
+          npm run sync-version
+          node scripts/validate-version.js
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes from commits
+        id: release_notes
+        shell: bash
+        env:
+          CURRENT_TAG: ${{ github.ref_name }}
+        run: |
+          git fetch --tags --force --prune origin
+
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1 || true)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, showing all commits"
+            COMMIT_RANGE="HEAD"
+          else
+            echo "Comparing ${PREVIOUS_TAG}...${CURRENT_TAG}"
+            COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
+          fi
+
+          CHANGELOG=$(git log ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges | head -50)
+
+          {
+            echo "## What's Changed"
+            echo ""
+            if [ -z "$CHANGELOG" ]; then
+              echo "- Initial release"
+            else
+              echo "$CHANGELOG"
+            fi
+            echo ""
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "See the assets below to download and install this version."
+          } > release_notes.txt
+
+          echo "notes<<EOF" >> "$GITHUB_OUTPUT"
+          cat release_notes.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create or resolve draft GitHub release
+        id: release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release for $TAG already exists"
+          else
+            echo "Creating draft release for $TAG"
+            gh release create "$TAG" \
+              --draft \
+              --title "AltSendme ${VERSION}" \
+              --notes-file release_notes.txt
+          fi
+
+          RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .id)
+          echo "release_id=${RELEASE_ID}" >> "$GITHUB_OUTPUT"
+
   publish-tauri:
-    # Emergency platform gate: skip macOS publishing for known-bad tags only.
-    # This keeps other platforms releasable while macOS users remain on the previous stable update.
-    if: ${{ matrix.platform != 'macos-latest' || !contains(fromJson('["v0.3.6"]'), github.ref_name) }}
+    needs: prepare-release
     permissions:
       contents: write
     strategy:
@@ -17,31 +112,54 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
+            arch: universal
+            rust_target: ''
             args: '--target universal-apple-darwin'
+            cache_key: macos-universal
           - platform: 'ubuntu-22.04'
+            arch: x86_64
+            rust_target: x86_64-unknown-linux-gnu
             args: ''
+            cache_key: ubuntu-x86_64
+          - platform: 'ubuntu-22.04-arm'
+            arch: aarch64
+            rust_target: aarch64-unknown-linux-gnu
+            args: ''
+            cache_key: ubuntu-aarch64
           - platform: 'windows-latest'
-            args: '--bundles nsis,msi'
+            arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
+            args: '--target x86_64-pc-windows-msvc --bundles nsis,msi'
+            cache_key: windows-x86_64
+          - platform: 'windows-latest'
+            arch: aarch64
+            rust_target: aarch64-pc-windows-msvc
+            # WiX MSI cannot be cross-compiled for ARM64; NSIS only (see Tauri Windows installer docs).
+            args: '--target aarch64-pc-windows-msvc --bundles nsis'
+            cache_key: windows-aarch64
 
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
       - name: setup node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '24.x'
+          cache: npm
 
-      # Toolchain @rev = Rust version (see dtolnay/rust-toolchain README). Use full patch tag, not @1.89.
+      # Toolchain @rev = Rust version (see dtolnay/rust-toolchain README). Use full patch tag, not @1.91.
       # Quote targets so YAML does not treat the comma as a flow-sequence separator (only aarch64 was installed before).
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.89.0
+        uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
         with:
+          toolchain: 1.91.0
           components: rustfmt
-          targets: "${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}"
+          targets: "${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.rust_target }}"
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
+        if: contains(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
@@ -59,14 +177,15 @@ jobs:
           echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2
+        uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           workspaces: './src-tauri -> target'
+          key: ${{ matrix.cache_key }}-cargo
 
       - name: Extract version from tag and sync
         shell: bash
         run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          VERSION="${{ needs.prepare-release.outputs.version }}"
           npm pkg set version="$VERSION"
           npm run sync-version
           node scripts/validate-version.js
@@ -96,20 +215,20 @@ jobs:
             echo "Apple certificate secrets not set, skipping certificate import"
             exit 0
           fi
-          
+
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          
+
           echo -n "$APPLE_CERTIFICATE" | base64 --decode > $CERTIFICATE_PATH
-          
+
           security create-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
-          
+
           security import $CERTIFICATE_PATH -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains | sed 's/["]//g')
           security set-key-partition-list -S apple-tool:,apple: -s -k "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
-          
+
           echo "Certificate imported successfully"
 
       - name: Validate notarization requirements (macOS only)
@@ -123,48 +242,7 @@ jobs:
           fi
           echo "All notarization secrets present"
 
-      - name: Generate release notes from commits
-        id: release_notes
-        shell: bash
-        run: |
-          git fetch --tags --force --prune origin
-          
-          CURRENT_TAG="${{ github.ref_name }}"
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1 || true)
-          
-          if [ -z "$PREVIOUS_TAG" ]; then
-            echo "No previous tag found, showing all commits"
-            COMMIT_RANGE="HEAD"
-          else
-            echo "Comparing ${PREVIOUS_TAG}...${CURRENT_TAG}"
-            COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
-          fi
-          
-          CHANGELOG=$(git log ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges | head -50)
-          
-          {
-            echo "## What's Changed"
-            echo ""
-            if [ -z "$CHANGELOG" ]; then
-              echo "- Initial release"
-            else
-              echo "$CHANGELOG"
-            fi
-            echo ""
-            if [ -n "$PREVIOUS_TAG" ]; then
-              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
-            fi
-            echo ""
-            echo "---"
-            echo ""
-            echo "See the assets below to download and install this version."
-          } > release_notes.txt
-          
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          cat release_notes.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - uses: tauri-apps/tauri-action@v0.6
+      - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_SIGNING_IDENTITY: "Developer ID Application: Tony Antony (9H7RVQAP36)"
@@ -178,47 +256,48 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: ./src-tauri
+          releaseId: ${{ needs.prepare-release.outputs.release_id }}
           tagName: ${{ github.ref_name }}
-          releaseName: 'AltSendme ${{ env.VERSION }}'
           args: ${{ matrix.args }}
-          releaseBody: ${{ steps.release_notes.outputs.notes }}
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
 
   # Uses repository secrets: ANDROID_KEY_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
-  # (same names as https://v2.tauri.app/distribute/sign/android/). Needs publish-tauri so the draft release exists before upload.
-  android-universal-apk:
-    name: Android release APK
-    needs: publish-tauri
+  # (same names as https://v2.tauri.app/distribute/sign/android/).
+  # Builds universal (F-Droid) + per-ABI APKs (arm64, armv7, x86, x86_64); see scripts/android-release-build.js.
+  android-release-apks:
+    name: Android release APKs
+    needs: prepare-release
     permissions:
       contents: write
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 300
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           fetch-depth: 0
 
       - name: Set up Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '24.x'
+          cache: npm
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
         with:
           # Match Tauri / plugin compileSdk 36 (see src-tauri/plugins/.../build.gradle.kts).
           packages: build-tools;36.0.0 platform-tools platforms;android-36
 
       - name: Set up NDK
-        uses: nttld/setup-ndk@v1
+        uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779 # v1
         id: setup-ndk
         with:
           ndk-version: r28b
@@ -237,21 +316,23 @@ jobs:
             echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
           fi
 
-      - name: Set Rust 1.89 and Android targets
-        uses: dtolnay/rust-toolchain@1.89.0
+      - name: Set Rust 1.91 and Android targets
+        uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
         with:
+          toolchain: 1.91.0
           components: rustfmt
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2
+        uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           workspaces: './src-tauri -> target'
+          key: ubuntu-22.04-android-cargo
 
       - name: Extract version from tag and sync
         shell: bash
         run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          VERSION="${{ needs.prepare-release.outputs.version }}"
           npm pkg set version="$VERSION"
           npm run sync-version
           node scripts/validate-version.js
@@ -260,27 +341,67 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build release APK (Tauri + patches + apksigner)
+      - name: Build release APKs (universal + per-ABI)
         env:
           ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_APK_PROFILES: universal,arm64,armv7,x86,x86_64
         run: npm run android:build:release
 
-      - name: Upload Android APK to GitHub release
+      - name: Upload Android APKs to GitHub release
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
         run: |
-          set -e
-          TAG="${{ github.ref_name }}"
-          APK="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
-          if [ ! -f "$APK" ]; then
-            echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
-            ls -la "src-tauri/gen/android/app/build/outputs/apk/universal/release/" 2>&1 || true
+          set -euo pipefail
+          if ! gh release view "$TAG" &>/dev/null; then
+            echo "ERROR: draft release for $TAG not found (prepare-release should have created it)"
             exit 1
           fi
-          RENAME="AltSendme-${TAG}-universal.apk"
-          cp "$APK" "$RENAME"
-          echo "Uploading $RENAME to release $TAG"
-          gh release upload "$TAG" "$RENAME" --clobber
+          declare -A APKS=(
+            [universal]="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
+            [arm64]="build/android-apks/app-arm64-release.apk"
+            [armv7]="build/android-apks/app-armv7-release.apk"
+            [x86]="build/android-apks/app-x86-release.apk"
+            [x86_64]="build/android-apks/app-x86_64-release.apk"
+          )
+          for variant in universal arm64 armv7 x86 x86_64; do
+            APK="${APKS[$variant]}"
+            if [ ! -f "$APK" ]; then
+              echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
+              ls -la "$(dirname "$APK")" 2>&1 || true
+              exit 1
+            fi
+            RENAME="AltSendme-${TAG}-${variant}.apk"
+            cp "$APK" "$RENAME"
+            echo "Uploading $RENAME to release $TAG"
+            gh release upload "$TAG" "$RENAME" --clobber
+          done
+
+  finalize-release:
+    name: Publish release
+    needs: [prepare-release, publish-tauri, android-release-apks]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Publish draft release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if ! gh release view "$TAG" &>/dev/null; then
+            echo "ERROR: release $TAG not found"
+            exit 1
+          fi
+          if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" = "true" ]; then
+            echo "Publishing release $TAG"
+            gh release edit "$TAG" --draft=false
+          else
+            echo "Release $TAG is already published"
+          fi
