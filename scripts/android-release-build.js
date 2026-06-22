@@ -9,9 +9,8 @@
  *   x86       — `--target i686`     (x86)
  *   x86_64    — `--target x86_64`   (x86_64)
  *
- * Per-ABI split APKs (`--split-per-abi`) are supported by Tauri v2 but conflict with
- * scripts/patches/01-fdroid-gradle.patch (abi splits disabled for universal). Use
- * `--target` per profile instead, or adjust the Gradle patch for split releases.
+ * Per-ABI APKs use `--split-per-abi --target <arch>` so Gradle writes to
+ * `apk/<abi>/release/` and does not overwrite the universal fat APK.
  *
  * @see https://v2.tauri.app/distribute/google-play/#separate-bundles-per-architecture
  */
@@ -30,12 +29,14 @@ const universalApkDir = path.join(
 )
 const extraSignedDir = path.join(rootDir, 'build/android-apks')
 
+const REQUIRED_UNIVERSAL_ABIS = ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']
+
 /** @type {Record<string, { buildArgs: string[], signedFileName: string, signedDir: string }>} */
 const APK_PROFILES = {
 	universal: {
 		buildArgs: ['--apk'],
 		signedFileName: 'app-universal-release.apk',
-		signedDir: universalApkDir,
+		signedDir: extraSignedDir,
 	},
 }
 
@@ -46,7 +47,7 @@ for (const [name, target] of Object.entries({
 	x86_64: 'x86_64',
 })) {
 	APK_PROFILES[name] = {
-		buildArgs: ['--apk', '--target', target],
+		buildArgs: ['--apk', '--split-per-abi', '--target', target],
 		signedFileName: `app-${name}-release.apk`,
 		signedDir: extraSignedDir,
 	}
@@ -91,56 +92,30 @@ function findApkInDir(dir) {
 }
 
 /** @returns {{ apk: string, gradleSigned: boolean } | null} */
-function resolveApkAfterBuild(profileName, buildStartedAt) {
-	const preferred = findApkInDir(outputDirForProfile(profileName))
-	if (preferred) {
-		return preferred
-	}
+function resolveApkAfterBuild(profileName) {
+	return findApkInDir(outputDirForProfile(profileName))
+}
 
-	if (profileName !== 'universal') {
-		const fromUniversal = findApkInDir(universalApkDir)
-		if (
-			fromUniversal &&
-			fs.statSync(fromUniversal.apk).mtimeMs >= buildStartedAt - 2000
-		) {
-			return fromUniversal
-		}
+function verifyUniversalApk(apkPath) {
+	const listing = spawnSync('unzip', ['-l', apkPath], { encoding: 'utf8' })
+	if (listing.status !== 0) {
+		console.error('android-release-build: failed to inspect universal APK:', apkPath)
+		process.exit(1)
 	}
-
-	const apkRoot = path.join(genAndroid, 'app/build/outputs/apk')
-	let newest = null
-	/** @param {string} dir */
-	function walk(dir) {
-		if (!fs.existsSync(dir)) {
-			return
-		}
-		for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-			const p = path.join(dir, ent.name)
-			if (ent.isDirectory()) {
-				walk(p)
-				continue
-			}
-			if (!ent.name.endsWith('.apk')) {
-				continue
-			}
-			const mtime = fs.statSync(p).mtimeMs
-			if (mtime < buildStartedAt - 2000) {
-				continue
-			}
-			if (!newest || mtime > newest.mtime) {
-				newest = {
-					apk: p,
-					gradleSigned: !ent.name.endsWith('-unsigned.apk'),
-					mtime,
-				}
-			}
-		}
+	const missing = REQUIRED_UNIVERSAL_ABIS.filter(
+		(abi) => !listing.stdout.includes(`lib/${abi}/`)
+	)
+	if (missing.length > 0) {
+		console.error(
+			`android-release-build: universal APK is missing native libs for: ${missing.join(', ')}`,
+			`\n  ${apkPath}`,
+			'\n  Per-ABI builds must not overwrite the universal output; check build order and --split-per-abi.'
+		)
+		process.exit(1)
 	}
-	walk(apkRoot)
-	if (!newest) {
-		return null
-	}
-	return { apk: newest.apk, gradleSigned: newest.gradleSigned }
+	console.log(
+		`android-release-build: verified universal APK contains all ABIs (${REQUIRED_UNIVERSAL_ABIS.join(', ')})`
+	)
 }
 
 function readAndroidBundleIdentifier() {
@@ -328,18 +303,17 @@ const profiles = selectedProfiles()
 
 for (const profile of profiles) {
 	console.log(`\nandroid-release-build: building profile "${profile.name}"`)
-	const buildStartedAt = Date.now()
 	run(
 		'npx',
 		['tauri', 'android', 'build', ...profile.buildArgs],
 		{ noCi: true }
 	)
 
-	const built = resolveApkAfterBuild(profile.name, buildStartedAt)
+	const built = resolveApkAfterBuild(profile.name)
 	if (!built) {
 		console.error(
 			`android-release-build: APK not found for profile "${profile.name}"`,
-			`(checked ${outputDirForProfile(profile.name)} and recent outputs under gen/android/app/build/outputs/apk)`
+			`(checked ${outputDirForProfile(profile.name)})`
 		)
 		process.exit(1)
 	}
@@ -358,5 +332,9 @@ for (const profile of profiles) {
 		fs.mkdirSync(path.dirname(dest), { recursive: true })
 		fs.copyFileSync(built.apk, dest)
 		console.log(`\nUnsigned APK (no keystore): ${dest}`)
+	}
+
+	if (profile.name === 'universal') {
+		verifyUniversalApk(signedApk)
 	}
 }
