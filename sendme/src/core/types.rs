@@ -60,12 +60,12 @@ impl Default for RelayModeOption {
     }
 }
 
-impl From<RelayModeOption> for iroh::RelayMode {
+impl From<RelayModeOption> for iroh::endpoint::RelayMode {
     fn from(value: RelayModeOption) -> Self {
         match value {
-            RelayModeOption::Disabled => iroh::RelayMode::Disabled,
-            RelayModeOption::Default => iroh::RelayMode::Default,
-            RelayModeOption::Custom(url) => iroh::RelayMode::Custom(url.into()),
+            RelayModeOption::Disabled => iroh::endpoint::RelayMode::Disabled,
+            RelayModeOption::Default => iroh::endpoint::RelayMode::Default,
+            RelayModeOption::Custom(url) => iroh::endpoint::RelayMode::custom([url]),
         }
     }
 }
