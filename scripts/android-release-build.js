@@ -29,7 +29,7 @@ const universalApkDir = path.join(
 )
 const extraSignedDir = path.join(rootDir, 'build/android-apks')
 
-const REQUIRED_UNIVERSAL_ABIS = ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']
+const REQUIRED_UNIVERSAL_ABIS = ['arm64-v8a', 'armeabi-v7a']
 
 /** @type {Record<string, { buildArgs: string[], signedFileName: string, signedDir: string }>} */
 const APK_PROFILES = {
@@ -43,8 +43,6 @@ const APK_PROFILES = {
 for (const [name, target] of Object.entries({
 	arm64: 'aarch64',
 	armv7: 'armv7',
-	x86: 'i686',
-	x86_64: 'x86_64',
 })) {
 	APK_PROFILES[name] = {
 		buildArgs: ['--apk', '--split-per-abi', '--target', target],
@@ -59,8 +57,6 @@ const javaRoot = path.join(genAndroid, 'app/src/main/java')
 const PROFILE_ABI_DIRS = {
 	arm64: 'arm64-v8a',
 	armv7: 'armeabi-v7a',
-	x86: 'x86',
-	x86_64: 'x86_64',
 }
 
 function outputDirForProfile(profileName) {

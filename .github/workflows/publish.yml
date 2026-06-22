@@ -348,7 +348,7 @@ jobs:
         with:
           toolchain: 1.91.0
           components: rustfmt
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+          targets: aarch64-linux-android,armv7-linux-androideabi
 
       - name: Rust cache
         uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -373,7 +373,7 @@ jobs:
           ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ANDROID_APK_PROFILES: universal,arm64,armv7,x86,x86_64
+          ANDROID_APK_PROFILES: universal,arm64,armv7
         run: npm run android:build:release
 
       - name: Upload Android APKs to GitHub release
@@ -392,10 +392,8 @@ jobs:
             [universal]="build/android-apks/app-universal-release.apk"
             [arm64]="build/android-apks/app-arm64-release.apk"
             [armv7]="build/android-apks/app-armv7-release.apk"
-            [x86]="build/android-apks/app-x86-release.apk"
-            [x86_64]="build/android-apks/app-x86_64-release.apk"
           )
-          for variant in universal arm64 armv7 x86 x86_64; do
+          for variant in universal arm64 armv7; do
             APK="${APKS[$variant]}"
             if [ ! -f "$APK" ]; then
               echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
