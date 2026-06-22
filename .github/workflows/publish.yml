@@ -90,17 +90,24 @@ jobs:
           set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
 
-          if gh release view "$TAG" &>/dev/null; then
-            echo "Release for $TAG already exists"
+          if RELEASE_ID=$(gh release view "$TAG" --json id -q .id 2>/dev/null); then
+            echo "Release for $TAG already exists (id=${RELEASE_ID})"
           else
             echo "Creating draft release for $TAG"
-            gh release create "$TAG" \
+            RELEASE_URL=$(gh release create "$TAG" \
               --draft \
+              --target "${GITHUB_SHA}" \
               --title "AltSendme ${VERSION}" \
-              --notes-file release_notes.txt
+              --notes-file release_notes.txt)
+            echo "Created draft release at ${RELEASE_URL}"
+            RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
+              --jq ".[] | select(.html_url == \"${RELEASE_URL}\") | .id")
           fi
 
-          RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .id)
+          if [ -z "${RELEASE_ID}" ]; then
+            echo "ERROR: could not resolve release id for ${TAG}"
+            exit 1
+          fi
           echo "release_id=${RELEASE_ID}" >> "$GITHUB_OUTPUT"
 
   publish-tauri:
