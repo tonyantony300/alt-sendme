@@ -56,7 +56,7 @@ jobs:
             COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
           fi
 
-          CHANGELOG=$(git log ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges | head -50)
+          CHANGELOG=$(git log -50 ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges)
 
           {
             echo "## What's Changed"
