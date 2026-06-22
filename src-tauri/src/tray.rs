@@ -92,11 +92,18 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
         .resource_dir()?
         .join("icons/128x128.png");
 
-    let icon = tauri::image::Image::from_path(&icon_path).or_else(|_| {
-        app.default_window_icon()
-            .ok_or_else(|| tauri::Error::InvalidIcon)
-            .map(|i| i.clone())
-    })?;
+    let icon = match tauri::image::Image::from_path(&icon_path) {
+        Ok(icon) => icon,
+        Err(_) => app
+            .default_window_icon()
+            .cloned()
+            .ok_or_else(|| {
+                tauri::Error::InvalidIcon(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "tray icon not found",
+                ))
+            })?,
+    };
 
     builder = builder.icon(icon);
 
