@@ -56,7 +56,7 @@ const javaRoot = path.join(genAndroid, 'app/src/main/java')
 /** Tauri `--split-per-abi` Gradle output folder names (not jni lib ABI names). */
 const PROFILE_ABI_DIRS = {
 	arm64: 'arm64',
-	armv7: 'armv7',
+	armv7: 'arm',
 }
 
 function outputDirForProfile(profileName) {
