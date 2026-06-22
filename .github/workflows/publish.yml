@@ -90,18 +90,20 @@ jobs:
           set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
 
-          if RELEASE_ID=$(gh release view "$TAG" --json id -q .id 2>/dev/null); then
+          if RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
+            --jq "map(select(.tag_name == \"${TAG}\")) | first | .id // empty"); [ -n "${RELEASE_ID}" ]; then
             echo "Release for $TAG already exists (id=${RELEASE_ID})"
           else
             echo "Creating draft release for $TAG"
-            RELEASE_URL=$(gh release create "$TAG" \
-              --draft \
-              --target "${GITHUB_SHA}" \
-              --title "AltSendme ${VERSION}" \
-              --notes-file release_notes.txt)
-            echo "Created draft release at ${RELEASE_URL}"
-            RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
-              --jq ".[] | select(.html_url == \"${RELEASE_URL}\") | .id")
+            RELEASE_ID=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/releases" \
+              -f tag_name="${TAG}" \
+              -f target_commitish="${GITHUB_SHA}" \
+              -f name="AltSendme ${VERSION}" \
+              -f body="$(cat release_notes.txt)" \
+              -F draft=true \
+              -F prerelease=false \
+              --jq .id)
+            echo "Created draft release for ${TAG} (id=${RELEASE_ID})"
           fi
 
           if [ -z "${RELEASE_ID}" ]; then
@@ -361,10 +363,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
         run: |
           set -euo pipefail
-          if ! gh release view "$TAG" &>/dev/null; then
-            echo "ERROR: draft release for $TAG not found (prepare-release should have created it)"
+          if [ -z "$RELEASE_ID" ]; then
+            echo "ERROR: release id missing (prepare-release should have created it)"
             exit 1
           fi
           declare -A APKS=(
@@ -384,7 +387,15 @@ jobs:
             RENAME="AltSendme-${TAG}-${variant}.apk"
             cp "$APK" "$RENAME"
             echo "Uploading $RENAME to release $TAG"
-            gh release upload "$TAG" "$RENAME" --clobber
+            ASSET_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets" \
+              --jq ".[] | select(.name == \"${RENAME}\") | .id // empty")
+            if [ -n "$ASSET_ID" ]; then
+              gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/assets/${ASSET_ID}" >/dev/null
+            fi
+            gh api --method POST \
+              -H "Content-Type: application/vnd.android.package-archive" \
+              --input "$RENAME" \
+              "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets?name=${RENAME}" >/dev/null
           done
 
   finalize-release:
@@ -400,15 +411,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
         run: |
           set -euo pipefail
-          if ! gh release view "$TAG" &>/dev/null; then
-            echo "ERROR: release $TAG not found"
+          if [ -z "$RELEASE_ID" ]; then
+            echo "ERROR: release id missing"
             exit 1
           fi
-          if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" = "true" ]; then
+          if [ "$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" --jq .draft)" = "true" ]; then
             echo "Publishing release $TAG"
-            gh release edit "$TAG" --draft=false
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
+              -F draft=false \
+              -F prerelease=false >/dev/null
           else
             echo "Release $TAG is already published"
           fi
