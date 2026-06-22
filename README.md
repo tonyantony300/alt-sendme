@@ -63,18 +63,18 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.5/AltSendme_0.3.5_x64-setup.exe'>AltSendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_x64-setup.exe'>AltSendme.exe</a></td>
   </tr>
   <tr>
     <td><b>macOS</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.5/AltSendme_0.3.5_universal.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_universal.dmg'>AltSendme.dmg</a></td>
   <tr>
     <td><b>Linux </b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.5/AltSendme_0.3.5_amd64.deb'>AltSendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_amd64.deb'>AltSendme.deb</a></td>
   </tr>
   <tr>
     <td><b>Android</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.6-beta.1/AltSendme-v0.3.6-beta-universal.apk'>AltSendme-beta.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme-v0.4.0-universal.apk'>AltSendme.apk</a></td>
   </tr>
 
 </table>
@@ -280,7 +280,7 @@ Thank you for checking out this project! If you find it useful, consider giving 
 <!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
-[badge-version]: https://img.shields.io/badge/version-0.3.5-blue
+[badge-version]: https://img.shields.io/badge/version-0.4.0-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
