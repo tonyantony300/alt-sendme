@@ -111,11 +111,31 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
+            arch: universal
+            rust_target: ''
             args: '--target universal-apple-darwin'
+            cache_key: macos-universal
           - platform: 'ubuntu-22.04'
+            arch: x86_64
+            rust_target: x86_64-unknown-linux-gnu
             args: ''
+            cache_key: ubuntu-x86_64
+          - platform: 'ubuntu-22.04-arm'
+            arch: aarch64
+            rust_target: aarch64-unknown-linux-gnu
+            args: ''
+            cache_key: ubuntu-aarch64
           - platform: 'windows-latest'
-            args: '--bundles nsis,msi'
+            arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
+            args: '--target x86_64-pc-windows-msvc --bundles nsis,msi'
+            cache_key: windows-x86_64
+          - platform: 'windows-latest'
+            arch: aarch64
+            rust_target: aarch64-pc-windows-msvc
+            # WiX MSI cannot be cross-compiled for ARM64; NSIS only (see Tauri Windows installer docs).
+            args: '--target aarch64-pc-windows-msvc --bundles nsis'
+            cache_key: windows-aarch64
 
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 90
@@ -135,10 +155,10 @@ jobs:
         with:
           toolchain: 1.91.0
           components: rustfmt
-          targets: "${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}"
+          targets: "${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.rust_target }}"
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
+        if: contains(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
@@ -159,7 +179,7 @@ jobs:
         uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           workspaces: './src-tauri -> target'
-          key: ${{ matrix.platform }}-cargo
+          key: ${{ matrix.cache_key }}-cargo
 
       - name: Extract version from tag and sync
         shell: bash
@@ -244,13 +264,14 @@ jobs:
 
   # Uses repository secrets: ANDROID_KEY_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
   # (same names as https://v2.tauri.app/distribute/sign/android/).
-  android-universal-apk:
-    name: Android release APK
+  # Builds universal (F-Droid) + per-ABI APKs (arm64, armv7, x86, x86_64); see scripts/android-release-build.js.
+  android-release-apks:
+    name: Android release APKs
     needs: prepare-release
     permissions:
       contents: write
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
@@ -319,38 +340,48 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build release APK (Tauri + patches + apksigner)
+      - name: Build release APKs (universal + per-ABI)
         env:
           ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_APK_PROFILES: universal,arm64,armv7,x86,x86_64
         run: npm run android:build:release
 
-      - name: Upload Android APK to GitHub release
+      - name: Upload Android APKs to GitHub release
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           TAG="${{ github.ref_name }}"
-          APK="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
-          if [ ! -f "$APK" ]; then
-            echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
-            ls -la "src-tauri/gen/android/app/build/outputs/apk/universal/release/" 2>&1 || true
-            exit 1
-          fi
           if ! gh release view "$TAG" &>/dev/null; then
             echo "ERROR: draft release for $TAG not found (prepare-release should have created it)"
             exit 1
           fi
-          RENAME="AltSendme-${TAG}-universal.apk"
-          cp "$APK" "$RENAME"
-          echo "Uploading $RENAME to release $TAG"
-          gh release upload "$TAG" "$RENAME" --clobber
+          declare -A APKS=(
+            [universal]="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
+            [arm64]="build/android-apks/app-arm64-release.apk"
+            [armv7]="build/android-apks/app-armv7-release.apk"
+            [x86]="build/android-apks/app-x86-release.apk"
+            [x86_64]="build/android-apks/app-x86_64-release.apk"
+          )
+          for variant in universal arm64 armv7 x86 x86_64; do
+            APK="${APKS[$variant]}"
+            if [ ! -f "$APK" ]; then
+              echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
+              ls -la "$(dirname "$APK")" 2>&1 || true
+              exit 1
+            fi
+            RENAME="AltSendme-${TAG}-${variant}.apk"
+            cp "$APK" "$RENAME"
+            echo "Uploading $RENAME to release $TAG"
+            gh release upload "$TAG" "$RENAME" --clobber
+          done
 
   finalize-release:
     name: Publish release
-    needs: [prepare-release, publish-tauri, android-universal-apk]
+    needs: [prepare-release, publish-tauri, android-release-apks]
     permissions:
       contents: write
     runs-on: ubuntu-latest

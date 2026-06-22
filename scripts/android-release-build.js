@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 /**
- * Builds a release APK for Android (F-Droid / signed release).
- * 1. Ensure gen/android exists and identifier Java package path is present.
- * 2. In CI (ANDROID_KEY_BASE64 set), write keystore to gen/android/keystore.properties.
- * 3. Apply scripts/patches/*.patch to app/build.gradle.kts (F-Droid + optional signing).
- * 4. Run "tauri android build --apk" once, after patching, to produce an unsigned APK.
- * 5. If keystore is available, sign the unsigned APK with apksigner (no second Gradle run —
- *    gradlew assembleRelease would trigger Tauri CLI WebSocket and fail when run standalone).
+ * Builds signed release APKs for Android (F-Droid / CI).
  *
- * Output (signed): app-universal-release.apk
- * Output (unsigned): app-universal-release-unsigned.apk
+ * Profiles (see ANDROID_APK_PROFILES):
+ *   universal — all ABIs in one APK (F-Droid; default Tauri universal output)
+ *   arm64     — `--target aarch64`  (arm64-v8a / armv8a)
+ *   armv7     — `--target armv7`    (armeabi-v7a / armv7a)
+ *   x86       — `--target i686`     (x86)
+ *   x86_64    — `--target x86_64`   (x86_64)
+ *
+ * Per-ABI split APKs (`--split-per-abi`) are supported by Tauri v2 but conflict with
+ * scripts/patches/01-fdroid-gradle.patch (abi splits disabled for universal). Use
+ * `--target` per profile instead, or adjust the Gradle patch for split releases.
+ *
+ * @see https://v2.tauri.app/distribute/google-play/#separate-bundles-per-architecture
  */
 
 import { spawnSync } from 'node:child_process'
@@ -20,11 +24,36 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 const genAndroid = path.join(rootDir, 'src-tauri/gen/android')
-const apkDir = path.join(genAndroid, 'app/build/outputs/apk/universal/release')
-const unsignedApk = path.join(apkDir, 'app-universal-release-unsigned.apk')
-const signedApk = path.join(apkDir, 'app-universal-release.apk')
+const universalApkDir = path.join(
+	genAndroid,
+	'app/build/outputs/apk/universal/release'
+)
+const extraSignedDir = path.join(rootDir, 'build/android-apks')
+
+/** @type {Record<string, { buildArgs: string[], signedFileName: string, signedDir: string }>} */
+const APK_PROFILES = {
+	universal: {
+		buildArgs: ['--apk'],
+		signedFileName: 'app-universal-release.apk',
+		signedDir: universalApkDir,
+	},
+}
+
+for (const [name, target] of Object.entries({
+	arm64: 'aarch64',
+	armv7: 'armv7',
+	x86: 'i686',
+	x86_64: 'x86_64',
+})) {
+	APK_PROFILES[name] = {
+		buildArgs: ['--apk', '--target', target],
+		signedFileName: `app-${name}-release.apk`,
+		signedDir: extraSignedDir,
+	}
+}
 
 const javaRoot = path.join(genAndroid, 'app/src/main/java')
+const unsignedApkName = 'app-universal-release-unsigned.apk'
 
 function readAndroidBundleIdentifier() {
 	const p = path.join(rootDir, 'src-tauri/tauri.android.conf.json')
@@ -40,7 +69,6 @@ function readAndroidBundleIdentifier() {
 	return j.identifier
 }
 
-/** e.g. com.altsendme.android -> .../java/com/altsendme/android (must exist after init). */
 function expectedAppJavaDir() {
 	const id = readAndroidBundleIdentifier()
 	return path.join(javaRoot, ...id.split('.'))
@@ -58,9 +86,115 @@ function run(cmd, args, opts = {}) {
 	}
 }
 
-// 0. CI / fresh clone has no gen/android (gitignored), or a stale/partial gen without the
-//    Java package tree for bundle identifier in tauri.android.conf.json. Tauri build checks
-//    .../java/<identifier segments>/ and errors if that path is missing.
+function resolveApksigner() {
+	const androidHome =
+		process.env.ANDROID_HOME ||
+		process.env.ANDROID_SDK_ROOT ||
+		path.join(process.env.HOME || '', 'Library/Android/sdk')
+	let apksigner = path.join(androidHome, 'build-tools', '34.0.0', 'apksigner')
+	if (!fs.existsSync(apksigner)) {
+		const buildTools = path.join(androidHome, 'build-tools')
+		if (fs.existsSync(buildTools)) {
+			const versions = fs.readdirSync(buildTools).sort().reverse()
+			for (const v of versions) {
+				const p = path.join(buildTools, v, 'apksigner')
+				if (fs.existsSync(p)) {
+					apksigner = p
+					break
+				}
+			}
+		}
+	}
+	if (!fs.existsSync(apksigner)) {
+		console.error(
+			'android-release-build: apksigner not found. Set ANDROID_HOME and ensure build-tools is installed.'
+		)
+		process.exit(1)
+	}
+	return apksigner
+}
+
+function readKeystoreProps() {
+	const keystorePropsPath = path.join(genAndroid, 'keystore.properties')
+	if (!fs.existsSync(keystorePropsPath)) {
+		return null
+	}
+	const props = Object.fromEntries(
+		fs
+			.readFileSync(keystorePropsPath, 'utf8')
+			.split('\n')
+			.filter((l) => l && !l.startsWith('#'))
+			.map((l) => {
+				const i = l.indexOf('=')
+				return [l.slice(0, i).trim(), l.slice(i + 1).trim()]
+			})
+	)
+	const storeFile = props.storeFile || props.store
+	const alias = props.keyAlias || props.alias
+	const ksPassword = props.storePassword || props.password
+	const keyPass = props.keyPassword || props.password
+	if (!storeFile || !alias || !ksPassword || !keyPass) {
+		return null
+	}
+	return { storeFile, alias, ksPassword, keyPass }
+}
+
+function signApk(unsignedApk, signedApk, keystore) {
+	fs.mkdirSync(path.dirname(signedApk), { recursive: true })
+	const apksigner = resolveApksigner()
+	const ksPassEnvVar = 'ALTSENDME_APKSIGNER_KS_PASS'
+	const keyPassEnvVar = 'ALTSENDME_APKSIGNER_KEY_PASS'
+	const r = spawnSync(
+		apksigner,
+		[
+			'sign',
+			'--ks',
+			keystore.storeFile,
+			'--ks-key-alias',
+			keystore.alias,
+			'--ks-pass',
+			`pass:env:${ksPassEnvVar}`,
+			'--key-pass',
+			`pass:env:${keyPassEnvVar}`,
+			'--out',
+			signedApk,
+			unsignedApk,
+		],
+		{
+			stdio: 'inherit',
+			cwd: rootDir,
+			env: {
+				...process.env,
+				[ksPassEnvVar]: keystore.ksPassword,
+				[keyPassEnvVar]: keystore.keyPass,
+			},
+		}
+	)
+	if (r.status !== 0) {
+		process.exit(r.status ?? 1)
+	}
+	console.log('\nSigned APK:', signedApk)
+}
+
+function selectedProfiles() {
+	const raw =
+		process.env.ANDROID_APK_PROFILES || 'universal,arm64,armv7,x86,x86_64'
+	const names = raw
+		.split(',')
+		.map((s) => s.trim())
+		.filter(Boolean)
+	const unknown = names.filter((n) => !APK_PROFILES[n])
+	if (unknown.length > 0) {
+		console.error(
+			`android-release-build: unknown profile(s): ${unknown.join(', ')}`,
+			`(valid: ${Object.keys(APK_PROFILES).join(', ')})`
+		)
+		process.exit(1)
+	}
+	return names.map((name) => ({ name, ...APK_PROFILES[name] }))
+}
+
+// 0. Ensure gen/android exists with the correct Java package tree.
 if (!fs.existsSync(expectedAppJavaDir())) {
 	if (fs.existsSync(genAndroid)) {
 		console.log(
@@ -81,8 +215,7 @@ if (!fs.existsSync(expectedAppJavaDir())) {
 	process.exit(1)
 }
 
-// 1. In CI, write keystore now (gen/ exists after init)
-// keystore.properties keys: keyAlias, keyPassword, storeFile, storePassword
+// 1. CI keystore
 const keyBase64 = process.env.ANDROID_KEY_BASE64
 const keyAlias = process.env.ANDROID_KEY_ALIAS
 const keyPassword = process.env.ANDROID_KEY_PASSWORD
@@ -99,96 +232,36 @@ if (keyBase64 && keyAlias && keyPassword) {
 	)
 }
 
-// 2. Apply Gradle patches before building so they affect the current APK
+// 2. Gradle patches (universal APK + optional release signing)
 run('node', [path.join(__dirname, 'apply-android-release-gradle-patches.js')])
 
-// 3. Build once the generated Gradle files are in their final state
-run('npx', ['tauri', 'android', 'build', '--apk'], { noCi: true })
+const keystore = readKeystoreProps()
+const profiles = selectedProfiles()
 
-// 4. Sign the unsigned APK with apksigner
-const keystorePropsPath = path.join(genAndroid, 'keystore.properties')
-if (!fs.existsSync(unsignedApk)) {
-	console.error('android-release-build: unsigned APK not found:', unsignedApk)
-	process.exit(1)
-}
-
-if (fs.existsSync(keystorePropsPath)) {
-	const props = Object.fromEntries(
-		fs
-			.readFileSync(keystorePropsPath, 'utf8')
-			.split('\n')
-			.filter((l) => l && !l.startsWith('#'))
-			.map((l) => {
-				const i = l.indexOf('=')
-				return [l.slice(0, i).trim(), l.slice(i + 1).trim()]
-			})
+for (const profile of profiles) {
+	console.log(`\nandroid-release-build: building profile "${profile.name}"`)
+	run(
+		'npx',
+		['tauri', 'android', 'build', ...profile.buildArgs],
+		{ noCi: true }
 	)
-	const storeFile = props.storeFile || props.store
-	const alias = props.keyAlias || props.alias
-	const ksPassword = props.storePassword || props.password
-	const keyPass = props.keyPassword || props.password
 
-	if (storeFile && alias && ksPassword && keyPass) {
-		const androidHome =
-			process.env.ANDROID_HOME ||
-			process.env.ANDROID_SDK_ROOT ||
-			path.join(process.env.HOME || '', 'Library/Android/sdk')
-		let apksigner = path.join(androidHome, 'build-tools', '34.0.0', 'apksigner')
-		if (!fs.existsSync(apksigner)) {
-			const buildTools = path.join(androidHome, 'build-tools')
-			if (fs.existsSync(buildTools)) {
-				const versions = fs.readdirSync(buildTools).sort().reverse()
-				for (const v of versions) {
-					const p = path.join(buildTools, v, 'apksigner')
-					if (fs.existsSync(p)) {
-						apksigner = p
-						break
-					}
-				}
-			}
-		}
-		if (!fs.existsSync(apksigner)) {
-			console.error(
-				'android-release-build: apksigner not found. Set ANDROID_HOME and ensure build-tools is installed.'
-			)
-			process.exit(1)
-		}
-
-		const ksPassEnvVar = 'ALTSENDME_APKSIGNER_KS_PASS'
-		const keyPassEnvVar = 'ALTSENDME_APKSIGNER_KEY_PASS'
-		const r = spawnSync(
-			apksigner,
-			[
-				'sign',
-				'--ks',
-				storeFile,
-				'--ks-key-alias',
-				alias,
-				'--ks-pass',
-				`pass:env:${ksPassEnvVar}`,
-				'--key-pass',
-				`pass:env:${keyPassEnvVar}`,
-				'--out',
-				signedApk,
-				unsignedApk,
-			],
-			{
-				stdio: 'inherit',
-				cwd: rootDir,
-				env: {
-					...process.env,
-					[ksPassEnvVar]: ksPassword,
-					[keyPassEnvVar]: keyPass,
-				},
-			}
+	const unsignedApk = path.join(universalApkDir, unsignedApkName)
+	if (!fs.existsSync(unsignedApk)) {
+		console.error(
+			`android-release-build: unsigned APK not found for profile "${profile.name}":`,
+			unsignedApk
 		)
-		if (r.status !== 0) {
-			process.exit(r.status ?? 1)
-		}
-		console.log('\nSigned APK:', signedApk)
-	} else {
-		console.log('\nUnsigned APK (keystore.properties incomplete):', unsignedApk)
+		process.exit(1)
 	}
-} else {
-	console.log('\nUnsigned APK (no keystore.properties):', unsignedApk)
+
+	const signedApk = path.join(profile.signedDir, profile.signedFileName)
+	if (keystore) {
+		signApk(unsignedApk, signedApk, keystore)
+	} else {
+		const dest = signedApk.replace(/\.apk$/, '-unsigned.apk')
+		fs.mkdirSync(path.dirname(dest), { recursive: true })
+		fs.copyFileSync(unsignedApk, dest)
+		console.log(`\nUnsigned APK (no keystore): ${dest}`)
+	}
 }
