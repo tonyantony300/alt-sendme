@@ -53,10 +53,10 @@ for (const [name, target] of Object.entries({
 
 const javaRoot = path.join(genAndroid, 'app/src/main/java')
 
-/** Gradle ABI output folders for per-target builds */
+/** Tauri `--split-per-abi` Gradle output folder names (not jni lib ABI names). */
 const PROFILE_ABI_DIRS = {
-	arm64: 'arm64-v8a',
-	armv7: 'armeabi-v7a',
+	arm64: 'arm64',
+	armv7: 'armv7',
 }
 
 function outputDirForProfile(profileName) {
