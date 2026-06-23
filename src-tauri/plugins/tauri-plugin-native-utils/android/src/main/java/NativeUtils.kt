@@ -2,6 +2,10 @@ package com.altsendme.plugin.native_utils
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.os.Environment
+import android.provider.DocumentsContract
+import android.util.Log
 import android.webkit.WebView
 import androidx.activity.result.ActivityResult
 import app.tauri.annotation.ActivityCallback
@@ -96,10 +100,12 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         try {
             activity.contentResolver.takePersistableUriPermission(uri, RW_PERMISSION_FLAGS)
 
-            invoke.resolveObject(DownloadFolderSelectionResponse(
-                uri.toString(),
-                uri.extractFolderOsPath(),
-            ))
+            invoke.resolveObject(
+                DownloadFolderSelectionResponse(
+                    uri.toString(),
+                    uri.extractFolderOsPath(),
+                )
+            )
 
             activity.contentResolver.persistedUriPermissions.stream()
                 .filter { it.uri != uri }
@@ -116,39 +122,47 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
     @ActivityCallback
     fun handleSendSelection(invoke: Invoke, result: ActivityResult) {
-        val args = invoke.parseArgs(SelectorArgs::class.java)
-        val channel = args.channel
+        try {
+            val args = invoke.parseArgs(SelectorArgs::class.java)
+            val channel = args.channel
 
-        if (Activity.RESULT_OK != result.resultCode) return invoke.resolveObject(false)
+            if (Activity.RESULT_OK != result.resultCode) return invoke.resolveObject(false)
 
-        val uri = result.data?.data ?: return invoke.resolveObject(false)
+            val uri = result.data?.data ?: return invoke.resolveObject(false)
 
-        val path = listOf(
-            activity.cacheDir.absolutePath,
-            "file_cache",
-            System.currentTimeMillis().toString(),
-        ).joinToString(File.separator)
+            Log.w("NativeUtils", "Trying to cache $uri")
 
-        invoke.resolveObject(true)
+            val path = listOf(
+                activity.cacheDir.absolutePath,
+                "file_cache",
+                System.currentTimeMillis().toString(),
+            ).joinToString(File.separator)
 
-        val tempFolder = File(path)
+            invoke.resolveObject(true)
 
-        val job = scope.launch {
-            try {
-                tempFolder.parentFile?.mkdirs()
-                    ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
+            val tempFolder = File(path)
+            Log.w("NativeUtils", "Using tmp path ${tempFolder.absolutePath}")
 
-                copyUri(activity, uri, tempFolder).collect {
-                    channel.sendObject(it)
+            val job = scope.launch {
+                try {
+                    tempFolder.parentFile?.mkdirs()
+                        ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
+
+                    copyUri(activity, uri, tempFolder).collect {
+                        channel.sendObject(it)
+                        Log.w("NativeUtils", it.toString())
+                    }
+                } catch (_: Exception) {
+                    tempFolder.delete()
+                } finally {
+                    jobs.remove(channel.id)
                 }
-            } catch (_: Exception) {
-                tempFolder.delete()
-            } finally {
-                jobs.remove(channel.id)
             }
-        }
 
-        jobs[channel.id] = job to tempFolder.absolutePath
+            jobs[channel.id] = job to tempFolder.absolutePath
+        } catch (e: Exception) {
+            Log.w("NativeUtils", e.message ?: e.toString())
+        }
     }
 
     override fun load(webView: WebView) {
@@ -164,10 +178,31 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
             try {
                 job.cancel()
                 File(tempFolder).deleteRecursively()
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
 
         scope.cancel()
         super.onDestroy()
+    }
+}
+
+fun Uri.extractFolderOsPath(): String {
+    require(DocumentsContract.isTreeUri(this))
+
+    val path = this.path
+        ?: throw IOException("Unable to get path from selected download folder uri: $this")
+    val baseExternalPath = Environment.getExternalStorageDirectory().path
+    return try {
+        val docId = DocumentsContract.getTreeDocumentId(this)
+        val segments = docId.split(":")
+        when {
+            "primary" == segments[0] && segments.size > 1 -> "${baseExternalPath}/${segments[1]}"
+            "primary" == segments[0] -> baseExternalPath
+            segments.size > 1 -> "/storage/${segments[0]}/${segments[1]}"
+            else -> "/storage/${segments[0]}/"
+        }
+    } catch (_: Exception) {
+        path
     }
 }
