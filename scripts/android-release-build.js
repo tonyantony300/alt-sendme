@@ -253,11 +253,15 @@ function selectedProfiles() {
 	return names.map((name) => ({ name, ...APK_PROFILES[name] }))
 }
 
-// 0. Always run `tauri android init --ci` to generate build.gradle.kts and the
-// rest of the Gradle project tree (these are not committed to git).
-// After init, restore the custom assets that are committed to git (icons +
-// AndroidManifest.xml) because `tauri android init` overwrites them with
-// Tauri defaults.
+// 0. Remove any partial gen/android tree (e.g. committed manifest/icons without
+// Gradle or Java sources), then run `tauri android init --ci` on a clean slate.
+// After init, restore committed custom assets (icons + AndroidManifest.xml).
+if (fs.existsSync(genAndroid)) {
+	console.log(
+		'android-release-build: removing gen/android before tauri android init'
+	)
+	fs.rmSync(genAndroid, { recursive: true, force: true })
+}
 console.log('android-release-build: tauri android init (generating Gradle build files)')
 run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
 
