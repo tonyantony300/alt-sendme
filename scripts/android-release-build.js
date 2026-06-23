@@ -253,29 +253,31 @@ function selectedProfiles() {
 	return names.map((name) => ({ name, ...APK_PROFILES[name] }))
 }
 
-// 0. Ensure gen/android exists with the correct manifest (committed to git).
-// We intentionally do NOT check expectedAppJavaDir() because the Java package
-// directory can be empty after removing MainActivity.kt — git does not track
-// empty directories, so it would never be present after checkout, causing us to
-// delete and regenerate gen/android (overwriting committed custom icons and the
-// custom AndroidManifest.xml with Tauri defaults).
+// 0. Always run `tauri android init --ci` to generate build.gradle.kts and the
+// rest of the Gradle project tree (these are not committed to git).
+// After init, restore the custom assets that are committed to git (icons +
+// AndroidManifest.xml) because `tauri android init` overwrites them with
+// Tauri defaults.
+console.log('android-release-build: tauri android init (generating Gradle build files)')
+run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
+
+console.log('android-release-build: restoring committed gen/android assets from git')
+run('git', ['checkout', 'HEAD', '--', 'src-tauri/gen/android/app/src/main/'])
+
 const manifestPath = path.join(genAndroid, 'app/src/main/AndroidManifest.xml')
 if (!fs.existsSync(manifestPath)) {
-	if (fs.existsSync(genAndroid)) {
-		console.log(
-			'android-release-build: removing incomplete gen/android before tauri android init'
-		)
-		fs.rmSync(genAndroid, { recursive: true, force: true })
-	}
-	console.log(
-		'android-release-build: tauri android init (AndroidManifest.xml missing)'
-	)
-	run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
-}
-if (!fs.existsSync(manifestPath)) {
 	console.error(
-		'android-release-build: after init, AndroidManifest.xml is still missing:',
+		'android-release-build: AndroidManifest.xml missing after init + git restore:',
 		manifestPath
+	)
+	process.exit(1)
+}
+
+const buildGradle = path.join(genAndroid, 'app/build.gradle.kts')
+if (!fs.existsSync(buildGradle)) {
+	console.error(
+		'android-release-build: build.gradle.kts missing after init:',
+		buildGradle
 	)
 	process.exit(1)
 }
