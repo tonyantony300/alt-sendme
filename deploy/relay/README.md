@@ -8,7 +8,7 @@ Run your own relay so AltSendme transfers do not use the public iroh relay infra
 |-------------|---------|
 | Server | VM or container with a **public IP** |
 | DNS | `A` / `AAAA` record for your relay hostname |
-| Ports | `80/tcp`, `443/tcp`, `3478/udp` (STUN), `9090/tcp` (metrics, optional) |
+| Ports | `80/tcp`, `443/tcp`, `7842/udp` (QUIC address discovery), `9090/tcp` (metrics, optional) |
 | TLS | Automatic via Let's Encrypt (built into `iroh-relay`) |
 
 For production, run **at least two relays** in different regions and add both URLs in AltSendme → Settings → Network.
@@ -51,6 +51,28 @@ fly deploy
 
 Update `iroh-relay.conf` so `hostname` matches the DNS name you point at the Fly app.
 
+## Quick deploy to Fly.io (no domain)
+
+For a fast functional test without owning a domain, use `fly.dev.toml`. It runs the relay
+in `--dev` mode (plain HTTP on port 3340); Fly's edge terminates TLS and proxies to it, so
+the relay is reachable at `https://<app>.fly.dev` with a valid cert.
+
+```bash
+cd deploy/relay
+# edit fly.dev.toml: set a unique `app` name and a nearby `primary_region`
+fly apps create <your-unique-name>
+fly deploy --config fly.dev.toml
+fly status   # confirm the machine is running
+```
+
+Then in AltSendme → **Settings → Network → Custom self-hosted**, add
+`https://<your-unique-name>.fly.dev` and click **Test connection**.
+
+> **Caveat:** this mode provides **relaying only** — QUIC address discovery / holepunch
+> assist is disabled in `--dev` (it needs direct UDP + TLS). It's ideal for trying the
+> feature, not for a production relay. For production, use the Let's Encrypt setup above
+> (`fly.toml` + your own domain).
+
 ## Private relay (shared token)
 
 To allow only clients that know your secret, uncomment and set in `iroh-relay.conf`:
@@ -68,7 +90,7 @@ After deployment, open AltSendme → Settings → Network → **Test connection*
 ## Troubleshooting
 
 - **ACME / TLS fails**: ensure port 80 is reachable from the internet and DNS points to this host.
-- **Test connection times out**: check firewall rules for 443/tcp and 3478/udp.
+- **Test connection times out**: check firewall rules for 443/tcp and 7842/udp.
 - **Auth fails**: confirm `access.shared_token` on the server matches the token in the app.
 
 ## References

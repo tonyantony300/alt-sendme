@@ -32,11 +32,11 @@ primary_region = "iad"
 
 [[services]]
   protocol = "udp"
-  internal_port = 3478
+  internal_port = 7842
   processes = ["app"]
 
   [[services.ports]]
-    port = 3478
+    port = 7842
 
 [[services]]
   protocol = "tcp"
