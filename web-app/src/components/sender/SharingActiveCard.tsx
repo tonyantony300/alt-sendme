@@ -12,6 +12,7 @@ import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { toastManager } from '../ui/toast'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { useAppSettingStore } from '../../store/app-setting'
 
 export function SharingActiveCard({
 	selectedPaths,
@@ -164,6 +165,9 @@ export function TicketDisplay({
 	onSetBroadcast?: (broadcast: boolean) => void
 }) {
 	const { t } = useTranslation()
+	const showBroadcastToggle = useAppSettingStore(
+		(state) => state.showBroadcastToggle
+	)
 
 	return (
 		<div className="space-y-3">
@@ -171,7 +175,9 @@ export function TicketDisplay({
 				<p className="block text-sm font-medium">
 					{t('common:sender.shareThisTicket')}
 				</p>
-				{isBroadcastMode !== undefined && onSetBroadcast && (
+				{showBroadcastToggle &&
+					isBroadcastMode !== undefined &&
+					onSetBroadcast && (
 					<div className="flex items-start gap-2">
 						<Label htmlFor={'broadcast-toggle'} className="text-sm">
 							{t('common:sender.broadcastMode.index')}

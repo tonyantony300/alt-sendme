@@ -16,6 +16,7 @@ export const defaultAppSettings: AppSettingsState = {
 	relayMode: 'default',
 	relayUrls: [''],
 	relayAuthToken: '',
+	showBroadcastToggle: false,
 }
 export const localSettingStore = new LazyStore(SETTING_FILE, {
 	autoSave: true,

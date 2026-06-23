@@ -173,6 +173,13 @@
 					"label": "Explorer context menu",
 					"description": "Add 'Send with AltSendme' to the Windows Explorer right-click menu"
 				}
+			},
+			"broadcast": {
+				"title": "Broadcast",
+				"showToggle": {
+					"label": "Show broadcast toggle while sharing",
+					"description": "Display a broadcast switch on the sharing screen so multiple receivers can download the same files at once."
+				}
 			}
 		},
 		"network": {
