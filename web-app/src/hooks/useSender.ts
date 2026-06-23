@@ -5,6 +5,7 @@ import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertType } from '../types/ui'
 import type { TransferMetadata, TransferProgress } from '../types/transfer'
 import { SpeedAverager, calculateETA } from '../utils/etaUtils'
+import { getRelayConfigArg } from '../lib/relay'
 import { useSenderStore } from '../store/sender-store'
 
 export interface UseSenderReturn {
@@ -639,6 +640,7 @@ export function useSender(): UseSenderReturn {
 			setIsLoading(true)
 			const result = await invoke<string>('send_items', {
 				paths: selectedPaths,
+				relay: getRelayConfigArg(),
 			})
 			// console.log('[useSender] startSharing: got ticket, setting state to SHARING')
 			setTicket(result)

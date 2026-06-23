@@ -92,6 +92,7 @@ pub fn run() {
             focus_main_window,
             check_launch_intent,
             fetch_ticket_metadata,
+            verify_relays,
             toggle_context_menu,
         ])
         .setup(|app| {

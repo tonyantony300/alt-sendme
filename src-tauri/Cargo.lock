@@ -104,6 +104,7 @@ dependencies = [
  "gstreamer-app",
  "gstreamer-video",
  "image",
+ "iroh",
  "mime_guess",
  "objc",
  "reqwest 0.13.2",

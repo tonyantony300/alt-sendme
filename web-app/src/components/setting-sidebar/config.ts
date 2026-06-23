@@ -19,8 +19,6 @@ export const settingSidebarConfig: Record<string, INavItem[]> = {
 			icon: 'Network',
 			to: 'network',
 			translationNs: 'settings.navItems.network',
-			disable: true,
-			comingSoon: true,
 		},
 		{
 			label: 'Notification',

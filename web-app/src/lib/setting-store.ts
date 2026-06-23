@@ -13,6 +13,9 @@ export const defaultAppSettings: AppSettingsState = {
 	showProgressOnIcon: false,
 	downloadsPath: '',
 	windowsContextMenu: true,
+	relayMode: 'default',
+	relayUrls: [''],
+	relayAuthToken: '',
 }
 export const localSettingStore = new LazyStore(SETTING_FILE, {
 	autoSave: true,

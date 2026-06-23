@@ -1,0 +1,16 @@
+services:
+  relay:
+    image: n0computer/iroh-relay:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3478:3478/udp"
+      - "9090:9090"
+    volumes:
+      - ./iroh-relay.conf:/config/iroh-relay.conf:ro
+      - relay-certs:/data/certs
+    command: ["--config-path", "/config/iroh-relay.conf"]
+
+volumes:
+  relay-certs:

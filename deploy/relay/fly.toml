@@ -1,0 +1,47 @@
+# Fly.io deployment for iroh-relay.
+# Prerequisites: flyctl installed, DNS A/AAAA for your hostname pointing at Fly.
+#
+# Quick start:
+#   cp iroh-relay.conf.example iroh-relay.conf   # edit hostname + contact
+#   fly launch --no-deploy
+#   fly volumes create relay_certs --size 1 --region <your-region>
+#   fly deploy
+
+app = "altsendme-relay"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[mounts]
+  source = "relay_certs"
+  destination = "/data/certs"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 80
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+[[services]]
+  protocol = "udp"
+  internal_port = 3478
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 3478
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 9090
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 9090

@@ -15,6 +15,7 @@ import type {
 } from '../types/transfer'
 import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 import { IS_ANDROID } from '@/lib/platform'
+import { getRelayConfigArg } from '../lib/relay'
 import { useAppSettingStore } from '@/store/app-setting'
 
 interface BackendFileMetadata {
@@ -213,6 +214,7 @@ export function useReceiver(): UseReceiverReturn {
 					'fetch_ticket_metadata',
 					{
 						ticket: trimmed,
+						relay: getRelayConfigArg(),
 					}
 				)
 
@@ -522,6 +524,7 @@ export function useReceiver(): UseReceiverReturn {
 			await invoke<string>('receive_file', {
 				ticket: ticket.trim(),
 				outputPath: savePath,
+				relay: getRelayConfigArg(),
 			})
 		} catch (error) {
 			console.error('Failed to receive file:', error)
