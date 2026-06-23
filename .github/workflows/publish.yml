@@ -113,6 +113,7 @@ jobs:
           echo "release_id=${RELEASE_ID}" >> "$GITHUB_OUTPUT"
 
   publish-tauri:
+    name: Desktop · ${{ matrix.label }}
     needs: prepare-release
     permissions:
       contents: write
@@ -120,37 +121,44 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
+          - label: macos-universal
+            platform: 'macos-latest'
             arch: universal
             rust_target: ''
             args: '--target universal-apple-darwin'
             cache_key: macos-universal
-          - platform: 'macos-latest'
+          - label: macos-arm64
+            platform: 'macos-latest'
             arch: aarch64
             rust_target: aarch64-apple-darwin
             args: '--target aarch64-apple-darwin'
             cache_key: macos-aarch64
-          - platform: 'macos-latest'
+          - label: macos-x64
+            platform: 'macos-latest'
             arch: x86_64
             rust_target: x86_64-apple-darwin
             args: '--target x86_64-apple-darwin'
             cache_key: macos-x86_64
-          - platform: 'ubuntu-22.04'
+          - label: linux-x64
+            platform: 'ubuntu-22.04'
             arch: x86_64
             rust_target: x86_64-unknown-linux-gnu
             args: ''
             cache_key: ubuntu-x86_64
-          - platform: 'ubuntu-22.04-arm'
+          - label: linux-arm64
+            platform: 'ubuntu-22.04-arm'
             arch: aarch64
             rust_target: aarch64-unknown-linux-gnu
             args: ''
             cache_key: ubuntu-aarch64
-          - platform: 'windows-latest'
+          - label: windows-x64
+            platform: 'windows-latest'
             arch: x86_64
             rust_target: x86_64-pc-windows-msvc
             args: '--target x86_64-pc-windows-msvc --bundles nsis,msi'
             cache_key: windows-x86_64
-          - platform: 'windows-latest'
+          - label: windows-arm64
+            platform: 'windows-latest'
             arch: aarch64
             rust_target: aarch64-pc-windows-msvc
             # WiX MSI cannot be cross-compiled for ARM64; NSIS only (see Tauri Windows installer docs).

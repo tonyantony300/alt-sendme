@@ -63,7 +63,7 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_x64-setup.exe'>AltSendme.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_x64-setup.exe'>AltSendme.exe</a> (x64)</td>
   </tr>
   <tr>
     <td><b>macOS</b></td>
@@ -79,7 +79,9 @@ The easiest way to get started is by downloading one of the following versions f
 
 </table>
 
-**Windows (Scoop)**  
+**Windows on ARM** (Snapdragon / Copilot+ PC): use `AltSendme_*_aarch64-setup.exe` from [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases).
+
+**Windows (Scoop)**
 
 
 ```bash

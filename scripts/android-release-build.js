@@ -253,8 +253,14 @@ function selectedProfiles() {
 	return names.map((name) => ({ name, ...APK_PROFILES[name] }))
 }
 
-// 0. Ensure gen/android exists with the correct Java package tree.
-if (!fs.existsSync(expectedAppJavaDir())) {
+// 0. Ensure gen/android exists with the correct manifest (committed to git).
+// We intentionally do NOT check expectedAppJavaDir() because the Java package
+// directory can be empty after removing MainActivity.kt — git does not track
+// empty directories, so it would never be present after checkout, causing us to
+// delete and regenerate gen/android (overwriting committed custom icons and the
+// custom AndroidManifest.xml with Tauri defaults).
+const manifestPath = path.join(genAndroid, 'app/src/main/AndroidManifest.xml')
+if (!fs.existsSync(manifestPath)) {
 	if (fs.existsSync(genAndroid)) {
 		console.log(
 			'android-release-build: removing incomplete gen/android before tauri android init'
@@ -262,14 +268,14 @@ if (!fs.existsSync(expectedAppJavaDir())) {
 		fs.rmSync(genAndroid, { recursive: true, force: true })
 	}
 	console.log(
-		'android-release-build: tauri android init (missing app Java package for identifier)'
+		'android-release-build: tauri android init (AndroidManifest.xml missing)'
 	)
 	run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
 }
-if (!fs.existsSync(expectedAppJavaDir())) {
+if (!fs.existsSync(manifestPath)) {
 	console.error(
-		'android-release-build: after init, expected Java package dir is still missing:',
-		expectedAppJavaDir()
+		'android-release-build: after init, AndroidManifest.xml is still missing:',
+		manifestPath
 	)
 	process.exit(1)
 }
