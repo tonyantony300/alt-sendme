@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { SettingsPage } from './settings'
 import { IndexPage } from '.'
 import { RootLayout } from '@/components/layouts/RootLayout'
@@ -26,20 +26,20 @@ export const routers = createBrowserRouter([
 				Component: SettingLayout,
 				children: [
 					{
-						Component: SettingsPage,
 						index: true,
+						Component: SettingGeneralPage,
+					},
+					{
+						path: 'appearance',
+						Component: SettingsPage,
 					},
 					{
 						path: 'general',
-						Component: SettingGeneralPage,
+						element: <Navigate to="/settings" replace />,
 					},
 					{
 						path: 'network',
 						Component: SettingNetworkPage,
-					},
-					{
-						path: 'notification',
-						Component: SettingsPage,
 					},
 				],
 			},

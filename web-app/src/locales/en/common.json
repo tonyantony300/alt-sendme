@@ -134,8 +134,8 @@
 		"navItems": {
 			"appearance": "Theme & Language",
 			"general": "General",
-			"network": "Network",
-			"notification": "Notifications"
+			"relay": "Relay",
+			"network": "Network"
 		},
 		"theme": {
 			"description": "Select your preferred theme",
@@ -221,5 +221,23 @@
 	},
 	"android": {
 		"preparingFile": "Preparing file..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay connection status",
+			"publicHeading": "Public relay",
+			"customHeading": "Custom relay",
+			"disabledHeading": "Relays disabled",
+			"unavailableHeading": "Relay unavailable",
+			"fellBackToPublic": "Custom relay unreachable — using public relay",
+			"dialogDescription": "Shows which relay server this app is currently using for connections.",
+			"connectedRelay": "Connected relay",
+			"checking": "Checking connection…",
+			"configuredMode": "Configured in settings",
+			"configuredDefault": "Automatic (public relays)",
+			"configuredCustom": "Custom self-hosted",
+			"configuredDisabled": "Disabled",
+			"openSettings": "Network settings"
+		}
 	}
 }

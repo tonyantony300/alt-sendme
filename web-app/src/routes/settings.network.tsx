@@ -7,7 +7,7 @@ export function SettingNetworkPage() {
 	return (
 		<>
 			<MobileSettingSidebar>
-				{t('settings.navItems.network')}
+				{t('settings.navItems.relay')}
 			</MobileSettingSidebar>
 			<RelaySettings />
 		</>

@@ -5,6 +5,7 @@ import { VERSION_DISPLAY } from '@/lib/version'
 import { Separator } from './ui/separator'
 import { Link } from 'react-router-dom'
 import { handleExternalLinkClick } from '@/lib/openExternalUrl'
+import { RelayStatusButton } from './RelayStatusButton'
 
 const CONTACTS = [
 	{
@@ -27,8 +28,8 @@ const CONTACTS = [
 export function AppFooter() {
 	const { t } = useTranslation()
 	return (
-		<div className="w-full h-10 items-center justify-between  bottom-0 flex px-4 bg-background/50 border-t border-border backdrop-blur-md py-4">
-			<div className="space-x-2 flex-1 w-full flex items-center relative">
+		<div className="w-full h-10 items-center bottom-0 flex px-4 bg-background/50 border-t border-border backdrop-blur-md py-4">
+			<div className="space-x-2 flex-1 w-full flex items-center">
 				<span className="text-sm text-muted-foreground ml-1">
 					{VERSION_DISPLAY}
 				</span>
@@ -51,7 +52,8 @@ export function AppFooter() {
 					</a>
 				))}
 			</div>
-			<div className="flex items-center gap-2">
+			<div className="flex flex-1 items-center justify-end gap-2">
+				<RelayStatusButton />
 				<Link
 					to="/settings"
 					className={buttonVariants({

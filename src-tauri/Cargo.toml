@@ -32,6 +32,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 anyhow = "1.0"
+n0-watcher = "1.0"
 iroh = "1.0.0"
 sendme = { path = "../sendme" }
 tracing = "0.1"

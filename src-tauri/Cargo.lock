@@ -106,6 +106,7 @@ dependencies = [
  "image",
  "iroh",
  "mime_guess",
+ "n0-watcher",
  "objc",
  "reqwest 0.13.2",
  "sendme",

@@ -93,6 +93,7 @@ pub fn run() {
             check_launch_intent,
             fetch_ticket_metadata,
             verify_relays,
+            get_relay_status,
             toggle_context_menu,
         ])
         .setup(|app| {

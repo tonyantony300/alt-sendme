@@ -3,6 +3,7 @@ import { handleExternalLinkClick } from '@/lib/openExternalUrl'
 import { useTranslation } from '../../i18n'
 import { cn } from '../../lib/utils'
 import { LICENSE_LINK, PRIVACY_LINK, VERSION_DISPLAY } from '../../lib/version'
+import { BackArrowIcon } from '../back-arrow-icon'
 import { LazyIcon } from '../icons'
 import { Badge } from '../ui/badge'
 import {
@@ -43,7 +44,7 @@ function SettingSidebarTitle({
 					className
 				)}
 			>
-				<LazyIcon name="House" size="18" className="" weight="duotone" />
+				<BackArrowIcon size={18} className="text-muted-foreground" />
 				<h3 className="text-lg font-medium">{t('settings.title')}</h3>
 			</div>
 		</Link>
