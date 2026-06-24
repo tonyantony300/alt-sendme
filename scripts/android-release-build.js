@@ -254,13 +254,28 @@ run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
 console.log(
 	'android-release-build: restoring committed gen/android assets from git'
 )
-run('git', ['checkout', 'HEAD', '--', 'src-tauri/gen/android/app/src/main/'])
+run('git', [
+	'checkout',
+	'HEAD',
+	'--',
+	'src-tauri/gen/android/app/src/main/',
+	'src-tauri/gen/android/app/proguard-rules.pro',
+])
 
 const manifestPath = path.join(genAndroid, 'app/src/main/AndroidManifest.xml')
 if (!fs.existsSync(manifestPath)) {
 	console.error(
 		'android-release-build: AndroidManifest.xml missing after init + git restore:',
 		manifestPath
+	)
+	process.exit(1)
+}
+
+const proguardRulesPath = path.join(genAndroid, 'app/proguard-rules.pro')
+if (!fs.existsSync(proguardRulesPath)) {
+	console.error(
+		'android-release-build: proguard-rules.pro missing after init + git restore:',
+		proguardRulesPath
 	)
 	process.exit(1)
 }
