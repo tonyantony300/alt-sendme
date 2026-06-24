@@ -51,8 +51,6 @@ for (const [name, target] of Object.entries({
 	}
 }
 
-const javaRoot = path.join(genAndroid, 'app/src/main/java')
-
 /** Tauri `--split-per-abi` Gradle output folder names (not jni lib ABI names). */
 const PROFILE_ABI_DIRS = {
 	arm64: 'arm64',
@@ -65,7 +63,9 @@ function outputDirForProfile(profileName) {
 	}
 	const abi = PROFILE_ABI_DIRS[profileName]
 	if (!abi) {
-		throw new Error(`android-release-build: no APK output dir for profile "${profileName}"`)
+		throw new Error(
+			`android-release-build: no APK output dir for profile "${profileName}"`
+		)
 	}
 	return path.join(genAndroid, 'app/build/outputs/apk', abi, 'release')
 }
@@ -95,7 +95,10 @@ function resolveApkAfterBuild(profileName) {
 function verifyUniversalApk(apkPath) {
 	const listing = spawnSync('unzip', ['-l', apkPath], { encoding: 'utf8' })
 	if (listing.status !== 0) {
-		console.error('android-release-build: failed to inspect universal APK:', apkPath)
+		console.error(
+			'android-release-build: failed to inspect universal APK:',
+			apkPath
+		)
 		process.exit(1)
 	}
 	const missing = REQUIRED_UNIVERSAL_ABIS.filter(
@@ -112,25 +115,6 @@ function verifyUniversalApk(apkPath) {
 	console.log(
 		`android-release-build: verified universal APK contains all ABIs (${REQUIRED_UNIVERSAL_ABIS.join(', ')})`
 	)
-}
-
-function readAndroidBundleIdentifier() {
-	const p = path.join(rootDir, 'src-tauri/tauri.android.conf.json')
-	if (!fs.existsSync(p)) {
-		throw new Error(`android-release-build: missing ${p}`)
-	}
-	const j = JSON.parse(fs.readFileSync(p, 'utf8'))
-	if (!j.identifier || typeof j.identifier !== 'string') {
-		throw new Error(
-			'android-release-build: tauri.android.conf.json must set "identifier"'
-		)
-	}
-	return j.identifier
-}
-
-function expectedAppJavaDir() {
-	const id = readAndroidBundleIdentifier()
-	return path.join(javaRoot, ...id.split('.'))
 }
 
 function run(cmd, args, opts = {}) {
@@ -262,10 +246,14 @@ if (fs.existsSync(genAndroid)) {
 	)
 	fs.rmSync(genAndroid, { recursive: true, force: true })
 }
-console.log('android-release-build: tauri android init (generating Gradle build files)')
+console.log(
+	'android-release-build: tauri android init (generating Gradle build files)'
+)
 run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
 
-console.log('android-release-build: restoring committed gen/android assets from git')
+console.log(
+	'android-release-build: restoring committed gen/android assets from git'
+)
 run('git', ['checkout', 'HEAD', '--', 'src-tauri/gen/android/app/src/main/'])
 
 const manifestPath = path.join(genAndroid, 'app/src/main/AndroidManifest.xml')
@@ -311,11 +299,9 @@ const profiles = selectedProfiles()
 
 for (const profile of profiles) {
 	console.log(`\nandroid-release-build: building profile "${profile.name}"`)
-	run(
-		'npx',
-		['tauri', 'android', 'build', ...profile.buildArgs],
-		{ noCi: true }
-	)
+	run('npx', ['tauri', 'android', 'build', ...profile.buildArgs], {
+		noCi: true,
+	})
 
 	const built = resolveApkAfterBuild(profile.name)
 	if (!built) {

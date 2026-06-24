@@ -7,7 +7,6 @@ use tauri::{
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
 };
 
-
 // to show confirmation dialog box for quit event from tray
 // use tauri_plugin_dialog::DialogExt;
 
@@ -98,12 +97,12 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
         Some(img) => img,
         None => {
             tracing::warn!("Could not load 128x128 tray icon, falling back to default window icon");
-            app.default_window_icon()
-                .cloned()
-                .ok_or_else(|| tauri::Error::InvalidIcon(std::io::Error::new(
+            app.default_window_icon().cloned().ok_or_else(|| {
+                tauri::Error::InvalidIcon(std::io::Error::new(
                     std::io::ErrorKind::NotFound,
                     "tray icon not found",
-                )))?
+                ))
+            })?
         }
     };
 
