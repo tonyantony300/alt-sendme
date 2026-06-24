@@ -56,7 +56,7 @@ jobs:
             COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
           fi
 
-          CHANGELOG=$(git log ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges | head -50)
+          CHANGELOG=$(git log -50 ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges)
 
           {
             echo "## What's Changed"
@@ -90,20 +90,30 @@ jobs:
           set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
 
-          if gh release view "$TAG" &>/dev/null; then
-            echo "Release for $TAG already exists"
+          if RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
+            --jq "map(select(.tag_name == \"${TAG}\")) | first | .id // empty"); [ -n "${RELEASE_ID}" ]; then
+            echo "Release for $TAG already exists (id=${RELEASE_ID})"
           else
             echo "Creating draft release for $TAG"
-            gh release create "$TAG" \
-              --draft \
-              --title "AltSendme ${VERSION}" \
-              --notes-file release_notes.txt
+            RELEASE_ID=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/releases" \
+              -f tag_name="${TAG}" \
+              -f target_commitish="${GITHUB_SHA}" \
+              -f name="AltSendme ${VERSION}" \
+              -f body="$(cat release_notes.txt)" \
+              -F draft=true \
+              -F prerelease=false \
+              --jq .id)
+            echo "Created draft release for ${TAG} (id=${RELEASE_ID})"
           fi
 
-          RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .id)
+          if [ -z "${RELEASE_ID}" ]; then
+            echo "ERROR: could not resolve release id for ${TAG}"
+            exit 1
+          fi
           echo "release_id=${RELEASE_ID}" >> "$GITHUB_OUTPUT"
 
   publish-tauri:
+    name: Desktop · ${{ matrix.label }}
     needs: prepare-release
     permissions:
       contents: write
@@ -111,27 +121,44 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
+          - label: macos-universal
+            platform: 'macos-latest'
             arch: universal
             rust_target: ''
             args: '--target universal-apple-darwin'
             cache_key: macos-universal
-          - platform: 'ubuntu-22.04'
+          - label: macos-arm64
+            platform: 'macos-latest'
+            arch: aarch64
+            rust_target: aarch64-apple-darwin
+            args: '--target aarch64-apple-darwin'
+            cache_key: macos-aarch64
+          - label: macos-x64
+            platform: 'macos-latest'
+            arch: x86_64
+            rust_target: x86_64-apple-darwin
+            args: '--target x86_64-apple-darwin'
+            cache_key: macos-x86_64
+          - label: linux-x64
+            platform: 'ubuntu-22.04'
             arch: x86_64
             rust_target: x86_64-unknown-linux-gnu
             args: ''
             cache_key: ubuntu-x86_64
-          - platform: 'ubuntu-22.04-arm'
+          - label: linux-arm64
+            platform: 'ubuntu-22.04-arm'
             arch: aarch64
             rust_target: aarch64-unknown-linux-gnu
             args: ''
             cache_key: ubuntu-aarch64
-          - platform: 'windows-latest'
+          - label: windows-x64
+            platform: 'windows-latest'
             arch: x86_64
             rust_target: x86_64-pc-windows-msvc
             args: '--target x86_64-pc-windows-msvc --bundles nsis,msi'
             cache_key: windows-x86_64
-          - platform: 'windows-latest'
+          - label: windows-arm64
+            platform: 'windows-latest'
             arch: aarch64
             rust_target: aarch64-pc-windows-msvc
             # WiX MSI cannot be cross-compiled for ARM64; NSIS only (see Tauri Windows installer docs).
@@ -162,7 +189,7 @@ jobs:
         if: contains(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
       - name: Install NSIS (Windows only)
         if: matrix.platform == 'windows-latest'
@@ -194,8 +221,8 @@ jobs:
       - name: install frontend dependencies
         run: npm install
 
-      # Belt-and-suspenders: universal-apple-darwin needs both stdlibs on the active toolchain.
-      - name: Ensure macOS universal targets
+      # Belt-and-suspenders: macOS builds need the relevant Apple targets on the active toolchain.
+      - name: Ensure macOS targets
         if: matrix.platform == 'macos-latest'
         shell: bash
         run: |
@@ -203,6 +230,14 @@ jobs:
           rustup show
           rustup target add aarch64-apple-darwin
           rustup target add x86_64-apple-darwin
+          rustup target list --installed
+
+      - name: Ensure Windows ARM64 target
+        if: matrix.platform == 'windows-latest' && matrix.arch == 'aarch64'
+        shell: bash
+        run: |
+          set -eux
+          rustup target add aarch64-pc-windows-msvc
           rustup target list --installed
 
       - name: import certificate (macOS only)
@@ -321,7 +356,7 @@ jobs:
         with:
           toolchain: 1.91.0
           components: rustfmt
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+          targets: aarch64-linux-android,armv7-linux-androideabi
 
       - name: Rust cache
         uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -346,7 +381,7 @@ jobs:
           ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ANDROID_APK_PROFILES: universal,arm64,armv7,x86,x86_64
+          ANDROID_APK_PROFILES: universal,arm64,armv7
         run: npm run android:build:release
 
       - name: Upload Android APKs to GitHub release
@@ -354,20 +389,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
         run: |
           set -euo pipefail
-          if ! gh release view "$TAG" &>/dev/null; then
-            echo "ERROR: draft release for $TAG not found (prepare-release should have created it)"
+          if [ -z "$RELEASE_ID" ]; then
+            echo "ERROR: release id missing (prepare-release should have created it)"
             exit 1
           fi
           declare -A APKS=(
-            [universal]="src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk"
+            [universal]="build/android-apks/app-universal-release.apk"
             [arm64]="build/android-apks/app-arm64-release.apk"
             [armv7]="build/android-apks/app-armv7-release.apk"
-            [x86]="build/android-apks/app-x86-release.apk"
-            [x86_64]="build/android-apks/app-x86_64-release.apk"
           )
-          for variant in universal arm64 armv7 x86 x86_64; do
+          for variant in universal arm64 armv7; do
             APK="${APKS[$variant]}"
             if [ ! -f "$APK" ]; then
               echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
@@ -377,31 +411,38 @@ jobs:
             RENAME="AltSendme-${TAG}-${variant}.apk"
             cp "$APK" "$RENAME"
             echo "Uploading $RENAME to release $TAG"
-            gh release upload "$TAG" "$RENAME" --clobber
+            ASSET_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets" \
+              --jq ".[] | select(.name == \"${RENAME}\") | .id // empty")
+            if [ -n "$ASSET_ID" ]; then
+              gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/assets/${ASSET_ID}" >/dev/null
+            fi
+            gh api --method POST \
+              -H "Content-Type: application/vnd.android.package-archive" \
+              --input "$RENAME" \
+              "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets?name=${RENAME}" >/dev/null
           done
 
   finalize-release:
-    name: Publish release
+    name: Finalize draft release
     needs: [prepare-release, publish-tauri, android-release-apks]
     permissions:
       contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Publish draft release
+      - name: Leave release as draft for manual review
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
         run: |
           set -euo pipefail
-          if ! gh release view "$TAG" &>/dev/null; then
-            echo "ERROR: release $TAG not found"
+          if [ -z "$RELEASE_ID" ]; then
+            echo "ERROR: release id missing"
             exit 1
           fi
-          if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" = "true" ]; then
-            echo "Publishing release $TAG"
-            gh release edit "$TAG" --draft=false
-          else
-            echo "Release $TAG is already published"
-          fi
+          RELEASE_URL=$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" --jq .html_url)
+          echo "Release $TAG is ready for review as a draft."
+          echo "Edit the release notes and assets, then click Publish release to make it latest:"
+          echo "$RELEASE_URL"

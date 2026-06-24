@@ -3,6 +3,7 @@ use tauri::{AppHandle, Manager};
 #[cfg(not(target_os = "macos"))]
 use tauri::{
     menu::{Menu, MenuItem},
+    path::BaseDirectory,
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
 };
 
@@ -87,19 +88,25 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             _ => {}
         });
 
- let icon_path = app
-    .path()
-    .resource_dir()?             
-    .join("icons/128x128.png");
+    let icon = match app
+        .path()
+        .resolve("icons/128x128.png", BaseDirectory::Resource)
+        .ok()
+        .and_then(|p| tauri::image::Image::from_path(&p).ok())
+    {
+        Some(img) => img,
+        None => {
+            tracing::warn!("Could not load 128x128 tray icon, falling back to default window icon");
+            app.default_window_icon().cloned().ok_or_else(|| {
+                tauri::Error::InvalidIcon(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "tray icon not found",
+                ))
+            })?
+        }
+    };
 
-let icon = tauri::image::Image::from_path(&icon_path)
-    .or_else(|_| {
-        app.default_window_icon()
-            .ok_or_else(|| tauri::Error::InvalidIcon)
-            .map(|i| i.clone())
-    })?;
-
-builder = builder.icon(icon);
+    builder = builder.icon(icon);
 
     let tray = builder.build(app)?;
 

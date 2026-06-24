@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import kotlinx.coroutines.currentCoroutineContext
@@ -16,14 +18,19 @@ import java.io.IOException
 
 const val BUFFER_SIZE = 1024 * 1024
 
+@JsonInclude(JsonInclude.Include.ALWAYS)
 data class CopyProgress(
+    @field:JsonProperty("copiedBytes")
     @field:JsonSerialize(using = ToStringSerializer::class)
     val copiedBytes: Long,
+    @field:JsonProperty("totalBytes")
     @field:JsonSerialize(using = ToStringSerializer::class)
     val totalBytes: Long,
+    @field:JsonProperty("cachedPath")
     val cachedPath: String?,
 ) {
-    val progress: Float get() = if (totalBytes == 0L) 0f else copiedBytes / totalBytes.toFloat()
+    @field:JsonProperty("progress")
+    val progress: Float = if (totalBytes == 0L) 0f else copiedBytes / totalBytes.toFloat()
 }
 
 private fun DocumentFile.walkFilesWithPath(

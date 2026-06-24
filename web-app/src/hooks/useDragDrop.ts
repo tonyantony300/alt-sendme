@@ -159,9 +159,6 @@ export function useDragDrop(
 						setCopyTotalBytes(size.toString())
 						setCopyProgress(0)
 						setIsCopying(true)
-						if (handler) {
-							cancelRef.current = () => handler.cancelJob()
-						}
 					},
 					(event) => {
 						setCopyProgress(event.progress)
@@ -176,7 +173,11 @@ export function useDragDrop(
 					}
 				)
 
-				if (!handler) return
+				if (handler) {
+					cancelRef.current = () => handler.cancelJob()
+				}
+
+				return
 			} else {
 				const selected = await open({
 					multiple: true,
@@ -207,9 +208,6 @@ export function useDragDrop(
 						setCopyTotalBytes(size.toString())
 						setCopyProgress(0)
 						setIsCopying(true)
-						if (handler) {
-							cancelRef.current = () => handler.cancelJob()
-						}
 					},
 					(event) => {
 						setCopyProgress(event.progress)
@@ -224,7 +222,11 @@ export function useDragDrop(
 					}
 				)
 
-				if (!handler) return
+				if (handler) {
+					cancelRef.current = () => handler.cancelJob()
+				}
+
+				return
 			} else {
 				const selected = await open({
 					multiple: false,
@@ -312,9 +314,6 @@ export function useDragDrop(
 						setCopyTotalBytes(size.toString())
 						setCopyProgress(0)
 						setIsCopying(true)
-						if (handler) {
-							cancelRef.current = () => handler.cancelJob()
-						}
 					},
 					(event) => {
 						setCopyProgress(event.progress)
@@ -329,7 +328,10 @@ export function useDragDrop(
 					}
 				)
 
-				if (!handler) return
+				if (handler) {
+					cancelRef.current = () => handler.cancelJob()
+				}
+
 				return
 			}
 

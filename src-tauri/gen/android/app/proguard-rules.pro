@@ -1,0 +1,1 @@
+-keep class com.altsendme.plugin.native_utils.CopyProgress { *; }
