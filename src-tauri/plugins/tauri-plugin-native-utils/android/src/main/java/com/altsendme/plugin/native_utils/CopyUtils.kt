@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.annotation.Keep
 import androidx.documentfile.provider.DocumentFile
+import app.tauri.plugin.JSObject
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,13 @@ data class CopyProgress(
     val cachedPath: String?,
 ) {
     val progress: Float = if (totalBytes == 0L) 0f else copiedBytes / totalBytes.toFloat()
+
+    fun toJSObject(): JSObject = JSObject().apply {
+        put("copiedBytes", copiedBytes.toString())
+        put("totalBytes", totalBytes.toString())
+        put("cachedPath", cachedPath)
+        put("progress", progress)
+    }
 }
 
 private fun DocumentFile.walkFilesWithPath(

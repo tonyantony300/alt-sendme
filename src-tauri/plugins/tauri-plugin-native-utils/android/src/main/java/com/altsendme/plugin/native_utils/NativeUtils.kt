@@ -16,6 +16,7 @@ import app.tauri.plugin.Channel
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.Plugin
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -140,22 +141,23 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
         val tempFolder = File(path)
 
-        val job = scope.launch {
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 tempFolder.parentFile?.mkdirs()
                     ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
 
                 copyUri(activity, uri, tempFolder).collect {
-                    channel.sendObject(it)
+                    channel.send(it.toJSObject())
                 }
             } catch (_: Exception) {
-                tempFolder.delete()
+                tempFolder.deleteRecursively()
             } finally {
                 jobs.remove(channel.id)
             }
         }
 
         jobs[channel.id] = job to tempFolder.absolutePath
+        job.start()
     }
 
     override fun load(webView: WebView) {
