@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "ส่ง",
+	"comingSoon": "เร็วๆ นี้",
 	"receive": "รับ",
 	"ok": "ตกลง",
+	"undo": "เลิกทำ",
+	"cancel": "ยกเลิก",
+	"confirm": "ยืนยัน",
 	"loading": "กำลังโหลด...",
 	"browse": "เลือก",
 	"donate": "บริจาค",
+	"privacyPolicy": "นโยบายความเป็นส่วนตัว",
+	"license": "ใบอนุญาต",
+	"notFound": {
+		"title": "ไม่พบหน้า",
+		"subtitle": "ไม่มีหน้าที่คุณกำลังมองหา หรือหน้านั้นถูกย้ายแล้ว",
+		"goBack": "กลับ",
+		"goHome": "หน้าแรก"
+	},
 	"sender": {
 		"title": "ส่ง",
 		"subtitle": "แชร์ไฟล์หรือโฟลเดอร์ผ่านการเชื่อมต่อแบบ peer-to-peer ที่เข้ารหัส",
@@ -29,9 +41,15 @@
 		"fileSelected": "เลือกไฟล์แล้ว",
 		"folderSelected": "เลือกโฟลเดอร์แล้ว",
 		"itemSelected": "เลือกรายการแล้ว",
+		"multipleFilesSelected": "{{name}} ... และอีก {{count}} รายการ",
 		"browseFile": "เลือกไฟล์",
 		"browseFolder": "เลือกโฟลเดอร์",
+		"addMoreFiles": "เพิ่มไฟล์",
+		"addMoreFolders": "เพิ่มโฟลเดอร์",
+		"multipleItemsSelected": "{{firstName}} และอีก {{count}} รายการ",
+		"removeFromSelection": "ลบออกจากการเลือก",
 		"copyToClipboard": "คัดลอกไปยังคลิปบอร์ด",
+		"description": "คำอธิบาย (ไม่บังคับ)",
 		"broadcastMode": {
 			"index": "บรอดแคสต์",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "การแชร์แบบส่วนตัว",
 				"description": "เฉพาะคนที่คุณแชร์ตั๋วด้วยเท่านั้นที่สามารถดาวน์โหลดไฟล์ได้"
 			}
-		},
-		"description": "คำอธิบาย (ไม่บังคับ)"
+		}
 	},
 	"receiver": {
 		"title": "รับไฟล์",
 		"subtitle": "ดาวน์โหลดไฟล์จากผู้ส่งโดยใช้การเชื่อมต่อแบบ peer-to-peer ที่เข้ารหัสผ่านอินเทอร์เน็ต",
 		"saveToFolder": "บันทึกลงในโฟลเดอร์:",
 		"noFolderSelected": "ยังไม่ได้เลือกโฟลเดอร์",
+		"conflictsMore": "... และอีก {{count}} รายการ",
 		"pasteTicket": "วางตั๋วที่นี่:",
 		"ticketPlaceholder": "ตั๋วรับ sendme...",
 		"howToReceive": "วิธีรับไฟล์",
@@ -60,8 +78,14 @@
 		"instruction5": "ไฟล์จะถูกบันทึกลงในโฟลเดอร์ที่คุณเลือก",
 		"keepAppOpen": "เปิดแอปนี้ไว้ขณะที่กำลังดาวน์โหลดไฟล์",
 		"connectingToSender": "กำลังเชื่อมต่อกับผู้ส่ง",
+		"previewMultipleItems": "{{name}} ... และอีก {{count}} รายการ",
+		"multipleFilesFound": "พบหลายไฟล์",
+		"expandPreviewList": "แสดงรายการไฟล์",
+		"collapsePreviewList": "ซ่อนรายการไฟล์",
 		"downloadingInProgress": "กำลังดาวน์โหลด",
 		"downloadCompleted": "ดาวน์โหลดเสร็จสมบูรณ์",
+		"downloadCompletedWithConflicts": "ดาวน์โหลดเสร็จสิ้น แก้ไขชื่อที่ซ้ำกันแล้ว",
+		"downloadedFile": "ไฟล์ที่ดาวน์โหลด",
 		"stopReceiving": "หยุดรับ",
 		"download": "ดาวน์โหลด"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "การส่งถูกหยุดก่อนที่จะเสร็จสมบูรณ์",
 		"successMessage": "การส่งของคุณเสร็จสมบูรณ์แล้ว",
 		"file": "ไฟล์",
+		"files": "ไฟล์",
 		"folder": "โฟลเดอร์",
 		"fileName": "ชื่อไฟล์",
 		"fileSize": "ขนาดไฟล์",
 		"folderSize": "ขนาดโฟลเดอร์",
 		"downloadPath": "เส้นทางดาวน์โหลด",
 		"duration": "ระยะเวลา",
-		"avgSpeed": "ความเร็วเฉลี่ย"
+		"avgSpeed": "ความเร็วเฉลี่ย",
+		"multipleFiles": "{{count}} ไฟล์",
+		"donatePrompt": "ชอบ AltSendme ไหม?"
 	},
 	"errors": {
 		"sharingFailed": "การแชร์ล้มเหลว",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "การเปิดโฟลเดอร์ล้มเหลว",
 		"openFolderFailedDesc": "ไม่สามารถเปิดโฟลเดอร์ดาวน์โหลดได้"
 	},
-	"comingSoon": "เร็วๆ นี้",
-	"undo": "เลิกทำ",
-	"cancel": "ยกเลิก",
-	"confirm": "ยืนยัน",
-	"privacyPolicy": "นโยบายความเป็นส่วนตัว",
-	"license": "ใบอนุญาต",
-	"notFound": {
-		"title": "ไม่พบหน้า",
-		"subtitle": "ไม่มีหน้าที่คุณกำลังมองหา หรือหน้านั้นถูกย้ายแล้ว",
-		"goBack": "กลับ",
-		"goHome": "หน้าแรก"
-	},
 	"settings": {
 		"title": "การตั้งค่า",
 		"navItems": {
 			"appearance": "ธีมและภาษา",
 			"general": "ทั่วไป",
+			"relay": "Relay",
 			"network": "เครือข่าย",
 			"notification": "การแจ้งเตือน"
 		},
@@ -159,6 +175,49 @@
 					"label": "เมนูคลิกขวาของ Explorer",
 					"description": "เพิ่ม «ส่งด้วย AltSendme» ในเมนูคลิกขวาของ Windows Explorer"
 				}
+			},
+			"broadcast": {
+				"title": "Broadcast",
+				"showToggle": {
+					"label": "แสดงสวิตช์ broadcast ขณะแชร์",
+					"description": "แสดงสวิตช์ broadcast บนหน้าจอแชร์เพื่อให้ผู้รับหลายคนดาวน์โหลดไฟล์เดียวกันได้พร้อมกัน"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "เซิร์ฟเวอร์ relay",
+				"description": "ควบคุมเซิร์ฟเวอร์ relay iroh ที่ AltSendme ใช้สำหรับ NAT traversal และการเชื่อมต่อสำรองที่เข้ารหัส",
+				"modeDefault": "อัตโนมัติ (relay สาธารณะ)",
+				"modeDefaultDesc": "ใช้ relay สาธารณะ iroh เริ่มต้น เหมาะสำหรับผู้ใช้ส่วนใหญ่",
+				"modeCustom": "กำหนดเอง (self-hosted)",
+				"modeCustomDesc": "ใช้เซิร์ฟเวอร์ relay ของคุณเอง ดู deploy/relay ใน repo โปรเจกต์",
+				"modeDisabled": "ปิดใช้งาน",
+				"modeDisabledDesc": "ไม่ใช้ relay เชื่อมต่อโดยตรงเท่านั้น อาจล้มเหลวเมื่อ NAT เข้มงวด",
+				"urlsLabel": "URL relay",
+				"urlsDescription": "เพิ่ม URL HTTPS relay อย่างน้อยหนึ่งรายการสำหรับ failover ตามภูมิภาค",
+				"addUrl": "เพิ่ม URL relay",
+				"removeUrl": "ลบ URL relay",
+				"urlInvalidHint": "ป้อน URL HTTPS ที่ถูกต้อง",
+				"urlChecking": "กำลังตรวจสอบการเชื่อมต่อ",
+				"urlVerified": "ยืนยันแล้ว",
+				"urlVerifyFailedHint": "ไม่สามารถเชื่อมต่อ relay นี้ได้",
+				"verifySummary": "ยืนยัน relay แล้ว {{ok}} จาก {{total}}",
+				"verifyAuthHint": "หาก relay ต้องการ auth token ให้แน่ใจว่าตรงกับ access.shared_token บนเซิร์ฟเวอร์",
+				"authTokenLabel": "Auth token (ไม่บังคับ)",
+				"authTokenPlaceholder": "รหัสลับที่ใช้ร่วมกันหาก relay ต้องการการยืนยันตัวตน",
+				"authTokenDescription": "จำเป็นเมื่อ relay ใช้ access.shared_token ในการตั้งค่า",
+				"showAuthToken": "แสดง",
+				"hideAuthToken": "ซ่อน",
+				"privacyNote": "สำหรับการตั้งค่าแบบส่วนตัวทั้งหมด ให้ตั้งค่า URL relay เดียวกันบนอุปกรณ์ผู้ส่งและผู้รับ",
+				"testConnection": "ทดสอบการเชื่อมต่อ",
+				"verifySuccess": "การเชื่อมต่อ relay OK",
+				"verifySuccessDesc": "{{url}}\nยืนยันสำเร็จ ({{latency}} ms)",
+				"verifySuccessDescGeneric": "ลงทะเบียนกับเซิร์ฟเวอร์ relay ที่ตั้งค่าไว้สำเร็จ",
+				"verifyFailed": "การเชื่อมต่อ relay ล้มเหลว",
+				"urlRequired": "เพิ่ม URL relay อย่างน้อยหนึ่งรายการ",
+				"invalidUrl": "URL relay ไม่ถูกต้อง: {{url}}",
+				"disabledHint": "เปิดใช้ relay อัตโนมัติหรือกำหนดเองเพื่อทดสอบการเชื่อมต่อ"
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "ไม่สามารถตรวจสอบอัปเดตได้",
 		"installFailed": "ติดตั้งไม่สำเร็จ",
 		"installFailedDesc": "ไม่สามารถติดตั้งอัปเดตได้"
+	},
+	"android": {
+		"preparingFile": "กำลังเตรียมไฟล์..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "สถานะการเชื่อมต่อ relay",
+			"publicHeading": "Relay สาธารณะ",
+			"customHeading": "Relay กำหนดเอง",
+			"disabledHeading": "ปิดใช้ relay",
+			"unavailableHeading": "Relay ไม่พร้อมใช้งาน",
+			"fellBackToPublic": "Relay กำหนดเองไม่พร้อมใช้งาน — ใช้ relay สาธารณะ",
+			"fellBackToastTitle": "ใช้ relay สาธารณะ",
+			"fellBackToastSend": "Relay กำหนดเองของคุณไม่พร้อมใช้งาน — การถ่ายโอนนี้ใช้ relay สาธารณะ",
+			"fellBackToastReceive": "Relay กำหนดเองของคุณไม่พร้อมใช้งาน — การดาวน์โหลดนี้ใช้ relay สาธารณะ",
+			"dialogDescription": "แสดงเซิร์ฟเวอร์ relay ที่แอปใช้สำหรับการเชื่อมต่อในขณะนี้",
+			"connectedRelay": "Relay ที่เชื่อมต่อ",
+			"checking": "กำลังตรวจสอบการเชื่อมต่อ…",
+			"configuredMode": "ตั้งค่าในการตั้งค่า",
+			"configuredDefault": "อัตโนมัติ (relay สาธารณะ)",
+			"configuredCustom": "กำหนดเอง (self-hosted)",
+			"configuredDisabled": "ปิดใช้งาน",
+			"openSettings": "การตั้งค่าเครือข่าย"
+		}
 	}
 }

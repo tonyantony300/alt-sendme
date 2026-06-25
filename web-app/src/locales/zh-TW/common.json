@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "傳送",
+	"comingSoon": "即將推出",
 	"receive": "接收",
 	"ok": "確定",
+	"undo": "復原",
+	"cancel": "取消",
+	"confirm": "確認",
 	"loading": "載入中...",
 	"browse": "瀏覽",
 	"donate": "捐贈",
+	"privacyPolicy": "隱私權政策",
+	"license": "授權條款",
+	"notFound": {
+		"title": "找不到頁面",
+		"subtitle": "您要找的頁面不存在或已移動。",
+		"goBack": "返回",
+		"goHome": "返回首頁"
+	},
 	"sender": {
 		"title": "傳送",
 		"subtitle": "透過加密的點對點連線分享檔案或資料夾。",
@@ -29,9 +41,15 @@
 		"fileSelected": "已選擇檔案",
 		"folderSelected": "已選擇資料夾",
 		"itemSelected": "已選擇項目",
+		"multipleFilesSelected": "{{name}} ... 等 {{count}} 項",
 		"browseFile": "瀏覽檔案",
 		"browseFolder": "瀏覽資料夾",
+		"addMoreFiles": "新增更多檔案",
+		"addMoreFolders": "新增更多資料夾",
+		"multipleItemsSelected": "{{firstName}} 等 {{count}} 項",
+		"removeFromSelection": "從選取中移除",
 		"copyToClipboard": "複製到剪貼簿",
+		"description": "說明（選填）",
 		"broadcastMode": {
 			"index": "廣播",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "私人分享",
 				"description": "只有您與之分享票券的人才能下載檔案。"
 			}
-		},
-		"description": "說明（選填）"
+		}
 	},
 	"receiver": {
 		"title": "接收檔案",
 		"subtitle": "透過加密的點對點連線從傳送者下載檔案。",
 		"saveToFolder": "儲存至資料夾：",
 		"noFolderSelected": "未選擇資料夾",
+		"conflictsMore": "... 等 {{count}} 項",
 		"pasteTicket": "在此處貼上票券：",
 		"ticketPlaceholder": "sendme 接收票券...",
 		"howToReceive": "如何接收檔案",
@@ -60,6 +78,10 @@
 		"instruction5": "檔案將儲存到您選擇的資料夾",
 		"keepAppOpen": "在下載檔案時請保持應用程式開啟",
 		"connectingToSender": "正在連線至傳送者",
+		"previewMultipleItems": "{{name}} ... 等 {{count}} 項",
+		"multipleFilesFound": "找到多個檔案",
+		"expandPreviewList": "顯示檔案清單",
+		"collapsePreviewList": "隱藏檔案清單",
 		"downloadingInProgress": "正在下載",
 		"downloadCompleted": "下載完成",
 		"downloadCompletedWithConflicts": "下載完成，已處理同名衝突",
@@ -81,6 +103,7 @@
 		"wasStopped": "傳輸在完成前已停止。",
 		"successMessage": "您的傳輸已成功完成。",
 		"file": "檔案",
+		"files": "檔案",
 		"folder": "資料夾",
 		"fileName": "檔案名稱",
 		"fileSize": "檔案大小",
@@ -88,7 +111,8 @@
 		"downloadPath": "下載路徑",
 		"duration": "持續時間",
 		"avgSpeed": "平均速度",
-		"multipleFiles": "{{count}} 個檔案"
+		"multipleFiles": "{{count}} 個檔案",
+		"donatePrompt": "喜歡 AltSendme 嗎？"
 	},
 	"errors": {
 		"sharingFailed": "分享失敗",
@@ -106,23 +130,12 @@
 		"openFolderFailed": "開啟資料夾失敗",
 		"openFolderFailedDesc": "無法開啟下載資料夾"
 	},
-	"comingSoon": "即將推出",
-	"undo": "復原",
-	"cancel": "取消",
-	"confirm": "確認",
-	"privacyPolicy": "隱私權政策",
-	"license": "授權條款",
-	"notFound": {
-		"title": "找不到頁面",
-		"subtitle": "您要找的頁面不存在或已移動。",
-		"goBack": "返回",
-		"goHome": "返回首頁"
-	},
 	"settings": {
 		"title": "設定",
 		"navItems": {
 			"appearance": "主題與語言",
 			"general": "一般",
+			"relay": "中繼",
 			"network": "網路",
 			"notification": "通知"
 		},
@@ -162,6 +175,49 @@
 					"label": "檔案總管右鍵選單",
 					"description": "在 Windows 檔案總管右鍵選單中新增「使用 AltSendme 傳送」"
 				}
+			},
+			"broadcast": {
+				"title": "廣播",
+				"showToggle": {
+					"label": "分享時顯示廣播開關",
+					"description": "在分享畫面顯示廣播開關，以便多個接收者同時下載相同檔案。"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "中繼伺服器",
+				"description": "控制 AltSendme 用於 NAT 穿透和加密備用連線的 iroh 中繼伺服器。",
+				"modeDefault": "自動（公共中繼）",
+				"modeDefaultDesc": "使用預設的公共 iroh 中繼。適合大多數使用者。",
+				"modeCustom": "自訂（自行託管）",
+				"modeCustomDesc": "使用您自己的中繼伺服器。請參閱專案儲存庫中的 deploy/relay。",
+				"modeDisabled": "已停用",
+				"modeDisabledDesc": "不使用中繼。僅直接連線；在嚴格 NAT 下可能失敗。",
+				"urlsLabel": "中繼 URL",
+				"urlsDescription": "新增一個或多個 HTTPS 中繼 URL 以實現區域故障轉移。",
+				"addUrl": "新增中繼 URL",
+				"removeUrl": "移除中繼 URL",
+				"urlInvalidHint": "請輸入有效的 HTTPS URL",
+				"urlChecking": "正在檢查連線",
+				"urlVerified": "已驗證",
+				"urlVerifyFailedHint": "無法連線到此中繼",
+				"verifySummary": "已驗證 {{ok}}/{{total}} 個中繼。",
+				"verifyAuthHint": "如果您的中繼需要驗證權杖，請確保其與伺服器上的 access.shared_token 一致。",
+				"authTokenLabel": "驗證權杖（選填）",
+				"authTokenPlaceholder": "若中繼需要驗證，請輸入共用密鑰",
+				"authTokenDescription": "當中繼設定使用 access.shared_token 時需要填寫。",
+				"showAuthToken": "顯示",
+				"hideAuthToken": "隱藏",
+				"privacyNote": "如需完全私密的設定，請在傳送端和接收端裝置上設定相同的中繼 URL。",
+				"testConnection": "測試連線",
+				"verifySuccess": "中繼連線正常",
+				"verifySuccessDesc": "{{url}}\n驗證成功（{{latency}} ms）。",
+				"verifySuccessDescGeneric": "已成功註冊到您設定的中繼伺服器。",
+				"verifyFailed": "中繼連線失敗",
+				"urlRequired": "請至少新增一個中繼 URL。",
+				"invalidUrl": "無效的中繼 URL：{{url}}",
+				"disabledHint": "啟用自動或自訂中繼以測試連線。"
 			}
 		}
 	},
@@ -178,5 +234,29 @@
 		"checkFailedDesc": "無法檢查更新",
 		"installFailed": "安裝失敗",
 		"installFailedDesc": "無法安裝更新"
+	},
+	"android": {
+		"preparingFile": "正在準備檔案..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "中繼連線狀態",
+			"publicHeading": "公共中繼",
+			"customHeading": "自訂中繼",
+			"disabledHeading": "中繼已停用",
+			"unavailableHeading": "中繼不可用",
+			"fellBackToPublic": "自訂中繼無法連線 — 正在使用公共中繼",
+			"fellBackToastTitle": "正在使用公共中繼",
+			"fellBackToastSend": "您的自訂中繼無法連線 — 此次傳輸正在使用公共中繼。",
+			"fellBackToastReceive": "您的自訂中繼無法連線 — 此次下載正在使用公共中繼。",
+			"dialogDescription": "顯示應用程式目前用於連線的中繼伺服器。",
+			"connectedRelay": "已連線的中繼",
+			"checking": "正在檢查連線…",
+			"configuredMode": "在設定中配置",
+			"configuredDefault": "自動（公共中繼）",
+			"configuredCustom": "自訂（自行託管）",
+			"configuredDisabled": "已停用",
+			"openSettings": "網路設定"
+		}
 	}
 }

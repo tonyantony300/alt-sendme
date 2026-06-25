@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "Envoyer",
+	"comingSoon": "Bientôt disponible",
 	"receive": "Recevoir",
 	"ok": "OK",
+	"undo": "Annuler l’action",
+	"cancel": "Annuler",
+	"confirm": "Confirmer",
 	"loading": "Chargement...",
 	"browse": "Parcourir",
 	"donate": "Faire un don",
+	"privacyPolicy": "Politique de confidentialité",
+	"license": "Licence",
+	"notFound": {
+		"title": "Page introuvable",
+		"subtitle": "La page que vous recherchez n’existe pas ou a été déplacée.",
+		"goBack": "Retour",
+		"goHome": "Accueil"
+	},
 	"sender": {
 		"title": "Envoyer",
 		"subtitle": "Partagez des fichiers ou dossiers via des connexions pair-à-pair chiffrées.",
@@ -29,9 +41,15 @@
 		"fileSelected": "Fichier sélectionné",
 		"folderSelected": "Dossier sélectionné",
 		"itemSelected": "Élément sélectionné",
+		"multipleFilesSelected": "{{name}} ... et {{count}} de plus",
 		"browseFile": "Parcourir fichier",
 		"browseFolder": "Parcourir dossier",
+		"addMoreFiles": "Ajouter d’autres fichiers",
+		"addMoreFolders": "Ajouter d’autres dossiers",
+		"multipleItemsSelected": "{{firstName}} et {{count}} de plus",
+		"removeFromSelection": "Retirer de la sélection",
 		"copyToClipboard": "Copier dans le presse-papiers",
+		"description": "Description (facultatif)",
 		"broadcastMode": {
 			"index": "Diffusion",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "Partage privé",
 				"description": "Seule la personne avec qui vous partagez le ticket peut télécharger le fichier."
 			}
-		},
-		"description": "Description (facultatif)"
+		}
 	},
 	"receiver": {
 		"title": "Recevoir des fichiers",
 		"subtitle": "Téléchargez des fichiers depuis l'expéditeur en utilisant des connexions pair-à-pair chiffrées sur Internet.",
 		"saveToFolder": "Enregistrer dans le dossier :",
 		"noFolderSelected": "Aucun dossier sélectionné",
+		"conflictsMore": "... et {{count}} de plus",
 		"pasteTicket": "Collez le ticket ici :",
 		"ticketPlaceholder": "ticket de réception sendme...",
 		"howToReceive": "Comment recevoir des fichiers",
@@ -60,8 +78,14 @@
 		"instruction5": "Les fichiers seront enregistrés dans votre dossier sélectionné",
 		"keepAppOpen": "Gardez cette application ouverte pendant le téléchargement des fichiers",
 		"connectingToSender": "Connexion à l'expéditeur",
+		"previewMultipleItems": "{{name}} ... et {{count}} de plus",
+		"multipleFilesFound": "Plusieurs fichiers trouvés",
+		"expandPreviewList": "Afficher la liste des fichiers",
+		"collapsePreviewList": "Masquer la liste des fichiers",
 		"downloadingInProgress": "Téléchargement en cours",
 		"downloadCompleted": "Téléchargement terminé",
+		"downloadCompletedWithConflicts": "Téléchargement terminé, conflits de noms résolus",
+		"downloadedFile": "Fichier téléchargé",
 		"stopReceiving": "Arrêter la réception",
 		"download": "Télécharger"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "Le transfert a été arrêté avant la fin.",
 		"successMessage": "Votre transfert a été complété avec succès.",
 		"file": "Fichier",
+		"files": "Fichiers",
 		"folder": "Dossier",
 		"fileName": "Nom du fichier",
 		"fileSize": "Taille du fichier",
 		"folderSize": "Taille du dossier",
 		"downloadPath": "Chemin de téléchargement",
 		"duration": "Durée",
-		"avgSpeed": "Vitesse moyenne"
+		"avgSpeed": "Vitesse moyenne",
+		"multipleFiles": "{{count}} fichiers",
+		"donatePrompt": "Vous appréciez AltSendme ?"
 	},
 	"errors": {
 		"sharingFailed": "Échec du partage",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "Échec de l'ouverture du dossier",
 		"openFolderFailedDesc": "Échec de l'ouverture du dossier de téléchargement"
 	},
-	"comingSoon": "Bientôt disponible",
-	"undo": "Annuler l’action",
-	"cancel": "Annuler",
-	"confirm": "Confirmer",
-	"privacyPolicy": "Politique de confidentialité",
-	"license": "Licence",
-	"notFound": {
-		"title": "Page introuvable",
-		"subtitle": "La page que vous recherchez n’existe pas ou a été déplacée.",
-		"goBack": "Retour",
-		"goHome": "Accueil"
-	},
 	"settings": {
 		"title": "Paramètres",
 		"navItems": {
 			"appearance": "Thème et langue",
 			"general": "Général",
+			"relay": "Relais",
 			"network": "Réseau",
 			"notification": "Notifications"
 		},
@@ -159,6 +175,49 @@
 					"label": "Menu contextuel de l’Explorateur",
 					"description": "Ajouter « Envoyer avec AltSendme » au menu contextuel de l’Explorateur Windows"
 				}
+			},
+			"broadcast": {
+				"title": "Diffusion",
+				"showToggle": {
+					"label": "Afficher l’interrupteur de diffusion lors du partage",
+					"description": "Affiche un interrupteur de diffusion sur l’écran de partage pour que plusieurs destinataires puissent télécharger les mêmes fichiers en même temps."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Serveurs relais",
+				"description": "Contrôlez quels serveurs relais iroh AltSendme utilise pour le traversée NAT et les connexions de secours chiffrées.",
+				"modeDefault": "Automatique (relais publics)",
+				"modeDefaultDesc": "Utilise les relais publics iroh par défaut. Recommandé pour la plupart des utilisateurs.",
+				"modeCustom": "Personnalisé (auto-hébergé)",
+				"modeCustomDesc": "Utilisez votre/vos propre(s) serveur(s) relais. Voir deploy/relay dans le dépôt du projet.",
+				"modeDisabled": "Désactivé",
+				"modeDisabledDesc": "Ne pas utiliser de relais. Connexions directes uniquement ; peut échouer avec un NAT strict.",
+				"urlsLabel": "URL des relais",
+				"urlsDescription": "Ajoutez une ou plusieurs URL HTTPS de relais pour la bascule régionale.",
+				"addUrl": "Ajouter une URL de relais",
+				"removeUrl": "Supprimer l’URL de relais",
+				"urlInvalidHint": "Entrez une URL HTTPS valide",
+				"urlChecking": "Vérification de la connexion",
+				"urlVerified": "Vérifié",
+				"urlVerifyFailedHint": "Impossible de se connecter à ce relais",
+				"verifySummary": "{{ok}} relais sur {{total}} vérifiés.",
+				"verifyAuthHint": "Si votre relais nécessite un jeton d’authentification, assurez-vous qu’il correspond à access.shared_token sur le serveur.",
+				"authTokenLabel": "Jeton d’authentification (facultatif)",
+				"authTokenPlaceholder": "Secret partagé si votre relais nécessite une authentification",
+				"authTokenDescription": "Requis lorsque votre relais utilise access.shared_token dans sa configuration.",
+				"showAuthToken": "Afficher",
+				"hideAuthToken": "Masquer",
+				"privacyNote": "Pour une configuration entièrement privée, configurez les mêmes URL de relais sur les appareils émetteur et récepteur.",
+				"testConnection": "Tester la connexion",
+				"verifySuccess": "Connexion relais OK",
+				"verifySuccessDesc": "{{url}}\nvérifié avec succès ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Enregistrement réussi auprès de votre serveur relais configuré.",
+				"verifyFailed": "Échec de la connexion relais",
+				"urlRequired": "Ajoutez au moins une URL de relais.",
+				"invalidUrl": "URL de relais invalide : {{url}}",
+				"disabledHint": "Activez les relais automatiques ou personnalisés pour tester la connectivité."
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "Impossible de rechercher des mises à jour",
 		"installFailed": "Échec de l’installation",
 		"installFailedDesc": "Impossible d’installer la mise à jour"
+	},
+	"android": {
+		"preparingFile": "Préparation du fichier..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "État de la connexion relais",
+			"publicHeading": "Relais public",
+			"customHeading": "Relais personnalisé",
+			"disabledHeading": "Relais désactivés",
+			"unavailableHeading": "Relais indisponible",
+			"fellBackToPublic": "Relais personnalisé inaccessible — utilisation d’un relais public",
+			"fellBackToastTitle": "Utilisation d’un relais public",
+			"fellBackToastSend": "Votre relais personnalisé était inaccessible — ce transfert utilise un relais public à la place.",
+			"fellBackToastReceive": "Votre relais personnalisé était inaccessible — ce téléchargement utilise un relais public à la place.",
+			"dialogDescription": "Indique quel serveur relais cette application utilise actuellement pour les connexions.",
+			"connectedRelay": "Relais connecté",
+			"checking": "Vérification de la connexion…",
+			"configuredMode": "Configuré dans les paramètres",
+			"configuredDefault": "Automatique (relais publics)",
+			"configuredCustom": "Personnalisé (auto-hébergé)",
+			"configuredDisabled": "Désactivé",
+			"openSettings": "Paramètres réseau"
+		}
 	}
 }

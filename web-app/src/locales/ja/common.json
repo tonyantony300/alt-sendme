@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "送信",
+	"comingSoon": "近日公開",
 	"receive": "受信",
 	"ok": "OK",
+	"undo": "元に戻す",
+	"cancel": "キャンセル",
+	"confirm": "確認",
 	"loading": "読み込み中...",
 	"browse": "参照",
 	"donate": "寄付する",
+	"privacyPolicy": "プライバシーポリシー",
+	"license": "ライセンス",
+	"notFound": {
+		"title": "ページが見つかりません",
+		"subtitle": "お探しのページは存在しないか、移動されました。",
+		"goBack": "戻る",
+		"goHome": "ホームへ"
+	},
 	"sender": {
 		"title": "送信",
 		"subtitle": "暗号化されたピアツーピア接続でファイルまたはフォルダを共有します。",
@@ -29,9 +41,15 @@
 		"fileSelected": "ファイルを選択しました",
 		"folderSelected": "フォルダを選択しました",
 		"itemSelected": "アイテムを選択しました",
+		"multipleFilesSelected": "{{name}} ... 他 {{count}} 件",
 		"browseFile": "ファイルを参照",
 		"browseFolder": "フォルダを参照",
+		"addMoreFiles": "ファイルを追加",
+		"addMoreFolders": "フォルダを追加",
+		"multipleItemsSelected": "{{firstName}} 他 {{count}} 件",
+		"removeFromSelection": "選択から削除",
 		"copyToClipboard": "クリップボードにコピー",
+		"description": "説明（任意）",
 		"broadcastMode": {
 			"index": "ブロードキャスト",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "プライベート共有",
 				"description": "チケットを共有した相手のみがファイルをダウンロードできます。"
 			}
-		},
-		"description": "説明（任意）"
+		}
 	},
 	"receiver": {
 		"title": "ファイルを受信",
 		"subtitle": "暗号化されたピアツーピア接続で送信者からファイルをダウンロードします。",
 		"saveToFolder": "フォルダに保存：",
 		"noFolderSelected": "フォルダが選択されていません",
+		"conflictsMore": "... 他 {{count}} 件",
 		"pasteTicket": "ここにチケットを貼り付け：",
 		"ticketPlaceholder": "sendme 受信チケット...",
 		"howToReceive": "ファイルの受信方法",
@@ -60,8 +78,14 @@
 		"instruction5": "ファイルは選択したフォルダに保存されます",
 		"keepAppOpen": "ファイルをダウンロードしている間、このアプリを開いたままにしてください",
 		"connectingToSender": "送信者に接続中",
+		"previewMultipleItems": "{{name}} ... 他 {{count}} 件",
+		"multipleFilesFound": "複数のファイルが見つかりました",
+		"expandPreviewList": "ファイル一覧を表示",
+		"collapsePreviewList": "ファイル一覧を非表示",
 		"downloadingInProgress": "ダウンロード中",
 		"downloadCompleted": "ダウンロード完了",
+		"downloadCompletedWithConflicts": "ダウンロード完了（名前の競合を解決済み）",
+		"downloadedFile": "ダウンロードしたファイル",
 		"stopReceiving": "受信を停止",
 		"download": "ダウンロード"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "転送は完了前に停止されました。",
 		"successMessage": "転送が正常に完了しました。",
 		"file": "ファイル",
+		"files": "ファイル",
 		"folder": "フォルダ",
 		"fileName": "ファイル名",
 		"fileSize": "ファイルサイズ",
 		"folderSize": "フォルダサイズ",
 		"downloadPath": "ダウンロードパス",
 		"duration": "所要時間",
-		"avgSpeed": "平均速度"
+		"avgSpeed": "平均速度",
+		"multipleFiles": "{{count}} 件のファイル",
+		"donatePrompt": "AltSendme を気に入っていただけましたか？"
 	},
 	"errors": {
 		"sharingFailed": "共有に失敗しました",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "フォルダを開くのに失敗しました",
 		"openFolderFailedDesc": "ダウンロードフォルダを開けませんでした"
 	},
-	"comingSoon": "近日公開",
-	"undo": "元に戻す",
-	"cancel": "キャンセル",
-	"confirm": "確認",
-	"privacyPolicy": "プライバシーポリシー",
-	"license": "ライセンス",
-	"notFound": {
-		"title": "ページが見つかりません",
-		"subtitle": "お探しのページは存在しないか、移動されました。",
-		"goBack": "戻る",
-		"goHome": "ホームへ"
-	},
 	"settings": {
 		"title": "設定",
 		"navItems": {
 			"appearance": "テーマと言語",
 			"general": "一般",
+			"relay": "リレー",
 			"network": "ネットワーク",
 			"notification": "通知"
 		},
@@ -159,6 +175,49 @@
 					"label": "エクスプローラーの右クリックメニュー",
 					"description": "Windows エクスプローラーの右クリックに「AltSendme で送信」を追加します"
 				}
+			},
+			"broadcast": {
+				"title": "ブロードキャスト",
+				"showToggle": {
+					"label": "共有中にブロードキャスト切り替えを表示",
+					"description": "共有画面にブロードキャストスイッチを表示し、複数の受信者が同時に同じファイルをダウンロードできるようにします。"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "リレーサーバー",
+				"description": "AltSendme が NAT トラバーサルと暗号化フォールバック接続に使用する iroh リレーサーバーを制御します。",
+				"modeDefault": "自動（公開リレー）",
+				"modeDefaultDesc": "デフォルトの公開 iroh リレーを使用します。ほとんどのユーザーに最適です。",
+				"modeCustom": "カスタム（自己ホスト）",
+				"modeCustomDesc": "独自のリレーサーバーを使用します。プロジェクトリポジトリの deploy/relay を参照してください。",
+				"modeDisabled": "無効",
+				"modeDisabledDesc": "リレーを使用しません。直接接続のみ。厳格な NAT では失敗する場合があります。",
+				"urlsLabel": "リレー URL",
+				"urlsDescription": "地域フェイルオーバー用に 1 つ以上の HTTPS リレー URL を追加します。",
+				"addUrl": "リレー URL を追加",
+				"removeUrl": "リレー URL を削除",
+				"urlInvalidHint": "有効な HTTPS URL を入力してください",
+				"urlChecking": "接続を確認中",
+				"urlVerified": "確認済み",
+				"urlVerifyFailedHint": "このリレーに接続できませんでした",
+				"verifySummary": "{{total}} 件中 {{ok}} 件のリレーを確認しました。",
+				"verifyAuthHint": "リレーに認証トークンが必要な場合、サーバーの access.shared_token と一致していることを確認してください。",
+				"authTokenLabel": "認証トークン（任意）",
+				"authTokenPlaceholder": "リレーが認証を要求する場合の共有シークレット",
+				"authTokenDescription": "リレーが設定で access.shared_token を使用する場合に必要です。",
+				"showAuthToken": "表示",
+				"hideAuthToken": "非表示",
+				"privacyNote": "完全にプライベートな構成にするには、送信側と受信側の両方で同じリレー URL を設定してください。",
+				"testConnection": "接続をテスト",
+				"verifySuccess": "リレー接続 OK",
+				"verifySuccessDesc": "{{url}}\n正常に確認されました（{{latency}} ms）。",
+				"verifySuccessDescGeneric": "設定したリレーサーバーへの登録に成功しました。",
+				"verifyFailed": "リレー接続に失敗しました",
+				"urlRequired": "少なくとも 1 つのリレー URL を追加してください。",
+				"invalidUrl": "無効なリレー URL: {{url}}",
+				"disabledHint": "接続をテストするには、自動またはカスタムリレーを有効にしてください。"
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "更新を確認できませんでした",
 		"installFailed": "インストールに失敗しました",
 		"installFailedDesc": "更新をインストールできませんでした"
+	},
+	"android": {
+		"preparingFile": "ファイルを準備中..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "リレー接続状態",
+			"publicHeading": "公開リレー",
+			"customHeading": "カスタムリレー",
+			"disabledHeading": "リレー無効",
+			"unavailableHeading": "リレー利用不可",
+			"fellBackToPublic": "カスタムリレーに到達できません — 公開リレーを使用中",
+			"fellBackToastTitle": "公開リレーを使用中",
+			"fellBackToastSend": "カスタムリレーに到達できませんでした — この転送は公開リレーを使用しています。",
+			"fellBackToastReceive": "カスタムリレーに到達できませんでした — このダウンロードは公開リレーを使用しています。",
+			"dialogDescription": "このアプリが現在接続に使用しているリレーサーバーを表示します。",
+			"connectedRelay": "接続中のリレー",
+			"checking": "接続を確認中…",
+			"configuredMode": "設定で構成済み",
+			"configuredDefault": "自動（公開リレー）",
+			"configuredCustom": "カスタム（自己ホスト）",
+			"configuredDisabled": "無効",
+			"openSettings": "ネットワーク設定"
+		}
 	}
 }

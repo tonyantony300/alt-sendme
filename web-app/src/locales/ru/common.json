@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "Отправить",
+	"comingSoon": "Скоро",
 	"receive": "Получить",
 	"ok": "ОК",
+	"undo": "Отменить",
+	"cancel": "Отмена",
+	"confirm": "Подтвердить",
 	"loading": "Загрузка...",
 	"browse": "Обзор",
 	"donate": "Пожертвовать",
+	"privacyPolicy": "Политика конфиденциальности",
+	"license": "Лицензия",
+	"notFound": {
+		"title": "Страница не найдена",
+		"subtitle": "Запрашиваемая страница не существует или была перемещена.",
+		"goBack": "Назад",
+		"goHome": "На главную"
+	},
 	"sender": {
 		"title": "Отправить",
 		"subtitle": "Делитесь файлами или папками через зашифрованное P2P соединение.",
@@ -29,9 +41,15 @@
 		"fileSelected": "Выбранный файл",
 		"folderSelected": "Выбранная папка",
 		"itemSelected": "Выбранный пункт",
+		"multipleFilesSelected": "{{name}} ... и ещё {{count}}",
 		"browseFile": "Выбрать файл",
 		"browseFolder": "Выбрать папку",
+		"addMoreFiles": "Добавить файлы",
+		"addMoreFolders": "Добавить папки",
+		"multipleItemsSelected": "{{firstName}} и ещё {{count}}",
+		"removeFromSelection": "Удалить из выбора",
 		"copyToClipboard": "Скопировать",
+		"description": "Описание (необязательно)",
 		"broadcastMode": {
 			"index": "Трансляция",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "Приватная передача",
 				"description": "Только человек, с которым вы делитесь тикетом, может скачать файл."
 			}
-		},
-		"description": "Описание (необязательно)"
+		}
 	},
 	"receiver": {
 		"title": "Получить файлы",
 		"subtitle": "Скачать файлы от отправителя через зашифрованное P2P соединение в любой части интернета.",
 		"saveToFolder": "Сохранить в папку:",
 		"noFolderSelected": "Папка не выбрана",
+		"conflictsMore": "... и ещё {{count}}",
 		"pasteTicket": "Вставьте сюда тикет:",
 		"ticketPlaceholder": "sendme тикет получения...",
 		"howToReceive": "Как получать файлы",
@@ -60,8 +78,14 @@
 		"instruction5": "Файлы будут сохранены в выбранную вами папку",
 		"keepAppOpen": "Не закрывайте приложение, пока вы скачиваете файл",
 		"connectingToSender": "Подключение к отправителю",
+		"previewMultipleItems": "{{name}} ... и ещё {{count}}",
+		"multipleFilesFound": "Найдено несколько файлов",
+		"expandPreviewList": "Показать список файлов",
+		"collapsePreviewList": "Скрыть список файлов",
 		"downloadingInProgress": "Скачивание в процессе",
 		"downloadCompleted": "Скачивание завершено",
+		"downloadCompletedWithConflicts": "Загрузка завершена, конфликты имён разрешены",
+		"downloadedFile": "Загруженный файл",
 		"stopReceiving": "Прекратить скачивание",
 		"download": "Скачать"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "Передача была остановлена до завершения.",
 		"successMessage": "Ваша передача была успешно завершена.",
 		"file": "Файл",
+		"files": "Файлы",
 		"folder": "Папка",
 		"fileName": "Имя файла",
 		"fileSize": "Размер файла",
 		"folderSize": "Размер папки",
 		"downloadPath": "Путь для скачивания",
 		"duration": "Длительность",
-		"avgSpeed": "Средняя скорость"
+		"avgSpeed": "Средняя скорость",
+		"multipleFiles": "{{count}} файлов",
+		"donatePrompt": "Нравится AltSendme?"
 	},
 	"errors": {
 		"sharingFailed": "Ошибка передачи",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "Ошибка открытия папки",
 		"openFolderFailedDesc": "Не удалось открыть папку для скачивания"
 	},
-	"comingSoon": "Скоро",
-	"undo": "Отменить",
-	"cancel": "Отмена",
-	"confirm": "Подтвердить",
-	"privacyPolicy": "Политика конфиденциальности",
-	"license": "Лицензия",
-	"notFound": {
-		"title": "Страница не найдена",
-		"subtitle": "Запрашиваемая страница не существует или была перемещена.",
-		"goBack": "Назад",
-		"goHome": "На главную"
-	},
 	"settings": {
 		"title": "Настройки",
 		"navItems": {
 			"appearance": "Тема и язык",
 			"general": "Общие",
+			"relay": "Реле",
 			"network": "Сеть",
 			"notification": "Уведомления"
 		},
@@ -159,6 +175,49 @@
 					"label": "Контекстное меню проводника",
 					"description": "Добавить «Отправить через AltSendme» в контекстное меню проводника Windows"
 				}
+			},
+			"broadcast": {
+				"title": "Трансляция",
+				"showToggle": {
+					"label": "Показывать переключатель трансляции при отправке",
+					"description": "Отображает переключатель трансляции на экране отправки, чтобы несколько получателей могли одновременно скачивать одни и те же файлы."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Серверы реле",
+				"description": "Управление серверами реле iroh, которые AltSendme использует для NAT traversal и резервных зашифрованных соединений.",
+				"modeDefault": "Автоматически (публичные реле)",
+				"modeDefaultDesc": "Использовать публичные реле iroh по умолчанию. Подходит для большинства пользователей.",
+				"modeCustom": "Пользовательские (самостоятельный хостинг)",
+				"modeCustomDesc": "Использовать собственные серверы реле. См. deploy/relay в репозитории проекта.",
+				"modeDisabled": "Отключено",
+				"modeDisabledDesc": "Не использовать реле. Только прямые соединения; может не работать за строгим NAT.",
+				"urlsLabel": "URL реле",
+				"urlsDescription": "Добавьте один или несколько HTTPS URL реле для регионального резервирования.",
+				"addUrl": "Добавить URL реле",
+				"removeUrl": "Удалить URL реле",
+				"urlInvalidHint": "Введите действительный HTTPS URL",
+				"urlChecking": "Проверка соединения",
+				"urlVerified": "Проверено",
+				"urlVerifyFailedHint": "Не удалось подключиться к этому реле",
+				"verifySummary": "Проверено {{ok}} из {{total}} реле.",
+				"verifyAuthHint": "Если ваше реле требует токен аутентификации, убедитесь, что он совпадает с access.shared_token на сервере.",
+				"authTokenLabel": "Токен аутентификации (необязательно)",
+				"authTokenPlaceholder": "Общий секрет, если реле требует аутентификацию",
+				"authTokenDescription": "Требуется, когда реле использует access.shared_token в конфигурации.",
+				"showAuthToken": "Показать",
+				"hideAuthToken": "Скрыть",
+				"privacyNote": "Для полностью приватной настройки настройте одинаковые URL реле на устройствах отправителя и получателя.",
+				"testConnection": "Проверить соединение",
+				"verifySuccess": "Соединение с реле OK",
+				"verifySuccessDesc": "{{url}}\nуспешно проверен ({{latency}} мс).",
+				"verifySuccessDescGeneric": "Успешная регистрация на настроенном сервере реле.",
+				"verifyFailed": "Сбой соединения с реле",
+				"urlRequired": "Добавьте хотя бы один URL реле.",
+				"invalidUrl": "Недействительный URL реле: {{url}}",
+				"disabledHint": "Включите автоматические или пользовательские реле для проверки соединения."
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "Не удалось проверить обновления",
 		"installFailed": "Ошибка установки",
 		"installFailedDesc": "Не удалось установить обновление"
+	},
+	"android": {
+		"preparingFile": "Подготовка файла..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Статус соединения с реле",
+			"publicHeading": "Публичное реле",
+			"customHeading": "Пользовательское реле",
+			"disabledHeading": "Реле отключены",
+			"unavailableHeading": "Реле недоступно",
+			"fellBackToPublic": "Пользовательское реле недоступно — используется публичное реле",
+			"fellBackToastTitle": "Используется публичное реле",
+			"fellBackToastSend": "Ваше пользовательское реле было недоступно — эта передача использует публичное реле.",
+			"fellBackToastReceive": "Ваше пользовательское реле было недоступно — эта загрузка использует публичное реле.",
+			"dialogDescription": "Показывает, какой сервер реле приложение сейчас использует для соединений.",
+			"connectedRelay": "Подключённое реле",
+			"checking": "Проверка соединения…",
+			"configuredMode": "Настроено в параметрах",
+			"configuredDefault": "Автоматически (публичные реле)",
+			"configuredCustom": "Пользовательские (самостоятельный хостинг)",
+			"configuredDisabled": "Отключено",
+			"openSettings": "Сетевые настройки"
+		}
 	}
 }

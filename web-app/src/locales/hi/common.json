@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "भेजें",
+	"comingSoon": "जल्द आ रहा है",
 	"receive": "प्राप्त करें",
 	"ok": "ठीक है",
+	"undo": "पूर्ववत करें",
+	"cancel": "रद्द करें",
+	"confirm": "पुष्टि करें",
 	"loading": "लोड हो रहा है...",
 	"browse": "ब्राउज़ करें",
 	"donate": "दान करें",
+	"privacyPolicy": "गोपनीयता नीति",
+	"license": "लाइसेंस",
+	"notFound": {
+		"title": "पृष्ठ नहीं मिला",
+		"subtitle": "जिस पृष्ठ की आप तलाश कर रहे हैं वह मौजूद नहीं है या स्थानांतरित कर दिया गया है।",
+		"goBack": "वापस जाएँ",
+		"goHome": "होम पर जाएँ"
+	},
 	"sender": {
 		"title": "भेजें",
 		"subtitle": "एन्क्रिप्टेड पीयर-टू-पीयर कनेक्शनों के माध्यम से फ़ाइलें या फ़ोल्डर साझा करें।",
@@ -29,9 +41,15 @@
 		"fileSelected": "फ़ाइल चुनी गई",
 		"folderSelected": "फ़ोल्डर चुना गया",
 		"itemSelected": "आइटम चुना गया",
+		"multipleFilesSelected": "{{name}} ... और {{count}} और",
 		"browseFile": "फ़ाइल ब्राउज़ करें",
 		"browseFolder": "फ़ोल्डर ब्राउज़ करें",
+		"addMoreFiles": "और फ़ाइलें जोड़ें",
+		"addMoreFolders": "और फ़ोल्डर जोड़ें",
+		"multipleItemsSelected": "{{firstName}} और {{count}} और",
+		"removeFromSelection": "चयन से हटाएँ",
 		"copyToClipboard": "क्लिपबोर्ड में कॉपी करें",
+		"description": "विवरण (वैकल्पिक)",
 		"broadcastMode": {
 			"index": "ब्रॉडकास्ट",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "निजी साझाकरण",
 				"description": "केवल वह व्यक्ति जिसके साथ आप टिकट साझा करते हैं, फ़ाइल डाउनलोड कर सकता है।"
 			}
-		},
-		"description": "विवरण (वैकल्पिक)"
+		}
 	},
 	"receiver": {
 		"title": "फ़ाइलें प्राप्त करें",
 		"subtitle": "इंटरनेट पर एन्क्रिप्टेड पीयर-टू-पीयर कनेक्शनों का उपयोग करके प्रेषक से फ़ाइलें डाउनलोड करें।",
 		"saveToFolder": "इस फ़ोल्डर में सहेजें:",
 		"noFolderSelected": "कोई फ़ोल्डर चयनित नहीं",
+		"conflictsMore": "... और {{count}} और",
 		"pasteTicket": "टिकट यहाँ पेस्ट करें:",
 		"ticketPlaceholder": "sendme प्राप्ति टिकट...",
 		"howToReceive": "फ़ाइलें कैसे प्राप्त करें",
@@ -60,8 +78,14 @@
 		"instruction5": "फ़ाइलें आपके चयनित फ़ोल्डर में सहेजी जाएंगी",
 		"keepAppOpen": "फ़ाइलें डाउनलोड होने तक ऐप खुला रखें",
 		"connectingToSender": "प्रेषक से कनेक्ट किया जा रहा है",
+		"previewMultipleItems": "{{name}} ... और {{count}} और",
+		"multipleFilesFound": "कई फ़ाइलें मिलीं",
+		"expandPreviewList": "फ़ाइल सूची दिखाएँ",
+		"collapsePreviewList": "फ़ाइल सूची छिपाएँ",
 		"downloadingInProgress": "डाउनलोड जारी है",
 		"downloadCompleted": "डाउनलोड पूरा हुआ",
+		"downloadCompletedWithConflicts": "डाउनलोड पूर्ण, नाम संघर्ष हल किए गए",
+		"downloadedFile": "डाउनलोड की गई फ़ाइल",
 		"stopReceiving": "प्राप्त करना रोकें",
 		"download": "डाउनलोड"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "स्थानांतरण पूरा होने से पहले रोक दिया गया था।",
 		"successMessage": "आपका ट्रांसफ़र सफलतापूर्वक पूरा हो गया है।",
 		"file": "फ़ाइल",
+		"files": "फ़ाइलें",
 		"folder": "फ़ोल्डर",
 		"fileName": "फ़ाइल नाम",
 		"fileSize": "फ़ाइल आकार",
 		"folderSize": "फ़ोल्डर आकार",
 		"downloadPath": "डाउनलोड पथ",
 		"duration": "अवधि",
-		"avgSpeed": "औसत गति"
+		"avgSpeed": "औसत गति",
+		"multipleFiles": "{{count}} फ़ाइलें",
+		"donatePrompt": "क्या आपको AltSendme पसंद है?"
 	},
 	"errors": {
 		"sharingFailed": "साझा करना विफल",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "फ़ोल्डर खोलना विफल",
 		"openFolderFailedDesc": "डाउनलोड फ़ोल्डर खोलने में विफल"
 	},
-	"comingSoon": "जल्द आ रहा है",
-	"undo": "पूर्ववत करें",
-	"cancel": "रद्द करें",
-	"confirm": "पुष्टि करें",
-	"privacyPolicy": "गोपनीयता नीति",
-	"license": "लाइसेंस",
-	"notFound": {
-		"title": "पृष्ठ नहीं मिला",
-		"subtitle": "जिस पृष्ठ की आप तलाश कर रहे हैं वह मौजूद नहीं है या स्थानांतरित कर दिया गया है।",
-		"goBack": "वापस जाएँ",
-		"goHome": "होम पर जाएँ"
-	},
 	"settings": {
 		"title": "सेटिंग्स",
 		"navItems": {
 			"appearance": "थीम और भाषा",
 			"general": "सामान्य",
+			"relay": "Relay",
 			"network": "नेटवर्क",
 			"notification": "सूचनाएँ"
 		},
@@ -159,6 +175,49 @@
 					"label": "एक्सप्लोरर संदर्भ मेनू",
 					"description": "विंडोज़ एक्सप्लोरर के दाएँ-क्लिक मेनू में «AltSendme से भेजें» जोड़ें"
 				}
+			},
+			"broadcast": {
+				"title": "प्रसारण",
+				"showToggle": {
+					"label": "साझा करते समय प्रसारण टॉगल दिखाएँ",
+					"description": "साझा करने की स्क्रीन पर प्रसारण स्विच दिखाता है ताकि कई प्राप्तकर्ता एक साथ समान फ़ाइलें डाउनलोड कर सकें।"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay सर्वर",
+				"description": "नियंत्रित करें कि AltSendme NAT traversal और एन्क्रिप्टेड फ़ॉलबैक कनेक्शन के लिए कौन से iroh relay सर्वर उपयोग करता है।",
+				"modeDefault": "स्वचालित (सार्वजनिक relay)",
+				"modeDefaultDesc": "डिफ़ॉल्ट सार्वजनिक iroh relay का उपयोग करता है। अधिकांश उपयोगकर्ताओं के लिए सर्वोत्तम।",
+				"modeCustom": "कस्टम (self-hosted)",
+				"modeCustomDesc": "अपने relay सर्वर का उपयोग करें। प्रोजेक्ट repo में deploy/relay देखें।",
+				"modeDisabled": "अक्षम",
+				"modeDisabledDesc": "relay का उपयोग न करें। केवल सीधे कनेक्शन; सख्त NAT पर विफल हो सकता है।",
+				"urlsLabel": "Relay URL",
+				"urlsDescription": "क्षेत्रीय failover के लिए एक या अधिक HTTPS relay URL जोड़ें।",
+				"addUrl": "Relay URL जोड़ें",
+				"removeUrl": "Relay URL हटाएँ",
+				"urlInvalidHint": "मान्य HTTPS URL दर्ज करें",
+				"urlChecking": "कनेक्शन जाँचा जा रहा है",
+				"urlVerified": "सत्यापित",
+				"urlVerifyFailedHint": "इस relay से कनेक्ट नहीं हो सका",
+				"verifySummary": "{{total}} में से {{ok}} relay सत्यापित।",
+				"verifyAuthHint": "यदि आपके relay को auth token चाहिए, सुनिश्चित करें कि यह सर्वर पर access.shared_token से मेल खाता है।",
+				"authTokenLabel": "Auth token (वैकल्पिक)",
+				"authTokenPlaceholder": "साझा गुप्त कुंजी यदि relay को प्रमाणीकरण चाहिए",
+				"authTokenDescription": "आवश्यक जब relay अपनी config में access.shared_token उपयोग करता है।",
+				"showAuthToken": "दिखाएँ",
+				"hideAuthToken": "छिपाएँ",
+				"privacyNote": "पूर्ण निजी सेटअप के लिए, प्रेषक और प्राप्तकर्ता दोनों उपकरणों पर समान relay URL कॉन्फ़िगर करें।",
+				"testConnection": "कनेक्शन परीक्षण",
+				"verifySuccess": "Relay कनेक्शन OK",
+				"verifySuccessDesc": "{{url}}\nसफलतापूर्वक सत्यापित ({{latency}} ms)।",
+				"verifySuccessDescGeneric": "आपके कॉन्फ़िगर किए relay सर्वर पर सफलतापूर्वक पंजीकृत।",
+				"verifyFailed": "Relay कनेक्शन विफल",
+				"urlRequired": "कम से कम एक relay URL जोड़ें।",
+				"invalidUrl": "अमान्य relay URL: {{url}}",
+				"disabledHint": "कनेक्टिविटी परीक्षण के लिए स्वचालित या कस्टम relay सक्षम करें।"
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "अपडेट जाँच नहीं हो सकी",
 		"installFailed": "इंस्टॉल विफल",
 		"installFailedDesc": "अपडेट इंस्टॉल नहीं हो सका"
+	},
+	"android": {
+		"preparingFile": "फ़ाइल तैयार की जा रही है..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay कनेक्शन स्थिति",
+			"publicHeading": "सार्वजनिक relay",
+			"customHeading": "कस्टम relay",
+			"disabledHeading": "Relay अक्षम",
+			"unavailableHeading": "Relay अनुपलब्ध",
+			"fellBackToPublic": "कस्टम relay अनुपलब्ध — सार्वजनिक relay उपयोग हो रहा है",
+			"fellBackToastTitle": "सार्वजनिक relay उपयोग हो रहा है",
+			"fellBackToastSend": "आपका कस्टम relay अनुपलब्ध था — यह स्थानांतरण सार्वजनिक relay उपयोग कर रहा है।",
+			"fellBackToastReceive": "आपका कस्टम relay अनुपलब्ध था — यह डाउनलोड सार्वजनिक relay उपयोग कर रहा है।",
+			"dialogDescription": "दिखाता है कि यह ऐप वर्तमान में कनेक्शन के लिए कौन सा relay सर्वर उपयोग कर रहा है।",
+			"connectedRelay": "कनेक्टेड relay",
+			"checking": "कनेक्शन जाँचा जा रहा है…",
+			"configuredMode": "सेटिंग्स में कॉन्फ़िगर",
+			"configuredDefault": "स्वचालित (सार्वजनिक relay)",
+			"configuredCustom": "कस्टम (self-hosted)",
+			"configuredDisabled": "अक्षम",
+			"openSettings": "नेटवर्क सेटिंग्स"
+		}
 	}
 }

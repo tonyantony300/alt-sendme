@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "보내기",
+	"comingSoon": "곧 제공",
 	"receive": "받기",
 	"ok": "확인",
+	"undo": "실행 취소",
+	"cancel": "취소",
+	"confirm": "확인",
 	"loading": "로딩 중...",
 	"browse": "찾아보기",
 	"donate": "기부하기",
+	"privacyPolicy": "개인정보 처리방침",
+	"license": "라이선스",
+	"notFound": {
+		"title": "페이지를 찾을 수 없음",
+		"subtitle": "찾으시는 페이지가 없거나 이동되었습니다.",
+		"goBack": "뒤로",
+		"goHome": "홈으로"
+	},
 	"sender": {
 		"title": "보내기",
 		"subtitle": "암호화된 피어투피어 연결을 통해 파일 또는 폴더를 공유합니다.",
@@ -29,9 +41,15 @@
 		"fileSelected": "파일 선택됨",
 		"folderSelected": "폴더 선택됨",
 		"itemSelected": "항목 선택됨",
+		"multipleFilesSelected": "{{name}} ... 외 {{count}}개",
 		"browseFile": "파일 찾아보기",
 		"browseFolder": "폴더 찾아보기",
+		"addMoreFiles": "파일 더 추가",
+		"addMoreFolders": "폴더 더 추가",
+		"multipleItemsSelected": "{{firstName}} 외 {{count}}개",
+		"removeFromSelection": "선택에서 제거",
 		"copyToClipboard": "클립보드에 복사",
+		"description": "설명(선택)",
 		"broadcastMode": {
 			"index": "브로드캐스트",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "비공개 공유",
 				"description": "티켓을 공유한 사람만 파일을 다운로드할 수 있습니다."
 			}
-		},
-		"description": "설명(선택)"
+		}
 	},
 	"receiver": {
 		"title": "파일 받기",
 		"subtitle": "인터넷을 통해 암호화된 피어투피어 연결로 보낸 사람으로부터 파일을 다운로드합니다.",
 		"saveToFolder": "폴더에 저장:",
 		"noFolderSelected": "선택된 폴더 없음",
+		"conflictsMore": "... 외 {{count}}개",
 		"pasteTicket": "티켓을 여기에 붙여넣기:",
 		"ticketPlaceholder": "sendme 수신 티켓...",
 		"howToReceive": "파일 받는 방법",
@@ -60,8 +78,14 @@
 		"instruction5": "파일은 선택한 폴더에 저장됩니다",
 		"keepAppOpen": "파일을 다운로드하는 동안 이 앱을 열어두세요",
 		"connectingToSender": "보낸 사람에게 연결 중",
+		"previewMultipleItems": "{{name}} ... 외 {{count}}개",
+		"multipleFilesFound": "여러 파일 발견",
+		"expandPreviewList": "파일 목록 표시",
+		"collapsePreviewList": "파일 목록 숨기기",
 		"downloadingInProgress": "다운로드 진행 중",
 		"downloadCompleted": "다운로드 완료",
+		"downloadCompletedWithConflicts": "다운로드 완료(이름 충돌 해결됨)",
+		"downloadedFile": "다운로드한 파일",
 		"stopReceiving": "받기 중지",
 		"download": "다운로드"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "전송이 완료되기 전에 중지되었습니다.",
 		"successMessage": "전송이 성공적으로 완료되었습니다.",
 		"file": "파일",
+		"files": "파일",
 		"folder": "폴더",
 		"fileName": "파일 이름",
 		"fileSize": "파일 크기",
 		"folderSize": "폴더 크기",
 		"downloadPath": "다운로드 경로",
 		"duration": "소요 시간",
-		"avgSpeed": "평균 속도"
+		"avgSpeed": "평균 속도",
+		"multipleFiles": "파일 {{count}}개",
+		"donatePrompt": "AltSendme가 마음에 드시나요?"
 	},
 	"errors": {
 		"sharingFailed": "공유 실패",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "폴더 열기 실패",
 		"openFolderFailedDesc": "다운로드 폴더를 열 수 없습니다"
 	},
-	"comingSoon": "곧 제공",
-	"undo": "실행 취소",
-	"cancel": "취소",
-	"confirm": "확인",
-	"privacyPolicy": "개인정보 처리방침",
-	"license": "라이선스",
-	"notFound": {
-		"title": "페이지를 찾을 수 없음",
-		"subtitle": "찾으시는 페이지가 없거나 이동되었습니다.",
-		"goBack": "뒤로",
-		"goHome": "홈으로"
-	},
 	"settings": {
 		"title": "설정",
 		"navItems": {
 			"appearance": "테마 및 언어",
 			"general": "일반",
+			"relay": "릴레이",
 			"network": "네트워크",
 			"notification": "알림"
 		},
@@ -159,6 +175,49 @@
 					"label": "탐색기 바로 가기 메뉴",
 					"description": "Windows 탐색기의 오른쪽 클릭 메뉴에 «AltSendme로 보내기» 추가"
 				}
+			},
+			"broadcast": {
+				"title": "브로드캐스트",
+				"showToggle": {
+					"label": "공유 중 브로드캐스트 토글 표시",
+					"description": "공유 화면에 브로드캐스트 스위치를 표시하여 여러 수신자가 동시에 같은 파일을 다운로드할 수 있게 합니다."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "릴레이 서버",
+				"description": "AltSendme가 NAT 통과 및 암호화된 대체 연결에 사용하는 iroh 릴레이 서버를 제어합니다.",
+				"modeDefault": "자동(공개 릴레이)",
+				"modeDefaultDesc": "기본 공개 iroh 릴레이를 사용합니다. 대부분의 사용자에게 적합합니다.",
+				"modeCustom": "사용자 지정(자체 호스팅)",
+				"modeCustomDesc": "자체 릴레이 서버를 사용합니다. 프로젝트 저장소의 deploy/relay를 참조하세요.",
+				"modeDisabled": "비활성화",
+				"modeDisabledDesc": "릴레이를 사용하지 않습니다. 직접 연결만; 엄격한 NAT에서는 실패할 수 있습니다.",
+				"urlsLabel": "릴레이 URL",
+				"urlsDescription": "지역 장애 조치를 위해 하나 이상의 HTTPS 릴레이 URL을 추가하세요.",
+				"addUrl": "릴레이 URL 추가",
+				"removeUrl": "릴레이 URL 제거",
+				"urlInvalidHint": "유효한 HTTPS URL을 입력하세요",
+				"urlChecking": "연결 확인 중",
+				"urlVerified": "확인됨",
+				"urlVerifyFailedHint": "이 릴레이에 연결할 수 없습니다",
+				"verifySummary": "{{total}}개 중 {{ok}}개 릴레이 확인됨.",
+				"verifyAuthHint": "릴레이에 인증 토큰이 필요한 경우 서버의 access.shared_token과 일치하는지 확인하세요.",
+				"authTokenLabel": "인증 토큰(선택)",
+				"authTokenPlaceholder": "릴레이에 인증이 필요한 경우 공유 비밀",
+				"authTokenDescription": "릴레이가 설정에서 access.shared_token을 사용하는 경우 필요합니다.",
+				"showAuthToken": "표시",
+				"hideAuthToken": "숨기기",
+				"privacyNote": "완전히 비공개로 설정하려면 송신 및 수신 기기 모두에 동일한 릴레이 URL을 구성하세요.",
+				"testConnection": "연결 테스트",
+				"verifySuccess": "릴레이 연결 OK",
+				"verifySuccessDesc": "{{url}}\n성공적으로 확인됨({{latency}} ms).",
+				"verifySuccessDescGeneric": "구성된 릴레이 서버에 성공적으로 등록되었습니다.",
+				"verifyFailed": "릴레이 연결 실패",
+				"urlRequired": "릴레이 URL을 하나 이상 추가하세요.",
+				"invalidUrl": "잘못된 릴레이 URL: {{url}}",
+				"disabledHint": "연결을 테스트하려면 자동 또는 사용자 지정 릴레이를 활성화하세요."
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "업데이트를 확인할 수 없습니다",
 		"installFailed": "설치 실패",
 		"installFailedDesc": "업데이트를 설치할 수 없습니다"
+	},
+	"android": {
+		"preparingFile": "파일 준비 중..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "릴레이 연결 상태",
+			"publicHeading": "공개 릴레이",
+			"customHeading": "사용자 지정 릴레이",
+			"disabledHeading": "릴레이 비활성화",
+			"unavailableHeading": "릴레이 사용 불가",
+			"fellBackToPublic": "사용자 지정 릴레이에 연결할 수 없음 — 공개 릴레이 사용 중",
+			"fellBackToastTitle": "공개 릴레이 사용 중",
+			"fellBackToastSend": "사용자 지정 릴레이에 연결할 수 없었습니다 — 이 전송은 공개 릴레이를 사용합니다.",
+			"fellBackToastReceive": "사용자 지정 릴레이에 연결할 수 없었습니다 — 이 다운로드는 공개 릴레이를 사용합니다.",
+			"dialogDescription": "이 앱이 현재 연결에 사용하는 릴레이 서버를 표시합니다.",
+			"connectedRelay": "연결된 릴레이",
+			"checking": "연결 확인 중…",
+			"configuredMode": "설정에서 구성됨",
+			"configuredDefault": "자동(공개 릴레이)",
+			"configuredCustom": "사용자 지정(자체 호스팅)",
+			"configuredDisabled": "비활성화",
+			"openSettings": "네트워크 설정"
+		}
 	}
 }

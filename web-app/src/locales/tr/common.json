@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "Gönder",
+	"comingSoon": "Çok yakında",
 	"receive": "Al",
 	"ok": "TAMAM",
+	"undo": "Geri al",
+	"cancel": "İptal",
+	"confirm": "Onayla",
 	"loading": "Yükleniyor...",
 	"browse": "Gözat",
 	"donate": "Bağış Yap",
+	"privacyPolicy": "Gizlilik politikası",
+	"license": "Lisans",
+	"notFound": {
+		"title": "Sayfa bulunamadı",
+		"subtitle": "Aradığınız sayfa mevcut değil veya taşınmış.",
+		"goBack": "Geri",
+		"goHome": "Ana sayfa"
+	},
 	"sender": {
 		"title": "Gönder",
 		"subtitle": "Dosyaları veya klasörleri şifreli eşler arası (P2P) bağlantılarla paylaşın.",
@@ -29,9 +41,15 @@
 		"fileSelected": "Dosya seçildi",
 		"folderSelected": "Klasör seçildi",
 		"itemSelected": "Öğe seçildi",
+		"multipleFilesSelected": "{{name}} ... ve {{count}} tane daha",
 		"browseFile": "Dosyaya Gözat",
 		"browseFolder": "Klasöre Gözat",
+		"addMoreFiles": "Daha fazla dosya ekle",
+		"addMoreFolders": "Daha fazla klasör ekle",
+		"multipleItemsSelected": "{{firstName}} ve {{count}} tane daha",
+		"removeFromSelection": "Seçimden kaldır",
 		"copyToClipboard": "Panoya kopyala",
+		"description": "Açıklama (isteğe bağlı)",
 		"broadcastMode": {
 			"index": "Yayın",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "Özel paylaşım",
 				"description": "Yalnızca anahtarı paylaştığınız kişi dosyayı indirebilir."
 			}
-		},
-		"description": "Açıklama (isteğe bağlı)"
+		}
 	},
 	"receiver": {
 		"title": "Dosya Al",
 		"subtitle": "İnternet üzerinden şifreli eşler arası bağlantılarla göndericiden dosya indirin.",
 		"saveToFolder": "Klasöre kaydet:",
 		"noFolderSelected": "Klasör seçilmedi",
+		"conflictsMore": "... ve {{count}} tane daha",
 		"pasteTicket": "Anahtarı buraya yapıştırın:",
 		"ticketPlaceholder": "sendme alma anahtarı...",
 		"howToReceive": "Dosya nasıl alınır",
@@ -60,8 +78,14 @@
 		"instruction5": "Dosyalar seçtiğiniz klasöre kaydedilecek",
 		"keepAppOpen": "Dosya indirilirken uygulamayı açık tutun",
 		"connectingToSender": "Göndericiye bağlanılıyor",
+		"previewMultipleItems": "{{name}} ... ve {{count}} tane daha",
+		"multipleFilesFound": "Birden fazla dosya bulundu",
+		"expandPreviewList": "Dosya listesini göster",
+		"collapsePreviewList": "Dosya listesini gizle",
 		"downloadingInProgress": "İndirme işlemi sürüyor",
 		"downloadCompleted": "İndirme tamamlandı",
+		"downloadCompletedWithConflicts": "İndirme tamamlandı, ad çakışmaları çözüldü",
+		"downloadedFile": "İndirilen dosya",
 		"stopReceiving": "Alımı durdur",
 		"download": "İndir"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "Transfer tamamlanmadan durduruldu.",
 		"successMessage": "Transferiniz başarıyla tamamlandı.",
 		"file": "Dosya",
+		"files": "Dosyalar",
 		"folder": "Klasör",
 		"fileName": "Dosya adı",
 		"fileSize": "Dosya boyutu",
 		"folderSize": "Klasör boyutu",
 		"downloadPath": "İndirme yolu",
 		"duration": "Süre",
-		"avgSpeed": "Ort. Hız"
+		"avgSpeed": "Ort. Hız",
+		"multipleFiles": "{{count}} dosya",
+		"donatePrompt": "AltSendme'yi beğeniyor musunuz?"
 	},
 	"errors": {
 		"sharingFailed": "Paylaşım Başarısız",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "Klasörü Açma Başarısız",
 		"openFolderFailedDesc": "İndirme klasörü açılamadı"
 	},
-	"comingSoon": "Çok yakında",
-	"undo": "Geri al",
-	"cancel": "İptal",
-	"confirm": "Onayla",
-	"privacyPolicy": "Gizlilik politikası",
-	"license": "Lisans",
-	"notFound": {
-		"title": "Sayfa bulunamadı",
-		"subtitle": "Aradığınız sayfa mevcut değil veya taşınmış.",
-		"goBack": "Geri",
-		"goHome": "Ana sayfa"
-	},
 	"settings": {
 		"title": "Ayarlar",
 		"navItems": {
 			"appearance": "Tema ve dil",
 			"general": "Genel",
+			"relay": "Relay",
 			"network": "Ağ",
 			"notification": "Bildirimler"
 		},
@@ -159,6 +175,49 @@
 					"label": "Gezgin bağlam menüsü",
 					"description": "Windows Gezgini sağ tık menüsüne «AltSendme ile gönder» ekle"
 				}
+			},
+			"broadcast": {
+				"title": "Yayın",
+				"showToggle": {
+					"label": "Paylaşırken yayın anahtarını göster",
+					"description": "Paylaşım ekranında bir yayın anahtarı göstererek birden fazla alıcının aynı dosyaları aynı anda indirmesini sağlar."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay sunucuları",
+				"description": "AltSendme'nin NAT geçişi ve şifreli yedek bağlantılar için hangi iroh relay sunucularını kullandığını kontrol edin.",
+				"modeDefault": "Otomatik (genel relay)",
+				"modeDefaultDesc": "Varsayılan genel iroh relay'lerini kullanır. Çoğu kullanıcı için en iyisi.",
+				"modeCustom": "Özel (self-hosted)",
+				"modeCustomDesc": "Kendi relay sunucularınızı kullanın. Proje deposundaki deploy/relay'e bakın.",
+				"modeDisabled": "Devre dışı",
+				"modeDisabledDesc": "Relay kullanma. Yalnızca doğrudan bağlantılar; katı NAT'ta başarısız olabilir.",
+				"urlsLabel": "Relay URL'leri",
+				"urlsDescription": "Bölgesel yedekleme için bir veya daha fazla HTTPS relay URL'si ekleyin.",
+				"addUrl": "Relay URL'si ekle",
+				"removeUrl": "Relay URL'sini kaldır",
+				"urlInvalidHint": "Geçerli bir HTTPS URL girin",
+				"urlChecking": "Bağlantı kontrol ediliyor",
+				"urlVerified": "Doğrulandı",
+				"urlVerifyFailedHint": "Bu relay'e bağlanılamadı",
+				"verifySummary": "{{total}} relay'den {{ok}} tanesi doğrulandı.",
+				"verifyAuthHint": "Relay'iniz bir kimlik doğrulama belirteci gerektiriyorsa, sunucudaki access.shared_token ile eşleştiğinden emin olun.",
+				"authTokenLabel": "Kimlik doğrulama belirteci (isteğe bağlı)",
+				"authTokenPlaceholder": "Relay kimlik doğrulaması gerektiriyorsa paylaşılan gizli anahtar",
+				"authTokenDescription": "Relay yapılandırmasında access.shared_token kullanıldığında gereklidir.",
+				"showAuthToken": "Göster",
+				"hideAuthToken": "Gizle",
+				"privacyNote": "Tamamen özel bir kurulum için gönderici ve alıcı cihazlarda aynı relay URL'lerini yapılandırın.",
+				"testConnection": "Bağlantıyı test et",
+				"verifySuccess": "Relay bağlantısı OK",
+				"verifySuccessDesc": "{{url}}\nbaşarıyla doğrulandı ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Yapılandırılmış relay sunucunuza başarıyla kaydedildi.",
+				"verifyFailed": "Relay bağlantısı başarısız",
+				"urlRequired": "En az bir relay URL'si ekleyin.",
+				"invalidUrl": "Geçersiz relay URL'si: {{url}}",
+				"disabledHint": "Bağlantıyı test etmek için otomatik veya özel relay'leri etkinleştirin."
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "Güncellemeler denetlenemedi",
 		"installFailed": "Kurulum başarısız",
 		"installFailedDesc": "Güncelleme kurulamadı"
+	},
+	"android": {
+		"preparingFile": "Dosya hazırlanıyor..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay bağlantı durumu",
+			"publicHeading": "Genel relay",
+			"customHeading": "Özel relay",
+			"disabledHeading": "Relay devre dışı",
+			"unavailableHeading": "Relay kullanılamıyor",
+			"fellBackToPublic": "Özel relay'e ulaşılamadı — genel relay kullanılıyor",
+			"fellBackToastTitle": "Genel relay kullanılıyor",
+			"fellBackToastSend": "Özel relay'inize ulaşılamadı — bu aktarım genel relay kullanıyor.",
+			"fellBackToastReceive": "Özel relay'inize ulaşılamadı — bu indirme genel relay kullanıyor.",
+			"dialogDescription": "Uygulamanın bağlantılar için şu anda hangi relay sunucusunu kullandığını gösterir.",
+			"connectedRelay": "Bağlı relay",
+			"checking": "Bağlantı kontrol ediliyor…",
+			"configuredMode": "Ayarlarda yapılandırıldı",
+			"configuredDefault": "Otomatik (genel relay)",
+			"configuredCustom": "Özel (self-hosted)",
+			"configuredDisabled": "Devre dışı",
+			"openSettings": "Ağ ayarları"
+		}
 	}
 }

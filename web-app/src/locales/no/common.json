@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "Send",
+	"comingSoon": "Kommer snart",
 	"receive": "Motta",
 	"ok": "OK",
+	"undo": "Angre",
+	"cancel": "Avbryt",
+	"confirm": "Bekreft",
 	"loading": "Laster...",
 	"browse": "Bla gjennom",
 	"donate": "Doner",
+	"privacyPolicy": "Personvernerklæring",
+	"license": "Lisens",
+	"notFound": {
+		"title": "Siden ble ikke funnet",
+		"subtitle": "Siden du leter etter finnes ikke eller er flyttet.",
+		"goBack": "Tilbake",
+		"goHome": "Hjem"
+	},
 	"sender": {
 		"title": "Send",
 		"subtitle": "Del filer eller mapper via krypterte peer-to-peer-tilkoblinger.",
@@ -29,9 +41,15 @@
 		"fileSelected": "Fil valgt",
 		"folderSelected": "Mappe valgt",
 		"itemSelected": "Element valgt",
+		"multipleFilesSelected": "{{name}} ... og {{count}} til",
 		"browseFile": "Velg fil",
 		"browseFolder": "Velg mappe",
+		"addMoreFiles": "Legg til flere filer",
+		"addMoreFolders": "Legg til flere mapper",
+		"multipleItemsSelected": "{{firstName}} og {{count}} til",
+		"removeFromSelection": "Fjern fra utvalg",
 		"copyToClipboard": "Kopier til utklippstavle",
+		"description": "Beskrivelse (valgfritt)",
 		"broadcastMode": {
 			"index": "Kringkasting",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "Privat deling",
 				"description": "Bare personen du deler nøkkelen med kan laste ned filen."
 			}
-		},
-		"description": "Beskrivelse (valgfritt)"
+		}
 	},
 	"receiver": {
 		"title": "Motta filer",
 		"subtitle": "Last ned filer fra avsender via krypterte peer-to-peer-tilkoblinger over internett.",
 		"saveToFolder": "Lagre i mappe:",
 		"noFolderSelected": "Ingen mappe valgt",
+		"conflictsMore": "... og {{count}} til",
 		"pasteTicket": "Lim inn nøkkelen her:",
 		"ticketPlaceholder": "sendme overføringssnøkkel...",
 		"howToReceive": "Hvordan motta filer",
@@ -60,8 +78,14 @@
 		"instruction5": "Filer vil bli lagret i den valgte mappen",
 		"keepAppOpen": "Hold appen åpen mens filer lastes ned",
 		"connectingToSender": "Kobler til avsender",
+		"previewMultipleItems": "{{name}} ... og {{count}} til",
+		"multipleFilesFound": "Flere filer funnet",
+		"expandPreviewList": "Vis filliste",
+		"collapsePreviewList": "Skjul filliste",
 		"downloadingInProgress": "Nedlasting pågår",
 		"downloadCompleted": "Nedlasting fullført",
+		"downloadCompletedWithConflicts": "Nedlasting fullført, navnekonflikter løst",
+		"downloadedFile": "Nedlastet fil",
 		"stopReceiving": "Stopp overføring",
 		"download": "Last ned"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "Overføringen ble stoppet før den var ferdig.",
 		"successMessage": "Overføringen din ble fullført.",
 		"file": "Fil",
+		"files": "Filer",
 		"folder": "Mappe",
 		"fileName": "Filnavn",
 		"fileSize": "Filstørrelse",
 		"folderSize": "Mappestørrelse",
 		"downloadPath": "Nedlastingssted",
 		"duration": "Varighet",
-		"avgSpeed": "Gjennomsnittlig hastighet"
+		"avgSpeed": "Gjennomsnittlig hastighet",
+		"multipleFiles": "{{count}} filer",
+		"donatePrompt": "Liker du AltSendme?"
 	},
 	"errors": {
 		"sharingFailed": "Deling feilet",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "Kunne ikke åpne mappe",
 		"openFolderFailedDesc": "Kunne ikke åpne nedlastingsmappen"
 	},
-	"comingSoon": "Kommer snart",
-	"undo": "Angre",
-	"cancel": "Avbryt",
-	"confirm": "Bekreft",
-	"privacyPolicy": "Personvernerklæring",
-	"license": "Lisens",
-	"notFound": {
-		"title": "Siden ble ikke funnet",
-		"subtitle": "Siden du leter etter finnes ikke eller er flyttet.",
-		"goBack": "Tilbake",
-		"goHome": "Hjem"
-	},
 	"settings": {
 		"title": "Innstillinger",
 		"navItems": {
 			"appearance": "Tema og språk",
 			"general": "Generelt",
+			"relay": "Relay",
 			"network": "Nettverk",
 			"notification": "Varsler"
 		},
@@ -159,6 +175,49 @@
 					"label": "Hurtigmeny i Filutforsker",
 					"description": "Legg til «Send med AltSendme» i hurtigmenyen i Windows Filutforsker"
 				}
+			},
+			"broadcast": {
+				"title": "Kringkasting",
+				"showToggle": {
+					"label": "Vis kringkastingsbryter under deling",
+					"description": "Viser en kringkastingsbryter på delingsskjermen slik at flere mottakere kan laste ned de samme filene samtidig."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay-servere",
+				"description": "Kontroller hvilke iroh relay-servere AltSendme bruker for NAT-traversering og krypterte reserveforbindelser.",
+				"modeDefault": "Automatisk (offentlige relay)",
+				"modeDefaultDesc": "Bruker standard offentlige iroh-relay. Best for de fleste brukere.",
+				"modeCustom": "Tilpasset (self-hosted)",
+				"modeCustomDesc": "Bruk dine egne relay-servere. Se deploy/relay i prosjektrepoet.",
+				"modeDisabled": "Deaktivert",
+				"modeDisabledDesc": "Ikke bruk relay. Kun direkte tilkoblinger; kan feile bak streng NAT.",
+				"urlsLabel": "Relay-URL-er",
+				"urlsDescription": "Legg til én eller flere HTTPS relay-URL-er for regional failover.",
+				"addUrl": "Legg til relay-URL",
+				"removeUrl": "Fjern relay-URL",
+				"urlInvalidHint": "Skriv inn en gyldig HTTPS-URL",
+				"urlChecking": "Sjekker tilkobling",
+				"urlVerified": "Verifisert",
+				"urlVerifyFailedHint": "Kunne ikke koble til denne relay",
+				"verifySummary": "{{ok}} av {{total}} relay verifisert.",
+				"verifyAuthHint": "Hvis relay krever auth-token, sørg for at den matcher access.shared_token på serveren.",
+				"authTokenLabel": "Auth-token (valgfritt)",
+				"authTokenPlaceholder": "Delt hemmelighet hvis relay krever autentisering",
+				"authTokenDescription": "Påkrevd når relay bruker access.shared_token i konfigurasjonen.",
+				"showAuthToken": "Vis",
+				"hideAuthToken": "Skjul",
+				"privacyNote": "For et helt privat oppsett, konfigurer de samme relay-URL-ene på både avsender- og mottakerenheter.",
+				"testConnection": "Test tilkobling",
+				"verifySuccess": "Relay-tilkobling OK",
+				"verifySuccessDesc": "{{url}}\nverifisert ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Vellykket registrert hos din konfigurerte relay-server.",
+				"verifyFailed": "Relay-tilkobling mislyktes",
+				"urlRequired": "Legg til minst én relay-URL.",
+				"invalidUrl": "Ugyldig relay-URL: {{url}}",
+				"disabledHint": "Aktiver automatiske eller tilpassede relay for å teste tilkobling."
 			}
 		}
 	},
@@ -175,5 +234,29 @@
 		"checkFailedDesc": "Kunne ikke sjekke etter oppdateringer",
 		"installFailed": "Installasjon mislyktes",
 		"installFailedDesc": "Kunne ikke installere oppdateringen"
+	},
+	"android": {
+		"preparingFile": "Forbereder fil..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay-tilkoblingsstatus",
+			"publicHeading": "Offentlig relay",
+			"customHeading": "Tilpasset relay",
+			"disabledHeading": "Relay deaktivert",
+			"unavailableHeading": "Relay utilgjengelig",
+			"fellBackToPublic": "Tilpasset relay utilgjengelig — bruker offentlig relay",
+			"fellBackToastTitle": "Bruker offentlig relay",
+			"fellBackToastSend": "Din tilpassede relay var utilgjengelig — denne overføringen bruker offentlig relay.",
+			"fellBackToastReceive": "Din tilpassede relay var utilgjengelig — denne nedlastingen bruker offentlig relay.",
+			"dialogDescription": "Viser hvilken relay-server appen bruker for tilkoblinger.",
+			"connectedRelay": "Tilkoblet relay",
+			"checking": "Sjekker tilkobling…",
+			"configuredMode": "Konfigurert i innstillinger",
+			"configuredDefault": "Automatisk (offentlige relay)",
+			"configuredCustom": "Tilpasset (self-hosted)",
+			"configuredDisabled": "Deaktivert",
+			"openSettings": "Nettverksinnstillinger"
+		}
 	}
 }
