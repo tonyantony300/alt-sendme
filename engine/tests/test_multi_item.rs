@@ -1,7 +1,7 @@
 mod common;
 
 use common::TestFixture;
-use sendme::{download, start_share_items, ReceiveOptions, SendOptions};
+use engine::{download, start_share_items, ReceiveOptions, SendOptions};
 
 #[tokio::test]
 async fn e2e_multi_file_roundtrip() {

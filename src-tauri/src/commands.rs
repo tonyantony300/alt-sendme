@@ -2,7 +2,7 @@ use crate::features::thumbnail::generate_thumbnail;
 use crate::state::{AppStateMutex, ShareHandle};
 use iroh::{endpoint::presets, Endpoint};
 use n0_watcher::Watcher;
-use sendme::{
+use engine::{
     core::types::{get_or_create_secret, FileMetadata, FilePreviewItem},
     download, fetch_metadata, AddrInfoOptions, AppHandle, EventEmitter, ReceiveOptions,
     RelayModeOption, SendOptions,
@@ -329,7 +329,7 @@ pub async fn send_items(
         let boxed_handle: AppHandle = Some(emitter);
 
         // Start sharing multiple files/folders via core send pipeline.
-        let result = sendme::core::send::start_share_items(
+        let result = engine::core::send::start_share_items(
             path_bufs.clone(),
             options,
             &boxed_handle,
@@ -769,7 +769,7 @@ mod relay_config_tests {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sendme::start_share;
+    use engine::start_share;
     use std::fs;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};

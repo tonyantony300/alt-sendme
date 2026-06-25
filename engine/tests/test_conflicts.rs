@@ -1,7 +1,7 @@
 mod common;
 
 use common::{MockEventEmitter, TestFixture};
-use sendme::{download, start_share, ReceiveOptions, SendOptions};
+use engine::{download, start_share, ReceiveOptions, SendOptions};
 
 #[tokio::test]
 async fn e2e_filename_conflict_resolved() {

@@ -19,7 +19,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: swatinem/rust-cache@v2
         with:
-          workspaces: './sendme -> target'
-      - name: Run sendme E2E tests
-        run: cargo test --manifest-path sendme/Cargo.toml -- --test-threads=1
+          workspaces: './engine -> target'
+      - name: Run engine E2E tests
+        run: cargo test --manifest-path engine/Cargo.toml -- --test-threads=1
         timeout-minutes: 10

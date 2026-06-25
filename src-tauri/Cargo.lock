@@ -100,6 +100,7 @@ dependencies = [
  "core-foundation 0.10.1",
  "core-graphics 0.24.0",
  "dunce",
+ "engine",
  "gstreamer",
  "gstreamer-app",
  "gstreamer-video",
@@ -109,7 +110,6 @@ dependencies = [
  "n0-watcher",
  "objc",
  "reqwest 0.13.2",
- "sendme",
  "serde",
  "serde_json",
  "tauri",
@@ -1844,6 +1844,36 @@ name = "endi"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "66b7e2430c6dff6a955451e2cfc438f09cea1965a9d6f87f7e3b90decc014099"
+
+[[package]]
+name = "engine"
+version = "0.29.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "console",
+ "crossterm",
+ "data-encoding",
+ "derive_more 2.1.1",
+ "dirs",
+ "futures-buffered",
+ "hex",
+ "indicatif",
+ "iroh",
+ "iroh-blobs",
+ "irpc",
+ "libc",
+ "n0-future",
+ "num_cpus",
+ "rand 0.10.1",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "walkdir",
+ "windows-sys 0.59.0",
+]
 
 [[package]]
 name = "enum-assoc"
@@ -6773,36 +6803,6 @@ name = "send_wrapper"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd0b0ec5f1c1ca621c432a25813d8d60c88abe6d3e08a3eb9cf37d97a0fe3d73"
-
-[[package]]
-name = "sendme"
-version = "0.29.0"
-dependencies = [
- "anyhow",
- "clap",
- "console",
- "crossterm",
- "data-encoding",
- "derive_more 2.1.1",
- "dirs",
- "futures-buffered",
- "hex",
- "indicatif",
- "iroh",
- "iroh-blobs",
- "irpc",
- "libc",
- "n0-future",
- "num_cpus",
- "rand 0.10.1",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "walkdir",
- "windows-sys 0.59.0",
-]
 
 [[package]]
 name = "serde"

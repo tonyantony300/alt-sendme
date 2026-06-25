@@ -34,7 +34,7 @@ tokio = { version = "1.0", features = ["full"] }
 anyhow = "1.0"
 n0-watcher = "1.0"
 iroh = "1.0.0"
-sendme = { path = "../sendme" }
+engine = { path = "../engine" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"

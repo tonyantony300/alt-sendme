@@ -1,7 +1,7 @@
 mod common;
 
 use common::TestFixture;
-use sendme::{
+use engine::{
     fetch_metadata, start_share, start_share_items, FileMetadata, ReceiveOptions, SendOptions,
 };
 
