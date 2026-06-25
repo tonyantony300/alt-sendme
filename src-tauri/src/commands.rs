@@ -51,8 +51,8 @@ pub fn build_relay_mode(arg: Option<RelayConfigArg>) -> Result<RelayModeOption, 
     }
 }
 
-const CUSTOM_RELAY_PROBE_TIMEOUT: Duration = Duration::from_secs(8);
-const RELAY_STATUS_PROBE_TIMEOUT: Duration = Duration::from_secs(15);
+
+const RELAY_PROBE_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -90,7 +90,7 @@ async fn probe_relay_mode(relay_mode: RelayModeOption) -> Result<Option<String>,
         .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
 
     let online_result =
-        tokio::time::timeout(RELAY_STATUS_PROBE_TIMEOUT, endpoint.online()).await;
+        tokio::time::timeout(RELAY_PROBE_TIMEOUT, endpoint.online()).await;
 
     let url = connected_home_relay_url(&endpoint);
     endpoint.close().await;
@@ -110,7 +110,7 @@ pub async fn resolve_relay_mode_with_fallback(
         RelayModeOption::Disabled | RelayModeOption::Default => Ok((preferred, false)),
         RelayModeOption::Custom { .. } => {
             let probe = tokio::time::timeout(
-                CUSTOM_RELAY_PROBE_TIMEOUT,
+                RELAY_PROBE_TIMEOUT,
                 probe_relay_mode(preferred.clone()),
             )
             .await;
@@ -120,7 +120,7 @@ pub async fn resolve_relay_mode_with_fallback(
                 _ => {
                     tracing::warn!(
                         "Custom relay unreachable within {}s; falling back to public relays",
-                        CUSTOM_RELAY_PROBE_TIMEOUT.as_secs()
+                        RELAY_PROBE_TIMEOUT.as_secs()
                     );
                     Ok((RelayModeOption::Default, true))
                 }
@@ -147,7 +147,7 @@ pub async fn get_relay_status(
 
 		if let RelayModeOption::Custom { .. } = &preferred {
         let custom_probe = tokio::time::timeout(
-            RELAY_STATUS_PROBE_TIMEOUT,
+            RELAY_PROBE_TIMEOUT,
             probe_relay_mode(preferred.clone()),
         )
         .await;
@@ -167,7 +167,7 @@ pub async fn get_relay_status(
 
         tracing::warn!("Custom relay unreachable; checking public relay fallback");
         let public_probe = tokio::time::timeout(
-            RELAY_STATUS_PROBE_TIMEOUT,
+            RELAY_PROBE_TIMEOUT,
             probe_relay_mode(RelayModeOption::Default),
         )
         .await;
@@ -190,7 +190,7 @@ pub async fn get_relay_status(
     }
 
     let public_probe = tokio::time::timeout(
-        RELAY_STATUS_PROBE_TIMEOUT,
+        RELAY_PROBE_TIMEOUT,
         probe_relay_mode(RelayModeOption::Default),
     )
     .await;
@@ -715,9 +715,14 @@ pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse
 
     let started = std::time::Instant::now();
 
-    tokio::time::timeout(Duration::from_secs(30), endpoint.online())
+    tokio::time::timeout(RELAY_PROBE_TIMEOUT, endpoint.online())
         .await
-        .map_err(|_| "Timed out waiting for relay connection (30s)".to_string())?;
+        .map_err(|_| {
+            format!(
+                "Timed out waiting for relay connection ({}s)",
+                RELAY_PROBE_TIMEOUT.as_secs()
+            )
+        })?;
 
     let latency_ms = started.elapsed().as_millis() as u64;
     let url = connected_home_relay_url(&endpoint);

@@ -164,14 +164,20 @@ export function RelaySettings() {
 
 		const okCount = outcomes.filter((o) => o.ok).length
 		const allOk = okCount === uniqueUrls.length
+		// iroh can't distinguish auth rejection from an unreachable relay, so when a
+		// token is configured and any relay failed, surface it as a likely cause.
+		const showAuthHint = !allOk && authToken !== null
+		const summary = t('settings.network.relay.verifySummary', {
+			ok: okCount,
+			total: uniqueUrls.length,
+		})
 		toastManager.add({
 			title: allOk
 				? t('settings.network.relay.verifySuccess')
 				: t('settings.network.relay.verifyFailed'),
-			description: t('settings.network.relay.verifySummary', {
-				ok: okCount,
-				total: uniqueUrls.length,
-			}),
+			description: showAuthHint
+				? `${summary} ${t('settings.network.relay.verifyAuthHint')}`
+				: summary,
 			type: allOk ? 'success' : okCount > 0 ? 'info' : 'error',
 		})
 	}
