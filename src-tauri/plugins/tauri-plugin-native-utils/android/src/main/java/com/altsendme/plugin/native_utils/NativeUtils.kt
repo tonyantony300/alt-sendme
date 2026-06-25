@@ -5,9 +5,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
-import android.util.Log
 import android.webkit.WebView
 import androidx.activity.result.ActivityResult
+import androidx.annotation.Keep
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
@@ -16,6 +16,7 @@ import app.tauri.plugin.Channel
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.Plugin
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -36,6 +37,7 @@ class CancelJobArgs(
     var channelId: Long = 0
 )
 
+@Keep
 data class DownloadFolderSelectionResponse(
     val uri: String,
     val path: String,
@@ -122,47 +124,40 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
     @ActivityCallback
     fun handleSendSelection(invoke: Invoke, result: ActivityResult) {
-        try {
-            val args = invoke.parseArgs(SelectorArgs::class.java)
-            val channel = args.channel
+        val args = invoke.parseArgs(SelectorArgs::class.java)
+        val channel = args.channel
 
-            if (Activity.RESULT_OK != result.resultCode) return invoke.resolveObject(false)
+        if (Activity.RESULT_OK != result.resultCode) return invoke.resolveObject(false)
 
-            val uri = result.data?.data ?: return invoke.resolveObject(false)
+        val uri = result.data?.data ?: return invoke.resolveObject(false)
 
-            Log.w("NativeUtils", "Trying to cache $uri")
+        val path = listOf(
+            activity.cacheDir.absolutePath,
+            "file_cache",
+            System.currentTimeMillis().toString(),
+        ).joinToString(File.separator)
 
-            val path = listOf(
-                activity.cacheDir.absolutePath,
-                "file_cache",
-                System.currentTimeMillis().toString(),
-            ).joinToString(File.separator)
+        invoke.resolveObject(true)
 
-            invoke.resolveObject(true)
+        val tempFolder = File(path)
 
-            val tempFolder = File(path)
-            Log.w("NativeUtils", "Using tmp path ${tempFolder.absolutePath}")
+        val job = scope.launch(start = CoroutineStart.LAZY) {
+            try {
+                tempFolder.parentFile?.mkdirs()
+                    ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
 
-            val job = scope.launch {
-                try {
-                    tempFolder.parentFile?.mkdirs()
-                        ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
-
-                    copyUri(activity, uri, tempFolder).collect {
-                        channel.sendObject(it)
-                        Log.w("NativeUtils", it.toString())
-                    }
-                } catch (_: Exception) {
-                    tempFolder.delete()
-                } finally {
-                    jobs.remove(channel.id)
+                copyUri(activity, uri, tempFolder).collect {
+                    channel.send(it.toJSObject())
                 }
+            } catch (_: Exception) {
+                tempFolder.deleteRecursively()
+            } finally {
+                jobs.remove(channel.id)
             }
-
-            jobs[channel.id] = job to tempFolder.absolutePath
-        } catch (e: Exception) {
-            Log.w("NativeUtils", e.message ?: e.toString())
         }
+
+        jobs[channel.id] = job to tempFolder.absolutePath
+        job.start()
     }
 
     override fun load(webView: WebView) {
