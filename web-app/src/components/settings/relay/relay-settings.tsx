@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Loader2, Minus, Plus } from 'lucide-react'
+import { AlertCircle, Check, Loader2, Minus, Plus } from 'lucide-react'
+import ReactCountryFlag from 'react-country-flag'
 import { useTranslation } from '../../../i18n'
 import { useAppSettingStore } from '../../../store/app-setting'
-import type { RelayConfigArg, VerifyRelaysResponse } from '../../../lib/relay'
+import { getRelayRegion } from '../../../lib/relay'
+import type { VerifyRelaysResponse } from '../../../lib/relay'
+import { cn } from '../../../lib/utils'
 import { Button } from '../../ui/button'
 import {
 	Frame,
@@ -17,13 +20,42 @@ import { Label } from '../../ui/label'
 import { RadioGroup, RadioGroupItem } from '../../ui/radio-group'
 import { toastManager } from '../../ui/toast'
 
+const MAX_RELAY_URL_LENGTH = 2048
+
+// Strip whitespace and control characters and cap the length so the field can't
+// be used to smuggle hidden characters or pathologically large strings.
+function sanitizeRelayUrlInput(value: string): string {
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally stripping control chars
+	return value
+		.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, '')
+		.slice(0, MAX_RELAY_URL_LENGTH)
+}
+
+function isLoopbackHost(hostname: string): boolean {
+	return (
+		hostname === 'localhost' ||
+		hostname === '127.0.0.1' ||
+		hostname === '::1' ||
+		hostname === '[::1]'
+	)
+}
+
 function isValidRelayUrl(url: string): boolean {
+	if (url.length === 0 || url.length > MAX_RELAY_URL_LENGTH) return false
+	let parsed: URL
 	try {
-		const parsed = new URL(url)
-		return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+		parsed = new URL(url)
 	} catch {
 		return false
 	}
+	// Require a real host and reject embedded credentials (user:pass@host).
+	if (!parsed.hostname) return false
+	if (parsed.username || parsed.password) return false
+	// Enforce HTTPS so auth tokens are never sent in cleartext; allow plain
+	// HTTP only against loopback hosts for local self-host testing.
+	if (parsed.protocol === 'https:') return true
+	if (parsed.protocol === 'http:' && isLoopbackHost(parsed.hostname)) return true
+	return false
 }
 
 export function RelaySettings() {
@@ -36,6 +68,9 @@ export function RelaySettings() {
 	const setRelayAuthToken = useAppSettingStore((s) => s.setRelayAuthToken)
 
 	const [isTesting, setIsTesting] = useState(false)
+	const [verifyResults, setVerifyResults] = useState<
+		Record<string, 'checking' | 'ok' | 'failed'>
+	>({})
 	const [showAuthToken, setShowAuthToken] = useState(
 		() => relayAuthToken.trim().length > 0
 	)
@@ -59,7 +94,7 @@ export function RelaySettings() {
 
 	const updateUrl = (index: number, value: string) => {
 		const next = [...relayUrls]
-		next[index] = value
+		next[index] = sanitizeRelayUrlInput(value)
 		setRelayUrls(next)
 	}
 
@@ -75,42 +110,74 @@ export function RelaySettings() {
 		setRelayUrls(relayUrls.filter((_, i) => i !== index))
 	}
 
-	const buildVerifyPayload = (): RelayConfigArg | null => {
+	const verifyCustomRelays = async () => {
 		const trimmedUrls = relayUrls.map((u) => u.trim()).filter(Boolean)
 
-		if (relayMode === 'custom') {
-			if (trimmedUrls.length === 0) {
-				toastManager.add({
-					title: t('settings.network.relay.verifyFailed'),
-					description: t('settings.network.relay.urlRequired'),
-					type: 'error',
-				})
-				return null
-			}
-
-			const invalid = trimmedUrls.find((url) => !isValidRelayUrl(url))
-			if (invalid) {
-				toastManager.add({
-					title: t('settings.network.relay.verifyFailed'),
-					description: t('settings.network.relay.invalidUrl', { url: invalid }),
-					type: 'error',
-				})
-				return null
-			}
+		if (trimmedUrls.length === 0) {
+			toastManager.add({
+				title: t('settings.network.relay.verifyFailed'),
+				description: t('settings.network.relay.urlRequired'),
+				type: 'error',
+			})
+			return
 		}
 
-		return {
-			mode: relayMode,
-			urls: trimmedUrls,
-			auth_token: relayAuthToken.trim() || null,
+		const invalid = trimmedUrls.find((url) => !isValidRelayUrl(url))
+		if (invalid) {
+			toastManager.add({
+				title: t('settings.network.relay.verifyFailed'),
+				description: t('settings.network.relay.invalidUrl', { url: invalid }),
+				type: 'error',
+			})
+			return
 		}
+
+		const uniqueUrls = [...new Set(trimmedUrls)]
+		const authToken = relayAuthToken.trim() || null
+
+		setIsTesting(true)
+		setVerifyResults((prev) => {
+			const next = { ...prev }
+			for (const url of uniqueUrls) next[url] = 'checking'
+			return next
+		})
+
+		const outcomes = await Promise.all(
+			uniqueUrls.map(async (url) => {
+				try {
+					await invoke<VerifyRelaysResponse>('verify_relays', {
+						relay: { mode: 'custom', urls: [url], auth_token: authToken },
+					})
+					return { url, ok: true }
+				} catch {
+					return { url, ok: false }
+				}
+			})
+		)
+
+		setVerifyResults((prev) => {
+			const next = { ...prev }
+			for (const { url, ok } of outcomes) next[url] = ok ? 'ok' : 'failed'
+			return next
+		})
+		setIsTesting(false)
+
+		const okCount = outcomes.filter((o) => o.ok).length
+		const allOk = okCount === uniqueUrls.length
+		toastManager.add({
+			title: allOk
+				? t('settings.network.relay.verifySuccess')
+				: t('settings.network.relay.verifyFailed'),
+			description: t('settings.network.relay.verifySummary', {
+				ok: okCount,
+				total: uniqueUrls.length,
+			}),
+			type: allOk ? 'success' : okCount > 0 ? 'info' : 'error',
+		})
 	}
 
 	const handleTestConnection = async () => {
-		const payload = buildVerifyPayload()
-		if (!payload) return
-
-		if (payload.mode === 'disabled') {
+		if (relayMode === 'disabled') {
 			toastManager.add({
 				title: t('settings.network.relay.verifyFailed'),
 				description: t('settings.network.relay.disabledHint'),
@@ -119,10 +186,15 @@ export function RelaySettings() {
 			return
 		}
 
+		if (relayMode === 'custom') {
+			await verifyCustomRelays()
+			return
+		}
+
 		setIsTesting(true)
 		try {
 			const result = await invoke<VerifyRelaysResponse>('verify_relays', {
-				relay: payload,
+				relay: { mode: relayMode, urls: [], auth_token: null },
 			})
 			toastManager.add({
 				title: t('settings.network.relay.verifySuccess'),
@@ -215,31 +287,88 @@ export function RelaySettings() {
 						</div>
 
 						<div className="space-y-2">
-							{relayUrls.map((url, index) => (
-								<div
-									key={urlRowIdsRef.current[index]}
-									className="flex gap-2"
-								>
-									<Input
-										value={url}
-										onChange={(e) => updateUrl(index, e.target.value)}
-										placeholder="https://relay.example.com"
-										aria-invalid={
-											url.trim().length > 0 && !isValidRelayUrl(url.trim())
-										}
-									/>
-									<Button
-										type="button"
-										variant="outline"
-										size="icon"
-										onClick={() => removeUrl(index)}
-										disabled={relayUrls.length === 1 && !url.trim()}
-										aria-label={t('settings.network.relay.removeUrl')}
+							{relayUrls.map((url, index) => {
+								const trimmed = url.trim()
+								const isValidFormat =
+									trimmed.length > 0 && isValidRelayUrl(trimmed)
+								const isInvalidFormat = trimmed.length > 0 && !isValidFormat
+								const status = isValidFormat
+									? verifyResults[trimmed]
+									: undefined
+								const region = isValidFormat
+									? getRelayRegion(trimmed)
+									: null
+
+								return (
+									<div
+										key={urlRowIdsRef.current[index]}
+										className="space-y-1"
 									>
-										<Minus className="h-4 w-4" />
-									</Button>
-								</div>
-							))}
+										<div className="flex items-center gap-2">
+											<div className="relative flex-1">
+												{region && (
+													<ReactCountryFlag
+														countryCode={region.countryCode}
+														svg
+														title={region.regionCode.toUpperCase()}
+														aria-label={region.regionCode.toUpperCase()}
+														className="pointer-events-none absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-[0.2em]"
+														style={{ width: '1.1em', height: '1.1em' }}
+													/>
+												)}
+												<Input
+													value={url}
+													onChange={(e) => updateUrl(index, e.target.value)}
+													placeholder="https://euc1-1.relay.example.com"
+													aria-invalid={isInvalidFormat || status === 'failed'}
+													inputMode="url"
+													maxLength={2048}
+													className={cn('pr-8', region && 'pl-7')}
+												/>
+												{status === 'checking' && (
+													<Loader2
+														className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground"
+														aria-label={t('settings.network.relay.urlChecking')}
+													/>
+												)}
+												{status === 'ok' && (
+													<Check
+														className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 text-emerald-500"
+														aria-label={t('settings.network.relay.urlVerified')}
+													/>
+												)}
+												{(status === 'failed' ||
+													(isInvalidFormat && !status)) && (
+													<AlertCircle
+														className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 text-destructive"
+														aria-hidden="true"
+													/>
+												)}
+											</div>
+											<Button
+												type="button"
+												variant="outline"
+												size="icon"
+												onClick={() => removeUrl(index)}
+												disabled={relayUrls.length === 1 && !url.trim()}
+												aria-label={t('settings.network.relay.removeUrl')}
+											>
+												<Minus className="h-4 w-4" />
+											</Button>
+										</div>
+										{isInvalidFormat && (
+											<p className="pl-1 text-xs text-destructive">
+												{t('settings.network.relay.urlInvalidHint')}
+											</p>
+										)}
+										{!isInvalidFormat && status === 'failed' && (
+											<p className="pl-1 text-xs text-destructive">
+												{t('settings.network.relay.urlVerifyFailedHint')}
+											</p>
+										)}
+									</div>
+								)
+							})}
 						</div>
 
 						<Button type="button" variant="outline" size="sm" onClick={addUrl}>

@@ -5,9 +5,9 @@ enable_quic_addr_discovery = true
 
 [tls]
 cert_mode = "LetsEncrypt"
-hostname = "relay.example.com"
+hostname = "euc1-1.relay.example.com"
 # Multiple hostnames for one relay (optional):
-# hostname = ["relay-us.example.com", "relay-eu.example.com"]
+# hostname = ["use1-1.relay.example.com", "euc1-1.relay.example.com"]
 contact = "you@example.com"
 cert_dir = "/data/certs"
 

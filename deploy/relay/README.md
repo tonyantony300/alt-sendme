@@ -31,7 +31,7 @@ For production, run **at least two relays** in different regions and add both UR
    docker compose up -d
    ```
 
-4. In AltSendme → **Settings → Network**, choose **Custom self-hosted**, add `https://relay.example.com`, and paste your auth token if you enabled `access.shared_token`.
+4. In AltSendme → **Settings → Network**, choose **Custom self-hosted**, add `https://euc1-1.relay.example.com` (see [Region naming](#region-naming-optional-enables-location-flags)), and paste your auth token if you enabled `access.shared_token`.
 
 ## Option 2: Fly.io
 
