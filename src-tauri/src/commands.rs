@@ -1,12 +1,12 @@
 use crate::features::thumbnail::generate_thumbnail;
 use crate::state::{AppStateMutex, ShareHandle};
-use iroh::{endpoint::presets, Endpoint};
-use n0_watcher::Watcher;
 use engine::{
     core::types::{get_or_create_secret, FileMetadata, FilePreviewItem},
     download, fetch_metadata, AddrInfoOptions, AppHandle, EventEmitter, ReceiveOptions,
     RelayModeOption, SendOptions,
 };
+use iroh::{endpoint::presets, Endpoint};
+use n0_watcher::Watcher;
 use std::collections::BTreeMap;
 use std::path::Path;
 use std::path::PathBuf;
@@ -51,7 +51,6 @@ pub fn build_relay_mode(arg: Option<RelayConfigArg>) -> Result<RelayModeOption, 
     }
 }
 
-
 const RELAY_PROBE_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -89,14 +88,12 @@ async fn probe_relay_mode(relay_mode: RelayModeOption) -> Result<Option<String>,
         .await
         .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
 
-    let online_result =
-        tokio::time::timeout(RELAY_PROBE_TIMEOUT, endpoint.online()).await;
+    let online_result = tokio::time::timeout(RELAY_PROBE_TIMEOUT, endpoint.online()).await;
 
     let url = connected_home_relay_url(&endpoint);
     endpoint.close().await;
 
-    online_result
-        .map_err(|_| "Timed out waiting for relay connection".to_string())?;
+    online_result.map_err(|_| "Timed out waiting for relay connection".to_string())?;
     Ok(url)
 }
 
@@ -109,11 +106,9 @@ pub async fn resolve_relay_mode_with_fallback(
     match &preferred {
         RelayModeOption::Disabled | RelayModeOption::Default => Ok((preferred, false)),
         RelayModeOption::Custom { .. } => {
-            let probe = tokio::time::timeout(
-                RELAY_PROBE_TIMEOUT,
-                probe_relay_mode(preferred.clone()),
-            )
-            .await;
+            let probe =
+                tokio::time::timeout(RELAY_PROBE_TIMEOUT, probe_relay_mode(preferred.clone()))
+                    .await;
 
             match probe {
                 Ok(Ok(Some(_))) => Ok((preferred, false)),
@@ -145,25 +140,22 @@ pub async fn get_relay_status(
         });
     }
 
-		if let RelayModeOption::Custom { .. } = &preferred {
-        let custom_probe = tokio::time::timeout(
-            RELAY_PROBE_TIMEOUT,
-            probe_relay_mode(preferred.clone()),
-        )
-        .await;
+    if let RelayModeOption::Custom { .. } = &preferred {
+        let custom_probe =
+            tokio::time::timeout(RELAY_PROBE_TIMEOUT, probe_relay_mode(preferred.clone())).await;
 
-		if let Ok(Ok(Some(url))) = custom_probe {
-			return Ok(RelayStatusResponse {
-				kind: if is_public_relay_url(&url) {
+        if let Ok(Ok(Some(url))) = custom_probe {
+            return Ok(RelayStatusResponse {
+                kind: if is_public_relay_url(&url) {
                     "public".to_string()
                 } else {
                     "custom".to_string()
                 },
-				url: Some(url),
-				connected: true,
-				fell_back_to_public: false,
-			});
-		}
+                url: Some(url),
+                connected: true,
+                fell_back_to_public: false,
+            });
+        }
 
         tracing::warn!("Custom relay unreachable; checking public relay fallback");
         let public_probe = tokio::time::timeout(

@@ -178,16 +178,16 @@ export function TicketDisplay({
 				{showBroadcastToggle &&
 					isBroadcastMode !== undefined &&
 					onSetBroadcast && (
-					<div className="flex items-start gap-2">
-						<Label htmlFor={'broadcast-toggle'} className="text-sm">
-							{t('common:sender.broadcastMode.index')}
-						</Label>
-						<Switch
-							checked={isBroadcastMode}
-							onCheckedChange={onSetBroadcast}
-						/>
-					</div>
-				)}
+						<div className="flex items-start gap-2">
+							<Label htmlFor={'broadcast-toggle'} className="text-sm">
+								{t('common:sender.broadcastMode.index')}
+							</Label>
+							<Switch
+								checked={isBroadcastMode}
+								onCheckedChange={onSetBroadcast}
+							/>
+						</div>
+					)}
 			</div>
 			<InputGroup>
 				<InputGroupInput

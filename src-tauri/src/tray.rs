@@ -7,7 +7,6 @@ use tauri::{
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
 };
 
-
 // to show confirmation dialog box for quit event from tray
 // use tauri_plugin_dialog::DialogExt;
 

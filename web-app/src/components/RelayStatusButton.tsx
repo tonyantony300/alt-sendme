@@ -83,10 +83,7 @@ export function RelayStatusButton() {
 	const iconClassName = cn(
 		isLoading && 'text-muted-foreground/50',
 		!isLoading && didFallBack && 'text-amber-500 dark:text-amber-400',
-		!isLoading &&
-			!didFallBack &&
-			displayKind === 'custom' &&
-			'text-[#3660FD]',
+		!isLoading && !didFallBack && displayKind === 'custom' && 'text-[#3660FD]',
 		!isLoading &&
 			!didFallBack &&
 			displayKind === 'public' &&

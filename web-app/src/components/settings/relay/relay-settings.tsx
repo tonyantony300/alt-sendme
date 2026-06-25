@@ -22,13 +22,25 @@ import { toastManager } from '../../ui/toast'
 
 const MAX_RELAY_URL_LENGTH = 2048
 
+function isDisallowedRelayUrlChar(char: string): boolean {
+	const code = char.charCodeAt(0)
+	// C0 controls (0x00–0x1f), DEL (0x7f), and C1 controls (0x80–0x9f).
+	if (code <= 0x1f || (code >= 0x7f && code <= 0x9f)) {
+		return true
+	}
+	return /\s/u.test(char)
+}
+
 // Strip whitespace and control characters and cap the length so the field can't
 // be used to smuggle hidden characters or pathologically large strings.
 function sanitizeRelayUrlInput(value: string): string {
-	// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally stripping control chars
-	return value
-		.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, '')
-		.slice(0, MAX_RELAY_URL_LENGTH)
+	const sanitized: string[] = []
+	for (const char of value) {
+		if (isDisallowedRelayUrlChar(char)) continue
+		sanitized.push(char)
+		if (sanitized.length >= MAX_RELAY_URL_LENGTH) break
+	}
+	return sanitized.join('')
 }
 
 function isLoopbackHost(hostname: string): boolean {
@@ -54,7 +66,8 @@ function isValidRelayUrl(url: string): boolean {
 	// Enforce HTTPS so auth tokens are never sent in cleartext; allow plain
 	// HTTP only against loopback hosts for local self-host testing.
 	if (parsed.protocol === 'https:') return true
-	if (parsed.protocol === 'http:' && isLoopbackHost(parsed.hostname)) return true
+	if (parsed.protocol === 'http:' && isLoopbackHost(parsed.hostname))
+		return true
 	return false
 }
 
@@ -301,15 +314,10 @@ export function RelaySettings() {
 								const status = isValidFormat
 									? verifyResults[trimmed]
 									: undefined
-								const region = isValidFormat
-									? getRelayRegion(trimmed)
-									: null
+								const region = isValidFormat ? getRelayRegion(trimmed) : null
 
 								return (
-									<div
-										key={urlRowIdsRef.current[index]}
-										className="space-y-1"
-									>
+									<div key={urlRowIdsRef.current[index]} className="space-y-1">
 										<div className="flex items-center gap-2">
 											<div className="relative flex-1">
 												{region && (
@@ -401,9 +409,7 @@ export function RelaySettings() {
 									type="password"
 									value={relayAuthToken}
 									onChange={(e) => setRelayAuthToken(e.target.value)}
-									placeholder={t(
-										'settings.network.relay.authTokenPlaceholder'
-									)}
+									placeholder={t('settings.network.relay.authTokenPlaceholder')}
 									autoComplete="off"
 								/>
 							)}
@@ -425,9 +431,7 @@ export function RelaySettings() {
 					onClick={handleTestConnection}
 					disabled={isTesting || relayMode === 'disabled'}
 				>
-					{isTesting ? (
-						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-					) : null}
+					{isTesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
 					{t('settings.network.relay.testConnection')}
 				</Button>
 			</FrameFooter>
