@@ -156,7 +156,11 @@ export function RelaySettings() {
 				</div>
 
 				<RadioGroup value={relayMode} onValueChange={handleModeChange}>
-					<div className="flex items-start gap-3">
+					<button
+						type="button"
+						onClick={() => handleModeChange('default')}
+						className="flex cursor-pointer items-start gap-3 text-left"
+					>
 						<RadioGroupItem value="default" className="mt-0.5" />
 						<div>
 							<div className="text-sm font-medium">
@@ -166,9 +170,13 @@ export function RelaySettings() {
 								{t('settings.network.relay.modeDefaultDesc')}
 							</div>
 						</div>
-					</div>
+					</button>
 
-					<div className="flex items-start gap-3">
+					<button
+						type="button"
+						onClick={() => handleModeChange('custom')}
+						className="flex cursor-pointer items-start gap-3 text-left"
+					>
 						<RadioGroupItem value="custom" className="mt-0.5" />
 						<div>
 							<div className="text-sm font-medium">
@@ -178,9 +186,13 @@ export function RelaySettings() {
 								{t('settings.network.relay.modeCustomDesc')}
 							</div>
 						</div>
-					</div>
+					</button>
 
-					<div className="flex items-start gap-3">
+					<button
+						type="button"
+						onClick={() => handleModeChange('disabled')}
+						className="flex cursor-pointer items-start gap-3 text-left"
+					>
 						<RadioGroupItem value="disabled" className="mt-0.5" />
 						<div>
 							<div className="text-sm font-medium">
@@ -190,7 +202,7 @@ export function RelaySettings() {
 								{t('settings.network.relay.modeDisabledDesc')}
 							</div>
 						</div>
-					</div>
+					</button>
 				</RadioGroup>
 
 				{relayMode === 'custom' && (
