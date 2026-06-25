@@ -17,7 +17,7 @@ For production, run **at least two relays** in different regions and add both UR
 
 Fly supports UDP and raw ports, which many PaaS providers do not.
 
-[![Deploy on Fly.io](../../assets/fly.svg)](https://fly.io/launch?source=https://github.com/tonyantony300/alt-sendme/tree/main/deploy/relay)
+[![Deploy on Fly.io](https://img.shields.io/badge/Deploy%20on-Fly.io-4d24f9?logo=flydotio&logoColor=white)](https://fly.io/launch?source=https://github.com/tonyantony300/alt-sendme/tree/main/deploy/relay)
 
 ```bash
 cd deploy/relay
