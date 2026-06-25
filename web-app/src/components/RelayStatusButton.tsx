@@ -76,16 +76,20 @@ export function RelayStatusButton() {
 			? 'disabled'
 			: 'unavailable'
 
-	const displayKind: RelayStatusKind =
-		status?.connected && status.fellBackToPublic
-			? 'public'
-			: activeKind
+	const didFallBack = Boolean(status?.connected && status.fellBackToPublic)
+
+	const displayKind: RelayStatusKind = didFallBack ? 'public' : activeKind
 
 	const iconClassName = cn(
 		isLoading && 'text-muted-foreground/50',
-		!isLoading && displayKind === 'custom' && 'text-amber-500 dark:text-amber-400',
+		!isLoading && didFallBack && 'text-amber-500 dark:text-amber-400',
 		!isLoading &&
-			(displayKind === 'public' || status?.fellBackToPublic) &&
+			!didFallBack &&
+			displayKind === 'custom' &&
+			'text-[#3660FD]',
+		!isLoading &&
+			!didFallBack &&
+			displayKind === 'public' &&
 			'text-muted-foreground',
 		!isLoading &&
 			(displayKind === 'disabled' || displayKind === 'unavailable') &&
@@ -119,6 +123,11 @@ export function RelayStatusButton() {
 			</PopoverTrigger>
 			<PopoverContent className="max-w-xs text-left" side="top" tooltipStyle>
 				<p className="font-medium">{t(headingKey)}</p>
+				{didFallBack && (
+					<p className="mt-1 text-amber-600 dark:text-amber-400">
+						{t('footer.relay.fellBackToPublic')}
+					</p>
+				)}
 				{status?.url && (
 					<p className="mt-1 break-all text-muted-foreground">{status.url}</p>
 				)}
