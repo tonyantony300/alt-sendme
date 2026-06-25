@@ -8,6 +8,11 @@ export type RelayConfigArg = {
 	auth_token?: string | null
 }
 
+export type VerifyRelaysResponse = {
+	url: string | null
+	latencyMs: number
+}
+
 export function getRelayConfigArg(): RelayConfigArg {
 	const { relayMode, relayUrls, relayAuthToken } = useAppSettingStore.getState()
 

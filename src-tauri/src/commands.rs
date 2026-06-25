@@ -686,9 +686,18 @@ async fn collect_preview_items(paths: &[PathBuf]) -> Result<Vec<FilePreviewItem>
     Ok(items)
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyRelaysResponse {
+    /// The relay the endpoint actually registered with (home relay).
+    pub url: Option<String>,
+    /// Time taken to establish the relay connection, in milliseconds.
+    pub latency_ms: u64,
+}
+
 /// Verify connectivity to configured relay servers.
 #[tauri::command]
-pub async fn verify_relays(relay: RelayConfigArg) -> Result<(), String> {
+pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse, String> {
     let relay_mode = build_relay_mode(Some(relay))?;
 
     if matches!(relay_mode, RelayModeOption::Disabled) {
@@ -704,12 +713,17 @@ pub async fn verify_relays(relay: RelayConfigArg) -> Result<(), String> {
         .await
         .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
 
+    let started = std::time::Instant::now();
+
     tokio::time::timeout(Duration::from_secs(30), endpoint.online())
         .await
         .map_err(|_| "Timed out waiting for relay connection (30s)".to_string())?;
 
+    let latency_ms = started.elapsed().as_millis() as u64;
+    let url = connected_home_relay_url(&endpoint);
+
     endpoint.close().await;
-    Ok(())
+    Ok(VerifyRelaysResponse { url, latency_ms })
 }
 
 #[cfg(test)]

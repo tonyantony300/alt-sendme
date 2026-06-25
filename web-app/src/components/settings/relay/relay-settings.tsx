@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { Loader2, Minus, Plus } from 'lucide-react'
 import { useTranslation } from '../../../i18n'
 import { useAppSettingStore } from '../../../store/app-setting'
-import type { RelayConfigArg } from '../../../lib/relay'
+import type { RelayConfigArg, VerifyRelaysResponse } from '../../../lib/relay'
 import { Button } from '../../ui/button'
 import {
 	Frame,
@@ -121,10 +121,17 @@ export function RelaySettings() {
 
 		setIsTesting(true)
 		try {
-			await invoke('verify_relays', { relay: payload })
+			const result = await invoke<VerifyRelaysResponse>('verify_relays', {
+				relay: payload,
+			})
 			toastManager.add({
 				title: t('settings.network.relay.verifySuccess'),
-				description: t('settings.network.relay.verifySuccessDesc'),
+				description: result.url
+					? t('settings.network.relay.verifySuccessDesc', {
+							url: result.url,
+							latency: result.latencyMs,
+						})
+					: t('settings.network.relay.verifySuccessDescGeneric'),
 				type: 'success',
 			})
 		} catch (error) {
