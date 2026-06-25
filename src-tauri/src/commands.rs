@@ -314,7 +314,12 @@ pub async fn send_items(
         );
 
         // Create send options from relay settings (custom falls back to public if unreachable).
-        let (relay_mode, _) = resolve_relay_mode_with_fallback(relay).await?;
+        let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
+        if fell_back_to_public {
+            // Surface the silent custom->public fallback so the user knows this
+            // transfer is riding public relays despite their custom config.
+            let _ = app_handle.emit("relay-fell-back", "send");
+        }
         let options = SendOptions {
             relay_mode,
             ticket_type: AddrInfoOptions::RelayAndAddresses,
@@ -489,7 +494,12 @@ pub async fn receive_file(
 ) -> Result<String, String> {
     // Create receive options with user-specified output path
     let output_dir = PathBuf::from(output_path);
-    let (relay_mode, _) = resolve_relay_mode_with_fallback(relay).await?;
+    let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
+    if fell_back_to_public {
+        // Surface the silent custom->public fallback so the user knows this
+        // transfer is riding public relays despite their custom config.
+        let _ = app_handle.emit("relay-fell-back", "receive");
+    }
     let options = ReceiveOptions {
         output_dir: Some(output_dir),
         relay_mode,

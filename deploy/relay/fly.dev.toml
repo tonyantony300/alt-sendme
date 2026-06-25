@@ -12,6 +12,10 @@
 #   # then set `app` below to the name Fly printed, and:
 #   fly deploy --config fly.dev.toml
 #   # relay URL = https://<app>.fly.dev
+#
+# Private relay (optional): --dev mode still honours shared-token auth. Add an
+# `access.shared_token = ["placeholder"]` line to a config you mount/bake, then:
+#   fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
 
 app = "your-unique-relay-name"       # must be globally unique — replace before deploying
 primary_region = "iad"               # pick a region near you (e.g. ams, sin, sjc)
@@ -28,3 +32,12 @@ primary_region = "iad"               # pick a region near you (e.g. ams, sin, sj
   auto_stop_machines = false
   min_machines_running = 1           # keep the relay up
   processes = ["app"]
+
+  # Restart the machine if the relay stops answering HTTP.
+  # /healthz is the relay's built-in health endpoint (returns 200 + JSON status).
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "get"
+    path = "/healthz"
