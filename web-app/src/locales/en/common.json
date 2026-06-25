@@ -111,7 +111,8 @@
 		"downloadPath": "Download path",
 		"duration": "Duration",
 		"avgSpeed": "Avg Speed",
-		"multipleFiles": "{{count}} Files"
+		"multipleFiles": "{{count}} Files",
+		"donatePrompt": "Enjoying AltSendme?"
 	},
 	"errors": {
 		"sharingFailed": "Sharing Failed",

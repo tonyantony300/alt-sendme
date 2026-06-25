@@ -1,7 +1,7 @@
 import { buttonVariants } from './ui/button'
 import { CoffeeIcon, GithubIcon, GlobeIcon, SettingsIcon } from 'lucide-react'
 import { useTranslation } from '@/i18n'
-import { VERSION_DISPLAY } from '@/lib/version'
+import { DONATE_LINK, VERSION_DISPLAY } from '@/lib/version'
 import { Separator } from './ui/separator'
 import { Link } from 'react-router-dom'
 import { handleExternalLinkClick } from '@/lib/openExternalUrl'
@@ -14,7 +14,7 @@ const CONTACTS = [
 		'aria-label': 'Github source code',
 	},
 	{
-		link: 'https://buymeacoffee.com/tny_antny',
+		link: DONATE_LINK,
 		icon: <CoffeeIcon />,
 		'aria-label': 'Buy me a coffee',
 	},

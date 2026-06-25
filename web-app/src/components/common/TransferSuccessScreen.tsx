@@ -1,6 +1,8 @@
-import { CheckCircle, ExternalLinkIcon, XCircle } from 'lucide-react'
+import { CheckCircle, CoffeeIcon, ExternalLinkIcon, XCircle } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { trackTransferComplete } from '../../lib/analytics'
+import { handleExternalLinkClick } from '../../lib/openExternalUrl'
+import { DONATE_LINK } from '../../lib/version'
 import { formatFileSize } from '../../lib/utils'
 import type { SuccessScreenProps } from '../../types/transfer'
 import { Button } from '../ui/button'
@@ -159,6 +161,22 @@ export function TransferSuccessScreen({
 					</div>
 				</div>
 			</div>
+
+			{!wasStopped ? (
+				<p className="text-center text-xs sm:text-sm text-muted-foreground -mt-2">
+					{t('common:transfer.donatePrompt')}{' '}
+					<a
+						href={DONATE_LINK}
+						onClick={(event) => handleExternalLinkClick(event, DONATE_LINK)}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-1 font-medium text-foreground/70 underline decoration-muted-foreground/40 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary/60"
+					>
+						<CoffeeIcon size={14} aria-hidden />
+						{t('common:donate')}
+					</a>
+				</p>
+			) : null}
 
 			{isReceiver && onOpenFolder ? (
 				<div className="flex gap-3 w-full max-w-sm">
