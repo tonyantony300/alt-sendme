@@ -3,9 +3,9 @@ package com.altsendme.plugin.native_utils
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import androidx.annotation.Keep
 import androidx.documentfile.provider.DocumentFile
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+import app.tauri.plugin.JSObject
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -16,14 +16,20 @@ import java.io.IOException
 
 const val BUFFER_SIZE = 1024 * 1024
 
+@Keep
 data class CopyProgress(
-    @field:JsonSerialize(using = ToStringSerializer::class)
     val copiedBytes: Long,
-    @field:JsonSerialize(using = ToStringSerializer::class)
     val totalBytes: Long,
     val cachedPath: String?,
 ) {
-    val progress: Float get() = if (totalBytes == 0L) 0f else copiedBytes / totalBytes.toFloat()
+    val progress: Float = if (totalBytes == 0L) 0f else copiedBytes / totalBytes.toFloat()
+
+    fun toJSObject(): JSObject = JSObject().apply {
+        put("copiedBytes", copiedBytes.toString())
+        put("totalBytes", totalBytes.toString())
+        put("cachedPath", cachedPath)
+        put("progress", progress)
+    }
 }
 
 private fun DocumentFile.walkFilesWithPath(

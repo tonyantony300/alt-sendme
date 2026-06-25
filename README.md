@@ -74,7 +74,7 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Android</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme-v0.4.0-universal.apk'>AltSendme.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.6-beta.1/AltSendme-v0.3.6-beta-universal.apk'>AltSendme.apk</a></td>
   </tr>
 
 </table>

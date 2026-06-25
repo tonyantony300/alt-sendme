@@ -2,8 +2,12 @@ package com.altsendme.plugin.native_utils
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.webkit.WebView
 import androidx.activity.result.ActivityResult
+import androidx.annotation.Keep
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
@@ -12,6 +16,7 @@ import app.tauri.plugin.Channel
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.Plugin
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -32,6 +37,7 @@ class CancelJobArgs(
     var channelId: Long = 0
 )
 
+@Keep
 data class DownloadFolderSelectionResponse(
     val uri: String,
     val path: String,
@@ -96,10 +102,12 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         try {
             activity.contentResolver.takePersistableUriPermission(uri, RW_PERMISSION_FLAGS)
 
-            invoke.resolveObject(DownloadFolderSelectionResponse(
-                uri.toString(),
-                uri.extractFolderOsPath(),
-            ))
+            invoke.resolveObject(
+                DownloadFolderSelectionResponse(
+                    uri.toString(),
+                    uri.extractFolderOsPath(),
+                )
+            )
 
             activity.contentResolver.persistedUriPermissions.stream()
                 .filter { it.uri != uri }
@@ -133,22 +141,23 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
         val tempFolder = File(path)
 
-        val job = scope.launch {
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 tempFolder.parentFile?.mkdirs()
                     ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
 
                 copyUri(activity, uri, tempFolder).collect {
-                    channel.sendObject(it)
+                    channel.send(it.toJSObject())
                 }
             } catch (_: Exception) {
-                tempFolder.delete()
+                tempFolder.deleteRecursively()
             } finally {
                 jobs.remove(channel.id)
             }
         }
 
         jobs[channel.id] = job to tempFolder.absolutePath
+        job.start()
     }
 
     override fun load(webView: WebView) {
@@ -164,10 +173,31 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
             try {
                 job.cancel()
                 File(tempFolder).deleteRecursively()
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
 
         scope.cancel()
         super.onDestroy()
+    }
+}
+
+fun Uri.extractFolderOsPath(): String {
+    require(DocumentsContract.isTreeUri(this))
+
+    val path = this.path
+        ?: throw IOException("Unable to get path from selected download folder uri: $this")
+    val baseExternalPath = Environment.getExternalStorageDirectory().path
+    return try {
+        val docId = DocumentsContract.getTreeDocumentId(this)
+        val segments = docId.split(":")
+        when {
+            "primary" == segments[0] && segments.size > 1 -> "${baseExternalPath}/${segments[1]}"
+            "primary" == segments[0] -> baseExternalPath
+            segments.size > 1 -> "/storage/${segments[0]}/${segments[1]}"
+            else -> "/storage/${segments[0]}/"
+        }
+    } catch (_: Exception) {
+        path
     }
 }

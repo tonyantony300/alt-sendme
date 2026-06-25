@@ -12,17 +12,17 @@ export type CopyProgress = {
 }
 
 export class FileSelectedHandler {
-	private channelId: number
+	private channel: Channel<CopyProgress>
 	private active = true
 
-	constructor(channelId: number) {
-		this.channelId = channelId
+	constructor(channel: Channel<CopyProgress>) {
+		this.channel = channel
 	}
 
 	public async cancelJob() {
 		if (!this.active) return
 		await invoke<void>('plugin:native-utils|cancel_job', {
-			job: { channelId: this.channelId },
+			job: { channelId: this.channel.id },
 		})
 		this.active = false
 	}
@@ -56,7 +56,7 @@ export async function selectSendDocument(
 		}
 	)
 	if (!response) return null
-	return new FileSelectedHandler(channel.id)
+	return new FileSelectedHandler(channel)
 }
 
 export async function selectSendFolder(
@@ -81,5 +81,5 @@ export async function selectSendFolder(
 		}
 	)
 	if (!response) return null
-	return new FileSelectedHandler(channel.id)
+	return new FileSelectedHandler(channel)
 }
