@@ -112,7 +112,7 @@ export function RelayStatusButton() {
 				aria-label={t('footer.relay.ariaLabel')}
 			>
 				<LazyIcon
-					name="House"
+					name="Network"
 					weight="fill"
 					size={16}
 					className={iconClassName}
