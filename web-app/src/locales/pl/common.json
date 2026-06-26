@@ -217,7 +217,12 @@
 				"verifyFailed": "Połączenie relay nie powiodło się",
 				"urlRequired": "Dodaj co najmniej jeden adres URL relay.",
 				"invalidUrl": "Nieprawidłowy adres URL relay: {{url}}",
-				"disabledHint": "Włącz automatyczne lub niestandardowe relay, aby przetestować łączność."
+				"disabledHint": "Włącz automatyczne lub niestandardowe relay, aby przetestować łączność.",
+				"confirmDisableTitle": "Wyłączyć relay?",
+				"confirmDisableDescription": "Wybrano wyłączenie relay. Przesyłanie plików może się nie powieść, jeśli spróbujesz udostępnić pliki komuś spoza Twojej sieci lokalnej. Relay pomagają urządzeniom odnaleźć się i połączyć w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",
+				"confirmCustomTitle": "Użyć niestandardowych relay?",
+				"confirmCustomDescription": "Wybrano korzystanie z własnych, samodzielnie hostowanych relay. Jeśli Twoje niestandardowe relay będą nieosiągalne, transfery automatycznie powrócą do publicznych relay i otrzymasz powiadomienie. Relay pomagają tylko Twoim urządzeniom połączyć się w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",
+				"confirmContinue": "Kontynuuj"
 			}
 		}
 	},

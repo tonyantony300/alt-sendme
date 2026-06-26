@@ -217,7 +217,12 @@
 				"verifyFailed": "Připojení relay selhalo",
 				"urlRequired": "Přidejte alespoň jednu URL relay.",
 				"invalidUrl": "Neplatná URL relay: {{url}}",
-				"disabledHint": "Povolte automatické nebo vlastní relay pro test konektivity."
+				"disabledHint": "Povolte automatické nebo vlastní relay pro test konektivity.",
+				"confirmDisableTitle": "Zakázat relay?",
+				"confirmDisableDescription": "Zvolili jste zakázání relay. Přenosy souborů mohou selhat, pokud se pokusíte sdílet soubory s někým mimo vaši místní síť. Relay pomáhají zařízením najít se a propojit za obtížných síťových podmínek a vaše přenosy vždy zůstávají koncově šifrované.",
+				"confirmCustomTitle": "Použít vlastní relay?",
+				"confirmCustomDescription": "Zvolili jste použití vlastních, svépomocně hostovaných relay. Pokud budou vaše vlastní relay nedostupné, přenosy se automaticky vrátí k veřejným relay a budete upozorněni. Relay pouze pomáhají vašim zařízením propojit se za obtížných síťových podmínek a vaše přenosy vždy zůstávají koncově šifrované.",
+				"confirmContinue": "Pokračovat"
 			}
 		}
 	},

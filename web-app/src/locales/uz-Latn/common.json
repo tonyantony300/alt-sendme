@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay ulanishi muvaffaqiyatsiz",
 				"urlRequired": "Kamida bitta relay URL qo'shing.",
 				"invalidUrl": "Noto'g'ri relay URL: {{url}}",
-				"disabledHint": "Ulanishni sinash uchun avtomatik yoki maxsus relay'larni yoqing."
+				"disabledHint": "Ulanishni sinash uchun avtomatik yoki maxsus relay'larni yoqing.",
+				"confirmDisableTitle": "Relay'lar o'chirilsinmi?",
+				"confirmDisableDescription": "Siz relay'larni o'chirishni tanladingiz. Agar siz fayllarni mahalliy tarmog'ingizdan tashqaridagi kimdir bilan ulashmoqchi bo'lsangiz, fayl uzatishlar muvaffaqiyatsiz tugashi mumkin. Relay'lar qurilmalarga murakkab tarmoq sharoitlarida bir-birini topish va ulanishda yordam beradi, va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",
+				"confirmCustomTitle": "Maxsus relay'lar ishlatilsinmi?",
+				"confirmCustomDescription": "Siz o'zingiz joylashtirgan maxsus relay'lardan foydalanishni tanladingiz. Agar maxsus relay'laringiz mavjud bo'lmasa, uzatishlar avtomatik ravishda ommaviy relay'larga qaytadi va sizga xabar beriladi. Relay'lar faqat qurilmalaringizga murakkab tarmoq sharoitlarida ulanishda yordam beradi, va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",
+				"confirmContinue": "Davom etish"
 			}
 		}
 	},

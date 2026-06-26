@@ -217,7 +217,12 @@
 				"verifyFailed": "Échec de la connexion relais",
 				"urlRequired": "Ajoutez au moins une URL de relais.",
 				"invalidUrl": "URL de relais invalide : {{url}}",
-				"disabledHint": "Activez les relais automatiques ou personnalisés pour tester la connectivité."
+				"disabledHint": "Activez les relais automatiques ou personnalisés pour tester la connectivité.",
+				"confirmDisableTitle": "Désactiver les relais ?",
+				"confirmDisableDescription": "Vous avez choisi de désactiver les relais. Les transferts de fichiers peuvent échouer si vous essayez de partager des fichiers avec quelqu'un en dehors de votre réseau local. Les relais aident les appareils à se trouver et à se connecter dans des conditions réseau difficiles, et vos transferts restent toujours chiffrés de bout en bout.",
+				"confirmCustomTitle": "Utiliser des relais personnalisés ?",
+				"confirmCustomDescription": "Vous avez choisi d'utiliser vos propres relais auto-hébergés. Si vos relais personnalisés sont injoignables, les transferts basculeront automatiquement vers les relais publics et vous serez averti. Les relais aident uniquement vos appareils à se connecter dans des conditions réseau difficiles, et vos transferts restent toujours chiffrés de bout en bout.",
+				"confirmContinue": "Continuer"
 			}
 		}
 	},

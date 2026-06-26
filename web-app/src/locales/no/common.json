@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay-tilkobling mislyktes",
 				"urlRequired": "Legg til minst én relay-URL.",
 				"invalidUrl": "Ugyldig relay-URL: {{url}}",
-				"disabledHint": "Aktiver automatiske eller tilpassede relay for å teste tilkobling."
+				"disabledHint": "Aktiver automatiske eller tilpassede relay for å teste tilkobling.",
+				"confirmDisableTitle": "Deaktivere relay?",
+				"confirmDisableDescription": "Du har valgt å deaktivere relay. Filoverføringer kan mislykkes hvis du prøver å dele filer med noen utenfor det lokale nettverket ditt. Relay hjelper enheter å finne og koble til hverandre under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",
+				"confirmCustomTitle": "Bruke egendefinerte relay?",
+				"confirmCustomDescription": "Du har valgt å bruke dine egne selvhostede relay. Hvis dine egendefinerte relay er utilgjengelige, går overføringene automatisk tilbake til offentlige relay, og du blir varslet. Relay hjelper bare enhetene dine å koble til under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",
+				"confirmContinue": "Fortsett"
 			}
 		}
 	},

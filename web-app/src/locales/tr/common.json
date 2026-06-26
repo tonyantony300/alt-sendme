@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay bağlantısı başarısız",
 				"urlRequired": "En az bir relay URL'si ekleyin.",
 				"invalidUrl": "Geçersiz relay URL'si: {{url}}",
-				"disabledHint": "Bağlantıyı test etmek için otomatik veya özel relay'leri etkinleştirin."
+				"disabledHint": "Bağlantıyı test etmek için otomatik veya özel relay'leri etkinleştirin.",
+				"confirmDisableTitle": "Relay'ler devre dışı bırakılsın mı?",
+				"confirmDisableDescription": "Relay'leri devre dışı bırakmayı seçtiniz. Yerel ağınızın dışındaki biriyle dosya paylaşmaya çalışırsanız dosya aktarımları başarısız olabilir. Relay'ler, cihazların zorlu ağ koşullarında birbirini bulup bağlanmasına yardımcı olur ve aktarımlarınız her zaman uçtan uca şifreli kalır.",
+				"confirmCustomTitle": "Özel relay'ler kullanılsın mı?",
+				"confirmCustomDescription": "Kendi barındırdığınız özel relay'leri kullanmayı seçtiniz. Özel relay'lerinize ulaşılamazsa, aktarımlar otomatik olarak genel relay'lere geri döner ve bilgilendirilirsiniz. Relay'ler yalnızca cihazlarınızın zorlu ağ koşullarında bağlanmasına yardımcı olur ve aktarımlarınız her zaman uçtan uca şifreli kalır.",
+				"confirmContinue": "Devam et"
 			}
 		}
 	},

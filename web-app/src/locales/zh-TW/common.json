@@ -217,7 +217,12 @@
 				"verifyFailed": "中繼連線失敗",
 				"urlRequired": "請至少新增一個中繼 URL。",
 				"invalidUrl": "無效的中繼 URL：{{url}}",
-				"disabledHint": "啟用自動或自訂中繼以測試連線。"
+				"disabledHint": "啟用自動或自訂中繼以測試連線。",
+				"confirmDisableTitle": "停用中繼？",
+				"confirmDisableDescription": "您已選擇停用中繼。如果您嘗試與本地網路以外的人分享檔案，檔案傳輸可能會失敗。中繼可協助裝置在困難的網路條件下相互尋找並連線，而您的傳輸始終保持端對端加密。",
+				"confirmCustomTitle": "使用自訂中繼？",
+				"confirmCustomDescription": "您已選擇使用自行託管的自訂中繼。如果您的自訂中繼無法連線，傳輸將自動回退到公共中繼，並會通知您。中繼僅協助您的裝置在困難的網路條件下連線，而您的傳輸始終保持端對端加密。",
+				"confirmContinue": "繼續"
 			}
 		}
 	},

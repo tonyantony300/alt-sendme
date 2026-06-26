@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay-Verbindung fehlgeschlagen",
 				"urlRequired": "Fügen Sie mindestens eine Relay-URL hinzu.",
 				"invalidUrl": "Ungültige Relay-URL: {{url}}",
-				"disabledHint": "Aktivieren Sie automatische oder benutzerdefinierte Relays, um die Verbindung zu testen."
+				"disabledHint": "Aktivieren Sie automatische oder benutzerdefinierte Relays, um die Verbindung zu testen.",
+				"confirmDisableTitle": "Relays deaktivieren?",
+				"confirmDisableDescription": "Sie haben sich entschieden, Relays zu deaktivieren. Dateiübertragungen können fehlschlagen, wenn Sie Dateien mit jemandem außerhalb Ihres lokalen Netzwerks teilen möchten. Relays helfen Geräten, sich unter schwierigen Netzwerkbedingungen zu finden und zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
+				"confirmCustomTitle": "Benutzerdefinierte Relays verwenden?",
+				"confirmCustomDescription": "Sie haben sich entschieden, eigene selbst gehostete Relays zu verwenden. Wenn Ihre benutzerdefinierten Relays nicht erreichbar sind, wechseln Übertragungen automatisch auf öffentliche Relays und Sie werden benachrichtigt. Relays helfen Ihren Geräten nur, sich unter schwierigen Netzwerkbedingungen zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
+				"confirmContinue": "Weiter"
 			}
 		}
 	},

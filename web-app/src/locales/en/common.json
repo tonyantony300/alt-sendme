@@ -216,7 +216,12 @@
 				"verifyFailed": "Relay connection failed",
 				"urlRequired": "Add at least one relay URL.",
 				"invalidUrl": "Invalid relay URL: {{url}}",
-				"disabledHint": "Enable automatic or custom relays to test connectivity."
+				"disabledHint": "Enable automatic or custom relays to test connectivity.",
+				"confirmDisableTitle": "Disable relays?",
+				"confirmDisableDescription": "You've chosen to disable relays. File transfers may fail if you try to share files with someone outside your local network. Relays help devices find & connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmCustomTitle": "Use custom relays?",
+				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. If your custom relays are unreachable, transfers will automatically fall back to public relays and you'll be notified. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmContinue": "Continue"
 			}
 		}
 	},

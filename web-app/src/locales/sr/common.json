@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay veza nije uspela",
 				"urlRequired": "Dodajte bar jednu relay URL adresu.",
 				"invalidUrl": "Nevažeća relay URL adresa: {{url}}",
-				"disabledHint": "Omogućite automatske ili prilagođene relay servere za test konekcije."
+				"disabledHint": "Omogućite automatske ili prilagođene relay servere za test konekcije.",
+				"confirmDisableTitle": "Onemogućiti relay servere?",
+				"confirmDisableDescription": "Odabrali ste da onemogućite relay servere. Prenos datoteka može da ne uspe ako pokušate da delite datoteke sa nekim van vaše lokalne mreže. Relay serveri pomažu uređajima da se pronađu i povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",
+				"confirmCustomTitle": "Koristiti prilagođene relay servere?",
+				"confirmCustomDescription": "Odabrali ste da koristite sopstvene relay servere koje sami hostujete. Ako vaši prilagođeni relay serveri nisu dostupni, prenosi će se automatski vratiti na javne relay servere i bićete obavešteni. Relay serveri samo pomažu vašim uređajima da se povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",
+				"confirmContinue": "Nastavi"
 			}
 		}
 	},

@@ -217,7 +217,12 @@
 				"verifyFailed": "Falha na conexão relay",
 				"urlRequired": "Adicione pelo menos uma URL de relay.",
 				"invalidUrl": "URL de relay inválida: {{url}}",
-				"disabledHint": "Ative relays automáticos ou personalizados para testar a conectividade."
+				"disabledHint": "Ative relays automáticos ou personalizados para testar a conectividade.",
+				"confirmDisableTitle": "Desativar os relays?",
+				"confirmDisableDescription": "Você escolheu desativar os relays. As transferências de arquivos podem falhar se você tentar compartilhar arquivos com alguém fora da sua rede local. Os relays ajudam os dispositivos a se encontrarem e se conectarem em condições de rede difíceis, e suas transferências permanecem sempre criptografadas de ponta a ponta.",
+				"confirmCustomTitle": "Usar relays personalizados?",
+				"confirmCustomDescription": "Você escolheu usar seus próprios relays auto-hospedados. Se os seus relays personalizados estiverem inacessíveis, as transferências voltarão automaticamente para os relays públicos e você será notificado. Os relays só ajudam seus dispositivos a se conectarem em condições de rede difíceis, e suas transferências permanecem sempre criptografadas de ponta a ponta.",
+				"confirmContinue": "Continuar"
 			}
 		}
 	},

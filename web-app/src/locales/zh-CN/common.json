@@ -217,7 +217,12 @@
 				"verifyFailed": "中继连接失败",
 				"urlRequired": "请至少添加一个中继 URL。",
 				"invalidUrl": "无效的中继 URL：{{url}}",
-				"disabledHint": "启用自动或自定义中继以测试连接。"
+				"disabledHint": "启用自动或自定义中继以测试连接。",
+				"confirmDisableTitle": "禁用中继？",
+				"confirmDisableDescription": "您已选择禁用中继。如果您尝试与本地网络之外的人共享文件，文件传输可能会失败。中继可帮助设备在困难的网络条件下相互发现并连接，而您的传输始终保持端到端加密。",
+				"confirmCustomTitle": "使用自定义中继？",
+				"confirmCustomDescription": "您已选择使用自己托管的自定义中继。如果您的自定义中继无法访问，传输将自动回退到公共中继，并会通知您。中继仅帮助您的设备在困难的网络条件下连接，而您的传输始终保持端到端加密。",
+				"confirmContinue": "继续"
 			}
 		}
 	},
