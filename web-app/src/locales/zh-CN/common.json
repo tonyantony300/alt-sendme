@@ -112,7 +112,7 @@
 		"duration": "持续时间",
 		"avgSpeed": "平均速度",
 		"multipleFiles": "{{count}} 个文件",
-		"donatePrompt": "喜欢 AltSendme 吗？"
+		"donatePrompt": "让它变得更好 -"
 	},
 	"errors": {
 		"sharingFailed": "共享失败",

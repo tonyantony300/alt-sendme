@@ -112,7 +112,7 @@
 		"duration": "소요 시간",
 		"avgSpeed": "평균 속도",
 		"multipleFiles": "파일 {{count}}개",
-		"donatePrompt": "AltSendme가 마음에 드시나요?"
+		"donatePrompt": "더 좋게 만들어 주세요 -"
 	},
 	"errors": {
 		"sharingFailed": "공유 실패",

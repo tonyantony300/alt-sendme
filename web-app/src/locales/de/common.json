@@ -112,7 +112,7 @@
 		"duration": "Dauer",
 		"avgSpeed": "Durchschnittsgeschwindigkeit",
 		"multipleFiles": "{{count}} Dateien",
-		"donatePrompt": "Gefällt Ihnen AltSendme?"
+		"donatePrompt": "Mach es besser -"
 	},
 	"errors": {
 		"sharingFailed": "Freigabe fehlgeschlagen",

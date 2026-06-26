@@ -112,7 +112,7 @@
 		"duration": "Тривалість",
 		"avgSpeed": "Середня швидкість",
 		"multipleFiles": "{{count}} файлів",
-		"donatePrompt": "Подобається AltSendme?"
+		"donatePrompt": "Зробіть це кращим -"
 	},
 	"errors": {
 		"sharingFailed": "Помилка передачі",

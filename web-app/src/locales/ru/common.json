@@ -112,7 +112,7 @@
 		"duration": "Длительность",
 		"avgSpeed": "Средняя скорость",
 		"multipleFiles": "{{count}} файлов",
-		"donatePrompt": "Нравится AltSendme?"
+		"donatePrompt": "Сделайте его лучше -"
 	},
 	"errors": {
 		"sharingFailed": "Ошибка передачи",

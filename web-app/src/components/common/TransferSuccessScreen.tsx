@@ -162,22 +162,6 @@ export function TransferSuccessScreen({
 				</div>
 			</div>
 
-			{!wasStopped ? (
-				<p className="text-center text-xs sm:text-sm text-muted-foreground -mt-2">
-					{t('common:transfer.donatePrompt')}{' '}
-					<a
-						href={DONATE_LINK}
-						onClick={(event) => handleExternalLinkClick(event, DONATE_LINK)}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="inline-flex items-center gap-1 font-medium text-foreground/70 underline decoration-muted-foreground/40 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary/60"
-					>
-						<CoffeeIcon size={14} aria-hidden />
-						{t('common:donate')}
-					</a>
-				</p>
-			) : null}
-
 			{isReceiver && onOpenFolder ? (
 				<div className="flex gap-3 w-full max-w-sm">
 					<Button
@@ -198,6 +182,22 @@ export function TransferSuccessScreen({
 					{t('common:transfer.done')}
 				</Button>
 			)}
+
+			{!wasStopped ? (
+				<p className="flex flex-wrap items-center justify-center gap-x-1.5 text-center text-xs sm:text-sm text-muted-foreground">
+					<span>{t('common:transfer.donatePrompt')}</span>
+					<a
+						href={DONATE_LINK}
+						onClick={(event) => handleExternalLinkClick(event, DONATE_LINK)}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-1 font-medium text-foreground/70 underline decoration-muted-foreground/40 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary/60"
+					>
+						<CoffeeIcon size={14} aria-hidden />
+						{t('common:donate')}
+					</a>
+				</p>
+			) : null}
 		</div>
 	)
 }

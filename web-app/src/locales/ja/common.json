@@ -112,7 +112,7 @@
 		"duration": "所要時間",
 		"avgSpeed": "平均速度",
 		"multipleFiles": "{{count}} 件のファイル",
-		"donatePrompt": "AltSendme を気に入っていただけましたか？"
+		"donatePrompt": "もっと良くする -"
 	},
 	"errors": {
 		"sharingFailed": "共有に失敗しました",

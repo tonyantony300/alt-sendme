@@ -112,7 +112,7 @@
 		"duration": "अवधि",
 		"avgSpeed": "औसत गति",
 		"multipleFiles": "{{count}} फ़ाइलें",
-		"donatePrompt": "क्या आपको AltSendme पसंद है?"
+		"donatePrompt": "इसे बेहतर बनाएं -"
 	},
 	"errors": {
 		"sharingFailed": "साझा करना विफल",

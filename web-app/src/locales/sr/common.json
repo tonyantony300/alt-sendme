@@ -112,7 +112,7 @@
 		"duration": "Трајање",
 		"avgSpeed": "Просечна брзина",
 		"multipleFiles": "{{count}} datoteka",
-		"donatePrompt": "Da li vam se sviđa AltSendme?"
+		"donatePrompt": "Učinite ga boljim -"
 	},
 	"errors": {
 		"sharingFailed": "Дељење није успело",

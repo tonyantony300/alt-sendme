@@ -112,7 +112,7 @@
 		"duration": "Doba trvání",
 		"avgSpeed": "Průměrná rychlost",
 		"multipleFiles": "{{count}} souborů",
-		"donatePrompt": "Líbí se vám AltSendme?"
+		"donatePrompt": "Vylepšete to -"
 	},
 	"errors": {
 		"sharingFailed": "Sdílení selhalo",
