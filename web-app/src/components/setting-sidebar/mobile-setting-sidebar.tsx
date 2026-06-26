@@ -22,9 +22,15 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 			<header
 				className={cn(
 					isMobile ? 'flex' : 'hidden',
-					'gap-2 py-2.5 border-b fixed border-border inset-x-0 top-0 items-center bg-muted backdrop-blur-md z-10 px-3',
+					'gap-2 border-b fixed border-border inset-x-0 top-0 items-center bg-muted backdrop-blur-md z-10',
 					className
 				)}
+				style={{
+					paddingTop: 'calc(0.625rem + env(safe-area-inset-top))',
+					paddingBottom: '0.625rem',
+					paddingLeft: 'calc(0.75rem + env(safe-area-inset-left))',
+					paddingRight: 'calc(0.75rem + env(safe-area-inset-right))',
+				}}
 				{...rest}
 			>
 				<Link
@@ -41,7 +47,10 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 				<div className="text-lg font-medium">{rest.children}</div>
 			</header>
 			{isMobile && (
-				<div className="h-8" data-slot="header-slot">
+				<div
+					data-slot="header-slot"
+					style={{ height: 'calc(2rem + env(safe-area-inset-top))' }}
+				>
 					&nbsp;
 				</div>
 			)}
