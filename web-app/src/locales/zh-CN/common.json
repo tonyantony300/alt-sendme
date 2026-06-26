@@ -112,7 +112,7 @@
 		"duration": "持续时间",
 		"avgSpeed": "平均速度",
 		"multipleFiles": "{{count}} 个文件",
-		"donatePrompt": "喜欢 AltSendme 吗？"
+		"donatePrompt": "让它变得更好 -"
 	},
 	"errors": {
 		"sharingFailed": "共享失败",
@@ -217,7 +217,12 @@
 				"verifyFailed": "中继连接失败",
 				"urlRequired": "请至少添加一个中继 URL。",
 				"invalidUrl": "无效的中继 URL：{{url}}",
-				"disabledHint": "启用自动或自定义中继以测试连接。"
+				"disabledHint": "启用自动或自定义中继以测试连接。",
+				"confirmDisableTitle": "禁用中继？",
+				"confirmDisableDescription": "您已选择禁用中继。如果您尝试与本地网络之外的人共享文件，文件传输可能会失败。中继可帮助设备在困难的网络条件下相互发现并连接，而您的传输始终保持端到端加密。",
+				"confirmCustomTitle": "使用自定义中继？",
+				"confirmCustomDescription": "您已选择使用自己托管的自定义中继。如果您的自定义中继无法访问，传输将自动回退到公共中继，并会通知您。中继仅帮助您的设备在困难的网络条件下连接，而您的传输始终保持端到端加密。",
+				"confirmContinue": "继续"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "自定义中继",
 			"disabledHeading": "中继已禁用",
 			"unavailableHeading": "中继不可用",
-			"fellBackToPublic": "自定义中继不可达 — 正在使用公共中继",
+			"fellBackToPublic": "自定义中继不可达，改用公共中继。",
 			"fellBackToastTitle": "正在使用公共中继",
 			"fellBackToastSend": "您的自定义中继不可达 — 此次传输正在使用公共中继。",
 			"fellBackToastReceive": "您的自定义中继不可达 — 此次下载正在使用公共中继。",
@@ -256,7 +261,13 @@
 			"configuredDefault": "自动（公共中继）",
 			"configuredCustom": "自定义（自托管）",
 			"configuredDisabled": "已禁用",
-			"openSettings": "网络设置"
+			"openSettings": "网络设置",
+			"infoToggle": "关于中继",
+			"purpose": "中继只是帮助你的设备相互发现并建立连接。",
+			"directNote": "建立直接连接后，文件会在设备之间直接传输，不再使用中继。",
+			"lanNote": "在同一局域网中，中继会被完全跳过。",
+			"encryptedNote": "传输始终采用端到端加密，因此中继永远看不到你的文件。",
+			"disabledNote": "中继已禁用。仅限直接连接，因此在严格的防火墙或 NAT 环境下传输可能失败。"
 		}
 	}
 }

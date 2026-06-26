@@ -112,7 +112,7 @@
 		"duration": "所要時間",
 		"avgSpeed": "平均速度",
 		"multipleFiles": "{{count}} 件のファイル",
-		"donatePrompt": "AltSendme を気に入っていただけましたか？"
+		"donatePrompt": "もっと良くする -"
 	},
 	"errors": {
 		"sharingFailed": "共有に失敗しました",
@@ -217,7 +217,12 @@
 				"verifyFailed": "リレー接続に失敗しました",
 				"urlRequired": "少なくとも 1 つのリレー URL を追加してください。",
 				"invalidUrl": "無効なリレー URL: {{url}}",
-				"disabledHint": "接続をテストするには、自動またはカスタムリレーを有効にしてください。"
+				"disabledHint": "接続をテストするには、自動またはカスタムリレーを有効にしてください。",
+				"confirmDisableTitle": "リレーを無効にしますか?",
+				"confirmDisableDescription": "リレーを無効にすることを選択しました。ローカルネットワーク外の相手とファイルを共有しようとすると、ファイル転送が失敗する場合があります。リレーは、困難なネットワーク状況でデバイスが互いを見つけて接続するのを助け、転送は常にエンドツーエンドで暗号化されたままです。",
+				"confirmCustomTitle": "カスタムリレーを使用しますか?",
+				"confirmCustomDescription": "自分でホストするカスタムリレーを使用することを選択しました。カスタムリレーに接続できない場合、転送は自動的に公開リレーにフォールバックし、通知されます。リレーは困難なネットワーク状況でデバイスが接続するのを助けるだけで、転送は常にエンドツーエンドで暗号化されたままです。",
+				"confirmContinue": "続行"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "カスタムリレー",
 			"disabledHeading": "リレー無効",
 			"unavailableHeading": "リレー利用不可",
-			"fellBackToPublic": "カスタムリレーに到達できません — 公開リレーを使用中",
+			"fellBackToPublic": "カスタムリレーに到達できません。代わりに公開リレーを使用しています。",
 			"fellBackToastTitle": "公開リレーを使用中",
 			"fellBackToastSend": "カスタムリレーに到達できませんでした — この転送は公開リレーを使用しています。",
 			"fellBackToastReceive": "カスタムリレーに到達できませんでした — このダウンロードは公開リレーを使用しています。",
@@ -256,7 +261,13 @@
 			"configuredDefault": "自動（公開リレー）",
 			"configuredCustom": "カスタム（自己ホスト）",
 			"configuredDisabled": "無効",
-			"openSettings": "ネットワーク設定"
+			"openSettings": "ネットワーク設定",
+			"infoToggle": "リレーについて",
+			"purpose": "リレーはデバイス同士が見つけ合って接続するのを助けるだけです。",
+			"directNote": "直接接続が確立されると、ファイルはデバイス間で直接転送され、リレーは使用されなくなります。",
+			"lanNote": "同じローカルネットワーク上では、リレーは完全にスキップされます。",
+			"encryptedNote": "転送は常にエンドツーエンドで暗号化されているため、リレーがファイルを見ることはありません。",
+			"disabledNote": "リレーは無効です。直接接続のみのため、厳格なファイアウォールや NAT では転送が失敗することがあります。"
 		}
 	}
 }

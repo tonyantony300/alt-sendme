@@ -112,7 +112,7 @@
 		"duration": "Czas trwania",
 		"avgSpeed": "Średnia prędkość",
 		"multipleFiles": "{{count}} plików",
-		"donatePrompt": "Podoba Ci się AltSendme?"
+		"donatePrompt": "Ulepsz to -"
 	},
 	"errors": {
 		"sharingFailed": "Nie udało się udostępnić",
@@ -217,7 +217,12 @@
 				"verifyFailed": "Połączenie relay nie powiodło się",
 				"urlRequired": "Dodaj co najmniej jeden adres URL relay.",
 				"invalidUrl": "Nieprawidłowy adres URL relay: {{url}}",
-				"disabledHint": "Włącz automatyczne lub niestandardowe relay, aby przetestować łączność."
+				"disabledHint": "Włącz automatyczne lub niestandardowe relay, aby przetestować łączność.",
+				"confirmDisableTitle": "Wyłączyć relay?",
+				"confirmDisableDescription": "Wybrano wyłączenie relay. Przesyłanie plików może się nie powieść, jeśli spróbujesz udostępnić pliki komuś spoza Twojej sieci lokalnej. Relay pomagają urządzeniom odnaleźć się i połączyć w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",
+				"confirmCustomTitle": "Użyć niestandardowych relay?",
+				"confirmCustomDescription": "Wybrano korzystanie z własnych, samodzielnie hostowanych relay. Jeśli Twoje niestandardowe relay będą nieosiągalne, transfery automatycznie powrócą do publicznych relay i otrzymasz powiadomienie. Relay pomagają tylko Twoim urządzeniom połączyć się w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",
+				"confirmContinue": "Kontynuuj"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "Niestandardowe relay",
 			"disabledHeading": "Relay wyłączone",
 			"unavailableHeading": "Relay niedostępne",
-			"fellBackToPublic": "Niestandardowe relay niedostępne — używane publiczne relay",
+			"fellBackToPublic": "Niestandardowe relay niedostępne, używane jest publiczne relay.",
 			"fellBackToastTitle": "Używane publiczne relay",
 			"fellBackToastSend": "Twoje niestandardowe relay było niedostępne — ten transfer używa publicznego relay.",
 			"fellBackToastReceive": "Twoje niestandardowe relay było niedostępne — to pobieranie używa publicznego relay.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "Automatycznie (publiczne relay)",
 			"configuredCustom": "Niestandardowe (self-hosted)",
 			"configuredDisabled": "Wyłączone",
-			"openSettings": "Ustawienia sieci"
+			"openSettings": "Ustawienia sieci",
+			"infoToggle": "O relayach",
+			"purpose": "Relay pomagają tylko Twoim urządzeniom odnaleźć się nawzajem i połączyć.",
+			"directNote": "Po nawiązaniu bezpośredniego połączenia pliki są przesyłane bezpośrednio między urządzeniami, a relay nie jest już używane.",
+			"lanNote": "W tej samej sieci lokalnej relay są całkowicie pomijane.",
+			"encryptedNote": "Transfery są zawsze szyfrowane od końca do końca, więc relay nigdy nie widzą Twoich plików.",
+			"disabledNote": "Relay są wyłączone. Tylko połączenia bezpośrednie, więc transfery mogą się nie powieść przy restrykcyjnych zaporach lub NAT."
 		}
 	}
 }

@@ -112,7 +112,7 @@
 		"duration": "Трајање",
 		"avgSpeed": "Просечна брзина",
 		"multipleFiles": "{{count}} datoteka",
-		"donatePrompt": "Da li vam se sviđa AltSendme?"
+		"donatePrompt": "Učinite ga boljim -"
 	},
 	"errors": {
 		"sharingFailed": "Дељење није успело",
@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay veza nije uspela",
 				"urlRequired": "Dodajte bar jednu relay URL adresu.",
 				"invalidUrl": "Nevažeća relay URL adresa: {{url}}",
-				"disabledHint": "Omogućite automatske ili prilagođene relay servere za test konekcije."
+				"disabledHint": "Omogućite automatske ili prilagođene relay servere za test konekcije.",
+				"confirmDisableTitle": "Onemogućiti relay servere?",
+				"confirmDisableDescription": "Odabrali ste da onemogućite relay servere. Prenos datoteka može da ne uspe ako pokušate da delite datoteke sa nekim van vaše lokalne mreže. Relay serveri pomažu uređajima da se pronađu i povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",
+				"confirmCustomTitle": "Koristiti prilagođene relay servere?",
+				"confirmCustomDescription": "Odabrali ste da koristite sopstvene relay servere koje sami hostujete. Ako vaši prilagođeni relay serveri nisu dostupni, prenosi će se automatski vratiti na javne relay servere i bićete obavešteni. Relay serveri samo pomažu vašim uređajima da se povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",
+				"confirmContinue": "Nastavi"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "Prilagođeni relay",
 			"disabledHeading": "Relay onemogućen",
 			"unavailableHeading": "Relay nedostupan",
-			"fellBackToPublic": "Prilagođeni relay nedostupan — koristi se javni relay",
+			"fellBackToPublic": "Prilagođeni relay nedostupan, umesto njega se koristi javni relay.",
 			"fellBackToastTitle": "Koristi se javni relay",
 			"fellBackToastSend": "Vaš prilagođeni relay nije bio dostupan — ovaj transfer koristi javni relay.",
 			"fellBackToastReceive": "Vaš prilagođeni relay nije bio dostupan — ovo preuzimanje koristi javni relay.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "Automatski (javni relay)",
 			"configuredCustom": "Prilagođeno (self-hosted)",
 			"configuredDisabled": "Onemogućeno",
-			"openSettings": "Mrežna podešavanja"
+			"openSettings": "Mrežna podešavanja",
+			"infoToggle": "O relejima",
+			"purpose": "Releji samo pomažu vašim uređajima da pronađu jedan drugog i povežu se.",
+			"directNote": "Kada se uspostavi direktna veza, datoteke se prenose direktno između uređaja i relay se više ne koristi.",
+			"lanNote": "U istoj lokalnoj mreži releji se potpuno preskaču.",
+			"encryptedNote": "Prenosi su uvek end-to-end šifrovani, pa releji nikada ne vide vaše datoteke.",
+			"disabledNote": "Releji su isključeni. Samo direktne veze, pa prenosi mogu da ne uspeju kroz stroge zaštitne zidove ili NAT."
 		}
 	}
 }

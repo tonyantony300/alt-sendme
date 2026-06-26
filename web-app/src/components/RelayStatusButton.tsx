@@ -24,6 +24,7 @@ export function RelayStatusButton() {
 
 	const [status, setStatus] = useState<RelayStatusResponse | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
+	const [showInfo, setShowInfo] = useState(false)
 
 	const relayConfig = useMemo(
 		() => ({
@@ -112,22 +113,82 @@ export function RelayStatusButton() {
 				aria-label={t('footer.relay.ariaLabel')}
 			>
 				<LazyIcon
-					name="House"
+					name="Network"
 					weight="fill"
 					size={16}
 					className={iconClassName}
 				/>
 			</PopoverTrigger>
-			<PopoverContent className="max-w-xs text-left" side="top" tooltipStyle>
-				<p className="font-medium">{t(headingKey)}</p>
-				{didFallBack && (
-					<p className="mt-1 text-amber-600 dark:text-amber-400">
-						{t('footer.relay.fellBackToPublic')}
-					</p>
-				)}
-				{status?.url && (
-					<p className="mt-1 break-all text-muted-foreground">{status.url}</p>
-				)}
+			<PopoverContent className="w-72 px-1 py-1 text-left text-sm" side="top">
+				<div className="relative">
+					{showInfo && (
+						<div className="mb-3 space-y-2 border-border border-b pb-3 text-muted-foreground text-xs">
+							{displayKind === 'disabled' ? (
+								<div className="flex items-start gap-2">
+									<LazyIcon name="Info" size={14} className="mt-px shrink-0" />
+									<span>{t('footer.relay.disabledNote')}</span>
+								</div>
+							) : (
+								<>
+									<div className="flex items-start gap-2">
+										<LazyIcon
+											name="MagnifyingGlass"
+											size={14}
+											className="mt-px shrink-0"
+										/>
+										<span>{t('footer.relay.purpose')}</span>
+									</div>
+									<div className="flex items-start gap-2">
+										<LazyIcon
+											name="ArrowRight"
+											size={14}
+											className="mt-px shrink-0"
+										/>
+										<span>{t('footer.relay.directNote')}</span>
+									</div>
+									<div className="flex items-start gap-2">
+										<LazyIcon name="House" size={14} className="mt-px shrink-0" />
+										<span>{t('footer.relay.lanNote')}</span>
+									</div>
+									<div className="flex items-start gap-2">
+										<LazyIcon
+											name="CheckCircle"
+											size={14}
+											className="mt-px shrink-0"
+										/>
+										<span>{t('footer.relay.encryptedNote')}</span>
+									</div>
+								</>
+							)}
+						</div>
+					)}
+
+					<div className="relative pr-7">
+						<button
+							type="button"
+							onClick={() => setShowInfo((value) => !value)}
+							aria-label={t('footer.relay.infoToggle')}
+							aria-expanded={showInfo}
+							className={cn(
+								'absolute -top-1 -right-1 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+								showInfo && 'bg-muted text-foreground'
+							)}
+						>
+							<LazyIcon name="Info" size={16} />
+						</button>
+						<p className="font-medium">{t(headingKey)}</p>
+						{didFallBack && (
+							<p className="mt-1 text-amber-600 text-xs dark:text-amber-400">
+								{t('footer.relay.fellBackToPublic')}
+							</p>
+						)}
+						{status?.url && (
+							<p className="mt-1 break-all text-muted-foreground text-xs">
+								{status.url}
+							</p>
+						)}
+					</div>
+				</div>
 			</PopoverContent>
 		</Popover>
 	)

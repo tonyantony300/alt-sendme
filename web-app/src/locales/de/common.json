@@ -112,7 +112,7 @@
 		"duration": "Dauer",
 		"avgSpeed": "Durchschnittsgeschwindigkeit",
 		"multipleFiles": "{{count}} Dateien",
-		"donatePrompt": "Gefällt Ihnen AltSendme?"
+		"donatePrompt": "Mach es besser -"
 	},
 	"errors": {
 		"sharingFailed": "Freigabe fehlgeschlagen",
@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay-Verbindung fehlgeschlagen",
 				"urlRequired": "Fügen Sie mindestens eine Relay-URL hinzu.",
 				"invalidUrl": "Ungültige Relay-URL: {{url}}",
-				"disabledHint": "Aktivieren Sie automatische oder benutzerdefinierte Relays, um die Verbindung zu testen."
+				"disabledHint": "Aktivieren Sie automatische oder benutzerdefinierte Relays, um die Verbindung zu testen.",
+				"confirmDisableTitle": "Relays deaktivieren?",
+				"confirmDisableDescription": "Sie haben sich entschieden, Relays zu deaktivieren. Dateiübertragungen können fehlschlagen, wenn Sie Dateien mit jemandem außerhalb Ihres lokalen Netzwerks teilen möchten. Relays helfen Geräten, sich unter schwierigen Netzwerkbedingungen zu finden und zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
+				"confirmCustomTitle": "Benutzerdefinierte Relays verwenden?",
+				"confirmCustomDescription": "Sie haben sich entschieden, eigene selbst gehostete Relays zu verwenden. Wenn Ihre benutzerdefinierten Relays nicht erreichbar sind, wechseln Übertragungen automatisch auf öffentliche Relays und Sie werden benachrichtigt. Relays helfen Ihren Geräten nur, sich unter schwierigen Netzwerkbedingungen zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
+				"confirmContinue": "Weiter"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "Benutzerdefiniertes Relay",
 			"disabledHeading": "Relays deaktiviert",
 			"unavailableHeading": "Relay nicht verfügbar",
-			"fellBackToPublic": "Benutzerdefiniertes Relay nicht erreichbar — öffentliches Relay wird verwendet",
+			"fellBackToPublic": "Benutzerdefiniertes Relay nicht erreichbar, öffentliches Relay wird stattdessen verwendet.",
 			"fellBackToastTitle": "Öffentliches Relay wird verwendet",
 			"fellBackToastSend": "Ihr benutzerdefiniertes Relay war nicht erreichbar — diese Übertragung nutzt stattdessen ein öffentliches Relay.",
 			"fellBackToastReceive": "Ihr benutzerdefiniertes Relay war nicht erreichbar — dieser Download nutzt stattdessen ein öffentliches Relay.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "Automatisch (öffentliche Relays)",
 			"configuredCustom": "Benutzerdefiniert (Self-Hosted)",
 			"configuredDisabled": "Deaktiviert",
-			"openSettings": "Netzwerkeinstellungen"
+			"openSettings": "Netzwerkeinstellungen",
+			"infoToggle": "Über Relays",
+			"purpose": "Relays helfen deinen Geräten nur dabei, sich zu finden und zu verbinden.",
+			"directNote": "Sobald eine direkte Verbindung besteht, werden Dateien direkt zwischen den Geräten übertragen und das Relay wird nicht mehr verwendet.",
+			"lanNote": "Im selben lokalen Netzwerk werden Relays vollständig übersprungen.",
+			"encryptedNote": "Übertragungen sind immer Ende-zu-Ende-verschlüsselt, sodass Relays deine Dateien nie sehen.",
+			"disabledNote": "Relays sind deaktiviert. Nur direkte Verbindungen, daher können Übertragungen bei strengen Firewalls oder NATs fehlschlagen."
 		}
 	}
 }

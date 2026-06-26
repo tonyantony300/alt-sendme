@@ -112,7 +112,7 @@
 		"duration": "Időtartam",
 		"avgSpeed": "Átlag sebesség",
 		"multipleFiles": "{{count}} fájl",
-		"donatePrompt": "Tetszik az AltSendme?"
+		"donatePrompt": "Tedd jobbá -"
 	},
 	"errors": {
 		"sharingFailed": "Sikertelen megosztás",
@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay kapcsolat sikertelen",
 				"urlRequired": "Adjon hozzá legalább egy relay URL-t.",
 				"invalidUrl": "Érvénytelen relay URL: {{url}}",
-				"disabledHint": "Kapcsolat teszteléséhez engedélyezze az automatikus vagy egyéni relay-t."
+				"disabledHint": "Kapcsolat teszteléséhez engedélyezze az automatikus vagy egyéni relay-t.",
+				"confirmDisableTitle": "Letiltja a relay-eket?",
+				"confirmDisableDescription": "Úgy döntött, hogy letiltja a relay-eket. A fájlátvitelek meghiúsulhatnak, ha a helyi hálózatán kívüli valakivel próbál fájlokat megosztani. A relay-ek segítenek az eszközöknek megtalálni egymást és kapcsolódni nehéz hálózati körülmények között, és az átvitelei mindig végpontok közötti titkosítással védettek maradnak.",
+				"confirmCustomTitle": "Egyéni relay-eket használ?",
+				"confirmCustomDescription": "Úgy döntött, hogy saját, önállóan üzemeltetett relay-eket használ. Ha az egyéni relay-ei nem elérhetők, az átvitelek automatikusan visszaállnak a nyilvános relay-ekre, és értesítést kap. A relay-ek csak abban segítenek, hogy az eszközei nehéz hálózati körülmények között is kapcsolódjanak, és az átvitelei mindig végpontok közötti titkosítással védettek maradnak.",
+				"confirmContinue": "Folytatás"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "Egyéni relay",
 			"disabledHeading": "Relay letiltva",
 			"unavailableHeading": "Relay nem elérhető",
-			"fellBackToPublic": "Egyéni relay nem elérhető — nyilvános relay használata",
+			"fellBackToPublic": "Egyéni relay nem elérhető, helyette nyilvános relay használata.",
 			"fellBackToastTitle": "Nyilvános relay használata",
 			"fellBackToastSend": "Az egyéni relay nem volt elérhető — ez az átvitel nyilvános relay-t használ.",
 			"fellBackToastReceive": "Az egyéni relay nem volt elérhető — ez a letöltés nyilvános relay-t használ.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "Automatikus (nyilvános relay)",
 			"configuredCustom": "Egyéni (self-hosted)",
 			"configuredDisabled": "Letiltva",
-			"openSettings": "Hálózati beállítások"
+			"openSettings": "Hálózati beállítások",
+			"infoToggle": "A relayekről",
+			"purpose": "A relayek csak abban segítenek, hogy az eszközeid megtalálják egymást és kapcsolódjanak.",
+			"directNote": "A közvetlen kapcsolat létrejötte után a fájlok közvetlenül az eszközök között kerülnek átvitelre, és a relay már nem kerül használatba.",
+			"lanNote": "Azonos helyi hálózaton a relayek teljesen kimaradnak.",
+			"encryptedNote": "Az átvitelek mindig végpontok közötti titkosítással történnek, így a relayek soha nem látják a fájljaidat.",
+			"disabledNote": "A relayek ki vannak kapcsolva. Csak közvetlen kapcsolatok, így szigorú tűzfalak vagy NAT-ok esetén az átvitel meghiúsulhat."
 		}
 	}
 }

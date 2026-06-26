@@ -112,7 +112,7 @@
 		"duration": "Durata",
 		"avgSpeed": "Velocità Media",
 		"multipleFiles": "{{count}} file",
-		"donatePrompt": "Ti piace AltSendme?"
+		"donatePrompt": "Rendilo migliore -"
 	},
 	"errors": {
 		"sharingFailed": "Condivisione Fallita",
@@ -217,7 +217,12 @@
 				"verifyFailed": "Connessione relay fallita",
 				"urlRequired": "Aggiungi almeno un URL relay.",
 				"invalidUrl": "URL relay non valido: {{url}}",
-				"disabledHint": "Abilita relay automatici o personalizzati per testare la connettività."
+				"disabledHint": "Abilita relay automatici o personalizzati per testare la connettività.",
+				"confirmDisableTitle": "Disabilitare i relay?",
+				"confirmDisableDescription": "Hai scelto di disabilitare i relay. I trasferimenti di file potrebbero non riuscire se provi a condividere file con qualcuno al di fuori della tua rete locale. I relay aiutano i dispositivi a trovarsi e connettersi in condizioni di rete difficili, e i tuoi trasferimenti restano sempre crittografati end-to-end.",
+				"confirmCustomTitle": "Usare relay personalizzati?",
+				"confirmCustomDescription": "Hai scelto di usare i tuoi relay self-hosted. Se i tuoi relay personalizzati non sono raggiungibili, i trasferimenti torneranno automaticamente ai relay pubblici e riceverai una notifica. I relay aiutano solo i tuoi dispositivi a connettersi in condizioni di rete difficili, e i tuoi trasferimenti restano sempre crittografati end-to-end.",
+				"confirmContinue": "Continua"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "Relay personalizzato",
 			"disabledHeading": "Relay disabilitati",
 			"unavailableHeading": "Relay non disponibile",
-			"fellBackToPublic": "Relay personalizzato irraggiungibile — uso del relay pubblico",
+			"fellBackToPublic": "Relay personalizzato irraggiungibile, viene usato un relay pubblico.",
 			"fellBackToastTitle": "Uso del relay pubblico",
 			"fellBackToastSend": "Il tuo relay personalizzato era irraggiungibile — questo trasferimento usa un relay pubblico.",
 			"fellBackToastReceive": "Il tuo relay personalizzato era irraggiungibile — questo download usa un relay pubblico.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "Automatico (relay pubblici)",
 			"configuredCustom": "Personalizzato (self-hosted)",
 			"configuredDisabled": "Disabilitato",
-			"openSettings": "Impostazioni di rete"
+			"openSettings": "Impostazioni di rete",
+			"infoToggle": "Informazioni sui relay",
+			"purpose": "I relay aiutano solo i tuoi dispositivi a trovarsi e a connettersi.",
+			"directNote": "Una volta stabilita una connessione diretta, i file vengono trasferiti direttamente tra i dispositivi e il relay non viene più usato.",
+			"lanNote": "Sulla stessa rete locale i relay vengono completamente saltati.",
+			"encryptedNote": "I trasferimenti sono sempre crittografati end-to-end, quindi i relay non vedono mai i tuoi file.",
+			"disabledNote": "I relay sono disattivati. Solo connessioni dirette, quindi i trasferimenti possono fallire con firewall o NAT restrittivi."
 		}
 	}
 }

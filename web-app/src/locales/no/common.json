@@ -112,7 +112,7 @@
 		"duration": "Varighet",
 		"avgSpeed": "Gjennomsnittlig hastighet",
 		"multipleFiles": "{{count}} filer",
-		"donatePrompt": "Liker du AltSendme?"
+		"donatePrompt": "Gjør det bedre -"
 	},
 	"errors": {
 		"sharingFailed": "Deling feilet",
@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay-tilkobling mislyktes",
 				"urlRequired": "Legg til minst én relay-URL.",
 				"invalidUrl": "Ugyldig relay-URL: {{url}}",
-				"disabledHint": "Aktiver automatiske eller tilpassede relay for å teste tilkobling."
+				"disabledHint": "Aktiver automatiske eller tilpassede relay for å teste tilkobling.",
+				"confirmDisableTitle": "Deaktivere relay?",
+				"confirmDisableDescription": "Du har valgt å deaktivere relay. Filoverføringer kan mislykkes hvis du prøver å dele filer med noen utenfor det lokale nettverket ditt. Relay hjelper enheter å finne og koble til hverandre under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",
+				"confirmCustomTitle": "Bruke egendefinerte relay?",
+				"confirmCustomDescription": "Du har valgt å bruke dine egne selvhostede relay. Hvis dine egendefinerte relay er utilgjengelige, går overføringene automatisk tilbake til offentlige relay, og du blir varslet. Relay hjelper bare enhetene dine å koble til under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",
+				"confirmContinue": "Fortsett"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "Tilpasset relay",
 			"disabledHeading": "Relay deaktivert",
 			"unavailableHeading": "Relay utilgjengelig",
-			"fellBackToPublic": "Tilpasset relay utilgjengelig — bruker offentlig relay",
+			"fellBackToPublic": "Tilpasset relay utilgjengelig, bruker offentlig relay i stedet.",
 			"fellBackToastTitle": "Bruker offentlig relay",
 			"fellBackToastSend": "Din tilpassede relay var utilgjengelig — denne overføringen bruker offentlig relay.",
 			"fellBackToastReceive": "Din tilpassede relay var utilgjengelig — denne nedlastingen bruker offentlig relay.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "Automatisk (offentlige relay)",
 			"configuredCustom": "Tilpasset (self-hosted)",
 			"configuredDisabled": "Deaktivert",
-			"openSettings": "Nettverksinnstillinger"
+			"openSettings": "Nettverksinnstillinger",
+			"infoToggle": "Om relayer",
+			"purpose": "Relayer hjelper bare enhetene dine med å finne hverandre og koble til.",
+			"directNote": "Når en direkte tilkobling er opprettet, overføres filer direkte mellom enhetene, og relayet brukes ikke lenger.",
+			"lanNote": "På samme lokalnett hoppes relayer helt over.",
+			"encryptedNote": "Overføringer er alltid ende-til-ende-kryptert, så relayer ser aldri filene dine.",
+			"disabledNote": "Relayer er av. Kun direkte tilkoblinger, så overføringer kan mislykkes gjennom strenge brannmurer eller NAT-er."
 		}
 	}
 }

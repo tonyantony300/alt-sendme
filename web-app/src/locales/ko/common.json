@@ -112,7 +112,7 @@
 		"duration": "소요 시간",
 		"avgSpeed": "평균 속도",
 		"multipleFiles": "파일 {{count}}개",
-		"donatePrompt": "AltSendme가 마음에 드시나요?"
+		"donatePrompt": "더 좋게 만들어 주세요 -"
 	},
 	"errors": {
 		"sharingFailed": "공유 실패",
@@ -217,7 +217,12 @@
 				"verifyFailed": "릴레이 연결 실패",
 				"urlRequired": "릴레이 URL을 하나 이상 추가하세요.",
 				"invalidUrl": "잘못된 릴레이 URL: {{url}}",
-				"disabledHint": "연결을 테스트하려면 자동 또는 사용자 지정 릴레이를 활성화하세요."
+				"disabledHint": "연결을 테스트하려면 자동 또는 사용자 지정 릴레이를 활성화하세요.",
+				"confirmDisableTitle": "릴레이를 비활성화하시겠습니까?",
+				"confirmDisableDescription": "릴레이를 비활성화하기로 선택했습니다. 로컬 네트워크 외부의 사람과 파일을 공유하려고 하면 파일 전송이 실패할 수 있습니다. 릴레이는 어려운 네트워크 환경에서 기기가 서로를 찾고 연결하도록 도와주며, 전송은 항상 종단 간 암호화된 상태로 유지됩니다.",
+				"confirmCustomTitle": "사용자 지정 릴레이를 사용하시겠습니까?",
+				"confirmCustomDescription": "직접 호스팅하는 사용자 지정 릴레이를 사용하기로 선택했습니다. 사용자 지정 릴레이에 연결할 수 없는 경우 전송은 자동으로 공개 릴레이로 대체되며 알림을 받게 됩니다. 릴레이는 어려운 네트워크 환경에서 기기가 연결되도록 도와줄 뿐이며, 전송은 항상 종단 간 암호화된 상태로 유지됩니다.",
+				"confirmContinue": "계속"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "사용자 지정 릴레이",
 			"disabledHeading": "릴레이 비활성화",
 			"unavailableHeading": "릴레이 사용 불가",
-			"fellBackToPublic": "사용자 지정 릴레이에 연결할 수 없음 — 공개 릴레이 사용 중",
+			"fellBackToPublic": "사용자 지정 릴레이에 연결할 수 없어 공개 릴레이를 대신 사용합니다.",
 			"fellBackToastTitle": "공개 릴레이 사용 중",
 			"fellBackToastSend": "사용자 지정 릴레이에 연결할 수 없었습니다 — 이 전송은 공개 릴레이를 사용합니다.",
 			"fellBackToastReceive": "사용자 지정 릴레이에 연결할 수 없었습니다 — 이 다운로드는 공개 릴레이를 사용합니다.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "자동(공개 릴레이)",
 			"configuredCustom": "사용자 지정(자체 호스팅)",
 			"configuredDisabled": "비활성화",
-			"openSettings": "네트워크 설정"
+			"openSettings": "네트워크 설정",
+			"infoToggle": "릴레이 정보",
+			"purpose": "릴레이는 기기들이 서로를 찾아 연결하도록 도와줄 뿐입니다.",
+			"directNote": "직접 연결이 설정되면 파일이 기기 간에 직접 전송되며 릴레이는 더 이상 사용되지 않습니다.",
+			"lanNote": "동일한 로컬 네트워크에서는 릴레이가 완전히 생략됩니다.",
+			"encryptedNote": "전송은 항상 종단 간 암호화되므로 릴레이는 파일을 볼 수 없습니다.",
+			"disabledNote": "릴레이가 꺼져 있습니다. 직접 연결만 사용하므로 엄격한 방화벽이나 NAT에서는 전송이 실패할 수 있습니다."
 		}
 	}
 }

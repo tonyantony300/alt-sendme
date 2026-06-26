@@ -112,7 +112,7 @@
 		"duration": "Süre",
 		"avgSpeed": "Ort. Hız",
 		"multipleFiles": "{{count}} dosya",
-		"donatePrompt": "AltSendme'yi beğeniyor musunuz?"
+		"donatePrompt": "Daha iyi hale getir -"
 	},
 	"errors": {
 		"sharingFailed": "Paylaşım Başarısız",
@@ -217,7 +217,12 @@
 				"verifyFailed": "Relay bağlantısı başarısız",
 				"urlRequired": "En az bir relay URL'si ekleyin.",
 				"invalidUrl": "Geçersiz relay URL'si: {{url}}",
-				"disabledHint": "Bağlantıyı test etmek için otomatik veya özel relay'leri etkinleştirin."
+				"disabledHint": "Bağlantıyı test etmek için otomatik veya özel relay'leri etkinleştirin.",
+				"confirmDisableTitle": "Relay'ler devre dışı bırakılsın mı?",
+				"confirmDisableDescription": "Relay'leri devre dışı bırakmayı seçtiniz. Yerel ağınızın dışındaki biriyle dosya paylaşmaya çalışırsanız dosya aktarımları başarısız olabilir. Relay'ler, cihazların zorlu ağ koşullarında birbirini bulup bağlanmasına yardımcı olur ve aktarımlarınız her zaman uçtan uca şifreli kalır.",
+				"confirmCustomTitle": "Özel relay'ler kullanılsın mı?",
+				"confirmCustomDescription": "Kendi barındırdığınız özel relay'leri kullanmayı seçtiniz. Özel relay'lerinize ulaşılamazsa, aktarımlar otomatik olarak genel relay'lere geri döner ve bilgilendirilirsiniz. Relay'ler yalnızca cihazlarınızın zorlu ağ koşullarında bağlanmasına yardımcı olur ve aktarımlarınız her zaman uçtan uca şifreli kalır.",
+				"confirmContinue": "Devam et"
 			}
 		}
 	},
@@ -245,7 +250,7 @@
 			"customHeading": "Özel relay",
 			"disabledHeading": "Relay devre dışı",
 			"unavailableHeading": "Relay kullanılamıyor",
-			"fellBackToPublic": "Özel relay'e ulaşılamadı — genel relay kullanılıyor",
+			"fellBackToPublic": "Özel relay'e ulaşılamadı, bunun yerine genel relay kullanılıyor.",
 			"fellBackToastTitle": "Genel relay kullanılıyor",
 			"fellBackToastSend": "Özel relay'inize ulaşılamadı — bu aktarım genel relay kullanıyor.",
 			"fellBackToastReceive": "Özel relay'inize ulaşılamadı — bu indirme genel relay kullanıyor.",
@@ -256,7 +261,13 @@
 			"configuredDefault": "Otomatik (genel relay)",
 			"configuredCustom": "Özel (self-hosted)",
 			"configuredDisabled": "Devre dışı",
-			"openSettings": "Ağ ayarları"
+			"openSettings": "Ağ ayarları",
+			"infoToggle": "Relay hakkında",
+			"purpose": "Relay'ler yalnızca cihazlarınızın birbirini bulup bağlanmasına yardımcı olur.",
+			"directNote": "Doğrudan bağlantı kurulduktan sonra dosyalar cihazlar arasında doğrudan aktarılır ve relay artık kullanılmaz.",
+			"lanNote": "Aynı yerel ağda relay'ler tamamen atlanır.",
+			"encryptedNote": "Aktarımlar her zaman uçtan uca şifrelidir, bu nedenle relay'ler dosyalarınızı asla göremez.",
+			"disabledNote": "Relay'ler kapalı. Yalnızca doğrudan bağlantılar; bu nedenle katı güvenlik duvarları veya NAT'larda aktarımlar başarısız olabilir."
 		}
 	}
 }
