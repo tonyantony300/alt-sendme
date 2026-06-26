@@ -45,7 +45,7 @@ jobs:
           if echo "$CHANGED" | grep -q '^src-tauri/Cargo\.lock$'; then
             echo "$CHANGED" | grep -q '^src-tauri/Cargo\.toml$' || fail "src-tauri/Cargo.lock was modified but src-tauri/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- src-tauri/Cargo.lock"
           fi
-          if echo "$CHANGED" | grep -q '^sendme/Cargo\.lock$'; then
-            echo "$CHANGED" | grep -q '^sendme/Cargo\.toml$' || fail "sendme/Cargo.lock was modified but sendme/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- sendme/Cargo.lock"
+          if echo "$CHANGED" | grep -q '^engine/Cargo\.lock$'; then
+            echo "$CHANGED" | grep -q '^engine/Cargo\.toml$' || fail "engine/Cargo.lock was modified but engine/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- engine/Cargo.lock"
           fi
           echo "Lockfiles check passed."

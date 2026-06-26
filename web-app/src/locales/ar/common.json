@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "إرسال",
+	"comingSoon": "قريبًا",
 	"receive": "استقبال",
 	"ok": "موافق",
+	"undo": "تراجع",
+	"cancel": "إلغاء",
+	"confirm": "تأكيد",
 	"loading": "جاري التحميل...",
 	"browse": "تصفح",
 	"donate": "تبرع",
+	"privacyPolicy": "سياسة الخصوصية",
+	"license": "الترخيص",
+	"notFound": {
+		"title": "الصفحة غير موجودة",
+		"subtitle": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+		"goBack": "رجوع",
+		"goHome": "الرئيسية"
+	},
 	"sender": {
 		"title": "إرسال",
 		"subtitle": "شارك الملفات أو المجلدات عبر اتصالات مشفرة من نظير إلى نظير.",
@@ -29,9 +41,15 @@
 		"fileSelected": "تم اختيار الملف",
 		"folderSelected": "تم اختيار المجلد",
 		"itemSelected": "تم اختيار العنصر",
+		"multipleFilesSelected": "{{name}} ... و {{count}} أخرى",
 		"browseFile": "تصفح الملف",
 		"browseFolder": "تصفح المجلد",
+		"addMoreFiles": "إضافة المزيد من الملفات",
+		"addMoreFolders": "إضافة المزيد من المجلدات",
+		"multipleItemsSelected": "{{firstName}} و {{count}} أخرى",
+		"removeFromSelection": "إزالة من التحديد",
 		"copyToClipboard": "نسخ إلى الحافظة",
+		"description": "الوصف (اختياري)",
 		"broadcastMode": {
 			"index": "بث",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "مشاركة خاصة",
 				"description": "فقط الشخص الذي تشارك معه التذكرة يمكنه تنزيل الملف."
 			}
-		},
-		"description": "الوصف (اختياري)"
+		}
 	},
 	"receiver": {
 		"title": "استقبال الملفات",
 		"subtitle": "قم بتنزيل الملفات من المرسل باستخدام اتصالات مشفرة من نظير إلى نظير عبر الإنترنت.",
 		"saveToFolder": "حفظ في المجلد:",
 		"noFolderSelected": "لم يتم اختيار مجلد",
+		"conflictsMore": "... و {{count}} أخرى",
 		"pasteTicket": "الصق التذكرة هنا:",
 		"ticketPlaceholder": "sendme تذكرة الاستقبال...",
 		"howToReceive": "كيفية استقبال الملفات",
@@ -60,8 +78,14 @@
 		"instruction5": "سيتم حفظ الملفات في المجلد المحدد",
 		"keepAppOpen": "احتفظ بهذا التطبيق مفتوحاً أثناء تنزيل الملفات",
 		"connectingToSender": "الاتصال بالمرسل",
+		"previewMultipleItems": "{{name}} ... و {{count}} أخرى",
+		"multipleFilesFound": "تم العثور على ملفات متعددة",
+		"expandPreviewList": "إظهار قائمة الملفات",
+		"collapsePreviewList": "إخفاء قائمة الملفات",
 		"downloadingInProgress": "التنزيل قيد التنفيذ",
 		"downloadCompleted": "اكتمل التنزيل",
+		"downloadCompletedWithConflicts": "اكتمل التنزيل مع حل تعارضات الأسماء",
+		"downloadedFile": "الملف الذي تم تنزيله",
 		"stopReceiving": "إيقاف الاستقبال",
 		"download": "تنزيل"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "تم إيقاف النقل قبل اكتماله.",
 		"successMessage": "تم إكمال عملية النقل بنجاح.",
 		"file": "ملف",
+		"files": "ملفات",
 		"folder": "مجلد",
 		"fileName": "اسم الملف",
 		"fileSize": "حجم الملف",
 		"folderSize": "حجم المجلد",
 		"downloadPath": "مسار التنزيل",
 		"duration": "المدة",
-		"avgSpeed": "متوسط السرعة"
+		"avgSpeed": "متوسط السرعة",
+		"multipleFiles": "{{count}} ملفات",
+		"donatePrompt": "اجعله أفضل -"
 	},
 	"errors": {
 		"sharingFailed": "فشل المشاركة",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "فشل فتح المجلد",
 		"openFolderFailedDesc": "فشل فتح مجلد التنزيل"
 	},
-	"comingSoon": "قريبًا",
-	"undo": "تراجع",
-	"cancel": "إلغاء",
-	"confirm": "تأكيد",
-	"privacyPolicy": "سياسة الخصوصية",
-	"license": "الترخيص",
-	"notFound": {
-		"title": "الصفحة غير موجودة",
-		"subtitle": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
-		"goBack": "رجوع",
-		"goHome": "الرئيسية"
-	},
 	"settings": {
 		"title": "الإعدادات",
 		"navItems": {
 			"appearance": "المظهر واللغة",
 			"general": "عام",
+			"relay": "الترحيل",
 			"network": "الشبكة",
 			"notification": "الإشعارات"
 		},
@@ -159,6 +175,54 @@
 					"label": "قائمة سياق مستكشف الملفات",
 					"description": "إضافة «إرسال باستخدام AltSendme» إلى قائمة النقر بزر الماوس الأيمن في مستكشف Windows"
 				}
+			},
+			"broadcast": {
+				"title": "البث",
+				"showToggle": {
+					"label": "إظهار مفتاح البث أثناء المشاركة",
+					"description": "عرض مفتاح بث على شاشة المشاركة حتى يتمكن عدة مستقبلين من تنزيل نفس الملفات في وقت واحد."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "خوادم الترحيل",
+				"description": "تحكم في خوادم ترحيل iroh التي يستخدمها AltSendme لاجتياز NAT والاتصالات الاحتياطية المشفرة.",
+				"modeDefault": "تلقائي (ترحيل عام)",
+				"modeDefaultDesc": "استخدم ترحيل iroh العام الافتراضي. الأفضل لمعظم المستخدمين.",
+				"modeCustom": "مخصص (استضافة ذاتية)",
+				"modeCustomDesc": "استخدم خادم/خوادم ترحيل خاصة بك. راجع deploy/relay في مستودع المشروع.",
+				"modeDisabled": "معطل",
+				"modeDisabledDesc": "لا تستخدم الترحيل. اتصالات مباشرة فقط؛ قد تفشل عبر NAT صارم.",
+				"urlsLabel": "عناوين URL للترحيل",
+				"urlsDescription": "أضف عنوان URL HTTPS واحدًا أو أكثر للترحيل للت failover الإقليمي.",
+				"addUrl": "إضافة عنوان URL للترحيل",
+				"removeUrl": "إزالة عنوان URL للترحيل",
+				"urlInvalidHint": "أدخل عنوان URL HTTPS صالحًا",
+				"urlChecking": "جارٍ التحقق من الاتصال",
+				"urlVerified": "تم التحقق",
+				"urlVerifyFailedHint": "تعذر الاتصال بهذا الترحيل",
+				"verifySummary": "تم التحقق من {{ok}} من {{total}} ترحيل.",
+				"verifyAuthHint": "إذا كان ترحيلك يتطلب رمز مصادقة، تأكد من أنه يطابق access.shared_token على الخادم.",
+				"authTokenLabel": "رمز المصادقة (اختياري)",
+				"authTokenPlaceholder": "سر مشترك إذا كان ترحيلك يتطلب مصادقة",
+				"authTokenDescription": "مطلوب عندما يستخدم ترحيلك access.shared_token في إعداده.",
+				"showAuthToken": "إظهار",
+				"hideAuthToken": "إخفاء",
+				"privacyNote": "لإعداد خاص بالكامل، اضبط نفس عناوين URL للترحيل على أجهزة المرسل والمستقبل.",
+				"testConnection": "اختبار الاتصال",
+				"verifySuccess": "اتصال الترحيل OK",
+				"verifySuccessDesc": "تم التحقق من {{url}}\nبنجاح ({{latency}} ms).",
+				"verifySuccessDescGeneric": "تم التسجيل بنجاح مع خادم الترحيل المُعد.",
+				"verifyFailed": "فشل اتصال الترحيل",
+				"urlRequired": "أضف عنوان URL ترحيل واحدًا على الأقل.",
+				"invalidUrl": "عنوان URL ترحيل غير صالح: {{url}}",
+				"disabledHint": "فعّل الترحيل التلقائي أو المخصص لاختبار الاتصال.",
+				"confirmDisableTitle": "تعطيل الترحيل؟",
+				"confirmDisableDescription": "لقد اخترت تعطيل الترحيل. قد تفشل عمليات نقل الملفات إذا حاولت مشاركة الملفات مع شخص خارج شبكتك المحلية. يساعد الترحيل الأجهزة على العثور على بعضها والاتصال في ظروف الشبكة الصعبة، وتظل عمليات النقل لديك دائمًا مشفّرة من طرف إلى طرف.",
+				"confirmCustomTitle": "استخدام ترحيل مخصص؟",
+				"confirmCustomDescription": "لقد اخترت استخدام خوادم ترحيل مخصصة ذاتية الاستضافة. إذا تعذّر الوصول إلى خوادم الترحيل المخصصة لديك، فستعود عمليات النقل تلقائيًا إلى الترحيل العام وسيتم إعلامك. يساعد الترحيل أجهزتك فقط على الاتصال في ظروف الشبكة الصعبة، وتظل عمليات النقل لديك دائمًا مشفّرة من طرف إلى طرف.",
+				"confirmContinue": "متابعة"
 			}
 		}
 	},
@@ -175,5 +239,35 @@
 		"checkFailedDesc": "تعذر التحقق من التحديثات",
 		"installFailed": "فشل التثبيت",
 		"installFailedDesc": "تعذر تثبيت التحديث"
+	},
+	"android": {
+		"preparingFile": "جارٍ تحضير الملف..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "حالة اتصال الترحيل",
+			"publicHeading": "ترحيل عام",
+			"customHeading": "ترحيل مخصص",
+			"disabledHeading": "الترحيل معطل",
+			"unavailableHeading": "الترحيل غير متاح",
+			"fellBackToPublic": "الترحيل المخصص غير متاح، يتم استخدام ترحيل عام بدلاً منه.",
+			"fellBackToastTitle": "يتم استخدام ترحيل عام",
+			"fellBackToastSend": "ترحيلك المخصص كان غير متاح — يستخدم هذا النقل ترحيلًا عامًا بدلاً من ذلك.",
+			"fellBackToastReceive": "ترحيلك المخصص كان غير متاح — يستخدم هذا التنزيل ترحيلًا عامًا بدلاً من ذلك.",
+			"dialogDescription": "يعرض خادم الترحيل الذي يستخدمه التطبيق حاليًا للاتصالات.",
+			"connectedRelay": "الترحيل المتصل",
+			"checking": "جارٍ التحقق من الاتصال…",
+			"configuredMode": "مُعد في الإعدادات",
+			"configuredDefault": "تلقائي (ترحيل عام)",
+			"configuredCustom": "مخصص (استضافة ذاتية)",
+			"configuredDisabled": "معطل",
+			"openSettings": "إعدادات الشبكة",
+			"infoToggle": "حول الترحيل",
+			"purpose": "تساعد خوادم الترحيل أجهزتك فقط على العثور على بعضها والاتصال.",
+			"directNote": "بمجرد إنشاء اتصال مباشر، تُنقل الملفات مباشرة بين الأجهزة ولا يُستخدم الترحيل بعد ذلك.",
+			"lanNote": "على نفس الشبكة المحلية، يتم تخطي الترحيل تمامًا.",
+			"encryptedNote": "تكون عمليات النقل دائمًا مشفّرة من طرف إلى طرف، لذا لا ترى خوادم الترحيل ملفاتك أبدًا.",
+			"disabledNote": "الترحيل متوقف. اتصالات مباشرة فقط، لذا قد تفشل عمليات النقل عبر الجدران النارية الصارمة أو NAT."
+		}
 	}
 }

@@ -51,7 +51,10 @@ pub struct ReceiveOptions {
 pub enum RelayModeOption {
     Disabled,
     Default,
-    Custom(iroh::RelayUrl),
+    Custom {
+        urls: Vec<iroh::RelayUrl>,
+        auth_token: Option<String>,
+    },
 }
 
 impl Default for RelayModeOption {
@@ -65,8 +68,43 @@ impl From<RelayModeOption> for iroh::endpoint::RelayMode {
         match value {
             RelayModeOption::Disabled => iroh::endpoint::RelayMode::Disabled,
             RelayModeOption::Default => iroh::endpoint::RelayMode::Default,
-            RelayModeOption::Custom(url) => iroh::endpoint::RelayMode::custom([url]),
+            RelayModeOption::Custom { urls, auth_token } => {
+                let map = iroh::RelayMap::from_iter(urls);
+                let map = match auth_token {
+                    Some(token) if !token.is_empty() => map.with_auth_token(token),
+                    _ => map,
+                };
+                iroh::endpoint::RelayMode::Custom(map)
+            }
         }
+    }
+}
+
+#[cfg(test)]
+mod relay_mode_tests {
+    use super::*;
+    use std::str::FromStr;
+
+    #[test]
+    fn custom_relay_mode_builds_relay_map() {
+        let url = iroh::RelayUrl::from_str("https://relay.example.com").unwrap();
+        let mode = RelayModeOption::Custom {
+            urls: vec![url],
+            auth_token: None,
+        };
+        let relay_mode: iroh::endpoint::RelayMode = mode.into();
+        assert!(matches!(relay_mode, iroh::endpoint::RelayMode::Custom(_)));
+    }
+
+    #[test]
+    fn custom_relay_mode_with_auth_token() {
+        let url = iroh::RelayUrl::from_str("https://relay.example.com").unwrap();
+        let mode = RelayModeOption::Custom {
+            urls: vec![url],
+            auth_token: Some("secret-token".to_string()),
+        };
+        let relay_mode: iroh::endpoint::RelayMode = mode.into();
+        assert!(matches!(relay_mode, iroh::endpoint::RelayMode::Custom(_)));
     }
 }
 

@@ -13,6 +13,7 @@ import {
 } from '@/components/animate-ui/components/tabs'
 import { useTranslation } from '@/i18n'
 import { useSenderStore } from '@/store/sender-store'
+import { toastManager } from '@/components/ui/toast'
 
 export function IndexPage() {
 	const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
@@ -49,10 +50,27 @@ export function IndexPage() {
 			if (event.payload) applyIntent(event.payload)
 		})
 
+		// Surface the custom->public relay fallback at transfer time so a user who
+		// chose "custom for privacy" is not silently put on public relays.
+		const unlistenFellBackPromise = listen<string>(
+			'relay-fell-back',
+			(event) => {
+				toastManager.add({
+					title: t('footer.relay.fellBackToastTitle'),
+					description:
+						event.payload === 'receive'
+							? t('footer.relay.fellBackToastReceive')
+							: t('footer.relay.fellBackToastSend'),
+					type: 'warning',
+				})
+			}
+		)
+
 		return () => {
 			unlistenPromise.then((unlisten) => unlisten())
+			unlistenFellBackPromise.then((unlisten) => unlisten())
 		}
-	}, [setSelectedPath, setPathType])
+	}, [setSelectedPath, setPathType, t])
 
 	// Example: Routes can be accessed at different paths
 	// You can navigate using: import { useNavigate } from 'react-router-dom'

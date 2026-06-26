@@ -1,6 +1,7 @@
 {
 	"appTitle": "AltSendme",
 	"send": "Küldés",
+	"comingSoon": "Hamarosan",
 	"receive": "Fogadás",
 	"ok": "Rendben",
 	"undo": "Visszavonás",
@@ -9,6 +10,14 @@
 	"loading": "Betöltés...",
 	"browse": "Tallózás",
 	"donate": "Donáció",
+	"privacyPolicy": "Adatvédelmi irányelvek",
+	"license": "Licenc",
+	"notFound": {
+		"title": "Az oldal nem található",
+		"subtitle": "A keresett oldal nem létezik vagy áthelyezésre került.",
+		"goBack": "Vissza",
+		"goHome": "Kezdőlap"
+	},
 	"sender": {
 		"title": "Küldés",
 		"subtitle": "Fájlok és könyvtárak megosztása titkosított közvetlen kapcsolaton keresztül az interneten át.",
@@ -32,9 +41,15 @@
 		"fileSelected": "Kiválasztott fájl",
 		"folderSelected": "Kiválasztott könyvtár",
 		"itemSelected": "Kiválasztott elem",
+		"multipleFilesSelected": "{{name}} ... és még {{count}}",
 		"browseFile": "Fájl tallózása",
 		"browseFolder": "Könyvtár tallózása",
+		"addMoreFiles": "További fájlok hozzáadása",
+		"addMoreFolders": "További mappák hozzáadása",
+		"multipleItemsSelected": "{{firstName}} és még {{count}}",
+		"removeFromSelection": "Eltávolítás a kijelölésből",
 		"copyToClipboard": "Vágólapra másolás",
+		"description": "Leírás (opcionális)",
 		"broadcastMode": {
 			"index": "Nyilvános",
 			"on": {
@@ -45,14 +60,14 @@
 				"label": "Privát megosztás",
 				"description": "Csak az töltheti le a fájl(oka)t akivel megosztod a jegyet."
 			}
-		},
-		"description": "Leírás (opcionális)"
+		}
 	},
 	"receiver": {
 		"title": "Fájlok fogadása",
 		"subtitle": "Fájlok és könyvtárak letöltése a küldőtől titkosított közvetlen kapcsolaton keresztül az interneten át.",
 		"saveToFolder": "Mentési könyvtár:",
 		"noFolderSelected": "Nincs könyvtár kiválasztva",
+		"conflictsMore": "... és még {{count}}",
 		"pasteTicket": "Illeszd be ide a jegyed:",
 		"ticketPlaceholder": "szerezz egy fogadó jegyet",
 		"howToReceive": "Hogyan fogadj fájlokat",
@@ -63,8 +78,14 @@
 		"instruction5": "A fájlok a kiválasztott könyvtárba lesznek mentve.",
 		"keepAppOpen": "Tartsd nyitva ezt az ablakot letöltés közben.",
 		"connectingToSender": "Csatlakozás a küldő félhez",
+		"previewMultipleItems": "{{name}} ... és még {{count}}",
+		"multipleFilesFound": "Több fájl található",
+		"expandPreviewList": "Fájllista megjelenítése",
+		"collapsePreviewList": "Fájllista elrejtése",
 		"downloadingInProgress": "Letöltés folyamatban",
 		"downloadCompleted": "Sikeres letöltés",
+		"downloadCompletedWithConflicts": "Letöltés kész, névütközések feloldva",
+		"downloadedFile": "Letöltött fájl",
 		"stopReceiving": "Fogadás leállítása",
 		"download": "Letöltés"
 	},
@@ -82,13 +103,16 @@
 		"wasStopped": "Az átvitel le lett állítva még a befejezése előtt.",
 		"successMessage": "Az átvitel sikeresen befejeződött.",
 		"file": "Fájl",
+		"files": "Fájlok",
 		"folder": "Könyvtár",
 		"fileName": "Fájl név",
 		"fileSize": "Fájl méret",
 		"folderSize": "Könyvtár mérete",
 		"downloadPath": "Letöltési útvonal",
 		"duration": "Időtartam",
-		"avgSpeed": "Átlag sebesség"
+		"avgSpeed": "Átlag sebesség",
+		"multipleFiles": "{{count}} fájl",
+		"donatePrompt": "Tedd jobbá -"
 	},
 	"errors": {
 		"sharingFailed": "Sikertelen megosztás",
@@ -106,20 +130,12 @@
 		"openFolderFailed": "Könyvtár megnyitása nem sikerült",
 		"openFolderFailedDesc": "Nem sikerült megnyitni a fogadó könyvtárat"
 	},
-	"comingSoon": "Hamarosan",
-	"privacyPolicy": "Adatvédelmi irányelvek",
-	"license": "Licenc",
-	"notFound": {
-		"title": "Az oldal nem található",
-		"subtitle": "A keresett oldal nem létezik vagy áthelyezésre került.",
-		"goBack": "Vissza",
-		"goHome": "Kezdőlap"
-	},
 	"settings": {
 		"title": "Beállítások",
 		"navItems": {
 			"appearance": "Téma és nyelv",
 			"general": "Általános",
+			"relay": "Relay",
 			"network": "Hálózat",
 			"notification": "Értesítések"
 		},
@@ -159,6 +175,54 @@
 					"label": "Intéző helyi menü",
 					"description": "„Küldés az AltSendme-val” hozzáadása a Windows Intéző helyi menüjéhez"
 				}
+			},
+			"broadcast": {
+				"title": "Közvetítés",
+				"showToggle": {
+					"label": "Közvetítés kapcsoló megjelenítése megosztás közben",
+					"description": "Közvetítés kapcsolót jelenít meg a megosztás képernyőn, hogy több fogadó egyszerre tölthesse le ugyanazokat a fájlokat."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay szerverek",
+				"description": "Szabályozza, mely iroh relay szervereket használja az AltSendme NAT átjáráshoz és titkosított tartalék kapcsolatokhoz.",
+				"modeDefault": "Automatikus (nyilvános relay)",
+				"modeDefaultDesc": "Az alapértelmezett nyilvános iroh relay-ket használja. A legtöbb felhasználónak ideális.",
+				"modeCustom": "Egyéni (self-hosted)",
+				"modeCustomDesc": "Saját relay szerverek használata. Lásd deploy/relay a projekt tárolóban.",
+				"modeDisabled": "Letiltva",
+				"modeDisabledDesc": "Ne használjon relay-t. Csak közvetlen kapcsolatok; szigorú NAT mögött sikertelen lehet.",
+				"urlsLabel": "Relay URL-ek",
+				"urlsDescription": "Adjon hozzá egy vagy több HTTPS relay URL-t regionális failoverhez.",
+				"addUrl": "Relay URL hozzáadása",
+				"removeUrl": "Relay URL eltávolítása",
+				"urlInvalidHint": "Adjon meg érvényes HTTPS URL-t",
+				"urlChecking": "Kapcsolat ellenőrzése",
+				"urlVerified": "Ellenőrizve",
+				"urlVerifyFailedHint": "Nem sikerült csatlakozni ehhez a relay-hez",
+				"verifySummary": "{{ok}}/{{total}} relay ellenőrizve.",
+				"verifyAuthHint": "Ha a relay auth tokent igényel, győződjön meg róla, hogy egyezik a szerver access.shared_token értékével.",
+				"authTokenLabel": "Auth token (opcionális)",
+				"authTokenPlaceholder": "Megosztott titok, ha a relay hitelesítést igényel",
+				"authTokenDescription": "Szükséges, ha a relay access.shared_token-t használ a konfigurációban.",
+				"showAuthToken": "Megjelenítés",
+				"hideAuthToken": "Elrejtés",
+				"privacyNote": "Teljesen privát beállításhoz konfigurálja ugyanazokat a relay URL-eket a küldő és fogadó eszközökön.",
+				"testConnection": "Kapcsolat tesztelése",
+				"verifySuccess": "Relay kapcsolat OK",
+				"verifySuccessDesc": "{{url}}\nsikeresen ellenőrizve ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Sikeres regisztráció a konfigurált relay szerveren.",
+				"verifyFailed": "Relay kapcsolat sikertelen",
+				"urlRequired": "Adjon hozzá legalább egy relay URL-t.",
+				"invalidUrl": "Érvénytelen relay URL: {{url}}",
+				"disabledHint": "Kapcsolat teszteléséhez engedélyezze az automatikus vagy egyéni relay-t.",
+				"confirmDisableTitle": "Letiltja a relay-eket?",
+				"confirmDisableDescription": "Úgy döntött, hogy letiltja a relay-eket. A fájlátvitelek meghiúsulhatnak, ha a helyi hálózatán kívüli valakivel próbál fájlokat megosztani. A relay-ek segítenek az eszközöknek megtalálni egymást és kapcsolódni nehéz hálózati körülmények között, és az átvitelei mindig végpontok közötti titkosítással védettek maradnak.",
+				"confirmCustomTitle": "Egyéni relay-eket használ?",
+				"confirmCustomDescription": "Úgy döntött, hogy saját, önállóan üzemeltetett relay-eket használ. Ha az egyéni relay-ei nem elérhetők, az átvitelek automatikusan visszaállnak a nyilvános relay-ekre, és értesítést kap. A relay-ek csak abban segítenek, hogy az eszközei nehéz hálózati körülmények között is kapcsolódjanak, és az átvitelei mindig végpontok közötti titkosítással védettek maradnak.",
+				"confirmContinue": "Folytatás"
 			}
 		}
 	},
@@ -175,5 +239,35 @@
 		"checkFailedDesc": "A frissítések ellenőrzése nem sikerült",
 		"installFailed": "Telepítés sikertelen",
 		"installFailedDesc": "A frissítés telepítése nem sikerült"
+	},
+	"android": {
+		"preparingFile": "Fájl előkészítése..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay kapcsolat állapota",
+			"publicHeading": "Nyilvános relay",
+			"customHeading": "Egyéni relay",
+			"disabledHeading": "Relay letiltva",
+			"unavailableHeading": "Relay nem elérhető",
+			"fellBackToPublic": "Egyéni relay nem elérhető, helyette nyilvános relay használata.",
+			"fellBackToastTitle": "Nyilvános relay használata",
+			"fellBackToastSend": "Az egyéni relay nem volt elérhető — ez az átvitel nyilvános relay-t használ.",
+			"fellBackToastReceive": "Az egyéni relay nem volt elérhető — ez a letöltés nyilvános relay-t használ.",
+			"dialogDescription": "Megmutatja, mely relay szervert használja jelenleg az alkalmazás a kapcsolatokhoz.",
+			"connectedRelay": "Csatlakoztatott relay",
+			"checking": "Kapcsolat ellenőrzése…",
+			"configuredMode": "Beállításokban konfigurálva",
+			"configuredDefault": "Automatikus (nyilvános relay)",
+			"configuredCustom": "Egyéni (self-hosted)",
+			"configuredDisabled": "Letiltva",
+			"openSettings": "Hálózati beállítások",
+			"infoToggle": "A relayekről",
+			"purpose": "A relayek csak abban segítenek, hogy az eszközeid megtalálják egymást és kapcsolódjanak.",
+			"directNote": "A közvetlen kapcsolat létrejötte után a fájlok közvetlenül az eszközök között kerülnek átvitelre, és a relay már nem kerül használatba.",
+			"lanNote": "Azonos helyi hálózaton a relayek teljesen kimaradnak.",
+			"encryptedNote": "Az átvitelek mindig végpontok közötti titkosítással történnek, így a relayek soha nem látják a fájljaidat.",
+			"disabledNote": "A relayek ki vannak kapcsolva. Csak közvetlen kapcsolatok, így szigorú tűzfalak vagy NAT-ok esetén az átvitel meghiúsulhat."
+		}
 	}
 }

@@ -16,27 +16,20 @@ export function formatSpeed(speedBps: number): string {
 	}
 }
 
-// ─── Circular segmented ring (mobile only) ───────────────────────────────────
-//
-// 30 thin arc segments arranged clockwise from the top (12 o'clock).
-// Each segment occupies (360 / 30) = 12° with a small gap between them.
-// Fill logic mirrors the horizontal bar: full segments + one partial segment.
-
-const SEGMENT_COUNT = 30
+const SEGMENT_COUNT = 18
 const SEGMENT_KEYS = Array.from(
 	{ length: SEGMENT_COUNT },
 	(_, i) => `segment-${i}`
 )
-const SEGMENT_ANGLE = 360 / SEGMENT_COUNT // 12° per segment
-const GAP_ANGLE = 2.2 // degrees of gap on each side
+const SEGMENT_ANGLE = 360 / SEGMENT_COUNT
+const GAP_ANGLE = 2.5
 const ARC_ANGLE = SEGMENT_ANGLE - GAP_ANGLE * 2
 
-const RING_SIZE = 200 // SVG viewBox size (px)
-const CENTER = RING_SIZE / 2 // 100
-const RADIUS = 84 // arc radius
-const STROKE_WIDTH = 4.5 // thinner stroke for a sleeker look
+const RING_SIZE = 200
+const CENTER = RING_SIZE / 2
+const RADIUS = 84
+const STROKE_WIDTH = 4.5
 
-/** Convert polar coordinates (angle from 12 o'clock, clockwise) to Cartesian. */
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
 	const angleRad = ((angleDeg - 90) * Math.PI) / 180
 	return {
@@ -45,7 +38,6 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
 	}
 }
 
-/** Build an SVG arc path for a segment starting at `startAngle` spanning `sweep` degrees. */
 function arcPath(startAngle: number, sweep: number): string {
 	const start = polarToCartesian(CENTER, CENTER, RADIUS, startAngle)
 	const end = polarToCartesian(CENTER, CENTER, RADIUS, startAngle + sweep)
@@ -61,9 +53,6 @@ function CircularRing({ percentage }: CircularRingProps) {
 	const { t } = useTranslation()
 	const filledSegments = Math.floor((percentage / 100) * SEGMENT_COUNT)
 
-	// How far into the current (partial) segment we are, as a 0–1 fraction
-	const partialFraction = (percentage / 100) * SEGMENT_COUNT - filledSegments
-
 	return (
 		<svg
 			viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
@@ -78,37 +67,50 @@ function CircularRing({ percentage }: CircularRingProps) {
 		>
 			{SEGMENT_KEYS.map((segmentKey, index) => {
 				const segmentStartAngle = index * SEGMENT_ANGLE + GAP_ANGLE
-
 				const isFilled = index < filledSegments
-				const isPartial = index === filledSegments && partialFraction > 0
+				const isPartiallyFilled =
+					index === filledSegments &&
+					percentage % (100 / SEGMENT_COUNT) > 0
 
-				// For the partial segment we shorten the visible arc proportionally
-				const visibleSweep = isFilled
-					? ARC_ANGLE
-					: isPartial
-						? ARC_ANGLE * partialFraction
-						: 0
+				let fillFraction = 0
+				if (isFilled) {
+					fillFraction = 1
+				} else if (isPartiallyFilled) {
+					fillFraction =
+						(percentage % (100 / SEGMENT_COUNT)) / (100 / SEGMENT_COUNT)
+				}
+
+				const arcD = arcPath(segmentStartAngle, ARC_ANGLE)
 
 				return (
 					<g key={segmentKey}>
-						{/* Background (unfilled) arc */}
 						<path
-							d={arcPath(segmentStartAngle, ARC_ANGLE)}
+							d={arcD}
 							fill="none"
 							stroke="var(--input)"
 							strokeWidth={STROKE_WIDTH}
-							strokeLinecap="round"
-							className="transition-all duration-300 ease-in-out"
+							strokeLinecap="butt"
 						/>
-						{/* Filled arc (rendered on top) */}
-						{visibleSweep > 0 && (
+						{isFilled && (
 							<path
-								d={arcPath(segmentStartAngle, visibleSweep)}
+								d={arcD}
 								fill="none"
 								stroke="var(--app-primary)"
 								strokeWidth={STROKE_WIDTH}
-								strokeLinecap="round"
-								className="transition-all duration-300 ease-in-out"
+								strokeLinecap="butt"
+							/>
+						)}
+						{isPartiallyFilled && (
+							<path
+								d={arcD}
+								fill="none"
+								stroke="var(--app-primary)"
+								strokeWidth={STROKE_WIDTH}
+								strokeLinecap="butt"
+								pathLength={100}
+								strokeDasharray="100"
+								strokeDashoffset={100 - fillFraction * 100}
+								className="transition-[stroke-dashoffset] duration-300 ease-in-out"
 							/>
 						)}
 					</g>
@@ -118,8 +120,6 @@ function CircularRing({ percentage }: CircularRingProps) {
 	)
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
 export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 	const { percentage } = progress
 	const barCount = 30
@@ -128,12 +128,10 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 
 	return (
 		<div className="space-y-3">
-			{/* ── Mobile layout: circular ring ── */}
 			<div className="sm:hidden flex flex-col items-center gap-3">
 				<div className="relative inline-flex items-center justify-center">
 					<CircularRing percentage={percentage} />
 
-					{/* Labels centred inside the ring */}
 					<div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 text-center pointer-events-none">
 						<span className="text-2xl font-normal leading-none tabular-nums">
 							{percentage.toFixed(1)}%
@@ -154,7 +152,6 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 				</div>
 			</div>
 
-			{/* ── Desktop layout: horizontal segment bars ── */}
 			<div className="hidden sm:block space-y-2">
 				<div className="flex items-center justify-between text-xs">
 					<span>{t('common:transfer.progress')}</span>
@@ -178,7 +175,6 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 
 						return (
 							<div
-								// biome-ignore lint/suspicious/noArrayIndexKey: The values are always static so it is okay
 								key={index}
 								className="relative flex-1 rounded-sm bg-input transition-all duration-300 ease-in-out"
 								style={{ minWidth: '3px', height: '100%' }}

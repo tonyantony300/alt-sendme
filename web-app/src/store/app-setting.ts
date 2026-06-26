@@ -14,6 +14,10 @@ export type AppSettingsState = {
 	showProgressOnIcon: boolean
 	downloadsPath: string
 	windowsContextMenu: boolean
+	relayMode: 'default' | 'custom' | 'disabled'
+	relayUrls: string[]
+	relayAuthToken: string
+	showBroadcastToggle: boolean
 }
 
 export type AppSettingsActions = {
@@ -25,6 +29,10 @@ export type AppSettingsActions = {
 	toggleShowProgressOnIcon?: (value: boolean) => void
 	setDownloadsPath: (value: string) => void
 	setWindowsContextMenu: (value: boolean) => void
+	setRelayMode: (value: 'default' | 'custom' | 'disabled') => void
+	setRelayUrls: (value: string[]) => void
+	setRelayAuthToken: (value: string) => void
+	setShowBroadcastToggle: (value: boolean) => void
 }
 
 export type AppSettings = AppSettingsState & AppSettingsActions
@@ -46,6 +54,12 @@ export const useAppSettingStore = create<AppSettings>()(
 			setDownloadsPath: (value: string) => set({ downloadsPath: value }),
 			setWindowsContextMenu: (value: boolean) =>
 				set({ windowsContextMenu: value }),
+			setRelayMode: (value: 'default' | 'custom' | 'disabled') =>
+				set({ relayMode: value }),
+			setRelayUrls: (value: string[]) => set({ relayUrls: value }),
+			setRelayAuthToken: (value: string) => set({ relayAuthToken: value }),
+			setShowBroadcastToggle: (value: boolean) =>
+				set({ showBroadcastToggle: value }),
 		}),
 		{
 			name: AppSettingsKey,

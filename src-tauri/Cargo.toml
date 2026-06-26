@@ -1,6 +1,6 @@
 [package]
 name = "alt-sendme"
-version = "0.4.0"
+version = "0.4.1"
 description = "P2P file sharing with NAT hole punching"
 authors = ["Tony Antony"]
 license = "AGPL 3.0"
@@ -32,7 +32,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 anyhow = "1.0"
-sendme = { path = "../sendme" }
+n0-watcher = "1.0"
+iroh = "1.0.0"
+engine = { path = "../engine" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"

@@ -3,32 +3,22 @@ import type { INavItem } from '../../types/nav-item'
 export const settingSidebarConfig: Record<string, INavItem[]> = {
 	core: [
 		{
-			label: 'Language & Display',
-			icon: 'Palette',
-			to: '', // as index
-			translationNs: 'settings.navItems.appearance',
-		},
-		{
 			label: 'General',
 			icon: 'GearSix',
-			to: 'general',
+			to: '',
 			translationNs: 'settings.navItems.general',
 		},
 		{
-			label: 'Network',
+			label: 'Relay',
 			icon: 'Network',
 			to: 'network',
-			translationNs: 'settings.navItems.network',
-			disable: true,
-			comingSoon: true,
+			translationNs: 'settings.navItems.relay',
 		},
 		{
-			label: 'Notification',
-			icon: 'BellRinging',
-			to: 'notification',
-			translationNs: 'settings.navItems.notification',
-			disable: true,
-			comingSoon: true,
+			label: 'Language & Display',
+			icon: 'Palette',
+			to: 'appearance',
+			translationNs: 'settings.navItems.appearance',
 		},
 	],
 }

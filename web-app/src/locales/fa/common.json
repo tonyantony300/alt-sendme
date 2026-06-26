@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "ارسال",
+	"comingSoon": "به‌زودی",
 	"receive": "دریافت",
 	"ok": "باشه",
+	"undo": "واگرد",
+	"cancel": "لغو",
+	"confirm": "تأیید",
 	"loading": "در حال بارگذاری...",
 	"browse": "انتخاب",
 	"donate": "حمایت",
+	"privacyPolicy": "حریم خصوصی",
+	"license": "مجوز",
+	"notFound": {
+		"title": "صفحه یافت نشد",
+		"subtitle": "صفحه‌ای که به‌دنبال آن هستید وجود ندارد یا جابه‌جا شده است.",
+		"goBack": "بازگشت",
+		"goHome": "خانه"
+	},
 	"sender": {
 		"title": "ارسال فایل",
 		"subtitle": "اشتراک‌گذاری فایل و فولدر با اتصال رمزنگاری‌شده‌ی همتا به همتا.",
@@ -29,9 +41,15 @@
 		"fileSelected": "فایل انتخاب شد",
 		"folderSelected": "فولدر انتخاب شد",
 		"itemSelected": "آیتم انتخاب شد",
+		"multipleFilesSelected": "{{name}} ... و {{count}} مورد دیگر",
 		"browseFile": "انتخاب فایل",
 		"browseFolder": "انتخاب فولدر",
+		"addMoreFiles": "افزودن فایل‌های بیشتر",
+		"addMoreFolders": "افزودن پوشه‌های بیشتر",
+		"multipleItemsSelected": "{{firstName}} و {{count}} مورد دیگر",
+		"removeFromSelection": "حذف از انتخاب",
 		"copyToClipboard": "کپی در کلیپ‌بورد",
+		"description": "توضیحات (اختیاری)",
 		"broadcastMode": {
 			"index": "پخش",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "اشتراک‌گذاری خصوصی",
 				"description": "فقط کسی که تیکت را با او به اشتراک گذاشته‌اید می‌تواند فایل را دانلود کند."
 			}
-		},
-		"description": "توضیحات (اختیاری)"
+		}
 	},
 	"receiver": {
 		"title": "دریافت فایل",
 		"subtitle": "دریافت فایل از فرستنده با اتصال رمزنگاری‌شده‌ی همتا به همتا.",
 		"saveToFolder": "ذخیره در این مسیر:",
 		"noFolderSelected": "فولدر انتخاب نشده",
+		"conflictsMore": "... و {{count}} مورد دیگر",
 		"pasteTicket": "تیکت رو اینجا وارد کنید:",
 		"ticketPlaceholder": "تیکت را وارد کنید...",
 		"howToReceive": "راهنمای دریافت",
@@ -60,8 +78,14 @@
 		"instruction5": "فایل‌ها داخل فولدر انتخاب‌شده ذخیره میشن",
 		"keepAppOpen": "تا پایان دریافت برنامه رو باز نگه دار",
 		"connectingToSender": "در حال اتصال...",
+		"previewMultipleItems": "{{name}} ... و {{count}} مورد دیگر",
+		"multipleFilesFound": "چند فایل یافت شد",
+		"expandPreviewList": "نمایش فهرست فایل‌ها",
+		"collapsePreviewList": "پنهان کردن فهرست فایل‌ها",
 		"downloadingInProgress": "در حال دانلود...",
 		"downloadCompleted": "دانلود کامل شد",
+		"downloadCompletedWithConflicts": "دانلود تکمیل شد، تعارض نام‌ها حل شد",
+		"downloadedFile": "فایل دانلود شده",
 		"stopReceiving": "توقف دریافت",
 		"download": "دانلود"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "انتقال قبل از اتمام متوقف شد.",
 		"successMessage": "فایل با موفقیت منتقل شد.",
 		"file": "فایل",
+		"files": "فایل‌ها",
 		"folder": "فولدر",
 		"fileName": "نام فایل",
 		"fileSize": "حجم فایل",
 		"folderSize": "حجم فولدر",
 		"downloadPath": "مسیر ذخیره",
 		"duration": "مدت زمان",
-		"avgSpeed": "میانگین سرعت"
+		"avgSpeed": "میانگین سرعت",
+		"multipleFiles": "{{count}} فایل",
+		"donatePrompt": "آن را بهتر کنید -"
 	},
 	"errors": {
 		"sharingFailed": "خطا در اشتراک‌گذاری",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "خطا در باز کردن فولدر",
 		"openFolderFailedDesc": "باز کردن فولدر دانلود ناموفق بود"
 	},
-	"comingSoon": "به‌زودی",
-	"undo": "واگرد",
-	"cancel": "لغو",
-	"confirm": "تأیید",
-	"privacyPolicy": "حریم خصوصی",
-	"license": "مجوز",
-	"notFound": {
-		"title": "صفحه یافت نشد",
-		"subtitle": "صفحه‌ای که به‌دنبال آن هستید وجود ندارد یا جابه‌جا شده است.",
-		"goBack": "بازگشت",
-		"goHome": "خانه"
-	},
 	"settings": {
 		"title": "تنظیمات",
 		"navItems": {
 			"appearance": "تم و زبان",
 			"general": "عمومی",
+			"relay": "Relay",
 			"network": "شبکه",
 			"notification": "اعلان‌ها"
 		},
@@ -159,6 +175,54 @@
 					"label": "منوی راست‌کلیک اکسپلورر",
 					"description": "افزودن «ارسال با AltSendme» به منوی راست‌کلیک اکسپلورر ویندوز"
 				}
+			},
+			"broadcast": {
+				"title": "پخش",
+				"showToggle": {
+					"label": "نمایش کلید پخش هنگام اشتراک‌گذاری",
+					"description": "کلید پخش را در صفحه اشتراک‌گذاری نمایش می‌دهد تا چند دریافت‌کننده بتوانند همزمان همان فایل‌ها را دانلود کنند."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "سرورهای relay",
+				"description": "کنترل کنید AltSendme برای NAT traversal و اتصالات پشتیبان رمزنگاری‌شده از کدام سرورهای relay iroh استفاده کند.",
+				"modeDefault": "خودکار (relay عمومی)",
+				"modeDefaultDesc": "از relayهای عمومی پیش‌فرض iroh استفاده می‌کند. بهترین برای اکثر کاربران.",
+				"modeCustom": "سفارشی (self-hosted)",
+				"modeCustomDesc": "از سرور(های) relay خود استفاده کنید. deploy/relay را در مخزن پروژه ببینید.",
+				"modeDisabled": "غیرفعال",
+				"modeDisabledDesc": "از relay استفاده نکنید. فقط اتصال مستقیم؛ ممکن است پشت NAT سخت شکست بخورد.",
+				"urlsLabel": "URLهای relay",
+				"urlsDescription": "یک یا چند URL HTTPS relay برای failover منطقه‌ای اضافه کنید.",
+				"addUrl": "افزودن URL relay",
+				"removeUrl": "حذف URL relay",
+				"urlInvalidHint": "یک URL HTTPS معتبر وارد کنید",
+				"urlChecking": "در حال بررسی اتصال",
+				"urlVerified": "تأیید شد",
+				"urlVerifyFailedHint": "اتصال به این relay ممکن نشد",
+				"verifySummary": "{{ok}} از {{total}} relay تأیید شد.",
+				"verifyAuthHint": "اگر relay شما به توکن احراز هویت نیاز دارد، مطمئن شوید با access.shared_token روی سرور مطابقت دارد.",
+				"authTokenLabel": "توکن احراز هویت (اختیاری)",
+				"authTokenPlaceholder": "رمز مشترک اگر relay احراز هویت می‌خواهد",
+				"authTokenDescription": "وقتی relay در پیکربندی از access.shared_token استفاده می‌کند لازم است.",
+				"showAuthToken": "نمایش",
+				"hideAuthToken": "پنهان",
+				"privacyNote": "برای راه‌اندازی کاملاً خصوصی، همان URLهای relay را روی دستگاه‌های فرستنده و گیرنده پیکربندی کنید.",
+				"testConnection": "آزمایش اتصال",
+				"verifySuccess": "اتصال relay OK",
+				"verifySuccessDesc": "{{url}}\nبا موفقیت تأیید شد ({{latency}} ms).",
+				"verifySuccessDescGeneric": "با موفقیت در سرور relay پیکربندی‌شده ثبت شد.",
+				"verifyFailed": "اتصال relay ناموفق",
+				"urlRequired": "حداقل یک URL relay اضافه کنید.",
+				"invalidUrl": "URL relay نامعتبر: {{url}}",
+				"disabledHint": "برای آزمایش اتصال، relay خودکار یا سفارشی را فعال کنید.",
+				"confirmDisableTitle": "غیرفعال کردن relay؟",
+				"confirmDisableDescription": "شما انتخاب کرده‌اید که relay را غیرفعال کنید. اگر بخواهید فایل‌ها را با کسی خارج از شبکه محلی خود به اشتراک بگذارید، انتقال فایل ممکن است با شکست مواجه شود. relay به دستگاه‌ها کمک می‌کند تا در شرایط دشوار شبکه یکدیگر را پیدا کرده و متصل شوند، و انتقال‌های شما همیشه به‌صورت سرتاسری رمزگذاری‌شده باقی می‌مانند.",
+				"confirmCustomTitle": "استفاده از relay سفارشی؟",
+				"confirmCustomDescription": "شما انتخاب کرده‌اید که از relay سفارشی خودمیزبان استفاده کنید. اگر relayهای سفارشی شما در دسترس نباشند، انتقال‌ها به‌طور خودکار به relay عمومی بازمی‌گردند و به شما اطلاع داده می‌شود. relay فقط به دستگاه‌های شما کمک می‌کند تا در شرایط دشوار شبکه متصل شوند، و انتقال‌های شما همیشه به‌صورت سرتاسری رمزگذاری‌شده باقی می‌مانند.",
+				"confirmContinue": "ادامه"
 			}
 		}
 	},
@@ -175,5 +239,35 @@
 		"checkFailedDesc": "بررسی به‌روزرسانی انجام نشد",
 		"installFailed": "نصب ناموفق بود",
 		"installFailedDesc": "نصب به‌روزرسانی انجام نشد"
+	},
+	"android": {
+		"preparingFile": "در حال آماده‌سازی فایل..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "وضعیت اتصال relay",
+			"publicHeading": "Relay عمومی",
+			"customHeading": "Relay سفارشی",
+			"disabledHeading": "Relay غیرفعال",
+			"unavailableHeading": "Relay در دسترس نیست",
+			"fellBackToPublic": "Relay سفارشی در دسترس نیست، به جای آن از relay عمومی استفاده می‌شود.",
+			"fellBackToastTitle": "استفاده از relay عمومی",
+			"fellBackToastSend": "relay سفارشی شما در دسترس نبود — این انتقال از relay عمومی استفاده می‌کند.",
+			"fellBackToastReceive": "relay سفارشی شما در دسترس نبود — این دانلود از relay عمومی استفاده می‌کند.",
+			"dialogDescription": "نشان می‌دهد این برنامه برای اتصالات از کدام سرور relay استفاده می‌کند.",
+			"connectedRelay": "Relay متصل",
+			"checking": "در حال بررسی اتصال…",
+			"configuredMode": "پیکربندی در تنظیمات",
+			"configuredDefault": "خودکار (relay عمومی)",
+			"configuredCustom": "سفارشی (self-hosted)",
+			"configuredDisabled": "غیرفعال",
+			"openSettings": "تنظیمات شبکه",
+			"infoToggle": "درباره relay",
+			"purpose": "Relay فقط به دستگاه‌های شما کمک می‌کند یکدیگر را پیدا کرده و متصل شوند.",
+			"directNote": "پس از برقراری اتصال مستقیم، فایل‌ها مستقیماً بین دستگاه‌ها منتقل می‌شوند و دیگر از relay استفاده نمی‌شود.",
+			"lanNote": "در یک شبکه محلی یکسان، relayها به‌طور کامل نادیده گرفته می‌شوند.",
+			"encryptedNote": "انتقال‌ها همیشه به‌صورت سرتاسر رمزنگاری شده‌اند، بنابراین relayها هرگز فایل‌های شما را نمی‌بینند.",
+			"disabledNote": "Relayها خاموش هستند. فقط اتصال مستقیم، بنابراین ممکن است انتقال‌ها از طریق فایروال‌ها یا NATهای سخت‌گیرانه ناموفق باشند."
+		}
 	}
 }

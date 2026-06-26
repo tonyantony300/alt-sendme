@@ -32,6 +32,9 @@ tmp2/
 .sendme-*
 .keystore.jks
 
+# Self-hosted relay config (per-deployment values; may contain secrets)
+deploy/relay/iroh-relay.conf
+
 # IDE and editor files
 .vscode/
 .idea/

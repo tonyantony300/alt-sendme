@@ -1,9 +1,10 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { SettingsPage } from './settings'
 import { IndexPage } from '.'
 import { RootLayout } from '@/components/layouts/RootLayout'
 import { NotFoundPage } from './notfound'
 import { SettingGeneralPage } from './settings.general'
+import { SettingNetworkPage } from './settings.network'
 import { SettingLayout } from '../components/layouts/SettingLayout'
 
 export interface RouteConfig {
@@ -25,20 +26,20 @@ export const routers = createBrowserRouter([
 				Component: SettingLayout,
 				children: [
 					{
-						Component: SettingsPage,
 						index: true,
-					},
-					{
-						path: 'general',
 						Component: SettingGeneralPage,
 					},
 					{
-						path: 'network',
+						path: 'appearance',
 						Component: SettingsPage,
 					},
 					{
-						path: 'notification',
-						Component: SettingsPage,
+						path: 'general',
+						element: <Navigate to="/settings" replace />,
+					},
+					{
+						path: 'network',
+						Component: SettingNetworkPage,
 					},
 				],
 			},

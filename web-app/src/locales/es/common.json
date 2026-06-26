@@ -1,11 +1,23 @@
 {
 	"appTitle": "AltSendme",
 	"send": "Enviar",
+	"comingSoon": "Próximamente",
 	"receive": "Recibir",
 	"ok": "OK",
+	"undo": "Deshacer",
+	"cancel": "Cancelar",
+	"confirm": "Confirmar",
 	"loading": "Cargando...",
 	"browse": "Buscar",
 	"donate": "Donar",
+	"privacyPolicy": "Política de privacidad",
+	"license": "Licencia",
+	"notFound": {
+		"title": "Página no encontrada",
+		"subtitle": "La página que buscas no existe o se ha movido.",
+		"goBack": "Volver",
+		"goHome": "Ir al inicio"
+	},
 	"sender": {
 		"title": "Enviar",
 		"subtitle": "Comparte archivos o carpetas mediante conexiones cifradas punto a punto.",
@@ -29,9 +41,15 @@
 		"fileSelected": "Archivo seleccionado",
 		"folderSelected": "Carpeta seleccionada",
 		"itemSelected": "Elemento seleccionado",
+		"multipleFilesSelected": "{{name}} ... y {{count}} más",
 		"browseFile": "Buscar archivo",
 		"browseFolder": "Buscar carpeta",
+		"addMoreFiles": "Añadir más archivos",
+		"addMoreFolders": "Añadir más carpetas",
+		"multipleItemsSelected": "{{firstName}} y {{count}} más",
+		"removeFromSelection": "Quitar de la selección",
 		"copyToClipboard": "Copiar al portapapeles",
+		"description": "Descripción (opcional)",
 		"broadcastMode": {
 			"index": "Difusión",
 			"on": {
@@ -42,14 +60,14 @@
 				"label": "Compartición privada",
 				"description": "Solo la persona con la que compartes el ticket puede descargar el archivo."
 			}
-		},
-		"description": "Descripción (opcional)"
+		}
 	},
 	"receiver": {
 		"title": "Recibir archivos",
 		"subtitle": "Descarga archivos del remitente usando conexiones cifradas punto a punto a través de internet.",
 		"saveToFolder": "Guardar en la carpeta:",
 		"noFolderSelected": "Ninguna carpeta seleccionada",
+		"conflictsMore": "... y {{count}} más",
 		"pasteTicket": "Pega aquí el ticket:",
 		"ticketPlaceholder": "sendme ticket de recepción...",
 		"howToReceive": "Cómo recibir archivos",
@@ -60,8 +78,14 @@
 		"instruction5": "Los archivos se guardarán en la carpeta seleccionada",
 		"keepAppOpen": "Mantén esta aplicación abierta mientras descargas archivos",
 		"connectingToSender": "Conectando con el remitente",
+		"previewMultipleItems": "{{name}} ... y {{count}} más",
+		"multipleFilesFound": "Se encontraron varios archivos",
+		"expandPreviewList": "Mostrar lista de archivos",
+		"collapsePreviewList": "Ocultar lista de archivos",
 		"downloadingInProgress": "Descarga en curso",
 		"downloadCompleted": "Descarga completada",
+		"downloadCompletedWithConflicts": "Descarga completada con conflictos de nombres resueltos",
+		"downloadedFile": "Archivo descargado",
 		"stopReceiving": "Detener recepción",
 		"download": "Descargar"
 	},
@@ -79,13 +103,16 @@
 		"wasStopped": "La transferencia se detuvo antes de completarse.",
 		"successMessage": "Tu transferencia se ha completado correctamente.",
 		"file": "Archivo",
+		"files": "Archivos",
 		"folder": "Carpeta",
 		"fileName": "Nombre del archivo",
 		"fileSize": "Tamaño del archivo",
 		"folderSize": "Tamaño de la carpeta",
 		"downloadPath": "Ruta de descarga",
 		"duration": "Duración",
-		"avgSpeed": "Velocidad media"
+		"avgSpeed": "Velocidad media",
+		"multipleFiles": "{{count}} archivos",
+		"donatePrompt": "Hazlo mejor -"
 	},
 	"errors": {
 		"sharingFailed": "Error al compartir",
@@ -103,23 +130,12 @@
 		"openFolderFailed": "Error al abrir la carpeta",
 		"openFolderFailedDesc": "No se pudo abrir la carpeta de descargas"
 	},
-	"comingSoon": "Próximamente",
-	"undo": "Deshacer",
-	"cancel": "Cancelar",
-	"confirm": "Confirmar",
-	"privacyPolicy": "Política de privacidad",
-	"license": "Licencia",
-	"notFound": {
-		"title": "Página no encontrada",
-		"subtitle": "La página que buscas no existe o se ha movido.",
-		"goBack": "Volver",
-		"goHome": "Ir al inicio"
-	},
 	"settings": {
 		"title": "Ajustes",
 		"navItems": {
 			"appearance": "Tema e idioma",
 			"general": "General",
+			"relay": "Relay",
 			"network": "Red",
 			"notification": "Notificaciones"
 		},
@@ -159,6 +175,54 @@
 					"label": "Menú contextual del Explorador",
 					"description": "Añadir «Enviar con AltSendme» al menú contextual del Explorador de Windows"
 				}
+			},
+			"broadcast": {
+				"title": "Difusión",
+				"showToggle": {
+					"label": "Mostrar interruptor de difusión al compartir",
+					"description": "Muestra un interruptor de difusión en la pantalla de compartir para que varios receptores puedan descargar los mismos archivos a la vez."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Servidores relay",
+				"description": "Controla qué servidores relay de iroh usa AltSendme para atravesar NAT y conexiones de respaldo cifradas.",
+				"modeDefault": "Automático (relays públicos)",
+				"modeDefaultDesc": "Usa los relays públicos predeterminados de iroh. Lo mejor para la mayoría de usuarios.",
+				"modeCustom": "Personalizado (autoalojado)",
+				"modeCustomDesc": "Usa tu(s) propio(s) servidor(es) relay. Consulta deploy/relay en el repositorio del proyecto.",
+				"modeDisabled": "Desactivado",
+				"modeDisabledDesc": "No usar relays. Solo conexiones directas; puede fallar con NAT estricto.",
+				"urlsLabel": "URLs de relay",
+				"urlsDescription": "Añade una o más URLs HTTPS de relay para conmutación por error regional.",
+				"addUrl": "Añadir URL de relay",
+				"removeUrl": "Eliminar URL de relay",
+				"urlInvalidHint": "Introduce una URL HTTPS válida",
+				"urlChecking": "Comprobando conexión",
+				"urlVerified": "Verificado",
+				"urlVerifyFailedHint": "No se pudo conectar a este relay",
+				"verifySummary": "{{ok}} de {{total}} relays verificados.",
+				"verifyAuthHint": "Si tu relay requiere un token de autenticación, asegúrate de que coincida con access.shared_token en el servidor.",
+				"authTokenLabel": "Token de autenticación (opcional)",
+				"authTokenPlaceholder": "Secreto compartido si tu relay requiere autenticación",
+				"authTokenDescription": "Requerido cuando tu relay usa access.shared_token en su configuración.",
+				"showAuthToken": "Mostrar",
+				"hideAuthToken": "Ocultar",
+				"privacyNote": "Para una configuración totalmente privada, configura las mismas URLs de relay en los dispositivos emisor y receptor.",
+				"testConnection": "Probar conexión",
+				"verifySuccess": "Conexión relay OK",
+				"verifySuccessDesc": "{{url}}\nverificado correctamente ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Registrado correctamente en tu servidor relay configurado.",
+				"verifyFailed": "Falló la conexión relay",
+				"urlRequired": "Añade al menos una URL de relay.",
+				"invalidUrl": "URL de relay no válida: {{url}}",
+				"disabledHint": "Activa relays automáticos o personalizados para probar la conectividad.",
+				"confirmDisableTitle": "¿Desactivar los relays?",
+				"confirmDisableDescription": "Has elegido desactivar los relays. Las transferencias de archivos pueden fallar si intentas compartir archivos con alguien fuera de tu red local. Los relays ayudan a los dispositivos a encontrarse y conectarse en condiciones de red difíciles, y tus transferencias siempre permanecen cifradas de extremo a extremo.",
+				"confirmCustomTitle": "¿Usar relays personalizados?",
+				"confirmCustomDescription": "Has elegido usar tus propios relays autoalojados. Si tus relays personalizados no están disponibles, las transferencias volverán automáticamente a los relays públicos y se te notificará. Los relays solo ayudan a tus dispositivos a conectarse en condiciones de red difíciles, y tus transferencias siempre permanecen cifradas de extremo a extremo.",
+				"confirmContinue": "Continuar"
 			}
 		}
 	},
@@ -175,5 +239,35 @@
 		"checkFailedDesc": "No se pudieron buscar actualizaciones",
 		"installFailed": "Error de instalación",
 		"installFailedDesc": "No se pudo instalar la actualización"
+	},
+	"android": {
+		"preparingFile": "Preparando archivo..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Estado de conexión relay",
+			"publicHeading": "Relay público",
+			"customHeading": "Relay personalizado",
+			"disabledHeading": "Relays desactivados",
+			"unavailableHeading": "Relay no disponible",
+			"fellBackToPublic": "Relay personalizado inaccesible, usando relay público en su lugar.",
+			"fellBackToastTitle": "Usando relay público",
+			"fellBackToastSend": "Tu relay personalizado no estaba accesible — esta transferencia usa un relay público en su lugar.",
+			"fellBackToastReceive": "Tu relay personalizado no estaba accesible — esta descarga usa un relay público en su lugar.",
+			"dialogDescription": "Muestra qué servidor relay usa actualmente esta app para las conexiones.",
+			"connectedRelay": "Relay conectado",
+			"checking": "Comprobando conexión…",
+			"configuredMode": "Configurado en ajustes",
+			"configuredDefault": "Automático (relays públicos)",
+			"configuredCustom": "Personalizado (autoalojado)",
+			"configuredDisabled": "Desactivado",
+			"openSettings": "Ajustes de red",
+			"infoToggle": "Acerca de los relays",
+			"purpose": "Los relays solo ayudan a que tus dispositivos se encuentren y se conecten.",
+			"directNote": "Una vez establecida la conexión directa, los archivos se transfieren directamente entre dispositivos y el relay deja de usarse.",
+			"lanNote": "En la misma red local, los relays se omiten por completo.",
+			"encryptedNote": "Las transferencias siempre están cifradas de extremo a extremo, por lo que los relays nunca ven tus archivos.",
+			"disabledNote": "Los relays están desactivados. Solo conexiones directas, por lo que las transferencias pueden fallar con firewalls o NAT estrictos."
+		}
 	}
 }

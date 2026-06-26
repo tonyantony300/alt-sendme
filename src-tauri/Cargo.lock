@@ -93,21 +93,23 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "alt-sendme"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
  "core-foundation 0.10.1",
  "core-graphics 0.24.0",
  "dunce",
+ "engine",
  "gstreamer",
  "gstreamer-app",
  "gstreamer-video",
  "image",
+ "iroh",
  "mime_guess",
+ "n0-watcher",
  "objc",
  "reqwest 0.13.2",
- "sendme",
  "serde",
  "serde_json",
  "tauri",
@@ -1844,6 +1846,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "66b7e2430c6dff6a955451e2cfc438f09cea1965a9d6f87f7e3b90decc014099"
 
 [[package]]
+name = "engine"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "console",
+ "crossterm",
+ "data-encoding",
+ "derive_more 2.1.1",
+ "dirs",
+ "futures-buffered",
+ "hex",
+ "indicatif",
+ "iroh",
+ "iroh-blobs",
+ "irpc",
+ "libc",
+ "n0-future",
+ "num_cpus",
+ "rand 0.10.1",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "walkdir",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "enum-assoc"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2382,8 +2414,8 @@ dependencies = [
  "libc",
  "log",
  "rustversion",
- "windows-link 0.2.1",
- "windows-result 0.4.1",
+ "windows-link 0.1.3",
+ "windows-result 0.3.4",
 ]
 
 [[package]]
@@ -3168,7 +3200,7 @@ dependencies = [
  "js-sys",
  "log",
  "wasm-bindgen",
- "windows-core 0.62.2",
+ "windows-core 0.58.0",
 ]
 
 [[package]]
@@ -4778,7 +4810,7 @@ version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "680998035259dcfcafe653688bf2aa6d3e2dc05e98be6ab46afb089dc84f1df8"
 dependencies = [
- "proc-macro-crate 3.5.0",
+ "proc-macro-crate 1.3.1",
  "proc-macro2",
  "quote",
  "syn 2.0.117",
@@ -5164,7 +5196,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d8fae84b431384b68627d0f9b3b1245fcf9f46f6c0e3dc902e9dce64edd1967"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -6284,7 +6316,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "rustix",
- "windows 0.62.2",
+ "windows 0.61.3",
 ]
 
 [[package]]
@@ -6771,36 +6803,6 @@ name = "send_wrapper"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd0b0ec5f1c1ca621c432a25813d8d60c88abe6d3e08a3eb9cf37d97a0fe3d73"
-
-[[package]]
-name = "sendme"
-version = "0.29.0"
-dependencies = [
- "anyhow",
- "clap",
- "console",
- "crossterm",
- "data-encoding",
- "derive_more 2.1.1",
- "dirs",
- "futures-buffered",
- "hex",
- "indicatif",
- "iroh",
- "iroh-blobs",
- "irpc",
- "libc",
- "n0-future",
- "num_cpus",
- "rand 0.10.1",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "walkdir",
- "windows-sys 0.59.0",
-]
 
 [[package]]
 name = "serde"
@@ -9085,7 +9087,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -9841,8 +9843,8 @@ dependencies = [
  "log",
  "serde",
  "thiserror 2.0.18",
- "windows 0.62.2",
- "windows-core 0.62.2",
+ "windows 0.61.3",
+ "windows-core 0.61.2",
 ]
 
 [[package]]

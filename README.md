@@ -63,18 +63,18 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td><b>Windows</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_x64-setup.exe'>AltSendme.exe</a> (x64)</td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.1/AltSendme_0.4.1_x64-setup.exe'>AltSendme.exe</a> (x64)</td>
   </tr>
   <tr>
     <td><b>macOS</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_universal.dmg'>AltSendme.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.1/AltSendme_0.4.1_universal.dmg'>AltSendme.dmg</a></td>
   <tr>
     <td><b>Linux </b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.0/AltSendme_0.4.0_amd64.deb'>AltSendme.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.1/AltSendme_0.4.1_amd64.deb'>AltSendme.deb</a></td>
   </tr>
   <tr>
     <td><b>Android</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.3.6-beta.1/AltSendme-v0.3.6-beta-universal.apk'>AltSendme.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.4.1/AltSendme-v0.4.1-universal.apk'>AltSendme.apk</a></td>
   </tr>
 
 </table>
@@ -165,12 +165,49 @@ QUIC allows following super-powers:
 
 AltSendme uses open-source public relay servers to support establishing direct connections, to speed up initial connection times, and to provide a fallback should direct connections between two endpoints fail or be impossible otherwise. All connections are end-to-end encrypted. The relay is “just another UDP socket” for sending encrypted packets around. [Read more.](https://docs.iroh.computer/about/faq)
 
+### Self-hosting relays
+
+You can run your own iroh relay and point AltSendme at it instead of the public infrastructure:
+
+1. Deploy a relay using the assets in [`deploy/relay/`](deploy/relay/README.md) (Docker Compose on a VPS or Fly.io).
+2. In the app, open **Settings → Network** and choose **Custom self-hosted**.
+3. Add your relay URL(s) and optional auth token if you enabled `access.shared_token` on the server.
+4. Use **Test connection** to verify registration.
+
+For a fully private setup, configure the same relay URLs on both sender and receiver devices.
+
+### What if only one person uses a self-hosted relay?
+
+Transfers can still work when one side uses custom relays and the other uses the default public relays. Here's the simple version:
+
+**Your relay setting controls where *your* device registers.** When you share a file, the ticket includes *your* relay URL. The other person connects using that ticket — they don't need to match your settings.
+
+| Who shares | Sender uses | Receiver uses | Usually works? |
+|------------|-------------|---------------|----------------|
+| Alice | Custom (open relay) | Public relays | Yes — receiver reaches Alice via the relay URL in the ticket |
+| Alice | Custom (auth token required) | Public relays, no token | Often no — receiver can't authenticate to Alice's private relay |
+| Alice | Custom (auth token required) | Same relay + same token | Yes |
+| Either side | Any | Any, same LAN or good NAT | Yes — direct peer-to-peer may skip relays entirely |
+
+**Direction matters for privacy, not just connectivity:**
+
+- **You share, they use public relays:** If a relay is needed, traffic may go through *your* relay. They still use public relays for their own device.
+- **They share, you use a self-hosted relay:** If a relay is needed, traffic may go through *their* public relay — yours isn't used for that path.
+
+So mixed setups are fine for getting files across, but they're **not fully private** unless both people use the same self-hosted relay(s) (or connect directly without relay fallback).
+
+**Quick rules of thumb:**
+
+- **Just want it to work?** An open self-hosted relay (no auth token) is enough; the other person can keep default public relays.
+- **Want a private relay?** Both people need your relay URL **and** the auth token in **Settings → Network**.
+- **Want zero public relay use?** Both people must set **Custom self-hosted** to the same relay(s).
+- **Want no relays at all?** Both people set **Disabled** — only works when a direct connection is possible (e.g. same network).
+
 
 ## Roadmap 🚧
 
 - Cross-platform Mobile versions
 - Phrase-based Addressing via Iroh-gossip and PAKE
-- Unthrottled, Reliable transfers with fully self-hosted relays
 - Web version (Send and receive from browser)
 - Better system/network insights into transfer process
 
@@ -282,7 +319,7 @@ Thank you for checking out this project! If you find it useful, consider giving 
 <!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
-[badge-version]: https://img.shields.io/badge/version-0.4.0-blue
+[badge-version]: https://img.shields.io/badge/version-0.4.1-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4

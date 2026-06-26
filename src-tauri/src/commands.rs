@@ -1,15 +1,208 @@
 use crate::features::thumbnail::generate_thumbnail;
 use crate::state::{AppStateMutex, ShareHandle};
-use sendme::{
-    core::types::{FileMetadata, FilePreviewItem},
+use engine::{
+    core::types::{get_or_create_secret, FileMetadata, FilePreviewItem},
     download, fetch_metadata, AddrInfoOptions, AppHandle, EventEmitter, ReceiveOptions,
     RelayModeOption, SendOptions,
 };
+use iroh::{endpoint::presets, Endpoint};
+use n0_watcher::Watcher;
 use std::collections::BTreeMap;
 use std::path::Path;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 use tauri::{Emitter, Manager, State};
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct RelayConfigArg {
+    pub mode: String,
+    pub urls: Vec<String>,
+    pub auth_token: Option<String>,
+}
+
+pub fn build_relay_mode(arg: Option<RelayConfigArg>) -> Result<RelayModeOption, String> {
+    match arg {
+        None => Ok(RelayModeOption::Default),
+        Some(arg) => match arg.mode.as_str() {
+            "default" => Ok(RelayModeOption::Default),
+            "disabled" => Ok(RelayModeOption::Disabled),
+            "custom" => {
+                if arg.urls.is_empty() {
+                    return Err("At least one relay URL is required for custom mode".to_string());
+                }
+                let urls = arg
+                    .urls
+                    .iter()
+                    .map(|url| {
+                        iroh::RelayUrl::from_str(url)
+                            .map_err(|e| format!("Invalid relay URL '{url}': {e}"))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let auth_token = arg
+                    .auth_token
+                    .map(|t| t.trim().to_string())
+                    .filter(|t| !t.is_empty());
+                Ok(RelayModeOption::Custom { urls, auth_token })
+            }
+            other => Err(format!("Invalid relay mode: {other}")),
+        },
+    }
+}
+
+const RELAY_PROBE_TIMEOUT: Duration = Duration::from_secs(15);
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelayStatusResponse {
+    pub kind: String,
+    pub url: Option<String>,
+    pub connected: bool,
+    pub fell_back_to_public: bool,
+}
+
+pub fn is_public_relay_url(url: &str) -> bool {
+    url.contains("relay.n0.iroh.link") || url.contains(".iroh.link")
+}
+
+fn connected_home_relay_url(endpoint: &Endpoint) -> Option<String> {
+    endpoint
+        .home_relay_status()
+        .get()
+        .into_iter()
+        .find(|status| status.is_connected())
+        .map(|status| status.url().to_string())
+}
+
+async fn probe_relay_mode(relay_mode: RelayModeOption) -> Result<Option<String>, String> {
+    if matches!(relay_mode, RelayModeOption::Disabled) {
+        return Ok(None);
+    }
+
+    let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
+    let endpoint = Endpoint::builder(presets::Minimal)
+        .secret_key(secret_key)
+        .relay_mode(relay_mode.into())
+        .bind()
+        .await
+        .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
+
+    let online_result = tokio::time::timeout(RELAY_PROBE_TIMEOUT, endpoint.online()).await;
+
+    let url = connected_home_relay_url(&endpoint);
+    endpoint.close().await;
+
+    online_result.map_err(|_| "Timed out waiting for relay connection".to_string())?;
+    Ok(url)
+}
+
+/// Prefer configured custom relays; fall back to public relays when unreachable.
+pub async fn resolve_relay_mode_with_fallback(
+    arg: Option<RelayConfigArg>,
+) -> Result<(RelayModeOption, bool), String> {
+    let preferred = build_relay_mode(arg)?;
+
+    match &preferred {
+        RelayModeOption::Disabled | RelayModeOption::Default => Ok((preferred, false)),
+        RelayModeOption::Custom { .. } => {
+            let probe =
+                tokio::time::timeout(RELAY_PROBE_TIMEOUT, probe_relay_mode(preferred.clone()))
+                    .await;
+
+            match probe {
+                Ok(Ok(Some(_))) => Ok((preferred, false)),
+                _ => {
+                    tracing::warn!(
+                        "Custom relay unreachable within {}s; falling back to public relays",
+                        RELAY_PROBE_TIMEOUT.as_secs()
+                    );
+                    Ok((RelayModeOption::Default, true))
+                }
+            }
+        }
+    }
+}
+
+/// Check which relay the app can reach, with public fallback for custom mode.
+#[tauri::command]
+pub async fn get_relay_status(
+    relay: Option<RelayConfigArg>,
+) -> Result<RelayStatusResponse, String> {
+    let preferred = build_relay_mode(relay.clone())?;
+
+    if matches!(preferred, RelayModeOption::Disabled) {
+        return Ok(RelayStatusResponse {
+            kind: "disabled".to_string(),
+            url: None,
+            connected: false,
+            fell_back_to_public: false,
+        });
+    }
+
+    if let RelayModeOption::Custom { .. } = &preferred {
+        let custom_probe =
+            tokio::time::timeout(RELAY_PROBE_TIMEOUT, probe_relay_mode(preferred.clone())).await;
+
+        if let Ok(Ok(Some(url))) = custom_probe {
+            return Ok(RelayStatusResponse {
+                kind: if is_public_relay_url(&url) {
+                    "public".to_string()
+                } else {
+                    "custom".to_string()
+                },
+                url: Some(url),
+                connected: true,
+                fell_back_to_public: false,
+            });
+        }
+
+        tracing::warn!("Custom relay unreachable; checking public relay fallback");
+        let public_probe = tokio::time::timeout(
+            RELAY_PROBE_TIMEOUT,
+            probe_relay_mode(RelayModeOption::Default),
+        )
+        .await;
+
+        if let Ok(Ok(Some(url))) = public_probe {
+            return Ok(RelayStatusResponse {
+                kind: "public".to_string(),
+                url: Some(url),
+                connected: true,
+                fell_back_to_public: true,
+            });
+        }
+
+        return Ok(RelayStatusResponse {
+            kind: "unavailable".to_string(),
+            url: None,
+            connected: false,
+            fell_back_to_public: true,
+        });
+    }
+
+    let public_probe = tokio::time::timeout(
+        RELAY_PROBE_TIMEOUT,
+        probe_relay_mode(RelayModeOption::Default),
+    )
+    .await;
+
+    if let Ok(Ok(Some(url))) = public_probe {
+        return Ok(RelayStatusResponse {
+            kind: "public".to_string(),
+            url: Some(url),
+            connected: true,
+            fell_back_to_public: false,
+        });
+    }
+
+    Ok(RelayStatusResponse {
+        kind: "unavailable".to_string(),
+        url: None,
+        connected: false,
+        fell_back_to_public: false,
+    })
+}
 
 // Wrapper for Tauri AppHandle that implements EventEmitter
 struct TauriEventEmitter {
@@ -71,16 +264,18 @@ pub async fn focus_main_window(app_handle: tauri::AppHandle) -> Result<(), Strin
 #[tauri::command]
 pub async fn start_sharing(
     path: String,
+    relay: Option<RelayConfigArg>,
     state: State<'_, AppStateMutex>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
-    send_items(vec![path], state, app_handle).await
+    send_items(vec![path], relay, state, app_handle).await
 }
 
 /// New interface to start_sharing multiple items at once
 #[tauri::command]
 pub async fn send_items(
     paths: Vec<String>,
+    relay: Option<RelayConfigArg>,
     state: State<'_, AppStateMutex>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
@@ -110,9 +305,15 @@ pub async fn send_items(
             "share metadata prepared for multiple items"
         );
 
-        // Create send options with defaults.
+        // Create send options from relay settings (custom falls back to public if unreachable).
+        let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
+        if fell_back_to_public {
+            // Surface the silent custom->public fallback so the user knows this
+            // transfer is riding public relays despite their custom config.
+            let _ = app_handle.emit("relay-fell-back", "send");
+        }
         let options = SendOptions {
-            relay_mode: RelayModeOption::Default,
+            relay_mode,
             ticket_type: AddrInfoOptions::RelayAndAddresses,
             magic_ipv4_addr: None,
             magic_ipv6_addr: None,
@@ -125,7 +326,7 @@ pub async fn send_items(
         let boxed_handle: AppHandle = Some(emitter);
 
         // Start sharing multiple files/folders via core send pipeline.
-        let result = sendme::core::send::start_share_items(
+        let result = engine::core::send::start_share_items(
             path_bufs.clone(),
             options,
             &boxed_handle,
@@ -228,13 +429,17 @@ async fn build_send_metadata(paths: &[PathBuf]) -> Result<FileMetadata, String> 
 
 /// Fetch metadata from sender by ticket, without starting file download.
 #[tauri::command]
-pub async fn fetch_ticket_metadata(ticket: String) -> Result<FileMetadata, String> {
+pub async fn fetch_ticket_metadata(
+    ticket: String,
+    relay: Option<RelayConfigArg>,
+) -> Result<FileMetadata, String> {
     let ticket_len = ticket.len();
     tracing::info!(ticket_len, "fetch_ticket_metadata called");
 
+    let (relay_mode, _) = resolve_relay_mode_with_fallback(relay).await?;
     let options = ReceiveOptions {
         output_dir: None,
-        relay_mode: RelayModeOption::Default,
+        relay_mode,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
@@ -276,13 +481,20 @@ pub async fn stop_sharing(state: State<'_, AppStateMutex>) -> Result<(), String>
 pub async fn receive_file(
     ticket: String,
     output_path: String,
+    relay: Option<RelayConfigArg>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     // Create receive options with user-specified output path
     let output_dir = PathBuf::from(output_path);
+    let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
+    if fell_back_to_public {
+        // Surface the silent custom->public fallback so the user knows this
+        // transfer is riding public relays despite their custom config.
+        let _ = app_handle.emit("relay-fell-back", "receive");
+    }
     let options = ReceiveOptions {
         output_dir: Some(output_dir),
-        relay_mode: RelayModeOption::Default,
+        relay_mode,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
@@ -476,10 +688,95 @@ async fn collect_preview_items(paths: &[PathBuf]) -> Result<Vec<FilePreviewItem>
     Ok(items)
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyRelaysResponse {
+    /// The relay the endpoint actually registered with (home relay).
+    pub url: Option<String>,
+    /// Time taken to establish the relay connection, in milliseconds.
+    pub latency_ms: u64,
+}
+
+/// Verify connectivity to configured relay servers.
+#[tauri::command]
+pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse, String> {
+    let relay_mode = build_relay_mode(Some(relay))?;
+
+    if matches!(relay_mode, RelayModeOption::Disabled) {
+        return Err("Relay verification requires default or custom relay mode".to_string());
+    }
+
+    let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
+
+    let endpoint = Endpoint::builder(presets::Minimal)
+        .secret_key(secret_key)
+        .relay_mode(relay_mode.into())
+        .bind()
+        .await
+        .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
+
+    let started = std::time::Instant::now();
+
+    tokio::time::timeout(RELAY_PROBE_TIMEOUT, endpoint.online())
+        .await
+        .map_err(|_| {
+            format!(
+                "Timed out waiting for relay connection ({}s)",
+                RELAY_PROBE_TIMEOUT.as_secs()
+            )
+        })?;
+
+    let latency_ms = started.elapsed().as_millis() as u64;
+    let url = connected_home_relay_url(&endpoint);
+
+    endpoint.close().await;
+    Ok(VerifyRelaysResponse { url, latency_ms })
+}
+
+#[cfg(test)]
+mod relay_config_tests {
+    use super::*;
+
+    #[test]
+    fn build_relay_mode_defaults_to_public() {
+        let mode = build_relay_mode(None).expect("default mode should parse");
+        assert!(matches!(mode, RelayModeOption::Default));
+    }
+
+    #[test]
+    fn build_relay_mode_custom_with_auth() {
+        let mode = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec!["https://relay.example.com".to_string()],
+            auth_token: Some("secret".to_string()),
+        }))
+        .expect("custom mode should parse");
+
+        match mode {
+            RelayModeOption::Custom { urls, auth_token } => {
+                assert_eq!(urls.len(), 1);
+                assert_eq!(auth_token.as_deref(), Some("secret"));
+            }
+            _ => panic!("expected custom relay mode"),
+        }
+    }
+
+    #[test]
+    fn build_relay_mode_custom_requires_urls() {
+        let err = build_relay_mode(Some(RelayConfigArg {
+            mode: "custom".to_string(),
+            urls: vec![],
+            auth_token: None,
+        }))
+        .expect_err("empty custom urls should fail");
+        assert!(err.contains("At least one relay URL"));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sendme::start_share;
+    use engine::start_share;
     use std::fs;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -523,7 +820,7 @@ mod tests {
         .await
         .expect("start_share should succeed");
 
-        let fetched = fetch_ticket_metadata(share.ticket.clone())
+        let fetched = fetch_ticket_metadata(share.ticket.clone(), None)
             .await
             .expect("fetch_ticket_metadata command should succeed");
 

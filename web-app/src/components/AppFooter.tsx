@@ -1,10 +1,11 @@
 import { buttonVariants } from './ui/button'
 import { CoffeeIcon, GithubIcon, GlobeIcon, SettingsIcon } from 'lucide-react'
 import { useTranslation } from '@/i18n'
-import { VERSION_DISPLAY } from '@/lib/version'
+import { DONATE_LINK, VERSION_DISPLAY } from '@/lib/version'
 import { Separator } from './ui/separator'
 import { Link } from 'react-router-dom'
 import { handleExternalLinkClick } from '@/lib/openExternalUrl'
+import { RelayStatusButton } from './RelayStatusButton'
 
 const CONTACTS = [
 	{
@@ -13,7 +14,7 @@ const CONTACTS = [
 		'aria-label': 'Github source code',
 	},
 	{
-		link: 'https://buymeacoffee.com/tny_antny',
+		link: DONATE_LINK,
 		icon: <CoffeeIcon />,
 		'aria-label': 'Buy me a coffee',
 	},
@@ -27,8 +28,16 @@ const CONTACTS = [
 export function AppFooter() {
 	const { t } = useTranslation()
 	return (
-		<div className="w-full h-10 items-center justify-between  bottom-0 flex px-4 bg-background/50 border-t border-border backdrop-blur-md py-4">
-			<div className="space-x-2 flex-1 w-full flex items-center relative">
+		<div
+			className="w-full min-h-10 items-center flex bg-background/50 border-t border-border backdrop-blur-md"
+			style={{
+				paddingTop: '0.5rem',
+				paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
+				paddingLeft: 'calc(1rem + env(safe-area-inset-left))',
+				paddingRight: 'calc(1rem + env(safe-area-inset-right))',
+			}}
+		>
+			<div className="space-x-2 flex-1 w-full flex items-center">
 				<span className="text-sm text-muted-foreground ml-1">
 					{VERSION_DISPLAY}
 				</span>
@@ -51,7 +60,8 @@ export function AppFooter() {
 					</a>
 				))}
 			</div>
-			<div className="flex items-center gap-2">
+			<div className="flex flex-1 items-center justify-end gap-2">
+				<RelayStatusButton />
 				<Link
 					to="/settings"
 					className={buttonVariants({

@@ -1,0 +1,54 @@
+# Fly.io deployment for iroh-relay.
+# Prerequisites: flyctl installed, DNS A/AAAA for your hostname pointing at Fly.
+#
+# Quick start:
+#   cp iroh-relay.conf.example iroh-relay.conf   # edit hostname + contact
+#   fly launch --no-deploy
+#   fly volumes create relay_certs --size 1 --region <your-region>
+#   # Private relay only: keep the secret out of the image, set it as a Fly secret:
+#   fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
+#   fly deploy
+
+app = "altsendme-relay"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[mounts]
+  source = "relay_certs"
+  destination = "/data/certs"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 80
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # Confirms the relay is accepting connections; Fly restarts the machine if not.
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+
+[[services]]
+  protocol = "udp"
+  internal_port = 7842
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 7842
+
+# Scrape the relay's Prometheus metrics over Fly's private network instead of
+# exposing port 9090 publicly (the metrics endpoint has no auth). View them via
+# Fly's managed Prometheus / Grafana, or federate from your own scraper.
+[metrics]
+  port = 9090
+  path = "/metrics"

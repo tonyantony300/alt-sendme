@@ -17,10 +17,6 @@ export function handleExternalLinkClick(
 	event: { preventDefault: () => void },
 	url: string
 ): void {
-	if (!IS_TAURI) {
-		return
-	}
-
 	event.preventDefault()
 	void openExternalUrl(url).catch((error) => {
 		console.error('Failed to open external URL:', error)

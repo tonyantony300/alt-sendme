@@ -41,8 +41,13 @@
 		"fileSelected": "Datei ausgewählt",
 		"folderSelected": "Ordner ausgewählt",
 		"itemSelected": "Element ausgewählt",
+		"multipleFilesSelected": "{{name}} ... und {{count}} weitere",
 		"browseFile": "Datei durchsuchen",
 		"browseFolder": "Ordner durchsuchen",
+		"addMoreFiles": "Weitere Dateien hinzufügen",
+		"addMoreFolders": "Weitere Ordner hinzufügen",
+		"multipleItemsSelected": "{{firstName}} und {{count}} weitere",
+		"removeFromSelection": "Aus Auswahl entfernen",
 		"copyToClipboard": "In Zwischenablage kopieren",
 		"description": "Beschreibung (optional)",
 		"broadcastMode": {
@@ -62,6 +67,7 @@
 		"subtitle": "Dateien vom Absender über verschlüsselte Peer-to-Peer-Verbindungen über das Internet herunterladen.",
 		"saveToFolder": "In Ordner speichern:",
 		"noFolderSelected": "Kein Ordner ausgewählt",
+		"conflictsMore": "... und {{count}} weitere",
 		"pasteTicket": "Ticket hier einfügen:",
 		"ticketPlaceholder": "sendme Empfangsticket...",
 		"howToReceive": "So empfangen Sie Dateien",
@@ -72,8 +78,14 @@
 		"instruction5": "Dateien werden in Ihrem ausgewählten Ordner gespeichert",
 		"keepAppOpen": "Lassen Sie diese App geöffnet, während Sie Dateien herunterladen",
 		"connectingToSender": "Verbindung zum Absender wird hergestellt",
+		"previewMultipleItems": "{{name}} ... und {{count}} weitere",
+		"multipleFilesFound": "Mehrere Dateien gefunden",
+		"expandPreviewList": "Dateiliste anzeigen",
+		"collapsePreviewList": "Dateiliste ausblenden",
 		"downloadingInProgress": "Download läuft",
 		"downloadCompleted": "Download abgeschlossen",
+		"downloadCompletedWithConflicts": "Download abgeschlossen, Namenskonflikte wurden gelöst",
+		"downloadedFile": "Heruntergeladene Datei",
 		"stopReceiving": "Empfang beenden",
 		"download": "Herunterladen"
 	},
@@ -91,13 +103,16 @@
 		"wasStopped": "Die Übertragung wurde vor Abschluss gestoppt.",
 		"successMessage": "Ihre Übertragung wurde erfolgreich abgeschlossen.",
 		"file": "Datei",
+		"files": "Dateien",
 		"folder": "Ordner",
 		"fileName": "Dateiname",
 		"fileSize": "Dateigröße",
 		"folderSize": "Ordnergröße",
 		"downloadPath": "Downloadpfad",
 		"duration": "Dauer",
-		"avgSpeed": "Durchschnittsgeschwindigkeit"
+		"avgSpeed": "Durchschnittsgeschwindigkeit",
+		"multipleFiles": "{{count}} Dateien",
+		"donatePrompt": "Mach es besser -"
 	},
 	"errors": {
 		"sharingFailed": "Freigabe fehlgeschlagen",
@@ -120,6 +135,7 @@
 		"navItems": {
 			"appearance": "Design & Sprache",
 			"general": "Allgemein",
+			"relay": "Relay",
 			"network": "Netzwerk",
 			"notification": "Benachrichtigungen"
 		},
@@ -159,6 +175,54 @@
 					"label": "Kontextmenü im Explorer",
 					"description": "„Mit AltSendme senden“ zum Rechtsklickmenü im Windows-Explorer hinzufügen"
 				}
+			},
+			"broadcast": {
+				"title": "Broadcast",
+				"showToggle": {
+					"label": "Broadcast-Schalter beim Teilen anzeigen",
+					"description": "Zeigt einen Broadcast-Schalter auf dem Freigabebildschirm, damit mehrere Empfänger dieselben Dateien gleichzeitig herunterladen können."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay-Server",
+				"description": "Steuern Sie, welche iroh-Relay-Server AltSendme für NAT-Traversal und verschlüsselte Fallback-Verbindungen verwendet.",
+				"modeDefault": "Automatisch (öffentliche Relays)",
+				"modeDefaultDesc": "Verwendet die standardmäßigen öffentlichen iroh-Relays. Am besten für die meisten Nutzer.",
+				"modeCustom": "Benutzerdefiniert (Self-Hosted)",
+				"modeCustomDesc": "Verwenden Sie Ihre eigenen Relay-Server. Siehe deploy/relay im Projekt-Repo.",
+				"modeDisabled": "Deaktiviert",
+				"modeDisabledDesc": "Keine Relays verwenden. Nur direkte Verbindungen; kann bei striktem NAT fehlschlagen.",
+				"urlsLabel": "Relay-URLs",
+				"urlsDescription": "Fügen Sie eine oder mehrere HTTPS-Relay-URLs für regionales Failover hinzu.",
+				"addUrl": "Relay-URL hinzufügen",
+				"removeUrl": "Relay-URL entfernen",
+				"urlInvalidHint": "Geben Sie eine gültige HTTPS-URL ein",
+				"urlChecking": "Verbindung wird geprüft",
+				"urlVerified": "Verifiziert",
+				"urlVerifyFailedHint": "Verbindung zu diesem Relay fehlgeschlagen",
+				"verifySummary": "{{ok}} von {{total}} Relays verifiziert.",
+				"verifyAuthHint": "Wenn Ihr Relay ein Auth-Token erfordert, stellen Sie sicher, dass es mit access.shared_token auf dem Server übereinstimmt.",
+				"authTokenLabel": "Auth-Token (optional)",
+				"authTokenPlaceholder": "Gemeinsames Geheimnis, falls Ihr Relay Authentifizierung erfordert",
+				"authTokenDescription": "Erforderlich, wenn Ihr Relay access.shared_token in der Konfiguration verwendet.",
+				"showAuthToken": "Anzeigen",
+				"hideAuthToken": "Ausblenden",
+				"privacyNote": "Für eine vollständig private Einrichtung konfigurieren Sie dieselben Relay-URLs auf Sender- und Empfängergeräten.",
+				"testConnection": "Verbindung testen",
+				"verifySuccess": "Relay-Verbindung OK",
+				"verifySuccessDesc": "{{url}}\nerfolgreich verifiziert ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Erfolgreich bei Ihrem konfigurierten Relay-Server registriert.",
+				"verifyFailed": "Relay-Verbindung fehlgeschlagen",
+				"urlRequired": "Fügen Sie mindestens eine Relay-URL hinzu.",
+				"invalidUrl": "Ungültige Relay-URL: {{url}}",
+				"disabledHint": "Aktivieren Sie automatische oder benutzerdefinierte Relays, um die Verbindung zu testen.",
+				"confirmDisableTitle": "Relays deaktivieren?",
+				"confirmDisableDescription": "Sie haben sich entschieden, Relays zu deaktivieren. Dateiübertragungen können fehlschlagen, wenn Sie Dateien mit jemandem außerhalb Ihres lokalen Netzwerks teilen möchten. Relays helfen Geräten, sich unter schwierigen Netzwerkbedingungen zu finden und zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
+				"confirmCustomTitle": "Benutzerdefinierte Relays verwenden?",
+				"confirmCustomDescription": "Sie haben sich entschieden, eigene selbst gehostete Relays zu verwenden. Wenn Ihre benutzerdefinierten Relays nicht erreichbar sind, wechseln Übertragungen automatisch auf öffentliche Relays und Sie werden benachrichtigt. Relays helfen Ihren Geräten nur, sich unter schwierigen Netzwerkbedingungen zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
+				"confirmContinue": "Weiter"
 			}
 		}
 	},
@@ -175,5 +239,35 @@
 		"checkFailedDesc": "Update-Suche ist fehlgeschlagen",
 		"installFailed": "Installation fehlgeschlagen",
 		"installFailedDesc": "Update konnte nicht installiert werden"
+	},
+	"android": {
+		"preparingFile": "Datei wird vorbereitet..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay-Verbindungsstatus",
+			"publicHeading": "Öffentliches Relay",
+			"customHeading": "Benutzerdefiniertes Relay",
+			"disabledHeading": "Relays deaktiviert",
+			"unavailableHeading": "Relay nicht verfügbar",
+			"fellBackToPublic": "Benutzerdefiniertes Relay nicht erreichbar, öffentliches Relay wird stattdessen verwendet.",
+			"fellBackToastTitle": "Öffentliches Relay wird verwendet",
+			"fellBackToastSend": "Ihr benutzerdefiniertes Relay war nicht erreichbar — diese Übertragung nutzt stattdessen ein öffentliches Relay.",
+			"fellBackToastReceive": "Ihr benutzerdefiniertes Relay war nicht erreichbar — dieser Download nutzt stattdessen ein öffentliches Relay.",
+			"dialogDescription": "Zeigt, welchen Relay-Server diese App derzeit für Verbindungen verwendet.",
+			"connectedRelay": "Verbundenes Relay",
+			"checking": "Verbindung wird geprüft…",
+			"configuredMode": "In Einstellungen konfiguriert",
+			"configuredDefault": "Automatisch (öffentliche Relays)",
+			"configuredCustom": "Benutzerdefiniert (Self-Hosted)",
+			"configuredDisabled": "Deaktiviert",
+			"openSettings": "Netzwerkeinstellungen",
+			"infoToggle": "Über Relays",
+			"purpose": "Relays helfen deinen Geräten nur dabei, sich zu finden und zu verbinden.",
+			"directNote": "Sobald eine direkte Verbindung besteht, werden Dateien direkt zwischen den Geräten übertragen und das Relay wird nicht mehr verwendet.",
+			"lanNote": "Im selben lokalen Netzwerk werden Relays vollständig übersprungen.",
+			"encryptedNote": "Übertragungen sind immer Ende-zu-Ende-verschlüsselt, sodass Relays deine Dateien nie sehen.",
+			"disabledNote": "Relays sind deaktiviert. Nur direkte Verbindungen, daher können Übertragungen bei strengen Firewalls oder NATs fehlschlagen."
+		}
 	}
 }

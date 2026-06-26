@@ -1,6 +1,6 @@
 [package]
-name = "sendme"
-version = "0.29.0"
+name = "engine"
+version = "0.1.0"
 edition = "2021"
 authors = ["Tony Antony <tonyantony300@gmail.com>"]
 keywords = ["scp", "sftp", "network", "p2p", "holepunching"]
@@ -15,7 +15,7 @@ rust-version = "1.91"
 
 
 [lib]
-name = "sendme"
+name = "engine"
 crate-type = ["lib", "staticlib"]
 
 [dependencies]

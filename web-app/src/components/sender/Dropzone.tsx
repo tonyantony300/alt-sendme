@@ -260,7 +260,7 @@ export function Dropzone({
 		>
 			{selectedPath && !isLoading && (
 				<TooltipProvider>
-					<div className="absolute top-3 right-3 z-30 flex items-center gap-2 pointer-events-auto">
+					<div className="absolute top-3 right-3 z-30 hidden sm:flex items-center gap-2 pointer-events-auto">
 						<Tooltip>
 							<TooltipTrigger
 								render={

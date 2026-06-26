@@ -1,6 +1,6 @@
 #![allow(dead_code, unused_imports)]
 
-use sendme::EventEmitter;
+use engine::EventEmitter;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 

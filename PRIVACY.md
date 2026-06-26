@@ -47,8 +47,8 @@ By default, AltSendme may use relay servers operated by the [Iroh project](https
 - Who you are communicating with (only encrypted connection endpoints)
 
 **Your Control:**
-- You can disable relay servers entirely (this may limit connectivity in some network configurations)
-- You can configure custom relay servers if you prefer
+- You can disable relay servers entirely in **Settings → Network** (this may limit connectivity in some network configurations)
+- You can configure custom self-hosted relay servers in **Settings → Network** (see [`deploy/relay/`](deploy/relay/README.md) in the project repo)
 - Relay servers are only used when direct connections fail
 
 ### DNS Discovery
