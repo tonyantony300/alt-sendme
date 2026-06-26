@@ -245,7 +245,7 @@
 			"customHeading": "Egyéni relay",
 			"disabledHeading": "Relay letiltva",
 			"unavailableHeading": "Relay nem elérhető",
-			"fellBackToPublic": "Egyéni relay nem elérhető — nyilvános relay használata",
+			"fellBackToPublic": "Egyéni relay nem elérhető, helyette nyilvános relay használata.",
 			"fellBackToastTitle": "Nyilvános relay használata",
 			"fellBackToastSend": "Az egyéni relay nem volt elérhető — ez az átvitel nyilvános relay-t használ.",
 			"fellBackToastReceive": "Az egyéni relay nem volt elérhető — ez a letöltés nyilvános relay-t használ.",
@@ -256,7 +256,13 @@
 			"configuredDefault": "Automatikus (nyilvános relay)",
 			"configuredCustom": "Egyéni (self-hosted)",
 			"configuredDisabled": "Letiltva",
-			"openSettings": "Hálózati beállítások"
+			"openSettings": "Hálózati beállítások",
+			"infoToggle": "A relayekről",
+			"purpose": "A relayek csak abban segítenek, hogy az eszközeid megtalálják egymást és kapcsolódjanak.",
+			"directNote": "A közvetlen kapcsolat létrejötte után a fájlok közvetlenül az eszközök között kerülnek átvitelre, és a relay már nem kerül használatba.",
+			"lanNote": "Azonos helyi hálózaton a relayek teljesen kimaradnak.",
+			"encryptedNote": "Az átvitelek mindig végpontok közötti titkosítással történnek, így a relayek soha nem látják a fájljaidat.",
+			"disabledNote": "A relayek ki vannak kapcsolva. Csak közvetlen kapcsolatok, így szigorú tűzfalak vagy NAT-ok esetén az átvitel meghiúsulhat."
 		}
 	}
 }

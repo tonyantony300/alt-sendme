@@ -245,7 +245,7 @@
 			"customHeading": "自訂中繼",
 			"disabledHeading": "中繼已停用",
 			"unavailableHeading": "中繼不可用",
-			"fellBackToPublic": "自訂中繼無法連線 — 正在使用公共中繼",
+			"fellBackToPublic": "自訂中繼無法連線，改用公共中繼。",
 			"fellBackToastTitle": "正在使用公共中繼",
 			"fellBackToastSend": "您的自訂中繼無法連線 — 此次傳輸正在使用公共中繼。",
 			"fellBackToastReceive": "您的自訂中繼無法連線 — 此次下載正在使用公共中繼。",
@@ -256,7 +256,13 @@
 			"configuredDefault": "自動（公共中繼）",
 			"configuredCustom": "自訂（自行託管）",
 			"configuredDisabled": "已停用",
-			"openSettings": "網路設定"
+			"openSettings": "網路設定",
+			"infoToggle": "關於中繼",
+			"purpose": "中繼只會協助你的裝置互相找到並建立連線。",
+			"directNote": "建立直接連線後，檔案會在裝置之間直接傳輸，不再使用中繼。",
+			"lanNote": "在同一個區域網路中，中繼會完全略過。",
+			"encryptedNote": "傳輸一律採用端對端加密，因此中繼永遠看不到你的檔案。",
+			"disabledNote": "中繼已停用。僅限直接連線，因此在嚴格的防火牆或 NAT 環境下傳輸可能失敗。"
 		}
 	}
 }

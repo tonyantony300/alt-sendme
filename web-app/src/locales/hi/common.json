@@ -245,7 +245,7 @@
 			"customHeading": "कस्टम relay",
 			"disabledHeading": "Relay अक्षम",
 			"unavailableHeading": "Relay अनुपलब्ध",
-			"fellBackToPublic": "कस्टम relay अनुपलब्ध — सार्वजनिक relay उपयोग हो रहा है",
+			"fellBackToPublic": "कस्टम relay अनुपलब्ध, इसके बजाय सार्वजनिक relay उपयोग हो रहा है।",
 			"fellBackToastTitle": "सार्वजनिक relay उपयोग हो रहा है",
 			"fellBackToastSend": "आपका कस्टम relay अनुपलब्ध था — यह स्थानांतरण सार्वजनिक relay उपयोग कर रहा है।",
 			"fellBackToastReceive": "आपका कस्टम relay अनुपलब्ध था — यह डाउनलोड सार्वजनिक relay उपयोग कर रहा है।",
@@ -256,7 +256,13 @@
 			"configuredDefault": "स्वचालित (सार्वजनिक relay)",
 			"configuredCustom": "कस्टम (self-hosted)",
 			"configuredDisabled": "अक्षम",
-			"openSettings": "नेटवर्क सेटिंग्स"
+			"openSettings": "नेटवर्क सेटिंग्स",
+			"infoToggle": "Relay के बारे में",
+			"purpose": "Relay केवल आपके डिवाइसों को एक-दूसरे को खोजने और जुड़ने में मदद करते हैं।",
+			"directNote": "सीधा कनेक्शन स्थापित होने के बाद फ़ाइलें डिवाइसों के बीच सीधे स्थानांतरित होती हैं, और relay का उपयोग नहीं होता।",
+			"lanNote": "एक ही लोकल नेटवर्क पर relay पूरी तरह छोड़ दिए जाते हैं।",
+			"encryptedNote": "स्थानांतरण हमेशा एंड-टू-एंड एन्क्रिप्टेड होते हैं, इसलिए relay आपकी फ़ाइलें कभी नहीं देखते।",
+			"disabledNote": "Relay बंद हैं। केवल सीधे कनेक्शन, इसलिए सख्त फ़ायरवॉल या NAT पर स्थानांतरण विफल हो सकता है।"
 		}
 	}
 }

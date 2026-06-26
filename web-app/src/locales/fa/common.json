@@ -245,7 +245,7 @@
 			"customHeading": "Relay سفارشی",
 			"disabledHeading": "Relay غیرفعال",
 			"unavailableHeading": "Relay در دسترس نیست",
-			"fellBackToPublic": "Relay سفارشی در دسترس نیست — از relay عمومی استفاده می‌شود",
+			"fellBackToPublic": "Relay سفارشی در دسترس نیست، به جای آن از relay عمومی استفاده می‌شود.",
 			"fellBackToastTitle": "استفاده از relay عمومی",
 			"fellBackToastSend": "relay سفارشی شما در دسترس نبود — این انتقال از relay عمومی استفاده می‌کند.",
 			"fellBackToastReceive": "relay سفارشی شما در دسترس نبود — این دانلود از relay عمومی استفاده می‌کند.",
@@ -256,7 +256,13 @@
 			"configuredDefault": "خودکار (relay عمومی)",
 			"configuredCustom": "سفارشی (self-hosted)",
 			"configuredDisabled": "غیرفعال",
-			"openSettings": "تنظیمات شبکه"
+			"openSettings": "تنظیمات شبکه",
+			"infoToggle": "درباره relay",
+			"purpose": "Relay فقط به دستگاه‌های شما کمک می‌کند یکدیگر را پیدا کرده و متصل شوند.",
+			"directNote": "پس از برقراری اتصال مستقیم، فایل‌ها مستقیماً بین دستگاه‌ها منتقل می‌شوند و دیگر از relay استفاده نمی‌شود.",
+			"lanNote": "در یک شبکه محلی یکسان، relayها به‌طور کامل نادیده گرفته می‌شوند.",
+			"encryptedNote": "انتقال‌ها همیشه به‌صورت سرتاسر رمزنگاری شده‌اند، بنابراین relayها هرگز فایل‌های شما را نمی‌بینند.",
+			"disabledNote": "Relayها خاموش هستند. فقط اتصال مستقیم، بنابراین ممکن است انتقال‌ها از طریق فایروال‌ها یا NATهای سخت‌گیرانه ناموفق باشند."
 		}
 	}
 }

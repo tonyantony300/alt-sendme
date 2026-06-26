@@ -244,7 +244,7 @@
 			"customHeading": "Custom relay",
 			"disabledHeading": "Relays disabled",
 			"unavailableHeading": "Relay unavailable",
-			"fellBackToPublic": "Custom relay unreachable — using public relay",
+			"fellBackToPublic": "Custom relay unreachable, using public relay instead.",
 			"fellBackToastTitle": "Using public relay",
 			"fellBackToastSend": "Your custom relay was unreachable — this transfer is using a public relay instead.",
 			"fellBackToastReceive": "Your custom relay was unreachable — this download is using a public relay instead.",
@@ -255,7 +255,13 @@
 			"configuredDefault": "Automatic (public relays)",
 			"configuredCustom": "Custom self-hosted",
 			"configuredDisabled": "Disabled",
-			"openSettings": "Network settings"
+			"openSettings": "Network settings",
+			"infoToggle": "About relays",
+			"purpose": "Relays only help your devices find each other and connect.",
+			"directNote": "Once a direct connection is established, files transfer directly between devices, and the relay is no longer used.",
+			"lanNote": "On the same local network, relays are skipped entirely.",
+			"encryptedNote": "Transfers are always end-to-end encrypted, so relays never see your files.",
+			"disabledNote": "Relays are off. Direct connections only, so transfers may fail across strict firewalls or NATs."
 		}
 	}
 }

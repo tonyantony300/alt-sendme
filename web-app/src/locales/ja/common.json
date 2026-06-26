@@ -245,7 +245,7 @@
 			"customHeading": "カスタムリレー",
 			"disabledHeading": "リレー無効",
 			"unavailableHeading": "リレー利用不可",
-			"fellBackToPublic": "カスタムリレーに到達できません — 公開リレーを使用中",
+			"fellBackToPublic": "カスタムリレーに到達できません。代わりに公開リレーを使用しています。",
 			"fellBackToastTitle": "公開リレーを使用中",
 			"fellBackToastSend": "カスタムリレーに到達できませんでした — この転送は公開リレーを使用しています。",
 			"fellBackToastReceive": "カスタムリレーに到達できませんでした — このダウンロードは公開リレーを使用しています。",
@@ -256,7 +256,13 @@
 			"configuredDefault": "自動（公開リレー）",
 			"configuredCustom": "カスタム（自己ホスト）",
 			"configuredDisabled": "無効",
-			"openSettings": "ネットワーク設定"
+			"openSettings": "ネットワーク設定",
+			"infoToggle": "リレーについて",
+			"purpose": "リレーはデバイス同士が見つけ合って接続するのを助けるだけです。",
+			"directNote": "直接接続が確立されると、ファイルはデバイス間で直接転送され、リレーは使用されなくなります。",
+			"lanNote": "同じローカルネットワーク上では、リレーは完全にスキップされます。",
+			"encryptedNote": "転送は常にエンドツーエンドで暗号化されているため、リレーがファイルを見ることはありません。",
+			"disabledNote": "リレーは無効です。直接接続のみのため、厳格なファイアウォールや NAT では転送が失敗することがあります。"
 		}
 	}
 }

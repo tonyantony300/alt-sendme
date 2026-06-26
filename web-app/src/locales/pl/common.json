@@ -245,7 +245,7 @@
 			"customHeading": "Niestandardowe relay",
 			"disabledHeading": "Relay wyłączone",
 			"unavailableHeading": "Relay niedostępne",
-			"fellBackToPublic": "Niestandardowe relay niedostępne — używane publiczne relay",
+			"fellBackToPublic": "Niestandardowe relay niedostępne, używane jest publiczne relay.",
 			"fellBackToastTitle": "Używane publiczne relay",
 			"fellBackToastSend": "Twoje niestandardowe relay było niedostępne — ten transfer używa publicznego relay.",
 			"fellBackToastReceive": "Twoje niestandardowe relay było niedostępne — to pobieranie używa publicznego relay.",
@@ -256,7 +256,13 @@
 			"configuredDefault": "Automatycznie (publiczne relay)",
 			"configuredCustom": "Niestandardowe (self-hosted)",
 			"configuredDisabled": "Wyłączone",
-			"openSettings": "Ustawienia sieci"
+			"openSettings": "Ustawienia sieci",
+			"infoToggle": "O relayach",
+			"purpose": "Relay pomagają tylko Twoim urządzeniom odnaleźć się nawzajem i połączyć.",
+			"directNote": "Po nawiązaniu bezpośredniego połączenia pliki są przesyłane bezpośrednio między urządzeniami, a relay nie jest już używane.",
+			"lanNote": "W tej samej sieci lokalnej relay są całkowicie pomijane.",
+			"encryptedNote": "Transfery są zawsze szyfrowane od końca do końca, więc relay nigdy nie widzą Twoich plików.",
+			"disabledNote": "Relay są wyłączone. Tylko połączenia bezpośrednie, więc transfery mogą się nie powieść przy restrykcyjnych zaporach lub NAT."
 		}
 	}
 }

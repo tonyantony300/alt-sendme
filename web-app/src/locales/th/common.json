@@ -245,7 +245,7 @@
 			"customHeading": "Relay กำหนดเอง",
 			"disabledHeading": "ปิดใช้ relay",
 			"unavailableHeading": "Relay ไม่พร้อมใช้งาน",
-			"fellBackToPublic": "Relay กำหนดเองไม่พร้อมใช้งาน — ใช้ relay สาธารณะ",
+			"fellBackToPublic": "Relay กำหนดเองไม่พร้อมใช้งาน กำลังใช้ relay สาธารณะแทน",
 			"fellBackToastTitle": "ใช้ relay สาธารณะ",
 			"fellBackToastSend": "Relay กำหนดเองของคุณไม่พร้อมใช้งาน — การถ่ายโอนนี้ใช้ relay สาธารณะ",
 			"fellBackToastReceive": "Relay กำหนดเองของคุณไม่พร้อมใช้งาน — การดาวน์โหลดนี้ใช้ relay สาธารณะ",
@@ -256,7 +256,13 @@
 			"configuredDefault": "อัตโนมัติ (relay สาธารณะ)",
 			"configuredCustom": "กำหนดเอง (self-hosted)",
 			"configuredDisabled": "ปิดใช้งาน",
-			"openSettings": "การตั้งค่าเครือข่าย"
+			"openSettings": "การตั้งค่าเครือข่าย",
+			"infoToggle": "เกี่ยวกับ relay",
+			"purpose": "Relay ช่วยให้อุปกรณ์ของคุณค้นหากันและเชื่อมต่อกันเท่านั้น",
+			"directNote": "เมื่อสร้างการเชื่อมต่อโดยตรงแล้ว ไฟล์จะถูกถ่ายโอนโดยตรงระหว่างอุปกรณ์ และจะไม่ใช้ relay อีกต่อไป",
+			"lanNote": "บนเครือข่ายภายในเดียวกัน relay จะถูกข้ามไปทั้งหมด",
+			"encryptedNote": "การถ่ายโอนถูกเข้ารหัสแบบ end-to-end เสมอ ดังนั้น relay จึงไม่เห็นไฟล์ของคุณ",
+			"disabledNote": "ปิด relay แล้ว ใช้การเชื่อมต่อโดยตรงเท่านั้น การถ่ายโอนจึงอาจล้มเหลวผ่านไฟร์วอลล์หรือ NAT ที่เข้มงวด"
 		}
 	}
 }

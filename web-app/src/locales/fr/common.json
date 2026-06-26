@@ -245,7 +245,7 @@
 			"customHeading": "Relais personnalisé",
 			"disabledHeading": "Relais désactivés",
 			"unavailableHeading": "Relais indisponible",
-			"fellBackToPublic": "Relais personnalisé inaccessible — utilisation d’un relais public",
+			"fellBackToPublic": "Relais personnalisé inaccessible, utilisation d’un relais public à la place.",
 			"fellBackToastTitle": "Utilisation d’un relais public",
 			"fellBackToastSend": "Votre relais personnalisé était inaccessible — ce transfert utilise un relais public à la place.",
 			"fellBackToastReceive": "Votre relais personnalisé était inaccessible — ce téléchargement utilise un relais public à la place.",
@@ -256,7 +256,13 @@
 			"configuredDefault": "Automatique (relais publics)",
 			"configuredCustom": "Personnalisé (auto-hébergé)",
 			"configuredDisabled": "Désactivé",
-			"openSettings": "Paramètres réseau"
+			"openSettings": "Paramètres réseau",
+			"infoToggle": "À propos des relais",
+			"purpose": "Les relais aident seulement vos appareils à se trouver et à se connecter.",
+			"directNote": "Une fois la connexion directe établie, les fichiers sont transférés directement entre les appareils et le relais n’est plus utilisé.",
+			"lanNote": "Sur le même réseau local, les relais sont entièrement ignorés.",
+			"encryptedNote": "Les transferts sont toujours chiffrés de bout en bout, les relais ne voient donc jamais vos fichiers.",
+			"disabledNote": "Les relais sont désactivés. Connexions directes uniquement, les transferts peuvent donc échouer derrière des pare-feu ou NAT stricts."
 		}
 	}
 }

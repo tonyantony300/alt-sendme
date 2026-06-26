@@ -245,7 +245,7 @@
 			"customHeading": "自定义中继",
 			"disabledHeading": "中继已禁用",
 			"unavailableHeading": "中继不可用",
-			"fellBackToPublic": "自定义中继不可达 — 正在使用公共中继",
+			"fellBackToPublic": "自定义中继不可达，改用公共中继。",
 			"fellBackToastTitle": "正在使用公共中继",
 			"fellBackToastSend": "您的自定义中继不可达 — 此次传输正在使用公共中继。",
 			"fellBackToastReceive": "您的自定义中继不可达 — 此次下载正在使用公共中继。",
@@ -256,7 +256,13 @@
 			"configuredDefault": "自动（公共中继）",
 			"configuredCustom": "自定义（自托管）",
 			"configuredDisabled": "已禁用",
-			"openSettings": "网络设置"
+			"openSettings": "网络设置",
+			"infoToggle": "关于中继",
+			"purpose": "中继只是帮助你的设备相互发现并建立连接。",
+			"directNote": "建立直接连接后，文件会在设备之间直接传输，不再使用中继。",
+			"lanNote": "在同一局域网中，中继会被完全跳过。",
+			"encryptedNote": "传输始终采用端到端加密，因此中继永远看不到你的文件。",
+			"disabledNote": "中继已禁用。仅限直接连接，因此在严格的防火墙或 NAT 环境下传输可能失败。"
 		}
 	}
 }

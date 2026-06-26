@@ -245,7 +245,7 @@
 			"customHeading": "Maxsus relay",
 			"disabledHeading": "Relay o'chirilgan",
 			"unavailableHeading": "Relay mavjud emas",
-			"fellBackToPublic": "Maxsus relay'ga ulanib bo'lmadi — ommaviy relay ishlatilmoqda",
+			"fellBackToPublic": "Maxsus relay'ga ulanib bo'lmadi, buning o'rniga ommaviy relay ishlatilmoqda.",
 			"fellBackToastTitle": "Ommaviy relay ishlatilmoqda",
 			"fellBackToastSend": "Maxsus relay'ingizga ulanib bo'lmadi — bu uzatish ommaviy relay ishlatmoqda.",
 			"fellBackToastReceive": "Maxsus relay'ingizga ulanib bo'lmadi — bu yuklab olish ommaviy relay ishlatmoqda.",
@@ -256,7 +256,13 @@
 			"configuredDefault": "Avtomatik (ommaviy relay)",
 			"configuredCustom": "Maxsus (self-hosted)",
 			"configuredDisabled": "O'chirilgan",
-			"openSettings": "Tarmoq sozlamalari"
+			"openSettings": "Tarmoq sozlamalari",
+			"infoToggle": "Relay haqida",
+			"purpose": "Relay'lar faqat qurilmalaringizga bir-birini topish va ulanishda yordam beradi.",
+			"directNote": "To'g'ridan-to'g'ri ulanish o'rnatilgach, fayllar qurilmalar o'rtasida to'g'ridan-to'g'ri uzatiladi va relay endi ishlatilmaydi.",
+			"lanNote": "Bitta mahalliy tarmoqda relay'lar butunlay o'tkazib yuboriladi.",
+			"encryptedNote": "Uzatishlar har doim uchma-uch shifrlangan, shuning uchun relay'lar fayllaringizni hech qachon ko'rmaydi.",
+			"disabledNote": "Relay'lar o'chirilgan. Faqat to'g'ridan-to'g'ri ulanishlar, shuning uchun qattiq fayervol yoki NAT orqali uzatishlar muvaffaqiyatsiz bo'lishi mumkin."
 		}
 	}
 }

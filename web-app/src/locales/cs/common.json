@@ -245,7 +245,7 @@
 			"customHeading": "Vlastní relay",
 			"disabledHeading": "Relay zakázáno",
 			"unavailableHeading": "Relay nedostupné",
-			"fellBackToPublic": "Vlastní relay nedostupné — používá se veřejné relay",
+			"fellBackToPublic": "Vlastní relay nedostupné, místo něj se používá veřejné relay.",
 			"fellBackToastTitle": "Používá se veřejné relay",
 			"fellBackToastSend": "Váš vlastní relay byl nedostupný — tento přenos používá veřejné relay.",
 			"fellBackToastReceive": "Váš vlastní relay byl nedostupný — toto stahování používá veřejné relay.",
@@ -256,7 +256,13 @@
 			"configuredDefault": "Automaticky (veřejné relay)",
 			"configuredCustom": "Vlastní (self-hosted)",
 			"configuredDisabled": "Zakázáno",
-			"openSettings": "Nastavení sítě"
+			"openSettings": "Nastavení sítě",
+			"infoToggle": "O relay serverech",
+			"purpose": "Relay servery pouze pomáhají vašim zařízením najít se navzájem a navázat spojení.",
+			"directNote": "Jakmile je navázáno přímé spojení, soubory se přenášejí přímo mezi zařízeními a relay se již nepoužívá.",
+			"lanNote": "Ve stejné místní síti se relay servery zcela přeskočí.",
+			"encryptedNote": "Přenosy jsou vždy šifrovány end-to-end, takže relay servery vaše soubory nikdy nevidí.",
+			"disabledNote": "Relay servery jsou vypnuté. Pouze přímá spojení, takže přenosy mohou přes přísné firewally nebo NAT selhat."
 		}
 	}
 }

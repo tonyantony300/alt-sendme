@@ -245,7 +245,7 @@
 			"customHeading": "Relay personalizado",
 			"disabledHeading": "Relays desativados",
 			"unavailableHeading": "Relay indisponível",
-			"fellBackToPublic": "Relay personalizado inacessível — usando relay público",
+			"fellBackToPublic": "Relay personalizado inacessível, usando relay público em vez dele.",
 			"fellBackToastTitle": "Usando relay público",
 			"fellBackToastSend": "Seu relay personalizado estava inacessível — esta transferência está usando um relay público.",
 			"fellBackToastReceive": "Seu relay personalizado estava inacessível — este download está usando um relay público.",
@@ -256,7 +256,13 @@
 			"configuredDefault": "Automático (relays públicos)",
 			"configuredCustom": "Personalizado (auto-hospedado)",
 			"configuredDisabled": "Desativado",
-			"openSettings": "Configurações de rede"
+			"openSettings": "Configurações de rede",
+			"infoToggle": "Sobre os relays",
+			"purpose": "Os relays apenas ajudam seus dispositivos a se encontrarem e se conectarem.",
+			"directNote": "Depois que uma conexão direta é estabelecida, os arquivos são transferidos diretamente entre os dispositivos e o relay deixa de ser usado.",
+			"lanNote": "Na mesma rede local, os relays são totalmente ignorados.",
+			"encryptedNote": "As transferências são sempre criptografadas de ponta a ponta, então os relays nunca veem seus arquivos.",
+			"disabledNote": "Os relays estão desativados. Somente conexões diretas, então as transferências podem falhar com firewalls ou NATs restritivos."
 		}
 	}
 }
