@@ -1,6 +1,9 @@
 use tauri::{AppHandle, Manager};
 
 #[cfg(not(target_os = "macos"))]
+use std::sync::atomic::{AtomicBool, Ordering};
+
+#[cfg(not(target_os = "macos"))]
 use tauri::{
     menu::{Menu, MenuItem},
     path::BaseDirectory,
@@ -9,6 +12,14 @@ use tauri::{
 
 // to show confirmation dialog box for quit event from tray
 // use tauri_plugin_dialog::DialogExt;
+
+#[cfg(not(target_os = "macos"))]
+static TRAY_ACTIVE: AtomicBool = AtomicBool::new(false);
+
+#[cfg(not(target_os = "macos"))]
+pub fn is_active() -> bool {
+    TRAY_ACTIVE.load(Ordering::Relaxed)
+}
 
 /// Return true if window was shown (or attempted) successfully, false otherwise.
 pub fn open_and_focus(app: &AppHandle) -> bool {
@@ -111,5 +122,6 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let tray = builder.build(app)?;
 
     app.manage(tray);
+    TRAY_ACTIVE.store(true, Ordering::Relaxed);
     Ok(())
 }

@@ -189,7 +189,7 @@ jobs:
         if: contains(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils
 
       - name: Install NSIS (Windows only)
         if: matrix.platform == 'windows-latest'
@@ -289,6 +289,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_KEY_PASSWORD }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          TAURI_LINUX_AYATANA_APPINDICATOR: ${{ contains(matrix.platform, 'ubuntu') && '1' || '' }}
         with:
           projectPath: ./src-tauri
           releaseId: ${{ needs.prepare-release.outputs.release_id }}
@@ -297,6 +298,17 @@ jobs:
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
+
+      # Tauri's bundler hardcodes Ubuntu 22.04 deb dependency names. Rewrite them
+      # to also accept Debian / Ubuntu 24.04+ names, then overwrite the uploaded asset.
+      - name: Patch Linux .deb dependencies (ubuntu only)
+        if: contains(matrix.platform, 'ubuntu')
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
+        run: node scripts/patch-linux-deb.js
 
   # Uses repository secrets: ANDROID_KEY_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
   # (same names as https://v2.tauri.app/distribute/sign/android/).

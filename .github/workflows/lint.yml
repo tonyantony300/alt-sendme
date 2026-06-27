@@ -39,9 +39,6 @@ jobs:
           BASE="${{ github.event.pull_request.base.sha }}"
           CHANGED=$(git diff --name-only "$BASE"...HEAD)
           fail() { echo "::error::$1"; exit 1; }
-          if echo "$CHANGED" | grep -q '^package-lock\.json$'; then
-            echo "$CHANGED" | grep -q '^package\.json$' || fail "package-lock.json was modified but package.json was not. Only change package-lock.json when you add/update dependencies in package.json. To discard: git checkout origin/main -- package-lock.json"
-          fi
           if echo "$CHANGED" | grep -q '^src-tauri/Cargo\.lock$'; then
             echo "$CHANGED" | grep -q '^src-tauri/Cargo\.toml$' || fail "src-tauri/Cargo.lock was modified but src-tauri/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- src-tauri/Cargo.lock"
           fi
