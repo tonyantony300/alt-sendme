@@ -145,14 +145,12 @@ jobs:
             rust_target: x86_64-unknown-linux-gnu
             args: ''
             cache_key: ubuntu-x86_64
-            tauri_script: 'npm run tauri:build:linux --'
           - label: linux-arm64
             platform: 'ubuntu-22.04-arm'
             arch: aarch64
             rust_target: aarch64-unknown-linux-gnu
             args: ''
             cache_key: ubuntu-aarch64
-            tauri_script: 'npm run tauri:build:linux --'
           - label: windows-x64
             platform: 'windows-latest'
             arch: x86_64
@@ -297,10 +295,20 @@ jobs:
           releaseId: ${{ needs.prepare-release.outputs.release_id }}
           tagName: ${{ github.ref_name }}
           args: ${{ matrix.args }}
-          tauriScript: ${{ matrix.tauri_script || 'npm run tauri --' }}
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
+
+      # Tauri's bundler hardcodes Ubuntu 22.04 deb dependency names. Rewrite them
+      # to also accept Debian / Ubuntu 24.04+ names, then overwrite the uploaded asset.
+      - name: Patch Linux .deb dependencies (ubuntu only)
+        if: contains(matrix.platform, 'ubuntu')
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
+        run: node scripts/patch-linux-deb.js
 
   # Uses repository secrets: ANDROID_KEY_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
   # (same names as https://v2.tauri.app/distribute/sign/android/).
