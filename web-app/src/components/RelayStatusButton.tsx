@@ -147,7 +147,11 @@ export function RelayStatusButton() {
 										<span>{t('footer.relay.directNote')}</span>
 									</div>
 									<div className="flex items-start gap-2">
-										<LazyIcon name="House" size={14} className="mt-px shrink-0" />
+										<LazyIcon
+											name="House"
+											size={14}
+											className="mt-px shrink-0"
+										/>
 										<span>{t('footer.relay.lanNote')}</span>
 									</div>
 									<div className="flex items-start gap-2">

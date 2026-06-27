@@ -254,12 +254,7 @@ run('npx', ['tauri', 'android', 'init', '--ci'], { noCi: true })
 console.log(
 	'android-release-build: restoring committed gen/android assets from git'
 )
-run('git', [
-	'checkout',
-	'HEAD',
-	'--',
-	'src-tauri/gen/android/app/src/main/',
-])
+run('git', ['checkout', 'HEAD', '--', 'src-tauri/gen/android/app/src/main/'])
 
 const manifestPath = path.join(genAndroid, 'app/src/main/AndroidManifest.xml')
 if (!fs.existsSync(manifestPath)) {

@@ -1,4 +1,9 @@
-import { CheckCircle, CoffeeIcon, ExternalLinkIcon, XCircle } from 'lucide-react'
+import {
+	CheckCircle,
+	CoffeeIcon,
+	ExternalLinkIcon,
+	XCircle,
+} from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { trackTransferComplete } from '../../lib/analytics'
 import { handleExternalLinkClick } from '../../lib/openExternalUrl'

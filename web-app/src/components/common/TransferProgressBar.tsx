@@ -69,8 +69,7 @@ function CircularRing({ percentage }: CircularRingProps) {
 				const segmentStartAngle = index * SEGMENT_ANGLE + GAP_ANGLE
 				const isFilled = index < filledSegments
 				const isPartiallyFilled =
-					index === filledSegments &&
-					percentage % (100 / SEGMENT_COUNT) > 0
+					index === filledSegments && percentage % (100 / SEGMENT_COUNT) > 0
 
 				let fillFraction = 0
 				if (isFilled) {
@@ -120,9 +119,12 @@ function CircularRing({ percentage }: CircularRingProps) {
 	)
 }
 
+const BAR_COUNT = 30
+const BAR_KEYS = Array.from({ length: BAR_COUNT }, (_, i) => `bar-${i}`)
+
 export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 	const { percentage } = progress
-	const barCount = 30
+	const barCount = BAR_COUNT
 	const { t } = useTranslation()
 	const filledBars = Math.floor((percentage / 100) * barCount)
 
@@ -159,7 +161,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 				</div>
 
 				<div className="flex gap-1 items-end h-8">
-					{Array.from({ length: barCount }).map((_, index) => {
+					{BAR_KEYS.map((barKey, index) => {
 						const isFilled = index < filledBars
 						const isPartiallyFilled =
 							index === filledBars && percentage % (100 / barCount) > 0
@@ -175,7 +177,7 @@ export function TransferProgressBar({ progress }: TransferProgressBarProps) {
 
 						return (
 							<div
-								key={index}
+								key={barKey}
 								className="relative flex-1 rounded-sm bg-input transition-all duration-300 ease-in-out"
 								style={{ minWidth: '3px', height: '100%' }}
 							>
