@@ -99,13 +99,23 @@ pub fn run() {
         .setup(|app| {
             setup_common(app);
             #[cfg(all(desktop, not(target_os = "macos")))]
-            tray::setup_tray(&app.handle())?;
+            if let Err(error) = tray::setup_tray(&app.handle()) {
+                tracing::warn!(
+                    error = %error,
+                    "System tray unavailable; app will continue without tray icon"
+                );
+            }
             Ok(())
         });
 
     #[cfg(desktop)]
     let builder = builder.on_window_event(|window, event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            #[cfg(not(target_os = "macos"))]
+            if !tray::is_active() {
+                return;
+            }
+
             api.prevent_close();
             tracing::debug!("App closed to system tray");
             if let Err(e) = window.hide() {
