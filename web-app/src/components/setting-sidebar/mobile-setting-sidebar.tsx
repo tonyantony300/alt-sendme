@@ -1,9 +1,12 @@
 import type { FC } from 'react'
 import type React from 'react'
+import { IS_LINUX } from '@/lib/platform'
 import { cn } from '../../lib/utils'
 import { useSidebar } from '../ui/sidebar'
 import { Button } from '../ui/button'
 import { LazyIcon } from '../icons'
+
+const LINUX_TITLE_BAR_HEIGHT = '2.5rem'
 
 type MobileSettingSidebarProps = React.ComponentPropsWithoutRef<'div'>
 
@@ -18,10 +21,11 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 			<header
 				className={cn(
 					isMobile ? 'flex' : 'hidden',
-					'gap-2 border-b fixed border-border inset-x-0 top-0 items-center bg-muted backdrop-blur-md z-10',
+					'gap-2 border-b fixed border-border inset-x-0 items-center bg-muted backdrop-blur-md z-10',
 					className
 				)}
 				style={{
+					top: IS_LINUX ? LINUX_TITLE_BAR_HEIGHT : 0,
 					paddingTop: 'calc(0.625rem + env(safe-area-inset-top))',
 					paddingBottom: '0.625rem',
 					paddingLeft: 'calc(0.75rem + env(safe-area-inset-left))',

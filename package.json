@@ -8,6 +8,7 @@
 		"build": "tsc -b && vite build",
 		"preview": "vite preview",
 		"tauri": "tauri",
+		"tauri:build:linux": "node ./scripts/tauri-build-linux.js",
 		"android:dev": "tauri android dev",
 		"android:build": "tauri android build",
 		"release": "node ./scripts/release.js",
