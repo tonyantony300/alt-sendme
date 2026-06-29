@@ -1,4 +1,4 @@
-import { readdirSync, rmSync } from 'node:fs'
+import { existsSync, readdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
@@ -31,7 +31,7 @@ function run(command, args) {
 rmSync(outputDir, { recursive: true, force: true })
 run(process.execPath, [tscBin, '-p', 'tsconfig.lib-test.json'])
 
-const testFiles = collectTestFiles(testDir)
+const testFiles = existsSync(testDir) ? collectTestFiles(testDir) : []
 if (testFiles.length === 0) {
 	console.error(`No lib tests found in ${testDir}`)
 	process.exit(1)

@@ -1,15 +1,10 @@
 import { useAppSettingStore } from '../store/app-setting'
-import { relayAuthTokenForIpc } from './relay-auth-token'
+import {
+	buildRelayConfigArg,
+	type RelayConfigArg,
+} from './relay-config'
 
-export type RelayMode = 'default' | 'custom' | 'disabled'
-export type RelayFallback = 'strict' | 'public'
-
-export type RelayConfigArg = {
-	mode: RelayMode
-	urls: string[]
-	auth_token?: string | null
-	fallback: RelayFallback
-}
+export type { RelayConfigArg, RelayFallback, RelayMode } from './relay-config'
 
 export type VerifyRelaysResponse = {
 	url: string | null
@@ -80,11 +75,10 @@ export function getRelayConfigArg(): RelayConfigArg {
 	const { relayMode, relayUrls, relayAuthToken, relayFallback } =
 		useAppSettingStore.getState()
 
-	return {
-		mode: relayMode,
-		urls: relayUrls.map((url) => url.trim()).filter(Boolean),
-		auth_token:
-			relayMode === 'custom' ? relayAuthTokenForIpc(relayAuthToken) : null,
-		fallback: relayFallback,
-	}
+	return buildRelayConfigArg({
+		relayMode,
+		relayUrls,
+		relayAuthToken,
+		relayFallback,
+	})
 }

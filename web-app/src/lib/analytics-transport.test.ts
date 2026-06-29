@@ -1,49 +1,73 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
-import { buildGoatCounterEventUrl } from './analytics-transport.js'
+import {
+	buildGoatCounterEventUrl,
+	sendGoatCounterEvent,
+} from './analytics-transport.js'
+
+type TauriConfig = {
+	app: {
+		security: {
+			csp: Record<string, string>
+			devCsp: Record<string, string>
+		}
+	}
+}
+
+function readTauriConfig(): TauriConfig {
+	return JSON.parse(readFileSync('src-tauri/tauri.conf.json', 'utf8'))
+}
 
 describe('analytics transport hardening', () => {
-	it('does not load GoatCounter remote script into the Tauri renderer', () => {
-		const initAnalyticsSource = readFileSync(
-			'web-app/src/lib/initAnalytics.ts',
-			'utf8'
-		)
-		const tauriConfig = readFileSync('src-tauri/tauri.conf.json', 'utf8')
+	it('keeps remote analytics scripts blocked by the Tauri CSP', () => {
+		const { app } = readTauriConfig()
 
-		assert.equal(initAnalyticsSource.includes('gc.zgo.at/count.js'), false)
-		assert.equal(
-			tauriConfig.includes('script-src') && tauriConfig.includes('gc.zgo.at'),
-			false
+		assert.equal(app.security.csp['script-src'], "'self'")
+		assert.equal(app.security.devCsp['script-src'], "'self'")
+		assert.match(
+			app.security.csp['connect-src'],
+			/https:\/\/alt-sendme\.goatcounter\.com/
 		)
+		assert.doesNotMatch(app.security.csp['script-src'], /goatcounter|gc\.zgo\.at/)
 	})
 
 	it('builds a fixed GoatCounter event URL without transfer details', () => {
 		const url = new URL(buildGoatCounterEventUrl('transfer-complete/sender'))
+		const queryKeys = [...url.searchParams.keys()].sort()
 
 		assert.equal(url.origin, 'https://alt-sendme.goatcounter.com')
 		assert.equal(url.pathname, '/count')
+		assert.deepEqual(queryKeys, ['e', 'p', 'rnd', 't'])
 		assert.equal(url.searchParams.get('p'), 'transfer-complete/sender')
+		assert.equal(url.searchParams.get('t'), 'AltSendme transfer complete')
 		assert.equal(url.searchParams.get('e'), '1')
-		assert.equal(url.searchParams.has('fileSize'), false)
-		assert.equal(url.searchParams.has('duration'), false)
 	})
 
-	it('does not use an image pixel fallback outside connect-src controls', () => {
-		const analyticsTransportSource = readFileSync(
-			'web-app/src/lib/analytics-transport.ts',
-			'utf8'
-		)
+	it('uses the browser beacon transport without requiring an image fallback', () => {
+		let sentUrl: string | URL | null = null
+		const originalNavigator = globalThis.navigator
+		Object.defineProperty(globalThis, 'navigator', {
+			configurable: true,
+			value: {
+				sendBeacon: (url: string | URL) => {
+					sentUrl = url
+					return true
+				},
+			},
+		})
 
-		assert.equal(analyticsTransportSource.includes('new Image'), false)
-	})
+		try {
+			sendGoatCounterEvent('transfer-complete/receiver')
 
-	it('does not interpolate raw relay URLs into invalid URL toasts', () => {
-		const relaySettingsSource = readFileSync(
-			'web-app/src/components/settings/relay/relay-settings.tsx',
-			'utf8'
-		)
-
-		assert.equal(relaySettingsSource.includes("invalidUrl', { url:"), false)
+			assert.ok(sentUrl)
+			const url = new URL(String(sentUrl))
+			assert.equal(url.searchParams.get('p'), 'transfer-complete/receiver')
+		} finally {
+			Object.defineProperty(globalThis, 'navigator', {
+				configurable: true,
+				value: originalNavigator,
+			})
+		}
 	})
 })

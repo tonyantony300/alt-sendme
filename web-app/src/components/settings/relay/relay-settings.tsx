@@ -9,6 +9,11 @@ import {
 	RELAY_FALLBACK_OPTIONS,
 	relayFallbackFromRadioValue,
 } from '../../../lib/relay-fallback-options'
+import {
+	MAX_RELAY_URL_LENGTH,
+	RELAY_URL_INVALID_MESSAGE_KEY,
+	isValidRelayUrl,
+} from '../../../lib/relay-url-validation'
 import { getRelayRegion } from '../../../lib/relay'
 import type { VerifyRelaysResponse } from '../../../lib/relay'
 import { cn } from '../../../lib/utils'
@@ -24,8 +29,6 @@ import { Input } from '../../ui/input'
 import { Label } from '../../ui/label'
 import { RadioGroup, RadioGroupItem } from '../../ui/radio-group'
 import { toastManager } from '../../ui/toast'
-
-const MAX_RELAY_URL_LENGTH = 2048
 
 function isDisallowedRelayUrlChar(char: string): boolean {
 	const code = char.charCodeAt(0)
@@ -46,34 +49,6 @@ function sanitizeRelayUrlInput(value: string): string {
 		if (sanitized.length >= MAX_RELAY_URL_LENGTH) break
 	}
 	return sanitized.join('')
-}
-
-function isLoopbackHost(hostname: string): boolean {
-	return (
-		hostname === 'localhost' ||
-		hostname === '127.0.0.1' ||
-		hostname === '::1' ||
-		hostname === '[::1]'
-	)
-}
-
-function isValidRelayUrl(url: string): boolean {
-	if (url.length === 0 || url.length > MAX_RELAY_URL_LENGTH) return false
-	let parsed: URL
-	try {
-		parsed = new URL(url)
-	} catch {
-		return false
-	}
-	// Require a real host and reject embedded credentials (user:pass@host).
-	if (!parsed.hostname) return false
-	if (parsed.username || parsed.password) return false
-	// Enforce HTTPS so auth tokens are never sent in cleartext; allow plain
-	// HTTP only against loopback hosts for local self-host testing.
-	if (parsed.protocol === 'https:') return true
-	if (parsed.protocol === 'http:' && isLoopbackHost(parsed.hostname))
-		return true
-	return false
 }
 
 export function RelaySettings() {
@@ -150,7 +125,7 @@ export function RelaySettings() {
 		if (invalid) {
 			toastManager.add({
 				title: t('settings.network.relay.verifyFailed'),
-				description: t('settings.network.relay.urlInvalidHint'),
+				description: t(RELAY_URL_INVALID_MESSAGE_KEY),
 				type: 'error',
 			})
 			return
@@ -164,7 +139,7 @@ export function RelaySettings() {
 			if (cleartextUrl) {
 				toastManager.add({
 					title: t('settings.network.relay.verifyFailed'),
-					description: t('settings.network.relay.urlInvalidHint'),
+					description: t(RELAY_URL_INVALID_MESSAGE_KEY),
 					type: 'error',
 				})
 				return
@@ -409,7 +384,7 @@ export function RelaySettings() {
 										</div>
 										{isInvalidFormat && (
 											<p className="pl-1 text-xs text-destructive">
-												{t('settings.network.relay.urlInvalidHint')}
+												{t(RELAY_URL_INVALID_MESSAGE_KEY)}
 											</p>
 										)}
 										{!isInvalidFormat && status === 'failed' && (

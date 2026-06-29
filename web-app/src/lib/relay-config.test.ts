@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { buildRelayStatusConfig } from './relay-status.js'
+import { buildRelayConfigArg } from './relay-config.js'
 
-describe('buildRelayStatusConfig', () => {
-	it('forwards custom relay auth tokens for authenticated status checks', () => {
+describe('buildRelayConfigArg', () => {
+	it('forwards normalized custom relay URLs and auth tokens in custom mode', () => {
 		assert.deepEqual(
-			buildRelayStatusConfig({
+			buildRelayConfigArg({
 				relayMode: 'custom',
 				relayUrls: [' https://relay.example.com ', ' '],
 				relayAuthToken: 'secret-token',
@@ -20,9 +20,9 @@ describe('buildRelayStatusConfig', () => {
 		)
 	})
 
-	it('omits custom relay URLs and auth tokens outside custom relay mode', () => {
+	it('strips persisted custom relay endpoints and tokens outside custom mode', () => {
 		assert.deepEqual(
-			buildRelayStatusConfig({
+			buildRelayConfigArg({
 				relayMode: 'default',
 				relayUrls: ['https://relay.example.com'],
 				relayAuthToken: 'secret-token',
