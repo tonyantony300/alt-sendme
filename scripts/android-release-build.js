@@ -299,9 +299,13 @@ const profiles = selectedProfiles()
 
 for (const profile of profiles) {
 	console.log(`\nandroid-release-build: building profile "${profile.name}"`)
-	run('npx', ['tauri', 'android', 'build', ...profile.buildArgs], {
-		noCi: true,
-	})
+	run(
+		'npx',
+		['tauri', 'android', 'build', ...profile.buildArgs, '--', '--locked'],
+		{
+			noCi: true,
+		}
+	)
 
 	const built = resolveApkAfterBuild(profile.name)
 	if (!built) {

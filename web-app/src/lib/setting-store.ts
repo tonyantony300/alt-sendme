@@ -10,12 +10,14 @@ export const defaultAppSettings: AppSettingsState = {
 	enableNotifications: true,
 	darkMode: false,
 	autoUpdate: true,
+	analyticsEnabled: false,
 	showProgressOnIcon: false,
 	downloadsPath: '',
 	windowsContextMenu: true,
 	relayMode: 'default',
 	relayUrls: [''],
 	relayAuthToken: '',
+	relayFallback: 'strict',
 	showBroadcastToggle: false,
 }
 export const localSettingStore = new LazyStore(SETTING_FILE, {

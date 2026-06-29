@@ -208,6 +208,12 @@
 				"authTokenDescription": "Required when your relay uses access.shared_token in its config.",
 				"showAuthToken": "Show",
 				"hideAuthToken": "Hide",
+				"fallbackLabel": "Fallback policy",
+				"fallbackDescription": "Choose what happens when your custom relay cannot be reached.",
+				"fallbackStrict": "Stay on custom relays",
+				"fallbackStrictDesc": "Fail the transfer instead of switching to public relays. Best for private setups.",
+				"fallbackPublic": "Use public relays if needed",
+				"fallbackPublicDesc": "Fall back to public iroh relays when custom relays are unreachable.",
 				"privacyNote": "For a fully private setup, configure the same relay URLs on both sender and receiver devices.",
 				"testConnection": "Test connection",
 				"verifySuccess": "Relay connection OK",
@@ -221,6 +227,7 @@
 				"confirmDisableDescription": "You've chosen to disable relays. File transfers may fail if you try to share files with someone outside your local network. Relays help devices find & connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
 				"confirmCustomTitle": "Use custom relays?",
 				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. If your custom relays are unreachable, transfers will automatically fall back to public relays and you'll be notified. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmCustomDescriptionWithPolicy": "You've chosen to use custom self-hosted relays. If they are unreachable, AltSendme will follow the fallback policy selected in Relay settings. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
 				"confirmContinue": "Continue"
 			}
 		}

@@ -73,7 +73,7 @@ export function RelayChangeGuard() {
 					<AlertDialogDescription>
 						{warningType === 'disabled'
 							? t('settings.network.relay.confirmDisableDescription')
-							: t('settings.network.relay.confirmCustomDescription')}
+							: t('settings.network.relay.confirmCustomDescriptionWithPolicy')}
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
