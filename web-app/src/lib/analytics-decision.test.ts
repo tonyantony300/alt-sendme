@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+	analyticsPlatformFromTauriPlatform,
 	isDoNotTrackPreferenceEnabled,
 	shouldUseAnalytics,
 } from './analytics-decision.js'
@@ -39,6 +40,17 @@ describe('shouldUseAnalytics', () => {
 		)
 	})
 
+	it('disables analytics when the platform is unknown', () => {
+		assert.equal(
+			shouldUseAnalytics({
+				analyticsEnabled: true,
+				doNotTrack: false,
+				platform: 'unknown',
+			}),
+			false
+		)
+	})
+
 	it('permits analytics on desktop when consent is enabled and DNT is inactive', () => {
 		assert.equal(
 			shouldUseAnalytics({
@@ -51,11 +63,35 @@ describe('shouldUseAnalytics', () => {
 	})
 })
 
+describe('analyticsPlatformFromTauriPlatform', () => {
+	it('maps known Tauri desktop and Android platforms explicitly', () => {
+		assert.equal(analyticsPlatformFromTauriPlatform('windows'), 'desktop')
+		assert.equal(analyticsPlatformFromTauriPlatform('darwin'), 'desktop')
+		assert.equal(analyticsPlatformFromTauriPlatform('linux'), 'desktop')
+		assert.equal(analyticsPlatformFromTauriPlatform('android'), 'android')
+	})
+
+	it('treats missing or unrecognized platform values as unknown', () => {
+		assert.equal(analyticsPlatformFromTauriPlatform(''), 'unknown')
+		assert.equal(analyticsPlatformFromTauriPlatform(undefined), 'unknown')
+		assert.equal(analyticsPlatformFromTauriPlatform('freebsd'), 'unknown')
+	})
+})
+
 describe('isDoNotTrackPreferenceEnabled', () => {
 	it('honors navigator.doNotTrack opt-outs', () => {
 		assert.equal(
 			isDoNotTrackPreferenceEnabled({
 				navigator: { doNotTrack: '1' },
+			}),
+			true
+		)
+	})
+
+	it('honors legacy navigator.doNotTrack yes opt-outs', () => {
+		assert.equal(
+			isDoNotTrackPreferenceEnabled({
+				navigator: { doNotTrack: 'yes' },
 			}),
 			true
 		)

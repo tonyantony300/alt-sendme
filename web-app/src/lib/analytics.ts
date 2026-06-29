@@ -1,5 +1,6 @@
 import {
 	type AnalyticsPlatform,
+	analyticsPlatformFromTauriPlatform,
 	isDoNotTrackPreferenceEnabled,
 	shouldUseAnalytics,
 } from './analytics-decision'
@@ -7,7 +8,7 @@ import { sendGoatCounterEvent } from './analytics-transport'
 import { useAppSettingStore } from '../store/app-setting'
 
 function getAnalyticsPlatform(): AnalyticsPlatform {
-	return import.meta.env.TAURI_PLATFORM === 'android' ? 'android' : 'desktop'
+	return analyticsPlatformFromTauriPlatform(import.meta.env.TAURI_PLATFORM)
 }
 
 function isDoNotTrackEnabled(): boolean {
