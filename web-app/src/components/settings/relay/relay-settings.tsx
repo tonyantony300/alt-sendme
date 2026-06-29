@@ -69,7 +69,9 @@ export function RelaySettings() {
 	const [showAuthToken, setShowAuthToken] = useState(
 		() => relayAuthToken.trim().length > 0
 	)
-	const urlRowIdsRef = useRef<string[]>([])
+	const urlRowIdsRef = useRef<string[]>(
+		relayUrls.map(() => crypto.randomUUID())
+	)
 
 	useEffect(() => {
 		while (urlRowIdsRef.current.length < relayUrls.length) {
