@@ -46,7 +46,7 @@ pub struct SendResult {
     pub temp_tag: iroh_blobs::api::TempTag, // Prevents data from being garbage collected
     pub _progress_handle: n0_future::task::AbortOnDropHandle<anyhow::Result<()>>, // Keeps event channel open
     pub _store: iroh_blobs::store::fs::FsStore, // Keeps the blob storage alive
-    pub blobs_data_dir: AutoCleanupDir, // Drop last to cleanup after handles are released
+    pub blobs_data_dir: AutoCleanupDir,         // Drop last to cleanup after handles are released
 }
 
 #[derive(Debug)]

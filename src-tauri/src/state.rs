@@ -20,7 +20,6 @@ pub struct ShareHandle {
     pub send_result: SendResult, // This keeps router and temp_tag alive!
 }
 
-
 impl ShareHandle {
     pub fn new(ticket: String, path: PathBuf, send_result: SendResult) -> Self {
         Self {
