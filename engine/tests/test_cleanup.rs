@@ -1,7 +1,7 @@
 mod common;
 
 use common::TestFixture;
-use sendme::{download, start_share, ReceiveOptions, SendOptions};
+use engine::{download, start_share, ReceiveOptions, SendOptions};
 use std::str::FromStr;
 
 #[tokio::test]
