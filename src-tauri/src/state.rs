@@ -20,28 +20,6 @@ pub struct ShareHandle {
     pub send_result: SendResult, // This keeps router and temp_tag alive!
 }
 
-impl Drop for ShareHandle {
-    fn drop(&mut self) {
-        // Clean up the temporary blobs directory when share is stopped
-        // Use blocking cleanup since Drop is synchronous
-        // Spawn a thread to avoid blocking the async runtime
-        let blobs_dir = self.send_result.blobs_data_dir.clone();
-        std::thread::spawn(move || {
-            // Use blocking std::fs instead of tokio::fs for cleanup in Drop
-            match std::fs::remove_dir_all(&blobs_dir) {
-                Ok(_) => {}
-                Err(e) => {
-                    tracing::warn!(
-                        "Failed to clean up blobs directory {}: {}",
-                        blobs_dir.display(),
-                        e
-                    );
-                }
-            }
-        });
-    }
-}
-
 impl ShareHandle {
     pub fn new(ticket: String, path: PathBuf, send_result: SendResult) -> Self {
         Self {
@@ -51,8 +29,8 @@ impl ShareHandle {
         }
     }
 
-    /// Explicitly stop the sharing session and clean up resources
-    /// The actual cleanup will happen in Drop when the struct is destroyed
+    /// Stop the sharing session and free its resources.
+    /// The blobs temp dir gets removed when SendResult drops (its AutoCleanupDir field).
     pub async fn stop(&mut self) -> Result<(), String> {
         use std::time::Duration;
 
@@ -73,8 +51,8 @@ impl ShareHandle {
         let endpoint = self.send_result.router.endpoint();
         endpoint.close().await;
 
-        // temp_tag, _store, and _progress_handle will be dropped automatically when the method ends
-        // Cleanup of blobs directory will happen in Drop trait
+        // temp_tag, _store, _progress_handle and the blobs dir all get cleaned
+        // up once SendResult drops.
 
         Ok(())
     }

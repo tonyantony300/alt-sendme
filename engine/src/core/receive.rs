@@ -1,6 +1,6 @@
 use crate::core::send::METADATA_ALPN;
 use crate::core::types::{
-    get_or_create_secret, AppHandle, FileMetadata, ReceiveOptions, ReceiveResult,
+    get_or_create_secret, AppHandle, AutoCleanupDir, FileMetadata, ReceiveOptions, ReceiveResult,
 };
 use iroh::endpoint::presets;
 use iroh::{address_lookup::dns::DnsAddressLookup, Endpoint, TransportAddr};
@@ -150,6 +150,9 @@ pub async fn download(
     let temp_base = std::env::temp_dir();
     let iroh_data_dir = temp_base.join(&dir_name);
     let db = FsStore::load(&iroh_data_dir).await?;
+    // Set up after load so a failed load doesn't wipe an existing partial store.
+    // Cleans up on success/stop; we disarm it on failure to keep progress for resume.
+    let mut cleanup_guard = AutoCleanupDir::new(iroh_data_dir.clone());
     let db2 = db.clone();
 
     let fut = async move {
@@ -310,6 +313,9 @@ pub async fn download(
             Ok(x) => x,
             Err(e) => {
                 tracing::error!("Download operation failed: {}", e);
+                // Transfer broke — keep what we've got so the next try can resume.
+                // Disarm before any `?` so an error here can't wipe it.
+                cleanup_guard.disarm();
                 // make sure we shutdown the db before exiting
                 db2.shutdown().await?;
                 anyhow::bail!("error: {e}");
@@ -321,9 +327,6 @@ pub async fn download(
             anyhow::bail!("Operation cancelled");
         }
     };
-
-    tokio::fs::remove_dir_all(&iroh_data_dir).await?;
-
     let message = if conflict_count > 0 {
         format!(
             "Downloaded {} files, {} bytes ({} name conflicts auto-resolved)",

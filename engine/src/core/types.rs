@@ -11,6 +11,50 @@ pub trait EventEmitter: Send + Sync {
 // Type alias for the app handle - we use Arc<dyn EventEmitter> to allow cloning and avoid direct tauri dependency in core
 pub type AppHandle = Option<Arc<dyn EventEmitter>>;
 
+#[derive(Debug)]
+pub struct AutoCleanupDir {
+    path: PathBuf,
+    armed: bool,
+}
+
+impl AutoCleanupDir {
+    pub fn new(path: PathBuf) -> Self {
+        Self { path, armed: true }
+    }
+
+    pub fn path(&self) -> &std::path::Path {
+        &self.path
+    }
+
+    /// Skip cleanup on drop — used to hang on to a partial download so it can resume.
+    pub fn disarm(&mut self) {
+        self.armed = false;
+    }
+}
+
+impl Drop for AutoCleanupDir {
+    fn drop(&mut self) {
+        if !self.armed {
+            return;
+        }
+        let path = std::mem::take(&mut self.path);
+        let remove = move || {
+            if let Err(e) = std::fs::remove_dir_all(&path) {
+                tracing::warn!("Failed to cleanup directory {:?}: {}", path, e);
+            }
+        };
+        // Deleting a big dir can be slow, so hand it to a blocking thread rather
+        // than freezing the async runtime (or a lock we're holding). If there's
+        // no runtime around, just delete it here.
+        match tokio::runtime::Handle::try_current() {
+            Ok(handle) => {
+                handle.spawn_blocking(remove);
+            }
+            Err(_) => remove(),
+        }
+    }
+}
+
 pub struct SendResult {
     pub ticket: String,
     pub hash: String,
@@ -20,9 +64,9 @@ pub struct SendResult {
     // CRITICAL: These fields must be kept alive for the duration of the share
     pub router: iroh::protocol::Router, // Keeps the server running and protocols active
     pub temp_tag: iroh_blobs::api::TempTag, // Prevents data from being garbage collected
-    pub blobs_data_dir: PathBuf,        // Path for cleanup when share stops
     pub _progress_handle: n0_future::task::AbortOnDropHandle<anyhow::Result<()>>, // Keeps event channel open
     pub _store: iroh_blobs::store::fs::FsStore, // Keeps the blob storage alive
+    pub blobs_data_dir: AutoCleanupDir,         // Drop last to cleanup after handles are released
 }
 
 #[derive(Debug)]
