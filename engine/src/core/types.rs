@@ -26,7 +26,7 @@ impl AutoCleanupDir {
         &self.path
     }
 
-    /// Keep the directory on drop (e.g. to preserve a partial download for resume).
+    /// Skip cleanup on drop — used to hang on to a partial download so it can resume.
     pub fn disarm(&mut self) {
         self.armed = false;
     }
@@ -37,9 +37,20 @@ impl Drop for AutoCleanupDir {
         if !self.armed {
             return;
         }
-        // Synchronous cleanup ensures reliable teardown (e.g. for tests)
-        if let Err(e) = std::fs::remove_dir_all(&self.path) {
-            tracing::warn!("Failed to cleanup directory {:?}: {}", self.path, e);
+        let path = std::mem::take(&mut self.path);
+        let remove = move || {
+            if let Err(e) = std::fs::remove_dir_all(&path) {
+                tracing::warn!("Failed to cleanup directory {:?}: {}", path, e);
+            }
+        };
+        // Deleting a big dir can be slow, so hand it to a blocking thread rather
+        // than freezing the async runtime (or a lock we're holding). If there's
+        // no runtime around, just delete it here.
+        match tokio::runtime::Handle::try_current() {
+            Ok(handle) => {
+                handle.spawn_blocking(remove);
+            }
+            Err(_) => remove(),
         }
     }
 }

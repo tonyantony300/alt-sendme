@@ -4,7 +4,7 @@ use common::{MockEventEmitter, TestFixture};
 use engine::{download, start_share, ReceiveOptions, SendOptions};
 use std::str::FromStr;
 
-/// Receiver temp dir path for a ticket (deterministic from its hash).
+/// Where the receiver keeps blobs for this ticket — the path comes from its hash.
 fn receiver_temp_dir(ticket: &str) -> std::path::PathBuf {
     let parsed = iroh_blobs::ticket::BlobTicket::from_str(ticket).unwrap();
     std::env::temp_dir().join(format!(
@@ -13,7 +13,7 @@ fn receiver_temp_dir(ticket: &str) -> std::path::PathBuf {
     ))
 }
 
-/// Total size of all files under `path` (recursive).
+/// Add up the size of every file under `path`.
 fn dir_size(path: &std::path::Path) -> u64 {
     let mut total = 0;
     if let Ok(entries) = std::fs::read_dir(path) {
@@ -29,7 +29,7 @@ fn dir_size(path: &std::path::Path) -> u64 {
     total
 }
 
-/// Bytes transferred from the most recent `receive-progress` event (payload: `bytes:total:speed`).
+/// Bytes-so-far from the latest `receive-progress` event (payload is `bytes:total:speed`).
 fn latest_progress_bytes(emitter: &MockEventEmitter) -> u64 {
     emitter
         .events_with_name("receive-progress")
@@ -38,6 +38,18 @@ fn latest_progress_bytes(emitter: &MockEventEmitter) -> u64 {
         .find_map(|e| e.payload)
         .and_then(|p| p.split(':').next().and_then(|s| s.parse().ok()))
         .unwrap_or(0)
+}
+
+/// Wait for `path` to disappear. Cleanup runs on a background thread, so it
+/// won't always be gone the moment we drop.
+async fn wait_until_gone(path: &std::path::Path) -> bool {
+    for _ in 0..200 {
+        if !path.exists() {
+            return true;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    !path.exists()
 }
 
 #[tokio::test]
@@ -58,13 +70,13 @@ async fn e2e_sender_temp_dir_cleanup() {
         "Temp dir should exist while share is active"
     );
 
-    // Drop the share to trigger AutoCleanupDir drop
+    // Dropping the share kicks off cleanup.
     drop(share);
 
-    // Verify it is immediately deleted
+    // Verify it is deleted (cleanup runs on a blocking task).
     assert!(
-        !temp_dir_path.exists(),
-        "Temp dir should be deleted immediately after SendResult is dropped"
+        wait_until_gone(&temp_dir_path).await,
+        "Temp dir should be deleted after SendResult is dropped"
     );
 }
 
@@ -73,18 +85,8 @@ async fn e2e_receiver_temp_dir_preserved_on_failure() {
     let fixture = TestFixture::new();
     let recv_dir = fixture.output_dir();
 
-    // To test receiver cleanup, we need to know the path it attempts to use.
-    // The receiver temp dir is named based on the ticket hash.
-    // We can create a fake invalid ticket to trigger a failure.
-    // But iroh's BlobTicket parsing will fail early if it's completely invalid.
-    // Let's create a technically valid ticket but to a non-existent sender.
-    // Or simpler, just check the global temp directory before and after.
-
-    // Instead of doing global temp directory diffing which could be flaky,
-    // let's pass a ticket that will timeout or fail during fetch_metadata.
-    // Wait, download uses fetch_metadata? No, download connects.
-    // Let's create a real ticket but drop the sender so connection fails.
-
+    // Start a real share to get a valid ticket, then drop the sender so the
+    // download fails when it tries to connect.
     let source = fixture.create_file("fail.txt", b"will fail");
     let share = start_share(source, SendOptions::default(), None, None)
         .await
@@ -105,7 +107,7 @@ async fn e2e_receiver_temp_dir_preserved_on_failure() {
         "Download should fail since sender was dropped"
     );
 
-    // Preserved on failure so a retry can resume from saved progress.
+    // Should still be here after the failure so the next try can pick up where it left off.
     assert!(
         expected_path.exists(),
         "Receiver temp dir should be preserved on failure for resumability"
@@ -144,9 +146,9 @@ async fn e2e_receiver_temp_dir_removed_on_success() {
         b"completed transfer payload"
     );
 
-    // Temp store is removed once the download completes successfully.
+    // Once the download finishes cleanly, the temp store is gone.
     assert!(
-        !expected_path.exists(),
+        wait_until_gone(&expected_path).await,
         "Receiver temp dir should be removed after a successful download"
     );
 
@@ -220,13 +222,16 @@ async fn e2e_receiver_resumes_partial_download() {
         "some partial bytes should be saved (got {partial})"
     );
 
-    // Re-share the same content -> same hash -> same ticket -> same temp dir.
+    // Re-share the same content. The node id (and thus the full ticket string)
+    // differs per session, but the content hash — which keys the temp dir — is
+    // the same, so the retry targets the preserved partial store.
     let share2 = start_share(source, SendOptions::default(), None, None)
         .await
         .unwrap();
     assert_eq!(
-        share2.ticket, ticket,
-        "same content must yield the same ticket"
+        receiver_temp_dir(&share2.ticket),
+        expected_path,
+        "re-share must map to the same partial-download dir"
     );
 
     // Retry completes by resuming from the saved progress.
@@ -245,7 +250,7 @@ async fn e2e_receiver_resumes_partial_download() {
     let received = std::fs::metadata(recv_dir.join("big.bin")).unwrap().len();
     assert_eq!(received as usize, size, "final file size should match");
     assert!(
-        !expected_path.exists(),
+        wait_until_gone(&expected_path).await,
         "temp dir should be removed after successful completion"
     );
 

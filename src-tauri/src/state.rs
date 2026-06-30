@@ -29,8 +29,8 @@ impl ShareHandle {
         }
     }
 
-    /// Explicitly stop the sharing session and clean up resources.
-    /// Blobs temp dir is removed when SendResult drops (its AutoCleanupDir field).
+    /// Stop the sharing session and free its resources.
+    /// The blobs temp dir gets removed when SendResult drops (its AutoCleanupDir field).
     pub async fn stop(&mut self) -> Result<(), String> {
         use std::time::Duration;
 
@@ -51,8 +51,8 @@ impl ShareHandle {
         let endpoint = self.send_result.router.endpoint();
         endpoint.close().await;
 
-        // temp_tag, _store, _progress_handle and the blobs dir are cleaned up
-        // when SendResult drops.
+        // temp_tag, _store, _progress_handle and the blobs dir all get cleaned
+        // up once SendResult drops.
 
         Ok(())
     }
