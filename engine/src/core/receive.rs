@@ -149,7 +149,9 @@ pub async fn download(
     let dir_name = format!(".sendme-recv-{}", ticket.hash().to_hex());
     let temp_base = std::env::temp_dir();
     let iroh_data_dir = temp_base.join(&dir_name);
-    let _cleanup_guard = AutoCleanupDir::new(iroh_data_dir.clone());
+    // Removes the temp store on success/stop; disarmed on failure to keep
+    // partial progress for resume.
+    let mut cleanup_guard = AutoCleanupDir::new(iroh_data_dir.clone());
     let db = FsStore::load(&iroh_data_dir).await?;
     let db2 = db.clone();
 
@@ -311,6 +313,8 @@ pub async fn download(
             Ok(x) => x,
             Err(e) => {
                 tracing::error!("Download operation failed: {}", e);
+                // Keep partial progress for resume; disarm before any `?`.
+                cleanup_guard.disarm();
                 // make sure we shutdown the db before exiting
                 db2.shutdown().await?;
                 anyhow::bail!("error: {e}");

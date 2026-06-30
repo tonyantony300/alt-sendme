@@ -33,7 +33,7 @@ async fn e2e_sender_temp_dir_cleanup() {
 }
 
 #[tokio::test]
-async fn e2e_receiver_temp_dir_cleanup_on_failure() {
+async fn e2e_receiver_temp_dir_preserved_on_failure() {
     let fixture = TestFixture::new();
     let recv_dir = fixture.output_dir();
 
@@ -77,9 +77,11 @@ async fn e2e_receiver_temp_dir_cleanup_on_failure() {
         "Download should fail since sender was dropped"
     );
 
-    // The temp directory should have been cleaned up on the error path
+    // Preserved on failure so a retry can resume from saved progress.
     assert!(
-        !expected_path.exists(),
-        "Receiver temp dir should be deleted on failure path"
+        expected_path.exists(),
+        "Receiver temp dir should be preserved on failure for resumability"
     );
+
+    let _ = std::fs::remove_dir_all(&expected_path);
 }

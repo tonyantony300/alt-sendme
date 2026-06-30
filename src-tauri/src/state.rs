@@ -29,8 +29,8 @@ impl ShareHandle {
         }
     }
 
-    /// Explicitly stop the sharing session and clean up resources
-    /// The actual cleanup will happen in Drop when the struct is destroyed
+    /// Explicitly stop the sharing session and clean up resources.
+    /// Blobs temp dir is removed when SendResult drops (its AutoCleanupDir field).
     pub async fn stop(&mut self) -> Result<(), String> {
         use std::time::Duration;
 
@@ -51,8 +51,8 @@ impl ShareHandle {
         let endpoint = self.send_result.router.endpoint();
         endpoint.close().await;
 
-        // temp_tag, _store, and _progress_handle will be dropped automatically when the method ends
-        // Cleanup of blobs directory will happen in Drop trait
+        // temp_tag, _store, _progress_handle and the blobs dir are cleaned up
+        // when SendResult drops.
 
         Ok(())
     }
