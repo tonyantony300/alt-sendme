@@ -1,0 +1,920 @@
+use crate::core::types::{
+    apply_options, get_or_create_secret, AddrInfoOptions, AppHandle, FileMetadata, SendOptions,
+    SendResult,
+};
+use anyhow::{ensure, Context};
+use data_encoding::HEXLOWER;
+use iroh::endpoint::presets;
+use iroh::protocol::{AcceptError, ProtocolHandler};
+use iroh::{address_lookup::pkarr::PkarrPublisher, endpoint::RelayMode, Endpoint};
+use iroh_blobs::api::blobs::AddProgressItem;
+use iroh_blobs::{
+    api::{
+        blobs::{AddPathOptions, ImportMode},
+        Store, TempTag,
+    },
+    format::collection::Collection,
+    provider::events::{ConnectMode, EventMask, EventSender, RequestMode},
+    store::fs::FsStore,
+    ticket::BlobTicket,
+    BlobFormat, BlobsProtocol,
+};
+use n0_future::StreamExt;
+use n0_future::{task::AbortOnDropHandle, BufferedStreamExt};
+use rand::RngExt;
+use std::io::ErrorKind;
+use std::{
+    path::{Component, Path, PathBuf},
+    time::{Duration, Instant},
+};
+use tokio::{select, sync::mpsc};
+use walkdir::WalkDir;
+
+// To avoid encoding thumbnail into ticket causing excessively long tickets, we use a custom metadata protocol to
+// send metadata seprately from the file data. After the receive end sticks the ticket, a seprate connection will
+// be made to fetch the metadata.
+pub const METADATA_ALPN: &[u8] = b"sendme/metadata/1";
+
+#[derive(Debug, Clone)]
+struct MetadataProtocol {
+    metadata: Option<FileMetadata>,
+}
+
+impl ProtocolHandler for MetadataProtocol {
+    /// # Description
+    /// Handles incoming connections on the metadata protocol.
+    /// It reads a metadata request marker (1 byte) from client, responds with a length-prefixed JSON metadata payload, and waits for the client to close the connection before finishing.
+    async fn accept(&self, connection: iroh::endpoint::Connection) -> Result<(), AcceptError> {
+        let (mut send_stream, mut recv_stream) =
+            match tokio::time::timeout(Duration::from_secs(30), connection.accept_bi()).await {
+                Ok(Ok(streams)) => streams,
+                Ok(Err(err)) => return Err(err.into()),
+                Err(_) => {
+                    tracing::debug!("metadata accept_bi timeout (benign)");
+                    return Ok(());
+                }
+            };
+
+        tracing::info!("metadata protocol bi stream accepted");
+
+        let mut req = [0u8; 1];
+        tokio::time::timeout(Duration::from_secs(10), recv_stream.read_exact(&mut req))
+            .await
+            .map_err(|_| {
+                AcceptError::from_err(std::io::Error::new(
+                    ErrorKind::TimedOut,
+                    "metadata request read timeout",
+                ))
+            })?
+            .map_err(AcceptError::from_err)?;
+
+        // Validate request marker (1 means metadata request)
+        if req[0] != 1 {
+            return Err(AcceptError::from_err(std::io::Error::new(
+                ErrorKind::InvalidData,
+                format!("invalid metadata request marker: {}", req[0]),
+            )));
+        }
+
+        tracing::debug!("metadata request marker received");
+
+        let payload = self.metadata.clone().ok_or_else(|| {
+            AcceptError::from_err(std::io::Error::new(
+                ErrorKind::NotFound,
+                "metadata unavailable",
+            ))
+        })?;
+
+        let meta_bytes = serde_json::to_vec(&payload).map_err(AcceptError::from_err)?;
+        const MAX_METADATA_BYTES: usize = 8 * 1024 * 1024;
+        if meta_bytes.len() > MAX_METADATA_BYTES {
+            return Err(AcceptError::from_err(std::io::Error::new(
+                ErrorKind::InvalidData,
+                format!("metadata payload too large: {} bytes", meta_bytes.len()),
+            )));
+        }
+        let len_prefix = (meta_bytes.len() as u32).to_be_bytes();
+
+        // Send 4 bytes of length prefix followed by the JSON metadata
+        tokio::time::timeout(Duration::from_secs(10), send_stream.write_all(&len_prefix))
+            .await
+            .map_err(|_| {
+                AcceptError::from_err(std::io::Error::new(
+                    ErrorKind::TimedOut,
+                    "metadata length write timeout",
+                ))
+            })?
+            .map_err(AcceptError::from_err)?;
+        tokio::time::timeout(Duration::from_secs(20), send_stream.write_all(&meta_bytes))
+            .await
+            .map_err(|_| {
+                AcceptError::from_err(std::io::Error::new(
+                    ErrorKind::TimedOut,
+                    "metadata body write timeout",
+                ))
+            })?
+            .map_err(AcceptError::from_err)?;
+
+        send_stream.finish().map_err(AcceptError::from_err)?;
+
+        // Wait for the client to close its receive stream (which means it got the data).
+        // This prevents tearing down the QUIC connection before the data buffers are flushed.
+        // We give it 30s which is more than the client's read timeout.
+        let mut eof_buf = [0u8; 1];
+        let _ = tokio::time::timeout(Duration::from_secs(30), recv_stream.read(&mut eof_buf)).await;
+
+        tracing::info!(bytes = meta_bytes.len(), "metadata sent");
+
+        Ok(())
+    }
+}
+
+fn emit_event(app_handle: &AppHandle, event_name: &str) {
+    if let Some(handle) = app_handle {
+        if let Err(e) = handle.emit_event(event_name) {
+            tracing::warn!("Failed to emit event {}: {}", event_name, e);
+        }
+    }
+}
+
+fn emit_progress_event(
+    app_handle: &AppHandle,
+    bytes_transferred: u64,
+    total_size: u64,
+    speed: f64,
+) {
+    if let Some(handle) = app_handle {
+        let event_name = "transfer-progress";
+
+        // Keep legacy payload format for frontend compatibility: "bytes:total:speed"
+        let payload = format!("{}:{}:{}", bytes_transferred, total_size, speed);
+        if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
+            tracing::warn!("Failed to emit progress event: {}", e);
+        }
+    }
+}
+
+fn emit_active_connection_count(app_handle: &AppHandle, count: usize) {
+    if let Some(handle) = app_handle {
+        let event_name = "active-connection-count";
+        let payload = count.to_string();
+
+        if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
+            tracing::warn!("Failed to emit active connection count event: {}", e);
+        }
+    }
+}
+
+/// Deprecated: `start_share_items` should be used instead which supports
+/// sharing multiple files/directories at once and provides better filename handling.
+///
+/// todo: Testing and cli should be migrated to `start_share_items`
+pub async fn start_share(
+    path: PathBuf,
+    options: SendOptions,
+    app_handle: AppHandle,
+    metadata: Option<FileMetadata>,
+) -> anyhow::Result<SendResult> {
+    start_share_items(vec![path], options, &app_handle, metadata).await
+}
+
+/// Starts sharing the provided paths (files or directories).
+/// If multiple paths are provided, they will be shared as a collection.
+pub async fn start_share_items(
+    paths: Vec<PathBuf>,
+    options: SendOptions,
+    app_handle: &AppHandle,
+    metadata: Option<FileMetadata>,
+) -> anyhow::Result<SendResult> {
+    ensure!(!paths.is_empty(), "no paths provided for sharing");
+
+    let secret_key = get_or_create_secret()?;
+    let relay_mode: RelayMode = options.relay_mode.clone().into();
+    let mut builder = Endpoint::builder(presets::N0)
+        .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
+        .secret_key(secret_key)
+        .relay_mode(relay_mode.clone());
+
+    if options.ticket_type == AddrInfoOptions::Id {
+        builder = builder.address_lookup(PkarrPublisher::n0_dns());
+    }
+    if let Some(addr) = options.magic_ipv4_addr {
+        builder = builder.bind_addr(addr)?;
+    }
+    if let Some(addr) = options.magic_ipv6_addr {
+        builder = builder.bind_addr(addr)?;
+    }
+
+    let suffix = rand::rng().random::<[u8; 16]>();
+    let temp_base = std::env::temp_dir();
+    let blobs_data_dir = temp_base.join(format!(".sendme-send-{}", HEXLOWER.encode(&suffix)));
+
+    let canonical_paths = canonicalize_input_paths(paths)?;
+
+    let blobs_data_dir2 = blobs_data_dir.clone();
+    let (progress_tx, progress_rx) = mpsc::channel(64);
+    let app_handle_clone = app_handle.clone();
+    let is_collection = canonical_paths.len() > 1;
+    let entry_type_for_progress = if is_collection {
+        "collection".to_string()
+    } else if canonical_paths[0].is_dir() {
+        "directory".to_string()
+    } else {
+        "file".to_string()
+    };
+    let entry_type = entry_type_for_progress.clone();
+
+    let setup = async move {
+        tokio::fs::create_dir_all(&blobs_data_dir2).await?;
+        let endpoint = builder.bind().await?;
+        let store = FsStore::load(&blobs_data_dir2).await?;
+
+        let blobs = BlobsProtocol::new(
+            &store,
+            Some(EventSender::new(
+                progress_tx,
+                EventMask {
+                    connected: ConnectMode::Notify,
+                    get: RequestMode::NotifyLog,
+                    ..EventMask::DEFAULT
+                },
+            )),
+        );
+
+        let import_result = import_paths(canonical_paths, blobs.store()).await?;
+        let (ref _temp_tag, size, ref _collection) = import_result;
+
+        let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
+            progress_rx,
+            app_handle_clone,
+            size,
+            entry_type_for_progress,
+        ));
+
+        let router = iroh::protocol::Router::builder(endpoint)
+            .accept(iroh_blobs::ALPN, blobs.clone())
+            .accept(METADATA_ALPN, MetadataProtocol { metadata })
+            .spawn();
+
+        let ep = router.endpoint();
+        tokio::time::timeout(Duration::from_secs(30), async move {
+            if !matches!(relay_mode, RelayMode::Disabled) {
+                let _ = ep.online().await;
+            }
+        })
+        .await?;
+
+        anyhow::Ok((
+            router,
+            import_result,
+            blobs_data_dir2,
+            store,
+            progress_handle,
+        ))
+    };
+
+    let (router, (temp_tag, size, _collection), _blobs_data_dir, store, progress_handle) = select! {
+        x = setup => x?,
+        _ = tokio::signal::ctrl_c() => {
+            anyhow::bail!("Operation cancelled");
+        }
+    };
+    let hash = temp_tag.hash();
+
+    let mut addr = router.endpoint().addr();
+
+    apply_options(&mut addr, options.ticket_type);
+
+    let ticket = BlobTicket::new(addr, hash, BlobFormat::HashSeq);
+
+    Ok(SendResult {
+        ticket: ticket.to_string(),
+        hash: hash.to_hex().to_string(),
+        size,
+        entry_type: entry_type.to_string(),
+        router,
+        temp_tag,
+        blobs_data_dir,
+        _progress_handle: AbortOnDropHandle::new(progress_handle),
+        _store: store,
+    })
+}
+
+async fn import_paths(
+    paths: Vec<PathBuf>,
+    db: &Store,
+) -> anyhow::Result<(TempTag, u64, Collection)> {
+    use std::collections::BTreeMap;
+
+    let mut entries: Vec<(String, TempTag, u64)> = Vec::new();
+    let mut name_seen: BTreeMap<String, usize> = BTreeMap::new();
+
+    for path in paths {
+        let stem = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "item".to_string());
+
+        let import = collect_path_files(&path, &stem)?;
+        if import.is_empty() {
+            tracing::warn!("no valid files found in path {}, skipping", path.display());
+        }
+
+        let mut local = n0_future::stream::iter(import)
+            .map(|(name, file_path)| {
+                let db = db.clone();
+                async move {
+                    let import = db.add_path_with_opts(AddPathOptions {
+                        path: file_path,
+                        mode: ImportMode::TryReference,
+                        format: iroh_blobs::BlobFormat::Raw,
+                    });
+                    let mut stream = import.stream().await;
+                    let mut item_size = 0u64;
+                    let temp_tag = loop {
+                        let item = stream
+                            .next()
+                            .await
+                            .context("import stream ended without a tag")?;
+                        match item {
+                            AddProgressItem::Size(size) => item_size = size,
+                            AddProgressItem::Done(tt) => break tt,
+                            AddProgressItem::Error(cause) => {
+                                anyhow::bail!("error importing {}:{}", name, cause)
+                            }
+                            _ => {}
+                        }
+                    };
+                    anyhow::Ok((name, temp_tag, item_size))
+                }
+            })
+            .buffered_unordered(num_cpus::get())
+            .collect::<Vec<_>>()
+            .await
+            .into_iter()
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        for (name, tag, size) in local.drain(..) {
+            let final_name = dedup_name(&name, &mut name_seen);
+            entries.push((final_name, tag, size));
+        }
+    }
+
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
+    ensure!(
+        !entries.is_empty(),
+        "no valid files found in provided paths"
+    );
+    let total_size = entries.iter().map(|(_, _, size)| *size).sum::<u64>();
+    let (collection, tags) = entries
+        .into_iter()
+        .map(|(name, tag, _)| ((name, tag.hash()), tag))
+        .unzip::<_, _, Collection, Vec<_>>();
+
+    let temp_tag = collection.clone().store(db).await?;
+    drop(tags);
+    Ok((temp_tag, total_size, collection))
+}
+
+pub fn canonicalized_path_to_string(
+    path: impl AsRef<Path>,
+    must_be_relative: bool,
+) -> anyhow::Result<String> {
+    let mut path_str = String::new();
+    let parts = path
+        .as_ref()
+        .components()
+        .filter_map(|c| match c {
+            Component::Normal(x) => {
+                let c = match x.to_str() {
+                    Some(c) => c,
+                    None => return Some(Err(anyhow::anyhow!("invalid character in path"))),
+                };
+
+                if !c.contains('/') && !c.contains('\\') {
+                    Some(Ok(c))
+                } else {
+                    Some(Err(anyhow::anyhow!("invalid path component {:?}", c)))
+                }
+            }
+            Component::RootDir => {
+                if must_be_relative {
+                    Some(Err(anyhow::anyhow!("invalid path component {:?}", c)))
+                } else {
+                    path_str.push('/');
+                    None
+                }
+            }
+            _ => Some(Err(anyhow::anyhow!("invalid path component {:?}", c))),
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+    let parts = parts.join("/");
+    path_str.push_str(&parts);
+    Ok(path_str)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[cfg(unix)]
+    #[test]
+    fn canonicalized_path_rejects_backslash() {
+        let path = Path::new("system-systemd\\x2dcryptsetup.slice");
+        assert!(canonicalized_path_to_string(path, true).is_err());
+    }
+
+    #[test]
+    fn canonicalized_path_accepts_normal() {
+        let result = canonicalized_path_to_string(Path::new("subdir/file.txt"), true);
+        assert_eq!(result.unwrap(), "subdir/file.txt");
+    }
+
+    #[test]
+    fn canonicalized_path_rejects_parent_traversal() {
+        assert!(canonicalized_path_to_string(Path::new("../etc/passwd"), true).is_err());
+    }
+
+    #[test]
+    fn canonicalized_path_rejects_absolute_when_relative() {
+        assert!(canonicalized_path_to_string(Path::new("/etc/passwd"), true).is_err());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn import_skips_invalid_files() {
+        use tempfile::TempDir;
+
+        let td = TempDir::new().unwrap();
+        let dir = td.path().join("testdir");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("good.txt"), "hello").unwrap();
+        std::fs::write(dir.join(format!("bad{}file.txt", '\\')), "bad").unwrap();
+
+        let path = dir.canonicalize().unwrap();
+        let root = path.parent().unwrap();
+        let data_sources: Vec<(String, PathBuf)> = WalkDir::new(path.clone())
+            .into_iter()
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                if !entry.file_type().is_file() {
+                    return None;
+                }
+                let path = entry.into_path();
+                let relative = path.strip_prefix(root).ok()?;
+                canonicalized_path_to_string(relative, true)
+                    .ok()
+                    .map(|name| (name, path))
+            })
+            .collect();
+
+        assert_eq!(data_sources.len(), 1, "should skip file with backslash");
+        assert!(data_sources[0].0.contains("good.txt"));
+    }
+}
+
+async fn show_provide_progress_with_logging(
+    mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
+    app_handle: AppHandle,
+    total_collection_size: u64,
+    entry_type: String,
+) -> anyhow::Result<()> {
+    use n0_future::FuturesUnordered;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    let mut tasks = FuturesUnordered::new();
+
+    #[derive(Clone)]
+    struct TransferState {
+        start_time: Instant,
+        total_size: u64,
+        accounted_payload_bytes: u64,
+        current_blob_size: u64,
+        current_blob_end_offset: u64,
+        ignore_current_blob: bool,
+    }
+
+    let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> =
+        Arc::new(Mutex::new(std::collections::HashMap::new()));
+
+    let active_requests = Arc::new(AtomicUsize::new(0));
+    let completed_requests = Arc::new(AtomicUsize::new(0));
+    let has_emitted_started = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let has_emitted_completed = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let last_request_time: Arc<tokio::sync::Mutex<Option<Instant>>> =
+        Arc::new(tokio::sync::Mutex::new(None));
+
+    loop {
+        tokio::select! {
+            biased;
+            item = recv.recv() => {
+                let Some(item) = item else {
+                    break;
+                };
+
+                match item {
+                    iroh_blobs::provider::events::ProviderMessage::ClientConnectedNotify(_msg) => {
+                    }
+                    iroh_blobs::provider::events::ProviderMessage::ConnectionClosed(_msg) => {
+                    }
+                    iroh_blobs::provider::events::ProviderMessage::GetRequestReceivedNotify(msg) => {
+                        let is_sizes_probe_request =
+                            (entry_type == "directory" || entry_type == "collection")
+                                && msg.request.ranges
+                                    == iroh_blobs::protocol::ChunkRangesSeq::verified_child_sizes();
+
+                        let connection_id = msg.connection_id;
+                        let request_id = msg.request_id;
+
+                        if !is_sizes_probe_request {
+                            active_requests.fetch_add(1, Ordering::SeqCst);
+
+                            let mut last_time = last_request_time.lock().await;
+                            *last_time = Some(Instant::now());
+                        }
+
+                        let app_handle_task = app_handle.clone();
+                        let transfer_states_task = transfer_states.clone();
+                        let active_requests_task = active_requests.clone();
+                        let completed_requests_task = completed_requests.clone();
+                        let has_emitted_started_task = has_emitted_started.clone();
+                        let has_emitted_completed_task = has_emitted_completed.clone();
+                        let last_request_time_task = last_request_time.clone();
+                        let entry_type_task = entry_type.clone();
+
+                        let mut rx = msg.rx;
+                        tasks.push(async move {
+                            if is_sizes_probe_request {
+                                while let Ok(Some(_)) = rx.recv().await {}
+                                return;
+                            }
+
+                            let mut transfer_started = false;
+                            let mut request_completed = false;
+
+                            while let Ok(Some(update)) = rx.recv().await {
+                                match update {
+                                    iroh_blobs::provider::events::RequestUpdate::Started(m) => {
+                                        if !transfer_started {
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.insert(
+                                                    (connection_id, request_id),
+                                                    TransferState {
+                                                        start_time: Instant::now(),
+                                                        total_size: total_collection_size,
+                                                        accounted_payload_bytes: 0,
+                                                        current_blob_size: 0,
+                                                        current_blob_end_offset: 0,
+                                                        ignore_current_blob: false,
+                                                    }
+                                                );
+                                                states.len()
+                                            };
+
+                                            emit_active_connection_count(&app_handle_task, active_count);
+
+                                            if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
+                                                emit_event(&app_handle_task, "transfer-started");
+                                            }
+
+                                            transfer_started = true;
+                                        }
+
+                                        let is_metadata_blob =
+                                            (entry_type_task == "directory" || entry_type_task == "collection")
+                                                && m.index == 0;
+
+                                        {
+                                            let mut states = transfer_states_task.lock().await;
+                                            if let Some(state) = states.get_mut(&(connection_id, request_id)) {
+                                                let was_ignoring_current_blob = state.ignore_current_blob;
+
+                                                if !state.ignore_current_blob {
+                                                    state.accounted_payload_bytes = state
+                                                        .accounted_payload_bytes
+                                                        .saturating_add(state.current_blob_size)
+                                                        .min(state.total_size);
+                                                }
+
+                                                if was_ignoring_current_blob && !is_metadata_blob {
+                                                    state.start_time = Instant::now();
+                                                    state.accounted_payload_bytes = 0;
+                                                }
+
+                                                state.current_blob_size = m.size;
+                                                state.current_blob_end_offset = 0;
+                                                state.ignore_current_blob = is_metadata_blob;
+                                            }
+                                        }
+                                    }
+                                    iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
+                                        if !transfer_started {
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.insert(
+                                                    (connection_id, request_id),
+                                                    TransferState {
+                                                        start_time: Instant::now(),
+                                                        total_size: total_collection_size,
+                                                        accounted_payload_bytes: 0,
+                                                        current_blob_size: 0,
+                                                        current_blob_end_offset: 0,
+                                                        ignore_current_blob: true,
+                                                    }
+                                                );
+                                                states.len()
+                                            };
+
+                                            emit_active_connection_count(&app_handle_task, active_count);
+
+                                            if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
+                                                emit_event(&app_handle_task, "transfer-started");
+                                            }
+                                            transfer_started = true;
+                                        }
+
+                                        if let Some((transferred, total_size, elapsed)) = {
+                                            let mut states = transfer_states_task.lock().await;
+                                            states.get_mut(&(connection_id, request_id)).map(|state| {
+                                                if !state.ignore_current_blob {
+                                                    state.current_blob_end_offset = m
+                                                        .end_offset
+                                                        .min(state.current_blob_size)
+                                                        .max(state.current_blob_end_offset);
+                                                }
+
+                                                let transferred = if state.ignore_current_blob {
+                                                    state.accounted_payload_bytes
+                                                } else {
+                                                    state
+                                                        .accounted_payload_bytes
+                                                        .saturating_add(state.current_blob_end_offset)
+                                                        .min(state.total_size)
+                                                };
+
+                                                (
+                                                    transferred,
+                                                    state.total_size,
+                                                    state.start_time.elapsed().as_secs_f64(),
+                                                )
+                                            })
+                                        } {
+                                            let speed_bps = if elapsed > 0.0 {
+                                                transferred as f64 / elapsed
+                                            } else {
+                                                0.0
+                                            };
+                                            emit_progress_event(
+                                                &app_handle_task,
+                                                transferred.min(total_size),
+                                                total_size,
+                                                speed_bps,
+                                            );
+                                        }
+                                    }
+                                    iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
+                                        if transfer_started && !request_completed {
+                                            {
+                                                let mut states = transfer_states_task.lock().await;
+                                                if let Some(state) = states.get_mut(&(connection_id, request_id)) {
+                                                    if !state.ignore_current_blob {
+                                                        state.accounted_payload_bytes = state
+                                                            .accounted_payload_bytes
+                                                            .saturating_add(state.current_blob_size)
+                                                            .min(state.total_size);
+                                                    }
+                                                }
+                                            }
+
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.remove(&(connection_id, request_id));
+                                                let active_count = states.len();
+                                                active_count
+                                            };
+
+                                            emit_active_connection_count(&app_handle_task, active_count);
+
+                                            request_completed = true;
+
+                                            let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
+                                            let active = active_requests_task.load(Ordering::SeqCst);
+
+                                            // The receiver makes a single execute_get request for the entire transfer.
+                                            // The size probe request is ignored above and does not increment active/completed.
+                                            // Therefore, a single completed request always indicates the end of the transfer.
+                                            let min_required = 1;
+
+                                            if completed >= active
+                                                && completed >= min_required {
+                                                let active_before_wait = active;
+
+                                                tokio::time::sleep(Duration::from_millis(500)).await;
+
+                                                let completed_after = completed_requests_task.load(Ordering::SeqCst);
+                                                let active_after = active_requests_task.load(Ordering::SeqCst);
+
+                                                let new_requests_arrived = active_after > active_before_wait;
+
+                                                let has_active_transfers = {
+                                                    let states = transfer_states_task.lock().await;
+                                                    !states.is_empty()
+                                                };
+
+                                                let last_request_recent = {
+                                                    let last_time = last_request_time_task.lock().await;
+                                                    if let Some(time) = *last_time {
+                                                        time.elapsed() < Duration::from_millis(500)
+                                                    } else {
+                                                        false
+                                                    }
+                                                };
+
+                                                if completed_after >= active_after
+                                                    && completed_after >= min_required
+                                                    && !new_requests_arrived
+                                                    && !has_active_transfers
+                                                    && !last_request_recent {
+                                                    if !has_emitted_completed_task
+                                                        .swap(true, Ordering::SeqCst)
+                                                    {
+                                                        emit_event(&app_handle_task, "transfer-completed");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    iroh_blobs::provider::events::RequestUpdate::Aborted(_m) => {
+                                        tracing::warn!("Request aborted: conn {} req {}",
+                                            connection_id, request_id);
+                                        if transfer_started && !request_completed {
+                                            let active_count = {
+                                                let mut states = transfer_states_task.lock().await;
+                                                states.remove(&(connection_id, request_id));
+                                                states.len()
+                                            };
+
+                                            emit_active_connection_count(&app_handle_task, active_count);
+
+                                            request_completed = true;
+
+                                            let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
+                                            let active = active_requests_task.load(Ordering::SeqCst);
+
+                                            if completed >= active {
+                                                emit_event(&app_handle_task, "transfer-failed");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if transfer_started && !request_completed {
+                                let completed = completed_requests_task.fetch_add(1, Ordering::SeqCst) + 1;
+                                let active = active_requests_task.load(Ordering::SeqCst);
+
+                                // The receiver makes a single execute_get request for the entire transfer.
+                                // The size probe request is ignored above and does not increment active/completed.
+                                // Therefore, a single completed request always indicates the end of the transfer.
+                                let min_required = 1;
+
+                                if completed >= active
+                                    && completed >= min_required {
+                                    let active_before_wait = active;
+
+                                    tokio::time::sleep(Duration::from_millis(500)).await;
+
+                                    let completed_after = completed_requests_task.load(Ordering::SeqCst);
+                                    let active_after = active_requests_task.load(Ordering::SeqCst);
+
+                                    let new_requests_arrived = active_after > active_before_wait;
+
+                                    let has_active_transfers = {
+                                        let states = transfer_states_task.lock().await;
+                                        !states.is_empty()
+                                    };
+
+                                    let last_request_recent = {
+                                        let last_time = last_request_time_task.lock().await;
+                                        if let Some(time) = *last_time {
+                                            time.elapsed() < Duration::from_millis(500)
+                                        } else {
+                                            false
+                                        }
+                                    };
+
+                                    if completed_after >= active_after
+                                        && completed_after >= min_required
+                                        && !new_requests_arrived
+                                        && !has_active_transfers
+                                        && !last_request_recent {
+                                        if !has_emitted_completed_task
+                                            .swap(true, Ordering::SeqCst)
+                                        {
+                                            emit_event(&app_handle_task, "transfer-completed");
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    _ => {
+                    }
+                }
+            }
+            Some(_) = tasks.next(), if !tasks.is_empty() => {
+            }
+        }
+    }
+
+    while tasks.next().await.is_some() {}
+
+    let completed = completed_requests.load(Ordering::SeqCst);
+    let active = active_requests.load(Ordering::SeqCst);
+
+    // The receiver makes a single execute_get request for the entire transfer.
+    // The size probe request is ignored above and does not increment active/completed.
+    // Therefore, a single completed request always indicates the end of the transfer.
+    let min_required = 1;
+
+    if completed >= active && completed >= min_required && completed > 0 {
+        if !has_emitted_completed.swap(true, Ordering::SeqCst) {
+            emit_event(&app_handle, "transfer-completed");
+        }
+    }
+
+    Ok(())
+}
+
+fn canonicalize_input_paths(paths: Vec<PathBuf>) -> anyhow::Result<Vec<PathBuf>> {
+    use std::collections::BTreeSet;
+    let mut uniq = BTreeSet::new();
+    // introduce index to prevent leaking real paths in log
+    for (index, p) in paths.iter().enumerate() {
+        let c = p
+            .canonicalize()
+            .with_context(|| format!("failed to canonicalize path {}", index))?;
+        ensure!(c.exists(), "path {} does not exist", index);
+        uniq.insert(c);
+    }
+    let out: Vec<PathBuf> = uniq.into_iter().collect();
+    anyhow::ensure!(!out.is_empty(), "no valid paths provided");
+    Ok(out)
+}
+
+/// Duplicate name deduplication utility.
+///
+/// - Returns a name like "name (2)"
+fn dedup_name(name: &str, seen: &mut std::collections::BTreeMap<String, usize>) -> String {
+    match seen.get_mut(name) {
+        Some(count) => {
+            *count += 1;
+            format!("{} ({})", name, count)
+        }
+        None => {
+            seen.insert(name.to_string(), 1);
+            name.to_string()
+        }
+    }
+}
+
+/// Recursively collect files from a directory
+///
+/// - Returns a vac of (relative_path, absolute_path) tuples
+fn collect_path_files(path: &Path, root_name: &str) -> anyhow::Result<Vec<(String, PathBuf)>> {
+    if path.is_file() {
+        let rel = canonicalized_path_to_string(PathBuf::from(root_name), true)?;
+        return Ok(vec![(rel, path.to_path_buf())]);
+    }
+
+    if path.is_dir() {
+        let mut out = Vec::new();
+        for (index, entry) in WalkDir::new(path).into_iter().enumerate() {
+            let entry = match entry {
+                Ok(v) => v,
+                Err(_e) => {
+                    tracing::warn!("skipping inaccessible entry {}", index);
+                    continue;
+                }
+            };
+            if !entry.file_type().is_file() {
+                continue;
+            }
+            let file = entry.path().to_path_buf();
+            let rel = file
+                .strip_prefix(path)
+                .with_context(|| format!("strip_prefix failed for file {}", index))?;
+            let mut prefixed = PathBuf::from(root_name);
+            prefixed.push(rel);
+            let safe = canonicalized_path_to_string(prefixed, true)?;
+            out.push((safe, file));
+        }
+        return Ok(out);
+    }
+    anyhow::bail!("path is neither file nor directory");
+}

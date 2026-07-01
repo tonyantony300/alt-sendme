@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "Пошаљи",
+	"comingSoon": "Ускоро",
+	"receive": "Прими",
+	"ok": "У реду",
+	"undo": "Опозови",
+	"cancel": "Откажи",
+	"confirm": "Потврди",
+	"loading": "Учитавам...",
+	"browse": "Разгледај",
+	"donate": "Донирај",
+	"privacyPolicy": "Политика приватности",
+	"license": "Лиценца",
+	"notFound": {
+		"title": "Страница није пронађена",
+		"subtitle": "Страница коју тражите не постоји или је премештена.",
+		"goBack": "Назад",
+		"goHome": "Почетна"
+	},
+	"sender": {
+		"title": "Пошаљи",
+		"subtitle": "Дели датотеке или фасцикле путем шифрованих мрежа без посредника.",
+		"stoppingTransmission": "Заустављам пренос...",
+		"startSharing": "Започни дељење",
+		"startingShare": "Започињем дељење...",
+		"stopSharing": "Прекини дељење",
+		"shareThisTicket": "Подели ову карту:",
+		"sendThisTicket": "Пошаљи ову карту особи која жели да прими твоју датотеку",
+		"keepAppOpen": "Држи апликацију отвореном док други преузимају твоје датотеке",
+		"fileLabel": "Датотека:",
+		"listeningForConnection": "Чекам повезивање",
+		"sharingInProgress": "Дељење је у току",
+		"transferCompleted": "Дељење је завршено",
+		"filesBeingTransmitted": "Датотеке се преносе",
+		"preparingForTransport": "Припремам се за слање...",
+		"pleaseWaitProcessing": "Сачекај док обрађујем твоје датотеке за дељење...",
+		"dropFilesHere": "Овде отпусти датотеке или фасцикле",
+		"dragAndDrop": "Превуци и испусти",
+		"orBrowse": "или разгледај и изабери датотеке или фасцикле",
+		"fileSelected": "Изабрана датотека",
+		"folderSelected": "Изабрана фасцикла",
+		"itemSelected": "Изабрана ставка",
+		"multipleFilesSelected": "{{name}} ... и још {{count}}",
+		"browseFile": "Изабери датотеку",
+		"browseFolder": "Изабери фасциклу",
+		"addMoreFiles": "Додај још датотека",
+		"addMoreFolders": "Додај још фолдера",
+		"multipleItemsSelected": "{{firstName}} и још {{count}}",
+		"removeFromSelection": "Уклони из избора",
+		"copyToClipboard": "Копирај у клипборд",
+		"description": "Опис (опционо)",
+		"broadcastMode": {
+			"index": "Емитовање",
+			"on": {
+				"label": "Емитујеш",
+				"description": "Више особа са картом може истовремено преузимати фајлове у режиму емитовања."
+			},
+			"off": {
+				"label": "Приватно дељење",
+				"description": "Само особа са којом делиш карту може преузети датотеку."
+			}
+		}
+	},
+	"receiver": {
+		"title": "Прими датотеке",
+		"subtitle": "Преузми датотеке од пошиљаоца користећи шифроване везе без посредника преко интернета.",
+		"saveToFolder": "Сачувај у фасциклу:",
+		"noFolderSelected": "Није изабрана ниједна фасцикла",
+		"conflictsMore": "... и још {{count}}",
+		"pasteTicket": "Налепи карту овде:",
+		"ticketPlaceholder": "пошаљими карта примања...",
+		"howToReceive": "Како да примиш датотеке",
+		"instruction1": "Пошиљалац мора бити онлајн и делити датотеку",
+		"instruction2": "Добиј карту од пошиљаоца",
+		"instruction3": "Налепи карту у текстуално поље",
+		"instruction4": "Кликни „Преузми“ да започнеш пријем",
+		"instruction5": "Датотеке ће бити сачуване у изабраној фасцикли",
+		"keepAppOpen": "Држи апликацију отвореном током преузимања",
+		"connectingToSender": "Повезујем се са пошиљаоцем",
+		"previewMultipleItems": "{{name}} ... и још {{count}}",
+		"multipleFilesFound": "Пronađeno više datoteka",
+		"expandPreviewList": "Prikaži listu datoteka",
+		"collapsePreviewList": "Sakrij listu datoteka",
+		"downloadingInProgress": "Преузимање у току",
+		"downloadCompleted": "Преузимање завршено",
+		"downloadCompletedWithConflicts": "Preuzimanje završeno, konflikti imena rešeni",
+		"downloadedFile": "Preuzeta datoteka",
+		"stopReceiving": "Прекини примање",
+		"download": "Преузми"
+	},
+	"transfer": {
+		"progress": "Напредак преноса",
+		"speed": "Брзина",
+		"eta": "ETA",
+		"timeRemaining": "Преостало време",
+		"calculating": "Рачунам...",
+		"complete": "Пренос је завршен!",
+		"stopped": "Пренос заустављен",
+		"newTransfer": "Нови пренос",
+		"done": "Готово",
+		"open": "Отвори",
+		"wasStopped": "Пренос је заустављен пре завршетка.",
+		"successMessage": "Твој пренос је успешно завршен.",
+		"file": "Датотека",
+		"files": "Datoteke",
+		"folder": "Фасцикла",
+		"fileName": "Име датотеке",
+		"fileSize": "Величина датотеке",
+		"folderSize": "Величина фасцикле",
+		"downloadPath": "Путања за преузимање",
+		"duration": "Трајање",
+		"avgSpeed": "Просечна брзина",
+		"multipleFiles": "{{count}} datoteka",
+		"donatePrompt": "Učinite ga boljim -"
+	},
+	"errors": {
+		"sharingFailed": "Дељење није успело",
+		"sharingFailedDesc": "Покретање дељења није успело",
+		"stopSharingFailed": "Заустављање дељења није успело",
+		"stopSharingFailedDesc": "Заустављање дељења није успело",
+		"copyFailed": "Копирање није успело",
+		"copyFailedDesc": "Копирање карте није успело",
+		"folderDialogFailed": "Отварање избора фасцикле није успело",
+		"folderDialogFailedDesc": "Отварање прозора за избор фасцикле није успело",
+		"fileDialogFailed": "Отварање избора датотеке није успело",
+		"fileDialogFailedDesc": "Отварање прозора за избор датотеке није успело",
+		"receiveFailed": "Примање није успело",
+		"receiveFailedDesc": "Примање датотеке није успело",
+		"openFolderFailed": "Отварање фасцикле није успело",
+		"openFolderFailedDesc": "Отварање фасцикле за преузимање није успело"
+	},
+	"settings": {
+		"title": "Подешавања",
+		"navItems": {
+			"appearance": "Тема и језик",
+			"general": "Опште",
+			"relay": "Relay",
+			"network": "Мрежа",
+			"notification": "Обавештења"
+		},
+		"theme": {
+			"description": "Изаберите жељену тему",
+			"title": "Изглед",
+			"light": "Светла",
+			"dark": "Тамна",
+			"auto": "Систем"
+		},
+		"language": {
+			"title": "Језик",
+			"description": "Изаберите жељени језик",
+			"noResults": "Није пронађен ниједан језик"
+		},
+		"general": {
+			"title": "Опште",
+			"autoCheckUpdates": {
+				"label": "Аутоматски проверавај ажурирања",
+				"description": "Апликација ће при покретању проверити ажурирања"
+			},
+			"systembar": {
+				"title": "Системска трака",
+				"minimizeToTray": {
+					"label": "Смањи у системску траку",
+					"description": "При затварању смањи апликацију уместо изласка"
+				},
+				"showProgressOnIcon": {
+					"label": "Прикажи напредак преноса на икони",
+					"description": "Трака напретка преко иконе апликације"
+				},
+				"runOnSystemStartup": {
+					"label": "Покрени при старту система",
+					"description": "Аутоматски покрени апликацију при укључивању система"
+				},
+				"contextMenu": {
+					"label": "Контекстуални мени истраживача",
+					"description": "Додај „Пошаљи путем AltSendme” у контекстуални мени Windows истраживача"
+				}
+			},
+			"broadcast": {
+				"title": "Emitovanje",
+				"showToggle": {
+					"label": "Prikaži prekidač emitovanja tokom deljenja",
+					"description": "Prikazuje prekidač emitovanja na ekranu deljenja kako bi više primalaca moglo istovremeno preuzeti iste datoteke."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay serveri",
+				"description": "Kontrolišite koje iroh relay servere AltSendme koristi za NAT traversal i šifrovane rezervne veze.",
+				"modeDefault": "Automatski (javni relay)",
+				"modeDefaultDesc": "Koristi podrazumevane javne iroh relay servere. Najbolje za većinu korisnika.",
+				"modeCustom": "Prilagođeno (self-hosted)",
+				"modeCustomDesc": "Koristite sopstvene relay servere. Pogledajte deploy/relay u repozitorijumu projekta.",
+				"modeDisabled": "Onemogućeno",
+				"modeDisabledDesc": "Ne koristite relay. Samo direktne veze; može da ne uspe iza strogog NAT-a.",
+				"urlsLabel": "Relay URL adrese",
+				"urlsDescription": "Dodajte jednu ili više HTTPS relay URL adresa za regionalni failover.",
+				"addUrl": "Dodaj relay URL",
+				"removeUrl": "Ukloni relay URL",
+				"urlInvalidHint": "Unesite važeću HTTPS URL adresu",
+				"urlChecking": "Provera veze",
+				"urlVerified": "Verifikovano",
+				"urlVerifyFailedHint": "Nije moguće povezati se sa ovim relay serverom",
+				"verifySummary": "Verifikovano {{ok}} od {{total}} relay servera.",
+				"verifyAuthHint": "Ako vaš relay zahteva auth token, uverite se da se poklapa sa access.shared_token na serveru.",
+				"authTokenLabel": "Auth token (opciono)",
+				"authTokenPlaceholder": "Deljena tajna ako relay zahteva autentifikaciju",
+				"authTokenDescription": "Potrebno kada relay koristi access.shared_token u konfiguraciji.",
+				"showAuthToken": "Prikaži",
+				"hideAuthToken": "Sakrij",
+				"privacyNote": "Za potpuno privatno podešavanje, konfigurišite iste relay URL adrese na uređajima pošiljaoca i primaoca.",
+				"testConnection": "Testiraj vezu",
+				"verifySuccess": "Relay veza OK",
+				"verifySuccessDesc": "{{url}}\nuspešno verifikovano ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Uspešno registrovano na vašem konfigurisanom relay serveru.",
+				"verifyFailed": "Relay veza nije uspela",
+				"urlRequired": "Dodajte bar jednu relay URL adresu.",
+				"invalidUrl": "Nevažeća relay URL adresa: {{url}}",
+				"disabledHint": "Omogućite automatske ili prilagođene relay servere za test konekcije.",
+				"confirmDisableTitle": "Onemogućiti relay servere?",
+				"confirmDisableDescription": "Odabrali ste da onemogućite relay servere. Prenos datoteka može da ne uspe ako pokušate da delite datoteke sa nekim van vaše lokalne mreže. Relay serveri pomažu uređajima da se pronađu i povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",
+				"confirmCustomTitle": "Koristiti prilagođene relay servere?",
+				"confirmCustomDescription": "Odabrali ste da koristite sopstvene relay servere koje sami hostujete. Ako vaši prilagođeni relay serveri nisu dostupni, prenosi će se automatski vratiti na javne relay servere i bićete obavešteni. Relay serveri samo pomažu vašim uređajima da se povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",
+				"confirmContinue": "Nastavi"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Ново ажурирање!",
+		"newVersionAvailable": "Верзија {{version}} је доступна.",
+		"newVersionAvailableInline": "Доступна је нова верзија — {{version}}",
+		"updateNow": "Ажурирај сада",
+		"later": "Касније",
+		"checkForUpdates": "Провери ажурирања",
+		"noUpdatesTitle": "Нема ажурирања",
+		"noUpdatesDescription": "Већ користите најновију верзију",
+		"checkFailed": "Провера није успела",
+		"checkFailedDesc": "Није могуће проверити ажурирања",
+		"installFailed": "Инсталација није успела",
+		"installFailedDesc": "Није могуће инсталирати ажурирање"
+	},
+	"android": {
+		"preparingFile": "Priprema datoteke..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Status relay veze",
+			"publicHeading": "Javni relay",
+			"customHeading": "Prilagođeni relay",
+			"disabledHeading": "Relay onemogućen",
+			"unavailableHeading": "Relay nedostupan",
+			"fellBackToPublic": "Prilagođeni relay nedostupan, umesto njega se koristi javni relay.",
+			"fellBackToastTitle": "Koristi se javni relay",
+			"fellBackToastSend": "Vaš prilagođeni relay nije bio dostupan — ovaj transfer koristi javni relay.",
+			"fellBackToastReceive": "Vaš prilagođeni relay nije bio dostupan — ovo preuzimanje koristi javni relay.",
+			"dialogDescription": "Prikazuje koji relay server aplikacija trenutno koristi za veze.",
+			"connectedRelay": "Povezan relay",
+			"checking": "Provera veze…",
+			"configuredMode": "Konfigurisano u podešavanjima",
+			"configuredDefault": "Automatski (javni relay)",
+			"configuredCustom": "Prilagođeno (self-hosted)",
+			"configuredDisabled": "Onemogućeno",
+			"openSettings": "Mrežna podešavanja",
+			"infoToggle": "O relejima",
+			"purpose": "Releji samo pomažu vašim uređajima da pronađu jedan drugog i povežu se.",
+			"directNote": "Kada se uspostavi direktna veza, datoteke se prenose direktno između uređaja i relay se više ne koristi.",
+			"lanNote": "U istoj lokalnoj mreži releji se potpuno preskaču.",
+			"encryptedNote": "Prenosi su uvek end-to-end šifrovani, pa releji nikada ne vide vaše datoteke.",
+			"disabledNote": "Releji su isključeni. Samo direktne veze, pa prenosi mogu da ne uspeju kroz stroge zaštitne zidove ili NAT."
+		}
+	}
+}

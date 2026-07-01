@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "Odeslat",
+	"comingSoon": "Již brzy",
+	"receive": "Přijmout",
+	"ok": "OK",
+	"undo": "Zpět",
+	"cancel": "Zrušit",
+	"confirm": "Potvrdit",
+	"loading": "Načítání...",
+	"browse": "Procházet",
+	"donate": "Přispět",
+	"privacyPolicy": "Zásady ochrany osobních údajů",
+	"license": "Licence",
+	"notFound": {
+		"title": "Stránka nenalezena",
+		"subtitle": "Hledaná stránka neexistuje nebo byla přesunuta.",
+		"goBack": "Zpět",
+		"goHome": "Domů"
+	},
+	"sender": {
+		"title": "Odeslat",
+		"subtitle": "Sdílejte soubory nebo složky pomocí šifrovaného peer-to-peer spojení.",
+		"stoppingTransmission": "Zastavování přenosu...",
+		"startSharing": "Spustit sdílení",
+		"startingShare": "Spouštění sdílení...",
+		"stopSharing": "Zastavit sdílení",
+		"shareThisTicket": "Sdílejte tento ticket:",
+		"sendThisTicket": "Pošlete tento ticket osobě, která chce přijmout váš soubor",
+		"keepAppOpen": "Nechte tuto aplikaci otevřenou, dokud ostatní stahují vaše soubory",
+		"fileLabel": "Soubor:",
+		"listeningForConnection": "Čekání na připojení",
+		"sharingInProgress": "Probíhá sdílení",
+		"transferCompleted": "Přenos dokončen",
+		"filesBeingTransmitted": "Soubory se přenášejí",
+		"preparingForTransport": "Příprava na přenos...",
+		"pleaseWaitProcessing": "Prosím, počkejte, zpracováváme vaše soubory pro sdílení...",
+		"dropFilesHere": "Přetáhněte soubory nebo složky sem",
+		"dragAndDrop": "Přetáhni a pusť",
+		"orBrowse": "nebo soubory či složky vyberte po kliknutí na tlačítka níže",
+		"fileSelected": "Soubor vybrán",
+		"folderSelected": "Složka vybrána",
+		"itemSelected": "Položka vybrána",
+		"multipleFilesSelected": "{{name}} ... a dalších {{count}}",
+		"browseFile": "Vybrat soubor",
+		"browseFolder": "Vybrat složku",
+		"addMoreFiles": "Přidat další soubory",
+		"addMoreFolders": "Přidat další složky",
+		"multipleItemsSelected": "{{firstName}} a dalších {{count}}",
+		"removeFromSelection": "Odebrat z výběru",
+		"copyToClipboard": "Kopírovat do schránky",
+		"description": "Popis (volitelné)",
+		"broadcastMode": {
+			"index": "Vysílání",
+			"on": {
+				"label": "Vysíláte",
+				"description": "Více lidí s tiketem může v režimu vysílání stahovat soubory současně."
+			},
+			"off": {
+				"label": "Soukromé sdílení",
+				"description": "Pouze osoba, se kterou sdílíte ticket, může stáhnout soubor."
+			}
+		}
+	},
+	"receiver": {
+		"title": "Přijmout soubory",
+		"subtitle": "Stahujte soubory od odesílatele pomocí šifrovaného peer-to-peer spojení přes internet.",
+		"saveToFolder": "Uložit do složky:",
+		"noFolderSelected": "Není vybrána žádná složka",
+		"conflictsMore": "... a dalších {{count}}",
+		"pasteTicket": "Sem vložte ticket:",
+		"ticketPlaceholder": "sendme ticket pro příjem...",
+		"howToReceive": "Jak přijmout soubory",
+		"instruction1": "Odesílatel musí být online a sdílet soubor",
+		"instruction2": "Získejte ticket od odesílatele",
+		"instruction3": "Vložte ticket do textového pole",
+		"instruction4": "Klikněte na 'Stáhnout' pro zahájení příjmu",
+		"instruction5": "Soubory se uloží do vámi vybrané složky",
+		"keepAppOpen": "Nechte tuto aplikaci otevřenou během stahování souborů",
+		"connectingToSender": "Připojování k odesílateli",
+		"previewMultipleItems": "{{name}} ... a dalších {{count}}",
+		"multipleFilesFound": "Nalezeno více souborů",
+		"expandPreviewList": "Zobrazit seznam souborů",
+		"collapsePreviewList": "Skrýt seznam souborů",
+		"downloadingInProgress": "Probíhá stahování",
+		"downloadCompleted": "Stahování dokončeno",
+		"downloadCompletedWithConflicts": "Stahování dokončeno, konflikty názvů vyřešeny",
+		"downloadedFile": "Stažený soubor",
+		"stopReceiving": "Zastavit příjem",
+		"download": "Stáhnout"
+	},
+	"transfer": {
+		"progress": "Průběh přenosu",
+		"speed": "Rychlost",
+		"eta": "ETA",
+		"timeRemaining": "Zbývající čas",
+		"calculating": "Počítá se...",
+		"complete": "Přenos dokončen!",
+		"stopped": "Přenos zastaven",
+		"newTransfer": "Nový přenos",
+		"done": "Hotovo",
+		"open": "Otevřít",
+		"wasStopped": "Přenos byl zastaven před dokončením.",
+		"successMessage": "Váš přenos byl úspěšně dokončen.",
+		"file": "Soubor",
+		"files": "Soubory",
+		"folder": "Složka",
+		"fileName": "Název souboru",
+		"fileSize": "Velikost souboru",
+		"folderSize": "Velikost složky",
+		"downloadPath": "Cesta pro uložení",
+		"duration": "Doba trvání",
+		"avgSpeed": "Průměrná rychlost",
+		"multipleFiles": "{{count}} souborů",
+		"donatePrompt": "Vylepšete to -"
+	},
+	"errors": {
+		"sharingFailed": "Sdílení selhalo",
+		"sharingFailedDesc": "Nepodařilo se zahájit sdílení",
+		"stopSharingFailed": "Zastavení sdílení selhalo",
+		"stopSharingFailedDesc": "Nepodařilo se zastavit sdílení",
+		"copyFailed": "Kopírování selhalo",
+		"copyFailedDesc": "Nepodařilo se zkopírovat ticket",
+		"folderDialogFailed": "Chyba dialogového okna složky",
+		"folderDialogFailedDesc": "Nepodařilo se otevřít dialogové okno pro výběr složky",
+		"fileDialogFailed": "Chyba dialogového okna souboru",
+		"fileDialogFailedDesc": "Nepodařilo se otevřít dialogové okno pro výběr souboru",
+		"receiveFailed": "Příjem selhal",
+		"receiveFailedDesc": "Nepodařilo se přijmout soubor",
+		"openFolderFailed": "Otevření složky selhalo",
+		"openFolderFailedDesc": "Nepodařilo se otevřít složku pro stahování"
+	},
+	"settings": {
+		"title": "Nastavení",
+		"navItems": {
+			"appearance": "Motiv a jazyk",
+			"general": "Obecné",
+			"relay": "Relay",
+			"network": "Síť",
+			"notification": "Oznámení"
+		},
+		"theme": {
+			"description": "Vyberte preferovaný motiv",
+			"title": "Vzhled",
+			"light": "Světlý",
+			"dark": "Tmavý",
+			"auto": "Systém"
+		},
+		"language": {
+			"title": "Jazyk",
+			"description": "Vyberte preferovaný jazyk",
+			"noResults": "Žádné jazyky nenalezeny"
+		},
+		"general": {
+			"title": "Obecné",
+			"autoCheckUpdates": {
+				"label": "Automaticky kontrolovat aktualizace",
+				"description": "Aplikace při spuštění automaticky zkontroluje aktualizace"
+			},
+			"systembar": {
+				"title": "Oznamovací oblast",
+				"minimizeToTray": {
+					"label": "Minimalizovat do oznamovací oblasti",
+					"description": "Při zavření minimalizovat aplikaci místo ukončení"
+				},
+				"showProgressOnIcon": {
+					"label": "Zobrazit průběh přenosu na ikoně",
+					"description": "Pruh průběhu na ikoně aplikace"
+				},
+				"runOnSystemStartup": {
+					"label": "Spustit při startu systému",
+					"description": "Automaticky spustit aplikaci při zapnutí systému"
+				},
+				"contextMenu": {
+					"label": "Kontextová nabídka Průzkumníka",
+					"description": "Přidat „Odeslat pomocí AltSendme“ do kontextové nabídky Průzkumníka Windows"
+				}
+			},
+			"broadcast": {
+				"title": "Vysílání",
+				"showToggle": {
+					"label": "Zobrazit přepínač vysílání při sdílení",
+					"description": "Zobrazí přepínač vysílání na obrazovce sdílení, aby více příjemců mohlo současně stahovat stejné soubory."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay servery",
+				"description": "Ovládejte, které iroh relay servery AltSendme používá pro NAT traversal a šifrovaná záložní připojení.",
+				"modeDefault": "Automaticky (veřejné relay)",
+				"modeDefaultDesc": "Použije výchozí veřejné iroh relay. Nejlepší pro většinu uživatelů.",
+				"modeCustom": "Vlastní (self-hosted)",
+				"modeCustomDesc": "Použijte vlastní relay servery. Viz deploy/relay v repozitáři projektu.",
+				"modeDisabled": "Zakázáno",
+				"modeDisabledDesc": "Nepoužívat relay. Pouze přímá připojení; může selhat za přísným NAT.",
+				"urlsLabel": "URL relay",
+				"urlsDescription": "Přidejte jednu nebo více HTTPS URL relay pro regionální failover.",
+				"addUrl": "Přidat URL relay",
+				"removeUrl": "Odebrat URL relay",
+				"urlInvalidHint": "Zadejte platnou HTTPS URL",
+				"urlChecking": "Kontrola připojení",
+				"urlVerified": "Ověřeno",
+				"urlVerifyFailedHint": "Nelze se připojit k tomuto relay",
+				"verifySummary": "Ověřeno {{ok}} z {{total}} relay.",
+				"verifyAuthHint": "Pokud váš relay vyžaduje auth token, ujistěte se, že odpovídá access.shared_token na serveru.",
+				"authTokenLabel": "Auth token (volitelné)",
+				"authTokenPlaceholder": "Sdílené tajemství, pokud relay vyžaduje autentizaci",
+				"authTokenDescription": "Vyžadováno, když relay používá access.shared_token ve své konfiguraci.",
+				"showAuthToken": "Zobrazit",
+				"hideAuthToken": "Skrýt",
+				"privacyNote": "Pro plně soukromé nastavení nakonfigurujte stejné URL relay na zařízeních odesílatele i příjemce.",
+				"testConnection": "Otestovat připojení",
+				"verifySuccess": "Připojení relay OK",
+				"verifySuccessDesc": "{{url}}\núspěšně ověřeno ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Úspěšně registrováno na nakonfigurovaném relay serveru.",
+				"verifyFailed": "Připojení relay selhalo",
+				"urlRequired": "Přidejte alespoň jednu URL relay.",
+				"invalidUrl": "Neplatná URL relay: {{url}}",
+				"disabledHint": "Povolte automatické nebo vlastní relay pro test konektivity.",
+				"confirmDisableTitle": "Zakázat relay?",
+				"confirmDisableDescription": "Zvolili jste zakázání relay. Přenosy souborů mohou selhat, pokud se pokusíte sdílet soubory s někým mimo vaši místní síť. Relay pomáhají zařízením najít se a propojit za obtížných síťových podmínek a vaše přenosy vždy zůstávají koncově šifrované.",
+				"confirmCustomTitle": "Použít vlastní relay?",
+				"confirmCustomDescription": "Zvolili jste použití vlastních, svépomocně hostovaných relay. Pokud budou vaše vlastní relay nedostupné, přenosy se automaticky vrátí k veřejným relay a budete upozorněni. Relay pouze pomáhají vašim zařízením propojit se za obtížných síťových podmínek a vaše přenosy vždy zůstávají koncově šifrované.",
+				"confirmContinue": "Pokračovat"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Nová aktualizace!",
+		"newVersionAvailable": "Je k dispozici verze {{version}}.",
+		"newVersionAvailableInline": "Je k dispozici nová verze — {{version}}",
+		"updateNow": "Aktualizovat nyní",
+		"later": "Později",
+		"checkForUpdates": "Zkontrolovat aktualizace",
+		"noUpdatesTitle": "Žádné aktualizace",
+		"noUpdatesDescription": "Používáte již nejnovější verzi",
+		"checkFailed": "Kontrola se nezdařila",
+		"checkFailedDesc": "Nepodařilo se zkontrolovat aktualizace",
+		"installFailed": "Instalace se nezdařila",
+		"installFailedDesc": "Nepodařilo se nainstalovat aktualizaci"
+	},
+	"android": {
+		"preparingFile": "Příprava souboru..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Stav připojení relay",
+			"publicHeading": "Veřejné relay",
+			"customHeading": "Vlastní relay",
+			"disabledHeading": "Relay zakázáno",
+			"unavailableHeading": "Relay nedostupné",
+			"fellBackToPublic": "Vlastní relay nedostupné, místo něj se používá veřejné relay.",
+			"fellBackToastTitle": "Používá se veřejné relay",
+			"fellBackToastSend": "Váš vlastní relay byl nedostupný — tento přenos používá veřejné relay.",
+			"fellBackToastReceive": "Váš vlastní relay byl nedostupný — toto stahování používá veřejné relay.",
+			"dialogDescription": "Zobrazuje, který relay server aplikace aktuálně používá pro připojení.",
+			"connectedRelay": "Připojené relay",
+			"checking": "Kontrola připojení…",
+			"configuredMode": "Nakonfigurováno v nastavení",
+			"configuredDefault": "Automaticky (veřejné relay)",
+			"configuredCustom": "Vlastní (self-hosted)",
+			"configuredDisabled": "Zakázáno",
+			"openSettings": "Nastavení sítě",
+			"infoToggle": "O relay serverech",
+			"purpose": "Relay servery pouze pomáhají vašim zařízením najít se navzájem a navázat spojení.",
+			"directNote": "Jakmile je navázáno přímé spojení, soubory se přenášejí přímo mezi zařízeními a relay se již nepoužívá.",
+			"lanNote": "Ve stejné místní síti se relay servery zcela přeskočí.",
+			"encryptedNote": "Přenosy jsou vždy šifrovány end-to-end, takže relay servery vaše soubory nikdy nevidí.",
+			"disabledNote": "Relay servery jsou vypnuté. Pouze přímá spojení, takže přenosy mohou přes přísné firewally nebo NAT selhat."
+		}
+	}
+}

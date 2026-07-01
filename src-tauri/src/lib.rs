@@ -1,0 +1,160 @@
+// Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
+
+mod commands;
+mod features;
+mod platform;
+mod state;
+#[cfg(desktop)]
+mod tray;
+mod version;
+
+pub use version::get_app_version;
+
+use commands::*;
+
+use state::AppState;
+use std::fs;
+use std::sync::Arc;
+
+use tauri::Emitter as _;
+use tauri::Manager as _;
+
+/// Clean up any orphaned .sendme-* directories from previous runs
+fn cleanup_orphaned_directories() {
+    let scan_dirs = vec![std::env::current_dir().ok(), Some(std::env::temp_dir())];
+    for base_dir in scan_dirs.into_iter().flatten() {
+        if let Ok(entries) = fs::read_dir(&base_dir) {
+            for entry in entries.flatten() {
+                if let Some(name) = entry.file_name().to_str() {
+                    if (name.starts_with(".sendme-send-") || name.starts_with(".sendme-recv-"))
+                        && entry.path().is_dir()
+                    {
+                        if let Err(e) = fs::remove_dir_all(&entry.path()) {
+                            tracing::warn!("Failed to clean up orphaned directory {}: {}", name, e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Entry point for both desktop (from main.rs) and mobile (from native app via mobile_entry_point).
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    let builder = tauri::Builder::default().plugin(tauri_plugin_store::Builder::new().build());
+
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+
+    #[cfg(desktop)]
+    let builder = if std::env::var("ALT_SENDME_ALLOW_MULTI_INSTANCE").unwrap_or_default() == "1" {
+        builder
+    } else {
+        builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+            let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
+            if let Some(path) = maybe_path {
+                let app_handle = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    let state = app_handle.state::<state::AppStateMutex>();
+                    state.lock().await.launch_intent = Some(path.clone());
+                    let _ = app_handle.emit("launch-intent", path);
+                });
+            }
+        }))
+    };
+
+    let builder = builder
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_native_utils::init())
+        .manage(Arc::new(tokio::sync::Mutex::new(app_state_initial())))
+        .invoke_handler(tauri::generate_handler![
+            start_sharing,
+            send_items,
+            stop_sharing,
+            receive_file,
+            get_sharing_status,
+            check_path_type,
+            get_paths_mime_types,
+            get_transport_status,
+            get_file_size,
+            #[cfg(desktop)]
+            focus_main_window,
+            check_launch_intent,
+            fetch_ticket_metadata,
+            verify_relays,
+            get_relay_status,
+            toggle_context_menu,
+        ])
+        .setup(|app| {
+            setup_common(app);
+            #[cfg(all(desktop, not(target_os = "macos")))]
+            if let Err(error) = tray::setup_tray(&app.handle()) {
+                tracing::warn!(
+                    error = %error,
+                    "System tray unavailable; app will continue without tray icon"
+                );
+            }
+            Ok(())
+        });
+
+    #[cfg(desktop)]
+    let builder = builder.on_window_event(|window, event| {
+        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            #[cfg(not(target_os = "macos"))]
+            if !tray::is_active() {
+                return;
+            }
+
+            api.prevent_close();
+            tracing::debug!("App closed to system tray");
+            if let Err(e) = window.hide() {
+                tracing::warn!(error = %e, "failed to hide window");
+            }
+        }
+    });
+
+    builder
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app, _event| {
+            // RunEvent::Reopen only exists on macOS (dock icon re-click)
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = _event {
+                tray::open_and_focus(_app);
+            }
+        });
+}
+
+fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
+    args.into_iter().find(|arg| !arg.starts_with('-'))
+}
+
+fn app_state_initial() -> AppState {
+    let launch_intent = first_non_flag_arg(std::env::args().skip(1));
+    AppState {
+        launch_intent,
+        ..Default::default()
+    }
+}
+
+#[allow(unused_variables)]
+fn setup_common(app: &tauri::App) {
+    cleanup_orphaned_directories();
+    tracing::debug!("File drop support enabled via dragDropEnabled config");
+
+    #[cfg(target_os = "linux")]
+    if let Some(window) = app.handle().get_webview_window("main") {
+        let _ = window.set_decorations(false);
+    }
+}

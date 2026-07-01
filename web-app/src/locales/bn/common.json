@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "পাঠান",
+	"comingSoon": "শীঘ্রই আসছে",
+	"receive": "গ্রহণ করুন",
+	"ok": "ঠিক আছে",
+	"undo": "পূর্বাবস্থা",
+	"cancel": "বাতিল",
+	"confirm": "নিশ্চিত করুন",
+	"loading": "লোড হচ্ছে...",
+	"browse": "ব্রাউজ করুন",
+	"donate": "অনুদান",
+	"privacyPolicy": "গোপনীয়তা নীতি",
+	"license": "লাইসেন্স",
+	"notFound": {
+		"title": "পৃষ্ঠা পাওয়া যায়নি",
+		"subtitle": "আপনি যে পৃষ্ঠাটি খুঁজছেন তা বিদ্যমান নয় বা সরানো হয়েছে।",
+		"goBack": "পিছনে",
+		"goHome": "হোমে যান"
+	},
+	"sender": {
+		"title": "পাঠান",
+		"subtitle": "এনক্রিপ্টেড পিয়ার-টু-পিয়ার সংযোগের মাধ্যমে ফাইল বা ফোল্ডার শেয়ার করুন।",
+		"stoppingTransmission": "প্রেরণ বন্ধ করা হচ্ছে...",
+		"startSharing": "শেয়ার শুরু করুন",
+		"startingShare": "শেয়ার শুরু হচ্ছে...",
+		"stopSharing": "শেয়ার বন্ধ করুন",
+		"shareThisTicket": "এই টিকিটটি শেয়ার করুন:",
+		"sendThisTicket": "যিনি আপনার ফাইল গ্রহণ করবেন তাকে এই টিকিটটি পাঠান",
+		"keepAppOpen": "অন্যরা ফাইল ডাউনলোড করার সময় এই অ্যাপটি খোলা রাখুন",
+		"fileLabel": "ফাইল:",
+		"listeningForConnection": "সংযোগের জন্য অপেক্ষা করা হচ্ছে",
+		"sharingInProgress": "শেয়ার চলছে",
+		"transferCompleted": "স্থানান্তর সম্পন্ন হয়েছে",
+		"filesBeingTransmitted": "ফাইল পাঠানো হচ্ছে",
+		"preparingForTransport": "স্থানান্তরের জন্য প্রস্তুত করা হচ্ছে...",
+		"pleaseWaitProcessing": "শেয়ারের জন্য আপনার ফাইল প্রস্তুত করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...",
+		"dropFilesHere": "এখানে ফাইল বা ফোল্ডার ফেলুন",
+		"dragAndDrop": "ড্র্যাগ ও ড্রপ করুন",
+		"orBrowse": "অথবা ফাইল বা ফোল্ডার নির্বাচন করতে ব্রাউজ করুন",
+		"fileSelected": "ফাইল নির্বাচন করা হয়েছে",
+		"folderSelected": "ফোল্ডার নির্বাচন করা হয়েছে",
+		"itemSelected": "আইটেম নির্বাচন করা হয়েছে",
+		"multipleFilesSelected": "{{name}} ... এবং আরও {{count}}",
+		"browseFile": "ফাইল ব্রাউজ করুন",
+		"browseFolder": "ফোল্ডার ব্রাউজ করুন",
+		"addMoreFiles": "আরও ফাইল যোগ করুন",
+		"addMoreFolders": "আরও ফোল্ডার যোগ করুন",
+		"multipleItemsSelected": "{{firstName}} এবং আরও {{count}}",
+		"removeFromSelection": "নির্বাচন থেকে সরান",
+		"copyToClipboard": "ক্লিপবোর্ডে কপি করুন",
+		"description": "বিবরণ (ঐচ্ছিক)",
+		"broadcastMode": {
+			"index": "ব্রডকাস্ট",
+			"on": {
+				"label": "আপনি ব্রডকাস্ট করছেন",
+				"description": "টিকিট থাকা একাধিক ব্যক্তি ব্রডকাস্ট মোডে একই সময়ে ফাইল ডাউনলোড করতে পারেন।"
+			},
+			"off": {
+				"label": "ব্যক্তিগত শেয়ারিং",
+				"description": "শুধুমাত্র যার সাথে আপনি টিকিট শেয়ার করেছেন সে ফাইল ডাউনলোড করতে পারবে।"
+			}
+		}
+	},
+	"receiver": {
+		"title": "ফাইল গ্রহণ করুন",
+		"subtitle": "ইন্টারনেটের মাধ্যমে এনক্রিপ্টেড পিয়ার-টু-পিয়ার সংযোগ ব্যবহার করে প্রেরকের কাছ থেকে ফাইল ডাউনলোড করুন।",
+		"saveToFolder": "ফোল্ডারে সংরক্ষণ করুন:",
+		"noFolderSelected": "কোনো ফোল্ডার নির্বাচন করা হয়নি",
+		"conflictsMore": "... এবং আরও {{count}}",
+		"pasteTicket": "এখানে টিকিটটি পেস্ট করুন:",
+		"ticketPlaceholder": "sendme টিকিট পেয়েছে...",
+		"howToReceive": "ফাইল গ্রহণ করার পদ্ধতি",
+		"instruction1": "প্রেরক অনলাইনে থাকা অবস্থায় ফাইল শেয়ার করতে হবে",
+		"instruction2": "প্রেরকের কাছ থেকে একটি টিকিট নিন",
+		"instruction3": "টিকিটটি টেক্সট বক্সে পেস্ট করুন",
+		"instruction4": "ডাউনলোড শুরু করতে ডাউনলোড বাটনে ক্লিক করুন",
+		"instruction5": "ফাইলগুলো আপনার নির্বাচিত ফোল্ডারে সংরক্ষিত হবে",
+		"keepAppOpen": "ফাইল ডাউনলোড করার সময় এই অ্যাপটি খোলা রাখুন",
+		"connectingToSender": "প্রেরকের সাথে সংযোগ করা হচ্ছে",
+		"previewMultipleItems": "{{name}} ... এবং আরও {{count}}",
+		"multipleFilesFound": "একাধিক ফাইল পাওয়া গেছে",
+		"expandPreviewList": "ফাইল তালিকা দেখান",
+		"collapsePreviewList": "ফাইল তালিকা লুকান",
+		"downloadingInProgress": "ডাউনলোড চলছে",
+		"downloadCompleted": "ডাউনলোড সম্পন্ন হয়েছে",
+		"downloadCompletedWithConflicts": "ডাউনলোড সম্পন্ন, নামের দ্বন্দ্ব সমাধান হয়েছে",
+		"downloadedFile": "ডাউনলোড করা ফাইল",
+		"stopReceiving": "গ্রহণ বন্ধ করুন",
+		"download": "ডাউনলোড"
+	},
+	"transfer": {
+		"progress": "স্থানান্তরের অগ্রগতি",
+		"speed": "গতি",
+		"eta": "ETA",
+		"timeRemaining": "বাকি সময়",
+		"calculating": "গণনা করা হচ্ছে...",
+		"complete": "স্থানান্তর সম্পন্ন হয়েছে!",
+		"stopped": "প্রেরণ বন্ধ হয়েছে",
+		"newTransfer": "নতুন স্থানান্তর",
+		"done": "সম্পন্ন",
+		"open": "খুলুন",
+		"wasStopped": "স্থানান্তরটি সম্পূর্ণ হওয়ার আগে বন্ধ করা হয়েছিল।",
+		"successMessage": "আপনার স্থানান্তর সফলভাবে সম্পন্ন হয়েছে।",
+		"file": "ফাইল",
+		"files": "ফাইল",
+		"folder": "ফোল্ডার",
+		"fileName": "ফাইলের নাম",
+		"fileSize": "ফাইলের সাইজ",
+		"folderSize": "ফোল্ডারের সাইজ",
+		"downloadPath": "ডাউনলোডের অবস্থান",
+		"duration": "সময়কাল",
+		"avgSpeed": "গড় গতি",
+		"multipleFiles": "{{count}}টি ফাইল",
+		"donatePrompt": "এটিকে আরও ভালো করুন -"
+	},
+	"errors": {
+		"sharingFailed": "শেয়ার ব্যর্থ হয়েছে",
+		"sharingFailedDesc": "শেয়ার শুরু করতে ব্যর্থ হয়েছে",
+		"stopSharingFailed": "শেয়ার বন্ধ করা সম্ভব হয়নি",
+		"stopSharingFailedDesc": "শেয়ার বন্ধ করতে ব্যর্থ হয়েছে",
+		"copyFailed": "কপি ব্যর্থ হয়েছে",
+		"copyFailedDesc": "টিকিট কপি করতে ব্যর্থ হয়েছে",
+		"folderDialogFailed": "ফোল্ডার ডায়ালগ ব্যর্থ হয়েছে",
+		"folderDialogFailedDesc": "ফোল্ডার ডায়ালগ খুলতে ব্যর্থ হয়েছে",
+		"fileDialogFailed": "ফাইল ডায়ালগ ব্যর্থ হয়েছে",
+		"fileDialogFailedDesc": "ফাইল ডায়ালগ খুলতে ব্যর্থ হয়েছে",
+		"receiveFailed": "গ্রহণ ব্যর্থ হয়েছে",
+		"receiveFailedDesc": "ফাইল গ্রহণ করা সম্ভব হয়নি",
+		"openFolderFailed": "ফোল্ডার খুলতে ব্যর্থ হয়েছে",
+		"openFolderFailedDesc": "ডাউনলোড ফোল্ডার খুলতে ব্যর্থ হয়েছে"
+	},
+	"settings": {
+		"title": "সেটিংস",
+		"navItems": {
+			"appearance": "থিম ও ভাষা",
+			"general": "সাধারণ",
+			"relay": "Relay",
+			"network": "নেটওয়ার্ক",
+			"notification": "বিজ্ঞপ্তি"
+		},
+		"theme": {
+			"description": "আপনার পছন্দের থিম নির্বাচন করুন",
+			"title": "চেহারা",
+			"light": "হালকা",
+			"dark": "গাঢ়",
+			"auto": "সিস্টেম"
+		},
+		"language": {
+			"title": "ভাষা",
+			"description": "পছন্দের ভাষা নির্বাচন করুন",
+			"noResults": "কোনো ভাষা পাওয়া যায়নি"
+		},
+		"general": {
+			"title": "সাধারণ",
+			"autoCheckUpdates": {
+				"label": "স্বয়ংক্রিয়ভাবে আপডেট পরীক্ষা",
+				"description": "অ্যাপ চালু হলে আপডেট পরীক্ষা করা হবে"
+			},
+			"systembar": {
+				"title": "সিস্টেম ট্রে",
+				"minimizeToTray": {
+					"label": "সিস্টেম ট্রেতে ছোট করুন",
+					"description": "বন্ধ করলে অ্যাপ বন্ধ না করে ছোট করুন"
+				},
+				"showProgressOnIcon": {
+					"label": "আইকনে স্থানান্তরের অগ্রগতি দেখান",
+					"description": "অ্যাপ আইকনে অগ্রগতি বার"
+				},
+				"runOnSystemStartup": {
+					"label": "সিস্টেম শুরুতে চালু করুন",
+					"description": "সিস্টেম চালু হলে অ্যাপ স্বয়ংক্রিয়ভাবে চালু করুন"
+				},
+				"contextMenu": {
+					"label": "এক্সপ্লোরার প্রসঙ্গ মেনু",
+					"description": "উইন্ডোজ এক্সপ্লোরারের ডান-ক্লিক মেনুতে «AltSendme দিয়ে পাঠান» যোগ করুন"
+				}
+			},
+			"broadcast": {
+				"title": "ব্রডকাস্ট",
+				"showToggle": {
+					"label": "শেয়ার করার সময় ব্রডকাস্ট টগল দেখান",
+					"description": "শেয়ারিং স্ক্রিনে ব্রডকাস্ট সুইচ দেখায় যাতে একাধিক গ্রহীতা একসাথে একই ফাইল ডাউনলোড করতে পারে।"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay সার্ভার",
+				"description": "AltSendme NAT traversal এবং এনক্রিপ্টেড ফallback সংযোগের জন্য কোন iroh relay সার্ভার ব্যবহার করে তা নিয়ন্ত্রণ করুন।",
+				"modeDefault": "স্বয়ংক্রিয় (পাবলিক relay)",
+				"modeDefaultDesc": "ডিফল্ট পাবলিক iroh relay ব্যবহার করে। বেশিরভাগ ব্যবহারকারীর জন্য সেরা।",
+				"modeCustom": "কাস্টম (self-hosted)",
+				"modeCustomDesc": "নিজের relay সার্ভার ব্যবহার করুন। প্রকল্প repo-তে deploy/relay দেখুন।",
+				"modeDisabled": "নিষ্ক্রিয়",
+				"modeDisabledDesc": "relay ব্যবহার করবেন না। শুধু সরাসরি সংযোগ; কঠোর NAT-এ ব্যর্থ হতে পারে।",
+				"urlsLabel": "Relay URL",
+				"urlsDescription": "আঞ্চলিক failover-এর জন্য এক বা একাধিক HTTPS relay URL যোগ করুন।",
+				"addUrl": "Relay URL যোগ করুন",
+				"removeUrl": "Relay URL সরান",
+				"urlInvalidHint": "বৈধ HTTPS URL লিখুন",
+				"urlChecking": "সংযোগ পরীক্ষা করা হচ্ছে",
+				"urlVerified": "যাচাইকৃত",
+				"urlVerifyFailedHint": "এই relay-এ সংযোগ করা যায়নি",
+				"verifySummary": "{{total}}-এর মধ্যে {{ok}} relay যাচাই হয়েছে।",
+				"verifyAuthHint": "আপনার relay-এ auth token প্রয়োজন হলে, সার্ভারে access.shared_token-এর সাথে মিল আছে কিনা নিশ্চিত করুন।",
+				"authTokenLabel": "Auth token (ঐচ্ছিক)",
+				"authTokenPlaceholder": "relay প্রমাণীকরণ চাইলে shared secret",
+				"authTokenDescription": "relay config-এ access.shared_token ব্যবহার করলে প্রয়োজন।",
+				"showAuthToken": "দেখান",
+				"hideAuthToken": "লুকান",
+				"privacyNote": "সম্পূর্ণ ব্যক্তিগত সেটআপের জন্য, প্রেরক ও গ্রহীতা উভয় ডিভাইসে একই relay URL কনফিগার করুন।",
+				"testConnection": "সংযোগ পরীক্ষা",
+				"verifySuccess": "Relay সংযোগ OK",
+				"verifySuccessDesc": "{{url}}\nসফলভাবে যাচাই ({{latency}} ms)।",
+				"verifySuccessDescGeneric": "কনফিগার করা relay সার্ভারে সফলভাবে নিবন্ধিত।",
+				"verifyFailed": "Relay সংযোগ ব্যর্থ",
+				"urlRequired": "অন্তত একটি relay URL যোগ করুন।",
+				"invalidUrl": "অবৈধ relay URL: {{url}}",
+				"disabledHint": "সংযোগ পরীক্ষার জন্য স্বয়ংক্রিয় বা কাস্টম relay সক্রিয় করুন।",
+				"confirmDisableTitle": "relay নিষ্ক্রিয় করবেন?",
+				"confirmDisableDescription": "আপনি relay নিষ্ক্রিয় করা বেছে নিয়েছেন। আপনি যদি আপনার স্থানীয় নেটওয়ার্কের বাইরের কারও সাথে ফাইল শেয়ার করার চেষ্টা করেন তবে ফাইল স্থানান্তর ব্যর্থ হতে পারে। relay কঠিন নেটওয়ার্ক পরিস্থিতিতে ডিভাইসগুলিকে একে অপরকে খুঁজে পেতে এবং সংযোগ করতে সাহায্য করে, এবং আপনার স্থানান্তরগুলি সর্বদা এন্ড-টু-এন্ড এনক্রিপ্টেড থাকে।",
+				"confirmCustomTitle": "কাস্টম relay ব্যবহার করবেন?",
+				"confirmCustomDescription": "আপনি আপনার নিজের সেলফ-হোস্টেড কাস্টম relay ব্যবহার করা বেছে নিয়েছেন। আপনার কাস্টম relay-তে পৌঁছানো না গেলে, স্থানান্তরগুলি স্বয়ংক্রিয়ভাবে পাবলিক relay-তে ফিরে আসবে এবং আপনাকে জানানো হবে। relay শুধুমাত্র আপনার ডিভাইসগুলিকে কঠিন নেটওয়ার্ক পরিস্থিতিতে সংযোগ করতে সাহায্য করে, এবং আপনার স্থানান্তরগুলি সর্বদা এন্ড-টু-এন্ড এনক্রিপ্টেড থাকে।",
+				"confirmContinue": "চালিয়ে যান"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "নতুন আপডেট!",
+		"newVersionAvailable": "সংস্করণ {{version}} উপলব্ধ।",
+		"newVersionAvailableInline": "নতুন সংস্করণ উপলব্ধ — {{version}}",
+		"updateNow": "এখন আপডেট করুন",
+		"later": "পরে",
+		"checkForUpdates": "আপডেট পরীক্ষা করুন",
+		"noUpdatesTitle": "কোনো আপডেট নেই",
+		"noUpdatesDescription": "আপনি ইতিমধ্যে সর্বশেষ সংস্করণ ব্যবহার করছেন",
+		"checkFailed": "পরীক্ষা ব্যর্থ",
+		"checkFailedDesc": "আপডেট পরীক্ষা করা যায়নি",
+		"installFailed": "ইনস্টল ব্যর্থ",
+		"installFailedDesc": "আপডেট ইনস্টল করা যায়নি"
+	},
+	"android": {
+		"preparingFile": "ফাইল প্রস্তুত করা হচ্ছে..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay সংযোগের অবস্থা",
+			"publicHeading": "পাবলিক relay",
+			"customHeading": "কাস্টম relay",
+			"disabledHeading": "Relay নিষ্ক্রিয়",
+			"unavailableHeading": "Relay অনুপলব্ধ",
+			"fellBackToPublic": "কাস্টম relay অনুপলব্ধ, এর পরিবর্তে পাবলিক relay ব্যবহার হচ্ছে।",
+			"fellBackToastTitle": "পাবলিক relay ব্যবহার হচ্ছে",
+			"fellBackToastSend": "আপনার কাস্টম relay অনুপলব্ধ ছিল — এই ট্রান্সফার পাবলিক relay ব্যবহার করছে।",
+			"fellBackToastReceive": "আপনার কাস্টম relay অনুপলব্ধ ছিল — এই ডাউনলোড পাবলিক relay ব্যবহার করছে।",
+			"dialogDescription": "অ্যাপ বর্তমানে সংযোগের জন্য কোন relay সার্ভার ব্যবহার করছে তা দেখায়।",
+			"connectedRelay": "সংযুক্ত relay",
+			"checking": "সংযোগ পরীক্ষা করা হচ্ছে…",
+			"configuredMode": "সেটিংসে কনফিগার",
+			"configuredDefault": "স্বয়ংক্রিয় (পাবলিক relay)",
+			"configuredCustom": "কাস্টম (self-hosted)",
+			"configuredDisabled": "নিষ্ক্রিয়",
+			"openSettings": "নেটওয়ার্ক সেটিংস",
+			"infoToggle": "Relay সম্পর্কে",
+			"purpose": "Relay শুধু আপনার ডিভাইসগুলোকে একে অপরকে খুঁজে পেতে এবং সংযুক্ত হতে সাহায্য করে।",
+			"directNote": "সরাসরি সংযোগ স্থাপিত হলে ফাইল ডিভাইসগুলোর মধ্যে সরাসরি স্থানান্তরিত হয় এবং relay আর ব্যবহার হয় না।",
+			"lanNote": "একই লোকাল নেটওয়ার্কে relay সম্পূর্ণরূপে এড়িয়ে যাওয়া হয়।",
+			"encryptedNote": "স্থানান্তর সবসময় এন্ড-টু-এন্ড এনক্রিপ্টেড, তাই relay কখনও আপনার ফাইল দেখে না।",
+			"disabledNote": "Relay বন্ধ আছে। শুধু সরাসরি সংযোগ, তাই কঠোর ফায়ারওয়াল বা NAT-এর মাধ্যমে স্থানান্তর ব্যর্থ হতে পারে।"
+		}
+	}
+}

@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "Envoyer",
+	"comingSoon": "Bientôt disponible",
+	"receive": "Recevoir",
+	"ok": "OK",
+	"undo": "Annuler l’action",
+	"cancel": "Annuler",
+	"confirm": "Confirmer",
+	"loading": "Chargement...",
+	"browse": "Parcourir",
+	"donate": "Faire un don",
+	"privacyPolicy": "Politique de confidentialité",
+	"license": "Licence",
+	"notFound": {
+		"title": "Page introuvable",
+		"subtitle": "La page que vous recherchez n’existe pas ou a été déplacée.",
+		"goBack": "Retour",
+		"goHome": "Accueil"
+	},
+	"sender": {
+		"title": "Envoyer",
+		"subtitle": "Partagez des fichiers ou dossiers via des connexions pair-à-pair chiffrées.",
+		"stoppingTransmission": "Arrêt de la transmission...",
+		"startSharing": "Commencer le partage",
+		"startingShare": "Démarrage du partage...",
+		"stopSharing": "Arrêter le partage",
+		"shareThisTicket": "Partagez ce ticket :",
+		"sendThisTicket": "Envoyez ce ticket à la personne qui souhaite recevoir votre fichier",
+		"keepAppOpen": "Gardez cette application ouverte pendant que d'autres téléchargent vos fichiers",
+		"fileLabel": "Fichier :",
+		"listeningForConnection": "En attente de connexion",
+		"sharingInProgress": "Partage en cours",
+		"transferCompleted": "Transfert terminé",
+		"filesBeingTransmitted": "Les fichiers sont en cours de transmission",
+		"preparingForTransport": "Préparation du transfert...",
+		"pleaseWaitProcessing": "Veuillez patienter pendant que nous préparons vos fichiers pour le partage...",
+		"dropFilesHere": "Déposez les fichiers ou dossiers ici",
+		"dragAndDrop": "Glisser & déposer",
+		"orBrowse": "ou parcourir pour sélectionner des fichiers ou dossiers",
+		"fileSelected": "Fichier sélectionné",
+		"folderSelected": "Dossier sélectionné",
+		"itemSelected": "Élément sélectionné",
+		"multipleFilesSelected": "{{name}} ... et {{count}} de plus",
+		"browseFile": "Parcourir fichier",
+		"browseFolder": "Parcourir dossier",
+		"addMoreFiles": "Ajouter d’autres fichiers",
+		"addMoreFolders": "Ajouter d’autres dossiers",
+		"multipleItemsSelected": "{{firstName}} et {{count}} de plus",
+		"removeFromSelection": "Retirer de la sélection",
+		"copyToClipboard": "Copier dans le presse-papiers",
+		"description": "Description (facultatif)",
+		"broadcastMode": {
+			"index": "Diffusion",
+			"on": {
+				"label": "Vous diffusez",
+				"description": "Plusieurs personnes disposant du ticket peuvent télécharger des fichiers simultanément en mode diffusion."
+			},
+			"off": {
+				"label": "Partage privé",
+				"description": "Seule la personne avec qui vous partagez le ticket peut télécharger le fichier."
+			}
+		}
+	},
+	"receiver": {
+		"title": "Recevoir des fichiers",
+		"subtitle": "Téléchargez des fichiers depuis l'expéditeur en utilisant des connexions pair-à-pair chiffrées sur Internet.",
+		"saveToFolder": "Enregistrer dans le dossier :",
+		"noFolderSelected": "Aucun dossier sélectionné",
+		"conflictsMore": "... et {{count}} de plus",
+		"pasteTicket": "Collez le ticket ici :",
+		"ticketPlaceholder": "ticket de réception sendme...",
+		"howToReceive": "Comment recevoir des fichiers",
+		"instruction1": "L'expéditeur doit être en ligne et partager un fichier",
+		"instruction2": "Obtenez un ticket de l'expéditeur",
+		"instruction3": "Collez le ticket dans la zone de texte",
+		"instruction4": "Cliquez sur télécharger pour commencer à recevoir",
+		"instruction5": "Les fichiers seront enregistrés dans votre dossier sélectionné",
+		"keepAppOpen": "Gardez cette application ouverte pendant le téléchargement des fichiers",
+		"connectingToSender": "Connexion à l'expéditeur",
+		"previewMultipleItems": "{{name}} ... et {{count}} de plus",
+		"multipleFilesFound": "Plusieurs fichiers trouvés",
+		"expandPreviewList": "Afficher la liste des fichiers",
+		"collapsePreviewList": "Masquer la liste des fichiers",
+		"downloadingInProgress": "Téléchargement en cours",
+		"downloadCompleted": "Téléchargement terminé",
+		"downloadCompletedWithConflicts": "Téléchargement terminé, conflits de noms résolus",
+		"downloadedFile": "Fichier téléchargé",
+		"stopReceiving": "Arrêter la réception",
+		"download": "Télécharger"
+	},
+	"transfer": {
+		"progress": "Progression du transfert",
+		"speed": "Vitesse",
+		"eta": "ETA",
+		"timeRemaining": "Temps restant",
+		"calculating": "Calcul en cours...",
+		"complete": "Transfert terminé !",
+		"stopped": "Transmission interrompue",
+		"newTransfer": "Nouveau transfert",
+		"done": "Terminé",
+		"open": "Ouvrir",
+		"wasStopped": "Le transfert a été arrêté avant la fin.",
+		"successMessage": "Votre transfert a été complété avec succès.",
+		"file": "Fichier",
+		"files": "Fichiers",
+		"folder": "Dossier",
+		"fileName": "Nom du fichier",
+		"fileSize": "Taille du fichier",
+		"folderSize": "Taille du dossier",
+		"downloadPath": "Chemin de téléchargement",
+		"duration": "Durée",
+		"avgSpeed": "Vitesse moyenne",
+		"multipleFiles": "{{count}} fichiers",
+		"donatePrompt": "Améliorez-le -"
+	},
+	"errors": {
+		"sharingFailed": "Échec du partage",
+		"sharingFailedDesc": "Échec du démarrage du partage",
+		"stopSharingFailed": "Échec de l'arrêt du partage",
+		"stopSharingFailedDesc": "Échec de l'arrêt du partage",
+		"copyFailed": "Échec de la copie",
+		"copyFailedDesc": "Échec de la copie du ticket",
+		"folderDialogFailed": "Échec de la boîte de dialogue de dossier",
+		"folderDialogFailedDesc": "Échec de l'ouverture de la boîte de dialogue de dossier",
+		"fileDialogFailed": "Échec de la boîte de dialogue de fichier",
+		"fileDialogFailedDesc": "Échec de l'ouverture de la boîte de dialogue de fichier",
+		"receiveFailed": "Échec de la réception",
+		"receiveFailedDesc": "Échec de la réception du fichier",
+		"openFolderFailed": "Échec de l'ouverture du dossier",
+		"openFolderFailedDesc": "Échec de l'ouverture du dossier de téléchargement"
+	},
+	"settings": {
+		"title": "Paramètres",
+		"navItems": {
+			"appearance": "Thème et langue",
+			"general": "Général",
+			"relay": "Relais",
+			"network": "Réseau",
+			"notification": "Notifications"
+		},
+		"theme": {
+			"description": "Sélectionnez votre thème préféré",
+			"title": "Apparence",
+			"light": "Clair",
+			"dark": "Sombre",
+			"auto": "Système"
+		},
+		"language": {
+			"title": "Langue",
+			"description": "Choisissez votre langue préférée",
+			"noResults": "Aucune langue trouvée"
+		},
+		"general": {
+			"title": "Général",
+			"autoCheckUpdates": {
+				"label": "Rechercher les mises à jour automatiquement",
+				"description": "L’application recherche les mises à jour au démarrage"
+			},
+			"systembar": {
+				"title": "Zone de notification",
+				"minimizeToTray": {
+					"label": "Réduire dans la zone de notification",
+					"description": "Lors de la fermeture, réduire l’application au lieu de quitter"
+				},
+				"showProgressOnIcon": {
+					"label": "Afficher la progression sur l’icône",
+					"description": "Barre de progression sur l’icône pour indiquer l’avancement du transfert"
+				},
+				"runOnSystemStartup": {
+					"label": "Lancer au démarrage du système",
+					"description": "Lancer automatiquement l’application au démarrage du système"
+				},
+				"contextMenu": {
+					"label": "Menu contextuel de l’Explorateur",
+					"description": "Ajouter « Envoyer avec AltSendme » au menu contextuel de l’Explorateur Windows"
+				}
+			},
+			"broadcast": {
+				"title": "Diffusion",
+				"showToggle": {
+					"label": "Afficher l’interrupteur de diffusion lors du partage",
+					"description": "Affiche un interrupteur de diffusion sur l’écran de partage pour que plusieurs destinataires puissent télécharger les mêmes fichiers en même temps."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Serveurs relais",
+				"description": "Contrôlez quels serveurs relais iroh AltSendme utilise pour le traversée NAT et les connexions de secours chiffrées.",
+				"modeDefault": "Automatique (relais publics)",
+				"modeDefaultDesc": "Utilise les relais publics iroh par défaut. Recommandé pour la plupart des utilisateurs.",
+				"modeCustom": "Personnalisé (auto-hébergé)",
+				"modeCustomDesc": "Utilisez votre/vos propre(s) serveur(s) relais. Voir deploy/relay dans le dépôt du projet.",
+				"modeDisabled": "Désactivé",
+				"modeDisabledDesc": "Ne pas utiliser de relais. Connexions directes uniquement ; peut échouer avec un NAT strict.",
+				"urlsLabel": "URL des relais",
+				"urlsDescription": "Ajoutez une ou plusieurs URL HTTPS de relais pour la bascule régionale.",
+				"addUrl": "Ajouter une URL de relais",
+				"removeUrl": "Supprimer l’URL de relais",
+				"urlInvalidHint": "Entrez une URL HTTPS valide",
+				"urlChecking": "Vérification de la connexion",
+				"urlVerified": "Vérifié",
+				"urlVerifyFailedHint": "Impossible de se connecter à ce relais",
+				"verifySummary": "{{ok}} relais sur {{total}} vérifiés.",
+				"verifyAuthHint": "Si votre relais nécessite un jeton d’authentification, assurez-vous qu’il correspond à access.shared_token sur le serveur.",
+				"authTokenLabel": "Jeton d’authentification (facultatif)",
+				"authTokenPlaceholder": "Secret partagé si votre relais nécessite une authentification",
+				"authTokenDescription": "Requis lorsque votre relais utilise access.shared_token dans sa configuration.",
+				"showAuthToken": "Afficher",
+				"hideAuthToken": "Masquer",
+				"privacyNote": "Pour une configuration entièrement privée, configurez les mêmes URL de relais sur les appareils émetteur et récepteur.",
+				"testConnection": "Tester la connexion",
+				"verifySuccess": "Connexion relais OK",
+				"verifySuccessDesc": "{{url}}\nvérifié avec succès ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Enregistrement réussi auprès de votre serveur relais configuré.",
+				"verifyFailed": "Échec de la connexion relais",
+				"urlRequired": "Ajoutez au moins une URL de relais.",
+				"invalidUrl": "URL de relais invalide : {{url}}",
+				"disabledHint": "Activez les relais automatiques ou personnalisés pour tester la connectivité.",
+				"confirmDisableTitle": "Désactiver les relais ?",
+				"confirmDisableDescription": "Vous avez choisi de désactiver les relais. Les transferts de fichiers peuvent échouer si vous essayez de partager des fichiers avec quelqu'un en dehors de votre réseau local. Les relais aident les appareils à se trouver et à se connecter dans des conditions réseau difficiles, et vos transferts restent toujours chiffrés de bout en bout.",
+				"confirmCustomTitle": "Utiliser des relais personnalisés ?",
+				"confirmCustomDescription": "Vous avez choisi d'utiliser vos propres relais auto-hébergés. Si vos relais personnalisés sont injoignables, les transferts basculeront automatiquement vers les relais publics et vous serez averti. Les relais aident uniquement vos appareils à se connecter dans des conditions réseau difficiles, et vos transferts restent toujours chiffrés de bout en bout.",
+				"confirmContinue": "Continuer"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Nouvelle mise à jour !",
+		"newVersionAvailable": "La version {{version}} est disponible.",
+		"newVersionAvailableInline": "Une nouvelle version est disponible : {{version}}",
+		"updateNow": "Mettre à jour",
+		"later": "Plus tard",
+		"checkForUpdates": "Rechercher des mises à jour",
+		"noUpdatesTitle": "Aucune mise à jour",
+		"noUpdatesDescription": "Vous utilisez déjà la dernière version",
+		"checkFailed": "Échec de la vérification",
+		"checkFailedDesc": "Impossible de rechercher des mises à jour",
+		"installFailed": "Échec de l’installation",
+		"installFailedDesc": "Impossible d’installer la mise à jour"
+	},
+	"android": {
+		"preparingFile": "Préparation du fichier..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "État de la connexion relais",
+			"publicHeading": "Relais public",
+			"customHeading": "Relais personnalisé",
+			"disabledHeading": "Relais désactivés",
+			"unavailableHeading": "Relais indisponible",
+			"fellBackToPublic": "Relais personnalisé inaccessible, utilisation d’un relais public à la place.",
+			"fellBackToastTitle": "Utilisation d’un relais public",
+			"fellBackToastSend": "Votre relais personnalisé était inaccessible — ce transfert utilise un relais public à la place.",
+			"fellBackToastReceive": "Votre relais personnalisé était inaccessible — ce téléchargement utilise un relais public à la place.",
+			"dialogDescription": "Indique quel serveur relais cette application utilise actuellement pour les connexions.",
+			"connectedRelay": "Relais connecté",
+			"checking": "Vérification de la connexion…",
+			"configuredMode": "Configuré dans les paramètres",
+			"configuredDefault": "Automatique (relais publics)",
+			"configuredCustom": "Personnalisé (auto-hébergé)",
+			"configuredDisabled": "Désactivé",
+			"openSettings": "Paramètres réseau",
+			"infoToggle": "À propos des relais",
+			"purpose": "Les relais aident seulement vos appareils à se trouver et à se connecter.",
+			"directNote": "Une fois la connexion directe établie, les fichiers sont transférés directement entre les appareils et le relais n’est plus utilisé.",
+			"lanNote": "Sur le même réseau local, les relais sont entièrement ignorés.",
+			"encryptedNote": "Les transferts sont toujours chiffrés de bout en bout, les relais ne voient donc jamais vos fichiers.",
+			"disabledNote": "Les relais sont désactivés. Connexions directes uniquement, les transferts peuvent donc échouer derrière des pare-feu ou NAT stricts."
+		}
+	}
+}

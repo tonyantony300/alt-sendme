@@ -1,33 +1,65 @@
 [package]
 name = "alt-sendme"
-version = "0.1.3"
-description = "Desktop version of sendme - P2P file sharing with NAT hole punching"
-authors = ["Sendme Team"]
-license = "Apache-2.0 OR MIT"
+version = "0.4.2"
+description = "P2P file sharing with NAT hole punching"
+authors = ["Tony Antony"]
+license = "AGPL 3.0"
 edition = "2021"
-rust-version = "1.81"
+rust-version = "1.91"
+
+[lib]
+name = "alt_sendme_lib"
+crate-type = ["cdylib", "rlib", "staticlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0", features = [] }
+tauri-build = { version = "2.5", features = [] }
 serde_json = "1.0"
 
 [dependencies]
-tauri = { version = "2.0", features = ["protocol-asset", "macos-private-api"] }
-tauri-plugin-dialog = "2.0"
-tauri-plugin-opener = "2.0"
-tauri-plugin-os = "2.0"
-tauri-plugin-http = "2.0"
-tauri-plugin-shell = "2.0"
+tauri = { version = "2.10", features = ["protocol-asset", "tray-icon", "image-png"] }
+mime_guess="2.0"
+base64 = "0.22.1"
+image="0.25"
+tauri-plugin-dialog = "2.7"
+tauri-plugin-opener = "2.5.3"
+tauri-plugin-os = "2.3"
+tauri-plugin-single-instance = "2.4"
+tauri-plugin-http = "2.5"
+tauri-plugin-shell = "2.3"
+tauri-plugin-updater = "2.10"
+tauri-plugin-native-utils = { path = "./plugins/tauri-plugin-native-utils" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 anyhow = "1.0"
-dirs = "6.0"
-sendme = { path = "../" }
+n0-watcher = "1.0"
+iroh = "1.0.0"
+engine = { path = "../engine" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.4"
+tauri-plugin-store = "2.4.2"
+tauri-plugin-notification = "2.3.3"
+reqwest = "0.13.2"
 
 [features]
-default = ["custom-protocol"]
+default = ["custom-protocol", "default-tls"]
+default-tls = ["reqwest/default-tls"]
 custom-protocol = ["tauri/custom-protocol"]
+linux-gstreamer = ["dep:gstreamer", "dep:gstreamer-app", "dep:gstreamer-video"]
+cargo-clippy = []
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gstreamer = { version = "0.23", optional = true }
+gstreamer-app = { version = "0.23", optional = true }
+gstreamer-video = { version = "0.23", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.52"
+dunce = "1.0"
+windows = { version = "0.58", features = ["Win32_Media_MediaFoundation"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
+core-graphics = "0.24"
+objc = "0.2"

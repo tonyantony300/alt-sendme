@@ -1,42 +1,59 @@
+import { FileTextIcon, FolderOpenIcon } from 'lucide-react'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { BrowseButtonsProps } from '../../types/sender'
+import { Button } from '../ui/button'
+import { Group, GroupSeparator } from '../ui/group'
 
-export function BrowseButtons({ 
-  isLoading, 
-  onBrowseFile, 
-  onBrowseFolder 
+export function BrowseButtons({
+	isLoading,
+	onBrowseFile,
+	onBrowseFolder,
 }: BrowseButtonsProps) {
-  return (
-    <div className="flex gap-3 justify-center">
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          onBrowseFile()
-        }}
-        disabled={isLoading}
-        className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          backgroundColor: 'var(--app-accent)',
-          color: 'var(--app-accent-fg)',
-          border: '1px solid var(--app-accent)',
-        }}
-      >
-        {isLoading ? 'Loading...' : 'Browse File'}
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          onBrowseFolder()
-        }}
-        disabled={isLoading}
-        className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          backgroundColor: 'var(--app-accent)',
-          color: 'var(--app-accent-fg)',
-          border: '1px solid var(--app-accent)',
-        }}
-      >
-        {isLoading ? 'Loading...' : 'Browse Folder'}
-      </button>
-    </div>
-  )
+	const { t } = useTranslation()
+
+	return (
+		<Group className="mx-auto flex w-full max-w-sm flex-col gap-2 mt-2 sm:mt-0 sm:w-fit sm:max-w-none sm:flex-row sm:gap-0">
+			<div className="w-full sm:w-auto">
+				<Button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation()
+						onBrowseFile()
+					}}
+					disabled={isLoading}
+					className="w-full rounded-lg sm:rounded-l-lg sm:rounded-r-none text-sm px-3 py-2 sm:px-4 sm:py-2.5"
+				>
+					{isLoading ? (
+						t('common:loading')
+					) : (
+						<>
+							{t('common:sender.browseFile')}
+							<FileTextIcon />
+						</>
+					)}
+				</Button>
+			</div>
+			<GroupSeparator className="hidden sm:block" />
+			<div className="w-full sm:w-auto">
+				<Button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation()
+						onBrowseFolder()
+					}}
+					disabled={isLoading}
+					className="w-full rounded-lg sm:rounded-r-lg sm:rounded-l-none text-sm px-3 py-2 sm:px-4 sm:py-2.5"
+				>
+					{isLoading ? (
+						t('common:loading')
+					) : (
+						<>
+							{t('common:sender.browseFolder')}
+							<FolderOpenIcon />
+						</>
+					)}
+				</Button>
+			</div>
+		</Group>
+	)
 }

@@ -5,6 +5,10 @@
 # TypeScript build info files (incremental compilation cache)
 *.tsbuildinfo
 
+# Generated Vite config files (compiled from vite.config.ts)
+vite.config.js
+vite.config.d.ts
+
 # Generated Cargo.toml files (legitimate source Cargo.toml files should be tracked)
 # This covers any Cargo.toml generated during builds outside of target/
 **/target/**/Cargo.toml
@@ -18,6 +22,9 @@ node_modules/
 dist/
 build/
 
+# npm lockfile (not tracked to avoid noisy lockfile-only diffs in forks/PRs)
+package-lock.json
+
 # Temporary files
 tmp/
 tmp2/
@@ -26,6 +33,10 @@ tmp2/
 
 # Application specific
 .sendme-*
+.keystore.jks
+
+# Self-hosted relay config (per-deployment values; may contain secrets)
+deploy/relay/iroh-relay.conf
 
 # IDE and editor files
 .vscode/
@@ -105,6 +116,9 @@ src-tauri/gen/*
 
 # Markdown files (except README files)
 *.md
+!feature-request.md
+!PULL_REQUEST_TEMPLATE.md
+!report-bug.md
 !README.md
 !README
 !**/README.md
@@ -119,3 +133,13 @@ devenv.local.nix
 
 # pre-commit
 .pre-commit-config.yaml
+!PRIVACY.md
+!CONTRIBUTING.md
+
+# Project docs (kept local; not published)
+docs/
+
+.github-reference/
+.github-reference-readest/
+docs/fdroid-metadata-example.yml
+docs/fdroid-metadata-example.yml

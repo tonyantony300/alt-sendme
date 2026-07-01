@@ -1,0 +1,46 @@
+services:
+  relay:
+    image: n0computer/iroh-relay:v1.0.0
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "7842:7842/udp"
+      # Metrics (no auth). Bind to localhost so it is NOT publicly reachable;
+      # drop the 127.0.0.1 prefix only if you firewall this port separately.
+      - "127.0.0.1:9090:9090"
+    environment:
+      # Shared-token auth (optional). Only takes effect when iroh-relay.conf has
+      # an `access.shared_token = [...]` line; this value then REPLACES it, so the
+      # real secret stays out of the config file and out of git.
+      #
+      # Bare passthrough (no `=`): the variable is injected ONLY when it is set in
+      # your shell / .env, so leaving it unset is safe. Do NOT write
+      # `IROH_RELAY_ACCESS_TOKEN=${IROH_RELAY_ACCESS_TOKEN:-}` here — that injects
+      # an EMPTY token, which the relay rejects at startup in shared-token mode and
+      # which would also clobber a token set directly in the config file.
+      # Provide the value via a gitignored .env file or your shell:
+      #   echo "IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)" >> .env
+      - IROH_RELAY_ACCESS_TOKEN
+    volumes:
+      - ./iroh-relay.conf:/config/iroh-relay.conf:ro
+      - relay-certs:/data/certs
+    command: ["--config-path", "/config/iroh-relay.conf"]
+    healthcheck:
+      # Hits the default metrics endpoint to confirm the process is serving.
+      # If you disable metrics (enable_metrics = false), remove or adapt this.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          # A relay is light on CPU/RAM; the real cost is bandwidth (see [limits]
+          # in iroh-relay.conf). Raise these if you serve many concurrent clients.
+          cpus: "1.0"
+          memory: 512M
+
+volumes:
+  relay-certs:

@@ -1,0 +1,43 @@
+# Quick-test iroh relay on Fly.io — NO custom domain.
+#
+# Runs iroh-relay in --dev mode (plain HTTP on :3340). Fly's edge terminates TLS and
+# proxies to it, so the relay is reachable at https://<app>.fly.dev with a valid cert.
+# This gives relaying only (QUIC address discovery is off in --dev). For a full
+# production relay with your own domain + Let's Encrypt, use fly.toml instead.
+#
+# Deploy:
+#   cd deploy/relay
+#   fly apps create --generate-name      # let Fly pick a random unique name...
+#   # ...or:  fly apps create my-relay   # ...or choose your own unique name
+#   # then set `app` below to the name Fly printed, and:
+#   fly deploy --config fly.dev.toml
+#   # relay URL = https://<app>.fly.dev
+#
+# Private relay (optional): --dev mode still honours shared-token auth. Add an
+# `access.shared_token = ["placeholder"]` line to a config you mount/bake, then:
+#   fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
+
+app = "your-unique-relay-name"       # must be globally unique — replace before deploying
+primary_region = "iad"               # pick a region near you (e.g. ams, sin, sjc)
+
+[build]
+  image = "n0computer/iroh-relay:v1.0.0"   # pinned (matches app's iroh 1.0.0)
+
+[processes]
+  app = "--dev"                      # -> iroh-relay --dev : plain HTTP on :3340
+
+[http_service]
+  internal_port = 3340
+  force_https = true
+  auto_stop_machines = false
+  min_machines_running = 1           # keep the relay up
+  processes = ["app"]
+
+  # Restart the machine if the relay stops answering HTTP.
+  # /healthz is the relay's built-in health endpoint (returns 200 + JSON status).
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "get"
+    path = "/healthz"

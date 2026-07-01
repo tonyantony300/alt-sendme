@@ -1,141 +1,199 @@
 import { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { StopCircleIcon } from 'lucide-react'
 import { DragDrop } from './DragDrop'
 import { ShareActionCard } from './ShareActionCard'
 import { SharingActiveCard } from './SharingActiveCard'
-import { PulseAnimation } from './PulseAnimation'
-import { TransferSuccessScreen } from './TransferSuccessScreen'
+import { PulseAnimation } from '../common/PulseAnimation'
+import { TransferSuccessScreen } from '../common/TransferSuccessScreen'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+	AlertDialog,
+	AlertDialogClose,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from '../ui/alert-dialog'
 import { useSender } from '../../hooks/useSender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
+import { Button } from '../ui/button'
+import { useSenderStore } from '../../store/sender-store'
 
 interface SenderProps {
-  onTransferStateChange: (isSharing: boolean) => void
+	onTransferStateChange: (isSharing: boolean) => void
 }
 
 export function Sender({ onTransferStateChange }: SenderProps) {
-  const {
-    isSharing,
-    isTransporting,
-    isCompleted,
-    ticket,
-    selectedPath,
-    pathType,
-    isLoading,
-    isStopping,
-    copySuccess,
-    alertDialog,
-    transferMetadata,
-    transferProgress,
-    handleFileSelect,
-    startSharing,
-    stopSharing,
-    copyTicket,
-    closeAlert,
-    resetForNewTransfer
-  } = useSender()
+	const {
+		viewState,
+		isSharing,
+		isTransporting,
+		ticket,
+		selectedPaths,
+		selectedPath,
+		pathType,
+		isLoading,
+		copySuccess,
+		alertDialog,
+		transferMetadata,
+		transferProgress,
+		isBroadcastMode,
+		activeConnectionCount,
+		handleFileSelect,
+		handleFilesSelect,
+		clearSelectedPath,
+		removeSelectedPath,
+		startSharing,
+		stopSharing,
+		copyTicket,
+		closeAlert,
+		resetForNewTransfer,
+	} = useSender()
 
-  // Notify parent component when transfer state changes
-  useEffect(() => {
-    onTransferStateChange(isSharing)
-  }, [isSharing, onTransferStateChange])
+	const { t } = useTranslation()
+	const setIsBroadcastMode = useSenderStore((state) => state.setIsBroadcastMode)
 
-  return (
-    <div className="p-6 space-y-6 relative h-[28rem] overflow-y-auto flex flex-col" style={{ color: 'var(--app-main-view-fg)' }}>
-   
+	useEffect(() => {
+		onTransferStateChange(isSharing)
+	}, [isSharing, onTransferStateChange])
 
-      {!isSharing ? (
-        <>
-           <div className="text-center">
-           <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-             Send
-           </h2>
-           <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-           Share files or folders via encrypted peer-to-peer connections.
-           </p>
-         </div>
-        <div className="space-y-4 flex-1 flex flex-col">
-          <DragDrop 
-            onFileSelect={handleFileSelect} 
-            selectedPath={selectedPath}
-            isLoading={isLoading}
-          />
+	// Reset broadcast mode to false when idle screen is shown
+	useEffect(() => {
+		if (viewState === 'IDLE' && isBroadcastMode) {
+			setIsBroadcastMode(false)
+		}
+	}, [viewState, isBroadcastMode, setIsBroadcastMode])
 
-          <ShareActionCard
-            selectedPath={selectedPath}
-            isLoading={isLoading}
-            onFileSelect={handleFileSelect}
-            onStartSharing={startSharing}
-          />
-        </div>
-        </>
-      ) : isStopping ? (
-        // Show loader while stopping
-        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent-light)' }} />
-          <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            Stopping transmission...
-          </p>
-        </div>
-      ) : isCompleted && transferMetadata && !isTransporting ? (
-        // Success screen - only show when transfer is completed AND metadata is available AND not currently transporting
-        <div className="flex-1 flex flex-col">
-          <TransferSuccessScreen 
-            metadata={transferMetadata}
-            onDone={resetForNewTransfer}
-          />
-        </div>
-      ) : (
-        // Sharing active with pulse animation
-        <>
-        <div className="text-center">
-        <PulseAnimation 
-          isTransporting={isTransporting}
-          isCompleted={isCompleted}
-          className="mx-auto my-4 flex items-center justify-center" 
-        />
-        </div>
-        <div className="flex-1 flex flex-col">
-          <SharingActiveCard
-            isSharing={isSharing}
-            isLoading={isLoading}
-            isTransporting={isTransporting}
-            isCompleted={isCompleted}
-            selectedPath={selectedPath}
-            pathType={pathType}
-            ticket={ticket}
-            copySuccess={copySuccess}
-            transferProgress={transferProgress}
-            onStartSharing={startSharing}
-            onStopSharing={stopSharing}
-            onCopyTicket={copyTicket}
-          />
-        </div>
-        </>
-      )}
+	return (
+		<div className="p-0 sm:p-6 space-y-6 relative h-[65dvh] sm:h-112 overflow-y-auto flex flex-col">
+			{/* IDLE state: Show file selection UI */}
+			{viewState === 'IDLE' && (
+				<>
+					<div className="text-center">
+						<h2 className="text-xl font-semibold mb-2">
+							{t('common:sender.title')}
+						</h2>
+						<p className="text-sm text-muted-foreground">
+							{t('common:sender.subtitle')}
+						</p>
+					</div>
+					<div className="space-y-4 flex-1 flex flex-col">
+						<DragDrop
+							onFileSelect={handleFileSelect}
+							onFilesSelect={handleFilesSelect}
+							selectedPaths={selectedPaths}
+							selectedPath={selectedPath}
+							isLoading={isLoading}
+							onClearSelection={clearSelectedPath}
+							onRemoveSelectedPath={removeSelectedPath}
+						/>
 
-      <AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{alertDialog.title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {alertDialog.description}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={closeAlert}>
-              OK
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  )
+						<ShareActionCard
+							selectedPaths={selectedPaths}
+							selectedPath={selectedPath}
+							isLoading={isLoading}
+							onStartSharing={startSharing}
+						/>
+					</div>
+				</>
+			)}
+
+			{/* SUCCESS state: Show transfer success screen (only in non-broadcast mode) */}
+			{viewState === 'SUCCESS' && transferMetadata && !isBroadcastMode && (
+				<div className="flex-1 flex flex-col">
+					<TransferSuccessScreen
+						metadata={transferMetadata}
+						onDone={resetForNewTransfer}
+					/>
+				</div>
+			)}
+
+			{/* SHARING or TRANSPORTING state: Show active sharing UI */}
+			{/* In broadcast mode, only show SHARING state (skip TRANSPORTING) */}
+			{(((viewState === 'SHARING' || viewState === 'TRANSPORTING') &&
+				!isBroadcastMode) ||
+				(viewState === 'SHARING' && isBroadcastMode)) && (
+				<>
+					<div className="text-center mt-18 sm:mt-0">
+						<PulseAnimation
+							isTransporting={isTransporting && !isBroadcastMode}
+							hasActiveConnections={
+								isBroadcastMode && activeConnectionCount > 0
+							}
+							className="mx-auto my-4 flex items-center justify-center"
+						/>
+					</div>
+					<div className="flex-1 flex flex-col">
+						<SharingActiveCard
+							isSharing={isSharing}
+							isLoading={isLoading}
+							isTransporting={isTransporting && !isBroadcastMode}
+							isCompleted={false}
+							selectedPaths={selectedPaths}
+							selectedPath={selectedPath}
+							pathType={pathType}
+							ticket={ticket}
+							copySuccess={copySuccess}
+							transferProgress={transferProgress}
+							isBroadcastMode={isBroadcastMode}
+							activeConnectionCount={activeConnectionCount}
+							onStartSharing={startSharing}
+							onStopSharing={stopSharing}
+							onCopyTicket={copyTicket}
+							onSetBroadcast={setIsBroadcastMode}
+						/>
+					</div>
+				</>
+			)}
+
+			{/* Fallback: Show debug info if no view matches */}
+			{viewState !== 'IDLE' &&
+				viewState !== 'SUCCESS' &&
+				viewState !== 'SHARING' &&
+				viewState !== 'TRANSPORTING' && (
+					<div className="text-center p-4 border border-red-500">
+						<p className="text-red-500 font-bold">
+							Unexpected view state: {viewState}
+						</p>
+						<p className="text-sm">
+							isSharing={String(isSharing)}, isTransporting=
+							{String(isTransporting)}
+						</p>
+					</div>
+				)}
+
+			<AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{alertDialog.title}</AlertDialogTitle>
+						<AlertDialogDescription>
+							{alertDialog.description}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogClose
+							onClick={closeAlert}
+							render={
+								<Button variant="secondary" size="sm">
+									{t('common:cancel')}
+								</Button>
+							}
+						/>
+						<AlertDialogClose
+							onClick={() => {
+								stopSharing()
+								closeAlert()
+							}}
+							render={
+								<Button size="sm">
+									{t('common:sender.stopSharing')}
+									<StopCircleIcon />
+								</Button>
+							}
+						/>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</div>
+	)
 }

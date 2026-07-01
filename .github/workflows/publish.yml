@@ -6,102 +6,455 @@ on:
       - 'v*.*.*'
 
 jobs:
+  prepare-release:
+    name: Prepare release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      release_id: ${{ steps.release.outputs.release_id }}
+      release_body: ${{ steps.release_notes.outputs.notes }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+
+      - name: setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Extract version from tag and validate
+        id: version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          npm pkg set version="$VERSION"
+          npm run sync-version
+          node scripts/validate-version.js
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes from commits
+        id: release_notes
+        shell: bash
+        env:
+          CURRENT_TAG: ${{ github.ref_name }}
+        run: |
+          git fetch --tags --force --prune origin
+
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1 || true)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, showing all commits"
+            COMMIT_RANGE="HEAD"
+          else
+            echo "Comparing ${PREVIOUS_TAG}...${CURRENT_TAG}"
+            COMMIT_RANGE="${PREVIOUS_TAG}..HEAD"
+          fi
+
+          CHANGELOG=$(git log -50 ${COMMIT_RANGE} --pretty=format:"- %s (%h)" --no-merges)
+
+          {
+            echo "## What's Changed"
+            echo ""
+            if [ -z "$CHANGELOG" ]; then
+              echo "- Initial release"
+            else
+              echo "$CHANGELOG"
+            fi
+            echo ""
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "See the assets below to download and install this version."
+          } > release_notes.txt
+
+          echo "notes<<EOF" >> "$GITHUB_OUTPUT"
+          cat release_notes.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create or resolve draft GitHub release
+        id: release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+
+          if RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
+            --jq "map(select(.tag_name == \"${TAG}\")) | first | .id // empty"); [ -n "${RELEASE_ID}" ]; then
+            echo "Release for $TAG already exists (id=${RELEASE_ID})"
+          else
+            echo "Creating draft release for $TAG"
+            RELEASE_ID=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/releases" \
+              -f tag_name="${TAG}" \
+              -f target_commitish="${GITHUB_SHA}" \
+              -f name="AltSendme ${VERSION}" \
+              -f body="$(cat release_notes.txt)" \
+              -F draft=true \
+              -F prerelease=false \
+              --jq .id)
+            echo "Created draft release for ${TAG} (id=${RELEASE_ID})"
+          fi
+
+          if [ -z "${RELEASE_ID}" ]; then
+            echo "ERROR: could not resolve release id for ${TAG}"
+            exit 1
+          fi
+          echo "release_id=${RELEASE_ID}" >> "$GITHUB_OUTPUT"
+
   publish-tauri:
+    name: Desktop · ${{ matrix.label }}
+    needs: prepare-release
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+          - label: macos-universal
+            platform: 'macos-latest'
+            arch: universal
+            rust_target: ''
+            args: '--target universal-apple-darwin'
+            cache_key: macos-universal
+          - label: macos-arm64
+            platform: 'macos-latest'
+            arch: aarch64
+            rust_target: aarch64-apple-darwin
             args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
+            cache_key: macos-aarch64
+          - label: macos-x64
+            platform: 'macos-latest'
+            arch: x86_64
+            rust_target: x86_64-apple-darwin
             args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-22.04'
+            cache_key: macos-x86_64
+          - label: linux-x64
+            platform: 'ubuntu-22.04'
+            arch: x86_64
+            rust_target: x86_64-unknown-linux-gnu
             args: ''
-          - platform: 'windows-latest'
+            cache_key: ubuntu-x86_64
+          - label: linux-arm64
+            platform: 'ubuntu-22.04-arm'
+            arch: aarch64
+            rust_target: aarch64-unknown-linux-gnu
             args: ''
+            cache_key: ubuntu-aarch64
+          - label: windows-x64
+            platform: 'windows-latest'
+            arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
+            args: '--target x86_64-pc-windows-msvc --bundles nsis,msi'
+            cache_key: windows-x86_64
+          - label: windows-arm64
+            platform: 'windows-latest'
+            arch: aarch64
+            rust_target: aarch64-pc-windows-msvc
+            # WiX MSI cannot be cross-compiled for ARM64; NSIS only (see Tauri Windows installer docs).
+            args: '--target aarch64-pc-windows-msvc --bundles nsis'
+            cache_key: windows-aarch64
 
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: lts/*
+          node-version: '24.x'
+          cache: npm
 
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      # Toolchain @rev = Rust version (see dtolnay/rust-toolchain README). Use full patch tag, not @1.91.
+      # Quote targets so YAML does not treat the comma as a flow-sequence separator (only aarch64 was installed before).
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          toolchain: 1.91.0
+          components: rustfmt
+          targets: "${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.rust_target }}"
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
+        if: contains(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils
+
+      - name: Install NSIS (Windows only)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: choco install nsis -y
+
+      - name: Add NSIS to PATH
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $env:Path = "C:\Program Files (x86)\NSIS;" + $env:Path
+          echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2
+        uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           workspaces: './src-tauri -> target'
+          key: ${{ matrix.cache_key }}-cargo
+
+      - name: Extract version from tag and sync
+        shell: bash
+        run: |
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+          npm pkg set version="$VERSION"
+          npm run sync-version
+          node scripts/validate-version.js
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: install frontend dependencies
-        run: cd web-app && npm install
+        run: npm install
 
-      # macOS code signing setup (optional - builds work without it)
+      # Belt-and-suspenders: macOS builds need the relevant Apple targets on the active toolchain.
+      - name: Ensure macOS targets
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          set -eux
+          rustup show
+          rustup target add aarch64-apple-darwin
+          rustup target add x86_64-apple-darwin
+          rustup target list --installed
+
+      - name: Ensure Windows ARM64 target
+        if: matrix.platform == 'windows-latest' && matrix.arch == 'aarch64'
+        shell: bash
+        run: |
+          set -eux
+          rustup target add aarch64-pc-windows-msvc
+          rustup target list --installed
+
       - name: import certificate (macOS only)
-        if: matrix.platform == 'macos-latest' && env.APPLE_CERTIFICATE != ''
+        if: matrix.platform == 'macos-latest'
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         run: |
+          if [ -z "$APPLE_CERTIFICATE" ] || [ -z "$APPLE_CERTIFICATE_PASSWORD" ]; then
+            echo "Apple certificate secrets not set, skipping certificate import"
+            exit 0
+          fi
+
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          
-          # import certificate from secrets
-          echo -n "$APPLE_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
-          
-          # create temporary keychain
+
+          echo -n "$APPLE_CERTIFICATE" | base64 --decode > $CERTIFICATE_PATH
+
           security create-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
-          
-          # import certificate to keychain
+
           security import $CERTIFICATE_PATH -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
-          
-          # enable codesigning from a non user interactive shell
+          security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains | sed 's/["]//g')
           security set-key-partition-list -S apple-tool:,apple: -s -k "$APPLE_CERTIFICATE_PASSWORD" $KEYCHAIN_PATH
-          
+
           echo "Certificate imported successfully"
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Validate notarization requirements (macOS only)
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.APPLE_ID }}" ] || [ -z "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" ] || [ -z "${{ secrets.APPLE_TEAM_ID }}" ]; then
+            echo "ERROR: Missing required notarization secrets"
+            echo "Required: APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID"
+            exit 1
+          fi
+          echo "All notarization secrets present"
+
+      - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_SIGNING_IDENTITY: "Developer ID Application: Tony Antony (9H7RVQAP36)"
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          TAURI_LINUX_AYATANA_APPINDICATOR: ${{ contains(matrix.platform, 'ubuntu') && '1' || '' }}
         with:
           projectPath: ./src-tauri
+          releaseId: ${{ needs.prepare-release.outputs.release_id }}
           tagName: ${{ github.ref_name }}
-          releaseName: 'AltSendme v__VERSION__'
           args: ${{ matrix.args }}
-          releaseBody: |
-            See the assets below to download and install this version.
-            
-            ## macOS Users
-            
-            This app is **not code-signed**. When you first open it:
-            
-            
-            **Terminal:**
-
-            ```bash
-            cd /Applications && xattr -dr com.apple.quarantine AltSendme.app
-            ```
-            
-            
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
 
+      # Tauri's bundler hardcodes Ubuntu 22.04 deb dependency names. Rewrite them
+      # to also accept Debian / Ubuntu 24.04+ names, then overwrite the uploaded asset.
+      - name: Patch Linux .deb dependencies (ubuntu only)
+        if: contains(matrix.platform, 'ubuntu')
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
+        run: node scripts/patch-linux-deb.js
+
+  # Uses repository secrets: ANDROID_KEY_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+  # (same names as https://v2.tauri.app/distribute/sign/android/).
+  # Builds universal (F-Droid) + per-ABI APKs (arm64, armv7, x86, x86_64); see scripts/android-release-build.js.
+  android-release-apks:
+    name: Android release APKs
+    needs: prepare-release
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          # Match Tauri / plugin compileSdk 36 (see src-tauri/plugins/.../build.gradle.kts).
+          packages: build-tools;36.0.0 platform-tools platforms;android-36
+
+      - name: Set up NDK
+        uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779 # v1
+        id: setup-ndk
+        with:
+          ndk-version: r28b
+          local-cache: true
+
+      - name: NDK and SDK env
+        shell: bash
+        run: |
+          NDK_PATH="${{ steps.setup-ndk.outputs.ndk-path }}"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          if [ -n "${ANDROID_HOME:-}" ]; then
+            echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${ANDROID_SDK_ROOT:-}" ] && [ -z "${ANDROID_HOME:-}" ]; then
+            echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          fi
+
+      - name: Set Rust 1.91 and Android targets
+        uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
+        with:
+          toolchain: 1.91.0
+          components: rustfmt
+          targets: aarch64-linux-android,armv7-linux-androideabi
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: ubuntu-22.04-android-cargo
+
+      - name: Extract version from tag and sync
+        shell: bash
+        run: |
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+          npm pkg set version="$VERSION"
+          npm run sync-version
+          node scripts/validate-version.js
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build release APKs (universal + per-ABI)
+        env:
+          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_APK_PROFILES: universal,arm64,armv7
+        run: npm run android:build:release
+
+      - name: Upload Android APKs to GitHub release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RELEASE_ID" ]; then
+            echo "ERROR: release id missing (prepare-release should have created it)"
+            exit 1
+          fi
+          declare -A APKS=(
+            [universal]="build/android-apks/app-universal-release.apk"
+            [arm64]="build/android-apks/app-arm64-release.apk"
+            [armv7]="build/android-apks/app-armv7-release.apk"
+          )
+          for variant in universal arm64 armv7; do
+            APK="${APKS[$variant]}"
+            if [ ! -f "$APK" ]; then
+              echo "ERROR: expected signed APK at $APK (check keystore and apksigner log above)"
+              ls -la "$(dirname "$APK")" 2>&1 || true
+              exit 1
+            fi
+            RENAME="AltSendme-${TAG}-${variant}.apk"
+            cp "$APK" "$RENAME"
+            echo "Uploading $RENAME to release $TAG"
+            ASSET_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets" \
+              --jq ".[] | select(.name == \"${RENAME}\") | .id // empty")
+            if [ -n "$ASSET_ID" ]; then
+              gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/assets/${ASSET_ID}" >/dev/null
+            fi
+            gh api --method POST \
+              -H "Content-Type: application/vnd.android.package-archive" \
+              --input "$RENAME" \
+              "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets?name=${RENAME}" >/dev/null
+          done
+
+  finalize-release:
+    name: Finalize draft release
+    needs: [prepare-release, publish-tauri, android-release-apks]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Leave release as draft for manual review
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          RELEASE_ID: ${{ needs.prepare-release.outputs.release_id }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RELEASE_ID" ]; then
+            echo "ERROR: release id missing"
+            exit 1
+          fi
+          RELEASE_URL=$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" --jq .html_url)
+          echo "Release $TAG is ready for review as a draft."
+          echo "Edit the release notes and assets, then click Publish release to make it latest:"
+          echo "$RELEASE_URL"

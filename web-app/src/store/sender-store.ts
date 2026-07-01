@@ -1,0 +1,205 @@
+import { create } from 'zustand'
+import type { AlertDialogState, AlertType } from '../types/ui'
+import type { TransferMetadata, TransferProgress } from '../types/transfer'
+
+// Define explicit view states for predictable UI rendering
+export type SenderViewState = 'IDLE' | 'SHARING' | 'TRANSPORTING' | 'SUCCESS'
+
+export interface SenderStore {
+	// View state (replaces isSharing, isTransporting, isCompleted)
+	viewState: SenderViewState
+
+	// Transfer data
+	ticket: string | null
+	selectedPaths: string[]
+	selectedPath: string | null
+	pathType: 'file' | 'directory' | null
+	thumbnailUrl: string | null
+	transferMetadata: TransferMetadata | null
+	transferProgress: TransferProgress | null
+
+	// UI flags
+	isLoading: boolean
+	copySuccess: boolean
+	isBroadcastMode: boolean
+	alertDialog: AlertDialogState
+	activeConnectionCount: number
+
+	// Actions
+	setViewState: (state: SenderViewState) => void
+	setTicket: (ticket: string | null) => void
+	setSelectedPaths: (paths: string[]) => void
+	addSelectedPaths: (paths: string[]) => void
+	removeSelectedPath: (path: string) => void
+	setSelectedPath: (path: string | null) => void
+	setPathType: (type: 'file' | 'directory' | null) => void
+	setThumbnailUrl: (url: string | null) => void
+	setTransferMetadata: (metadata: TransferMetadata | null) => void
+	setTransferProgress: (progress: TransferProgress | null) => void
+	setIsLoading: (loading: boolean) => void
+	setCopySuccess: (success: boolean) => void
+	setIsBroadcastMode: (enabled: boolean) => void
+	toggleBroadcastMode: () => void
+	setAlertDialog: (dialog: AlertDialogState) => void
+	setActiveConnectionCount: (count: number) => void
+	showAlert: (title: string, description: string, type?: AlertType) => void
+	closeAlert: () => void
+
+	// Complex state transitions
+	resetToIdle: () => void
+	resetForBroadcast: () => void
+}
+
+export const useSenderStore = create<SenderStore>()((set) => ({
+	// Initial state
+	viewState: 'IDLE',
+	ticket: null,
+	selectedPaths: [],
+	selectedPath: null,
+	pathType: null,
+	thumbnailUrl: null,
+	transferMetadata: null,
+	transferProgress: null,
+	isLoading: false,
+	copySuccess: false,
+	isBroadcastMode: false,
+	activeConnectionCount: 0,
+	alertDialog: {
+		isOpen: false,
+		title: '',
+		description: '',
+		type: 'info',
+	},
+
+	// Actions
+	// console.log('[Store] setViewState called:', {
+	//     from: currentState.viewState,
+	//     to: viewState,
+	//     caller,
+	//     hasTransferMetadata: !!currentState.transferMetadata,
+	//     selectedPath: currentState.selectedPath,
+	//     isBroadcastMode: currentState.isBroadcastMode,
+	// })
+	// const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+	// const currentState = useSenderStore.getState()
+	// Simple setters
+	// const stack = new Error().stack
+	setViewState: (viewState) => {
+		set({ viewState })
+	},
+	setTicket: (ticket) => set({ ticket }),
+	setSelectedPaths: (selectedPaths) =>
+		set({
+			selectedPaths,
+			selectedPath: selectedPaths[0] ?? null,
+		}),
+	addSelectedPaths: (paths) =>
+		set((state) => {
+			const deduped = new Set(state.selectedPaths)
+			for (const path of paths) {
+				deduped.add(path)
+			}
+			const selectedPaths = Array.from(deduped)
+			return {
+				selectedPaths,
+				selectedPath: selectedPaths[0] ?? null,
+			}
+		}),
+	removeSelectedPath: (path) =>
+		set((state) => {
+			const selectedPaths = state.selectedPaths.filter((item) => item !== path)
+			return {
+				selectedPaths,
+				selectedPath: selectedPaths[0] ?? null,
+				pathType: selectedPaths.length ? state.pathType : null,
+			}
+		}),
+	setSelectedPath: (selectedPath) =>
+		set({ selectedPath, selectedPaths: selectedPath ? [selectedPath] : [] }),
+	setPathType: (pathType) => set({ pathType }),
+	setThumbnailUrl: (thumbnailUrl) => set({ thumbnailUrl }),
+	setTransferMetadata: (transferMetadata) => {
+		// const stack = new Error().stack
+		// const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+		// const currentState = useSenderStore.getState()
+		// console.log('[Store] setTransferMetadata called:', {
+		//     caller,
+		//     hasMetadata: !!transferMetadata,
+		//     metadata: transferMetadata ? { fileName: transferMetadata.fileName, wasStopped: transferMetadata.wasStopped } : null,
+		//     currentViewState: currentState.viewState,
+		//     selectedPath: currentState.selectedPath,
+		// })
+		set({ transferMetadata })
+	},
+	setTransferProgress: (transferProgress) => set({ transferProgress }),
+	setIsLoading: (isLoading) => set({ isLoading }),
+	setCopySuccess: (copySuccess) => set({ copySuccess }),
+	setIsBroadcastMode: (isBroadcastMode) => set({ isBroadcastMode }),
+	toggleBroadcastMode: () =>
+		set((state) => ({ isBroadcastMode: !state.isBroadcastMode })),
+	setAlertDialog: (alertDialog) => set({ alertDialog }),
+	setActiveConnectionCount: (activeConnectionCount) =>
+		set({ activeConnectionCount }),
+
+	showAlert: (title, description, type = 'info') =>
+		set({
+			alertDialog: {
+				isOpen: true,
+				title,
+				description,
+				type,
+			},
+		}),
+
+	closeAlert: () =>
+		set((state) => ({
+			alertDialog: {
+				...state.alertDialog,
+				isOpen: false,
+			},
+		})),
+
+	// Complex state transitions
+	resetToIdle: () => {
+		// const stack = new Error().stack
+		// const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+		// const currentState = useSenderStore.getState()
+		// console.log('[Store] resetToIdle called:', {
+		//     caller,
+		//     previousViewState: currentState.viewState,
+		//     hadTransferMetadata: !!currentState.transferMetadata,
+		//     selectedPath: currentState.selectedPath,
+		// })
+		set({
+			viewState: 'IDLE',
+			ticket: null,
+			selectedPaths: [],
+			selectedPath: null,
+			pathType: null,
+			thumbnailUrl: null,
+			transferMetadata: null,
+			transferProgress: null,
+			isLoading: false,
+			isBroadcastMode: false,
+			activeConnectionCount: 0,
+		})
+	},
+
+	resetForBroadcast: () => {
+		// const stack = new Error().stack
+		// const caller = stack?.split('\n')[2]?.trim() || 'unknown'
+		// const currentState = useSenderStore.getState()
+		// console.log('[Store] resetForBroadcast called:', {
+		//     caller,
+		//     previousViewState: currentState.viewState,
+		//     hadTransferMetadata: !!currentState.transferMetadata,
+		// })
+		set({
+			viewState: 'SHARING',
+			transferMetadata: null,
+			transferProgress: null,
+			thumbnailUrl: null,
+			activeConnectionCount: 0,
+		})
+	},
+}))

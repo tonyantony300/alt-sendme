@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "发送",
+	"comingSoon": "即将推出",
+	"receive": "接收",
+	"ok": "确定",
+	"undo": "撤销",
+	"cancel": "取消",
+	"confirm": "确认",
+	"loading": "加载中...",
+	"browse": "浏览",
+	"donate": "捐赠",
+	"privacyPolicy": "隐私政策",
+	"license": "许可协议",
+	"notFound": {
+		"title": "页面未找到",
+		"subtitle": "您访问的页面不存在或已被移动。",
+		"goBack": "返回",
+		"goHome": "返回首页"
+	},
+	"sender": {
+		"title": "发送",
+		"subtitle": "通过加密的点对点连接共享文件或文件夹。",
+		"stoppingTransmission": "正在停止传输...",
+		"startSharing": "开始共享",
+		"startingShare": "正在启动共享...",
+		"stopSharing": "停止共享",
+		"shareThisTicket": "分享此票据：",
+		"sendThisTicket": "将此票据发送给想要接收您文件的人",
+		"keepAppOpen": "在其他人下载您的文件时请保持应用打开",
+		"fileLabel": "文件：",
+		"listeningForConnection": "等待连接中",
+		"sharingInProgress": "正在共享",
+		"transferCompleted": "传输完成",
+		"filesBeingTransmitted": "文件正在传输中",
+		"preparingForTransport": "正在准备传输...",
+		"pleaseWaitProcessing": "请稍候，我们正在处理您要共享的文件...",
+		"dropFilesHere": "将文件或文件夹拖放到此处",
+		"dragAndDrop": "拖放",
+		"orBrowse": "或浏览以选择文件或文件夹",
+		"fileSelected": "已选择文件",
+		"folderSelected": "已选择文件夹",
+		"itemSelected": "已选择项目",
+		"multipleFilesSelected": "{{name}} ... 等 {{count}} 项",
+		"browseFile": "浏览文件",
+		"browseFolder": "浏览文件夹",
+		"addMoreFiles": "添加更多文件",
+		"addMoreFolders": "添加更多文件夹",
+		"multipleItemsSelected": "{{firstName}} 等 {{count}} 项",
+		"removeFromSelection": "从选择中移除",
+		"copyToClipboard": "复制到剪贴板",
+		"description": "描述（可选）",
+		"broadcastMode": {
+			"index": "广播",
+			"on": {
+				"label": "您正在广播",
+				"description": "持有票据的多人可以在广播模式下同时下载文件。"
+			},
+			"off": {
+				"label": "私人共享",
+				"description": "只有您与之共享票据的人才能下载文件。"
+			}
+		}
+	},
+	"receiver": {
+		"title": "接收文件",
+		"subtitle": "通过加密的点对点连接从发送者下载文件。",
+		"saveToFolder": "保存到文件夹：",
+		"noFolderSelected": "未选择文件夹",
+		"conflictsMore": "... 等 {{count}} 项",
+		"pasteTicket": "在此处粘贴票据：",
+		"ticketPlaceholder": "sendme 接收票据...",
+		"howToReceive": "如何接收文件",
+		"instruction1": "发送者必须在线并正在共享文件",
+		"instruction2": "从发送者处获取票据",
+		"instruction3": "将票据粘贴到文本区域",
+		"instruction4": "点击下载开始接收",
+		"instruction5": "文件将保存到您选择的文件夹",
+		"keepAppOpen": "在下载文件时请保持应用打开",
+		"connectingToSender": "正在连接到发送者",
+		"previewMultipleItems": "{{name}} ... 等{{count}}个项目",
+		"multipleFilesFound": "找到多个文件",
+		"expandPreviewList": "显示文件列表",
+		"collapsePreviewList": "隐藏文件列表",
+		"downloadingInProgress": "正在下载",
+		"downloadCompleted": "下载完成",
+		"downloadCompletedWithConflicts": "下载完成，已处理重名冲突",
+		"downloadedFile": "已下载文件",
+		"stopReceiving": "停止接收",
+		"download": "下载"
+	},
+	"transfer": {
+		"progress": "传输进度",
+		"speed": "速度",
+		"eta": "ETA",
+		"timeRemaining": "剩余时间",
+		"calculating": "计算中...",
+		"complete": "传输完成！",
+		"stopped": "传输已停止",
+		"newTransfer": "新传输",
+		"done": "完成",
+		"open": "打开",
+		"wasStopped": "传输在完成前已停止。",
+		"successMessage": "您的传输已成功完成。",
+		"file": "文件",
+		"files": "文件",
+		"folder": "文件夹",
+		"fileName": "文件名",
+		"fileSize": "文件大小",
+		"folderSize": "文件夹大小",
+		"downloadPath": "下载路径",
+		"duration": "持续时间",
+		"avgSpeed": "平均速度",
+		"multipleFiles": "{{count}} 个文件",
+		"donatePrompt": "让它变得更好 -"
+	},
+	"errors": {
+		"sharingFailed": "共享失败",
+		"sharingFailedDesc": "无法开始共享",
+		"stopSharingFailed": "停止共享失败",
+		"stopSharingFailedDesc": "无法停止共享",
+		"copyFailed": "复制失败",
+		"copyFailedDesc": "无法复制票据",
+		"folderDialogFailed": "文件夹对话框失败",
+		"folderDialogFailedDesc": "无法打开文件夹对话框",
+		"fileDialogFailed": "文件对话框失败",
+		"fileDialogFailedDesc": "无法打开文件对话框",
+		"receiveFailed": "接收失败",
+		"receiveFailedDesc": "无法接收文件",
+		"openFolderFailed": "打开文件夹失败",
+		"openFolderFailedDesc": "无法打开下载文件夹"
+	},
+	"settings": {
+		"title": "设置",
+		"navItems": {
+			"appearance": "主题与语言",
+			"general": "通用",
+			"relay": "中继",
+			"network": "网络",
+			"notification": "通知"
+		},
+		"theme": {
+			"description": "选择您喜欢的主题",
+			"title": "外观",
+			"light": "浅色",
+			"dark": "深色",
+			"auto": "跟随系统"
+		},
+		"language": {
+			"title": "语言",
+			"description": "选择您偏好的语言",
+			"noResults": "未找到语言"
+		},
+		"general": {
+			"title": "通用",
+			"autoCheckUpdates": {
+				"label": "自动检查更新",
+				"description": "应用启动时将自动检查更新"
+			},
+			"systembar": {
+				"title": "系统托盘",
+				"minimizeToTray": {
+					"label": "最小化到系统托盘",
+					"description": "关闭时最小化应用而非退出"
+				},
+				"showProgressOnIcon": {
+					"label": "在应用图标上显示传输进度",
+					"description": "在应用图标上叠加进度条以显示传输进度"
+				},
+				"runOnSystemStartup": {
+					"label": "开机时启动",
+					"description": "系统启动时自动运行本应用"
+				},
+				"contextMenu": {
+					"label": "资源管理器右键菜单",
+					"description": "在 Windows 资源管理器右键菜单中添加「使用 AltSendme 发送」"
+				}
+			},
+			"broadcast": {
+				"title": "广播",
+				"showToggle": {
+					"label": "共享时显示广播开关",
+					"description": "在共享界面显示广播开关，以便多个接收者同时下载相同文件。"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "中继服务器",
+				"description": "控制 AltSendme 用于 NAT 穿透和加密备用连接的 iroh 中继服务器。",
+				"modeDefault": "自动（公共中继）",
+				"modeDefaultDesc": "使用默认的公共 iroh 中继。适合大多数用户。",
+				"modeCustom": "自定义（自托管）",
+				"modeCustomDesc": "使用您自己的中继服务器。请参阅项目仓库中的 deploy/relay。",
+				"modeDisabled": "已禁用",
+				"modeDisabledDesc": "不使用中继。仅直接连接；在严格 NAT 下可能失败。",
+				"urlsLabel": "中继 URL",
+				"urlsDescription": "添加一个或多个 HTTPS 中继 URL 以实现区域故障转移。",
+				"addUrl": "添加中继 URL",
+				"removeUrl": "移除中继 URL",
+				"urlInvalidHint": "请输入有效的 HTTPS URL",
+				"urlChecking": "正在检查连接",
+				"urlVerified": "已验证",
+				"urlVerifyFailedHint": "无法连接到此中继",
+				"verifySummary": "已验证 {{ok}}/{{total}} 个中继。",
+				"verifyAuthHint": "如果您的中继需要认证令牌，请确保其与服务器上的 access.shared_token 一致。",
+				"authTokenLabel": "认证令牌（可选）",
+				"authTokenPlaceholder": "若中继需要认证，请输入共享密钥",
+				"authTokenDescription": "当中继配置使用 access.shared_token 时需要填写。",
+				"showAuthToken": "显示",
+				"hideAuthToken": "隐藏",
+				"privacyNote": "如需完全私密的设置，请在发送端和接收端设备上配置相同的中继 URL。",
+				"testConnection": "测试连接",
+				"verifySuccess": "中继连接正常",
+				"verifySuccessDesc": "{{url}}\n验证成功（{{latency}} ms）。",
+				"verifySuccessDescGeneric": "已成功注册到您配置的中继服务器。",
+				"verifyFailed": "中继连接失败",
+				"urlRequired": "请至少添加一个中继 URL。",
+				"invalidUrl": "无效的中继 URL：{{url}}",
+				"disabledHint": "启用自动或自定义中继以测试连接。",
+				"confirmDisableTitle": "禁用中继？",
+				"confirmDisableDescription": "您已选择禁用中继。如果您尝试与本地网络之外的人共享文件，文件传输可能会失败。中继可帮助设备在困难的网络条件下相互发现并连接，而您的传输始终保持端到端加密。",
+				"confirmCustomTitle": "使用自定义中继？",
+				"confirmCustomDescription": "您已选择使用自己托管的自定义中继。如果您的自定义中继无法访问，传输将自动回退到公共中继，并会通知您。中继仅帮助您的设备在困难的网络条件下连接，而您的传输始终保持端到端加密。",
+				"confirmContinue": "继续"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "有新更新！",
+		"newVersionAvailable": "新版本 {{version}} 可用。",
+		"newVersionAvailableInline": "有新版本可用 — {{version}}",
+		"updateNow": "立即更新",
+		"later": "稍后",
+		"checkForUpdates": "检查更新",
+		"noUpdatesTitle": "暂无更新",
+		"noUpdatesDescription": "您已在使用最新版本",
+		"checkFailed": "检查失败",
+		"checkFailedDesc": "无法检查更新",
+		"installFailed": "安装失败",
+		"installFailedDesc": "无法安装更新"
+	},
+	"android": {
+		"preparingFile": "正在准备文件..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "中继连接状态",
+			"publicHeading": "公共中继",
+			"customHeading": "自定义中继",
+			"disabledHeading": "中继已禁用",
+			"unavailableHeading": "中继不可用",
+			"fellBackToPublic": "自定义中继不可达，改用公共中继。",
+			"fellBackToastTitle": "正在使用公共中继",
+			"fellBackToastSend": "您的自定义中继不可达 — 此次传输正在使用公共中继。",
+			"fellBackToastReceive": "您的自定义中继不可达 — 此次下载正在使用公共中继。",
+			"dialogDescription": "显示应用当前用于连接的中继服务器。",
+			"connectedRelay": "已连接的中继",
+			"checking": "正在检查连接…",
+			"configuredMode": "在设置中配置",
+			"configuredDefault": "自动（公共中继）",
+			"configuredCustom": "自定义（自托管）",
+			"configuredDisabled": "已禁用",
+			"openSettings": "网络设置",
+			"infoToggle": "关于中继",
+			"purpose": "中继只是帮助你的设备相互发现并建立连接。",
+			"directNote": "建立直接连接后，文件会在设备之间直接传输，不再使用中继。",
+			"lanNote": "在同一局域网中，中继会被完全跳过。",
+			"encryptedNote": "传输始终采用端到端加密，因此中继永远看不到你的文件。",
+			"disabledNote": "中继已禁用。仅限直接连接，因此在严格的防火墙或 NAT 环境下传输可能失败。"
+		}
+	}
+}

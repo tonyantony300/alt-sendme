@@ -1,125 +1,465 @@
-import { Upload, CheckCircle, ChevronRight, ChevronDown, Loader2 } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { invoke } from '@tauri-apps/api/core'
+import {
+	ChevronDown,
+	ChevronRight,
+	FolderPlus,
+	FilePlus,
+	Upload,
+	X,
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { DropzoneProps } from '../../types/sender'
+import { getPreviewFileIcon } from '../../lib/fileIcons'
+import { buttonVariants } from '../ui/button'
+import { ScrollArea } from '../ui/scroll-area'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '../ui/tooltip'
 
-export function Dropzone({ 
-  isDragActive, 
-  selectedPath, 
-  pathType, 
-  showFullPath, 
-  isLoading, 
-  onToggleFullPath 
+const getPathBaseName = (path: string) => {
+	const normalized = path.replace(/\\/g, '/')
+	return normalized.split('/').pop() ?? path
+}
+
+export function Dropzone({
+	isDragActive,
+	selectedPaths,
+	selectedPath,
+	pathType,
+	showFullPath,
+	isLoading,
+	onToggleFullPath,
+	onAddFiles,
+	onAddFolders,
+	onRemoveSelectedPath,
+	onClearSelection,
 }: DropzoneProps) {
-  const getDropzoneStyles = () => {
-    const baseStyles = {
-      border: '2px dashed',
-      borderRadius: 'var(--radius-lg)',
-      padding: '4rem',
-      textAlign: 'center' as const,
-      cursor: 'pointer',
-      transition: 'border-color 0.2s ease, background-color 0.2s ease',
-      backgroundColor: 'var(--app-main-view)',
-      borderColor: 'rgba(255, 255, 255, 0.2)',
-      color: 'var(--app-main-view-fg)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '12rem',
-    }
+	const { t } = useTranslation()
+	const hasSelection = selectedPaths.length > 0
+	const [mimeTypesByPath, setMimeTypesByPath] = useState<
+		Record<string, string>
+	>({})
+	const previewScrollerRef = useRef<HTMLDivElement | null>(null)
+	const previewScrollerCleanupRef = useRef<(() => void) | null>(null)
+	const [_canScrollLeft, setCanScrollLeft] = useState(false)
+	const [_canScrollRight, setCanScrollRight] = useState(false)
 
-    if (isDragActive) {
-      return {
-        ...baseStyles,
-        borderColor: 'var(--app-accent)',
-        backgroundColor: 'rgba(45, 120, 220, 0.1)',
-      }
-    }
+	useEffect(() => {
+		if (!selectedPaths.length) {
+			setMimeTypesByPath({})
+			return
+		}
 
-    if (selectedPath && !isLoading) {
-      return {
-        ...baseStyles,
-        paddingBottom: '2rem',
-      }
-    }
+		let mounted = true
+		void (async () => {
+			try {
+				const mimeTypes = await invoke<(string | null)[]>(
+					'get_paths_mime_types',
+					{
+						paths: selectedPaths,
+					}
+				)
+				if (!mounted) return
 
-    if (isLoading) {
-      return {
-        ...baseStyles,
-        paddingBottom: '4rem',
-      }
-    }
+				const nextMap: Record<string, string> = {}
+				for (const [index, path] of selectedPaths.entries()) {
+					const mimeType = mimeTypes[index]
+					if (mimeType) nextMap[path] = mimeType
+				}
+				setMimeTypesByPath(nextMap)
+			} catch (error) {
+				console.error('Failed to resolve mime types for selected paths:', error)
+			}
+		})()
 
+		return () => {
+			mounted = false
+		}
+	}, [selectedPaths])
 
-    return baseStyles
-  }
+	const updateScrollHints = () => {
+		const container = previewScrollerRef.current
+		if (!container) {
+			setCanScrollLeft(false)
+			setCanScrollRight(false)
+			return
+		}
 
-  const getStatusText = () => {
-    if (isLoading) return 'Preparing for transport...'
-    if (isDragActive) return 'Drop files or folders here'
-    if (selectedPath) {
-      if (pathType === 'directory') return 'Folder selected'
-      if (pathType === 'file') return 'File selected'
-      return 'Item selected'
-    }
-    return 'Drag & drop'
-  }
+		const { scrollLeft, scrollWidth, clientWidth } = container
+		const maxScrollLeft = scrollWidth - clientWidth
+		setCanScrollLeft(scrollLeft > 4)
+		setCanScrollRight(maxScrollLeft - scrollLeft > 4)
+	}
 
-  const getSubText = () => {
-    if (isLoading) return 'Please wait while we process your files for sharing...'
-    if (selectedPath) {
-      return (
-        <div>
-          <div 
-            className="font-medium cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
-            onClick={onToggleFullPath}
-            title="Click to toggle full path"
-          >
-            {selectedPath.split('/').pop()}
-            <span className="-mr-2">
-              {showFullPath ? (
-                <ChevronDown className="p-0.5 h-6 w-6" size={16} />
-              ) : (
-                <ChevronRight className="p-0.5 h-6 w-6" size={16} />
-              )}
-            </span>
-          </div>
-          <div 
-            className="text-xs mt-1 opacity-75 break-all transition-opacity"
-            style={{ 
-              visibility: showFullPath ? 'visible' : 'hidden',
-            }}
-          >
-            {selectedPath}
-          </div>
-        </div>
-      )
-    }
-    return 'or browse to select files or folders'
-  }
+	const attachPreviewScroller = (node: HTMLDivElement | null) => {
+		previewScrollerCleanupRef.current?.()
+		previewScrollerCleanupRef.current = null
+		previewScrollerRef.current = node
 
-  return (
-    <div style={getDropzoneStyles()}>
-      <div className="space-y-4 w-full">
-        <div className="flex justify-center">
-          {isLoading ? (
-            <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--app-accent-light)' }} />
-          ) : selectedPath ? (
-            <CheckCircle className="h-12 w-12" style={{ color: 'var(--app-primary)' }} />
-          ) : (
-            <Upload className="h-12 w-12" style={{ 
-              color: isDragActive ? 'var(--app-accent-light)' : 'rgba(255, 255, 255, 0.6)' 
-            }} />
-          )}
-        </div>
-        
-        <div>
-          <p className="text-lg font-medium mb-2" style={{ color: 'var(--app-main-view-fg)' }}>
-            {getStatusText()}
-          </p>
-          <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            {getSubText()}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+		if (!node) {
+			updateScrollHints()
+			return
+		}
+
+		updateScrollHints()
+		node.addEventListener('scroll', updateScrollHints, { passive: true })
+
+		previewScrollerCleanupRef.current = () => {
+			node.removeEventListener('scroll', updateScrollHints)
+		}
+	}
+
+	useEffect(() => {
+		const handleResize = () => {
+			const container = previewScrollerRef.current
+			if (!container) {
+				setCanScrollLeft(false)
+				setCanScrollRight(false)
+				return
+			}
+
+			const { scrollLeft, scrollWidth, clientWidth } = container
+			const maxScrollLeft = scrollWidth - clientWidth
+			setCanScrollLeft(scrollLeft > 4)
+			setCanScrollRight(maxScrollLeft - scrollLeft > 4)
+		}
+
+		window.addEventListener('resize', handleResize)
+		return () => {
+			previewScrollerCleanupRef.current?.()
+			window.removeEventListener('resize', handleResize)
+		}
+	}, [])
+
+	const getDropzoneStyles = () => {
+		const baseStyles: React.CSSProperties = {}
+
+		if (isDragActive) {
+			return {
+				...baseStyles,
+				borderColor: 'var(--info)',
+				backgroundColor: 'color-mix(in srgb, var(--info) 10%, transparent)',
+			}
+		}
+
+		if (selectedPath && !isLoading) {
+			return {
+				...baseStyles,
+			}
+		}
+
+		if (isLoading) {
+			return {
+				...baseStyles,
+			}
+		}
+
+		return baseStyles
+	}
+
+	const getStatusText = () => {
+		if (isLoading) return t('common:sender.preparingForTransport')
+		if (isDragActive) return t('common:sender.dropFilesHere')
+		if (selectedPaths.length > 1) return t('common:sender.itemSelected')
+		if (selectedPath) {
+			if (pathType === 'directory') return t('common:sender.folderSelected')
+			if (pathType === 'file') return t('common:sender.fileSelected')
+			return t('common:sender.itemSelected')
+		}
+		return t('common:sender.dragAndDrop')
+	}
+
+	const getSubText = () => {
+		if (isLoading) return t('common:sender.pleaseWaitProcessing')
+		if (selectedPaths.length > 1) {
+			const firstPath = selectedPaths[0]
+			const firstName = firstPath ? getPathBaseName(firstPath) : ''
+			const extraCount = selectedPaths.length - 1
+			return (
+				<div>
+					<div className="font-medium flex items-center justify-center">
+						{t('common:sender.multipleItemsSelected', {
+							count: extraCount,
+							firstName:
+								firstName.length > 40
+									? `${firstName.slice(0, 40)}…`
+									: firstName,
+						})}
+					</div>
+				</div>
+			)
+		}
+		if (selectedPath) {
+			const fileName = getPathBaseName(selectedPath)
+			const displayName =
+				fileName.length > 60 ? `${fileName.slice(0, 60)}…` : fileName
+			return (
+				<div>
+					<div
+						className="font-medium cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
+						onClick={onToggleFullPath}
+						title="Click to toggle full path"
+					>
+						{displayName}
+						<span className="-mr-2 hidden sm:block ">
+							{showFullPath ? (
+								<ChevronDown className="p-0.5 h-6 w-6" size={16} />
+							) : (
+								<ChevronRight className="p-0.5 h-6 w-6" size={16} />
+							)}
+						</span>
+					</div>
+					<div
+						className="text-xs mt-1 opacity-75 break-all transition-opacity max-sm:hidden"
+						style={{
+							visibility: showFullPath ? 'visible' : 'hidden',
+						}}
+					>
+						{selectedPath}
+					</div>
+				</div>
+			)
+		}
+		return t('common:sender.orBrowse')
+	}
+
+	const renderPathIcon = (path: string) => {
+		const fileName = getPathBaseName(path)
+		const mimeType = mimeTypesByPath[path]
+		return (
+			<div className="origin-center scale-[1.85]">
+				{getPreviewFileIcon(mimeType, fileName)}
+			</div>
+		)
+	}
+
+	const handlePreviewWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+		const container = event.currentTarget
+		if (
+			Math.abs(event.deltaY) <= Math.abs(event.deltaX) ||
+			container.scrollWidth <= container.clientWidth
+		) {
+			return
+		}
+
+		container.scrollLeft += event.deltaY
+		event.preventDefault()
+	}
+
+	return (
+		<motion.div
+			layout
+			transition={{ duration: 0.3, ease: 'easeInOut' }}
+			style={getDropzoneStyles()}
+			className="relative border-2 border-dashed rounded-lg text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground h-fit min-h-64 border-border overflow-hidden"
+		>
+			{selectedPath && !isLoading && (
+				<TooltipProvider>
+					<div className="absolute top-3 right-3 z-30 hidden sm:flex items-center gap-2 pointer-events-auto">
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<motion.button
+										key="add-folder-button"
+										type="button"
+										initial={{
+											opacity: 0,
+											filter: 'blur(4px)',
+										}}
+										animate={{
+											opacity: 1,
+											filter: 'blur(0px)',
+										}}
+										onClick={(e) => {
+											e.stopPropagation()
+											void onAddFolders()
+										}}
+										className={buttonVariants({
+											variant: 'ghost',
+											size: 'icon',
+										})}
+										aria-label="Add more folders"
+									>
+										<FolderPlus strokeWidth={1.5} />
+									</motion.button>
+								}
+							></TooltipTrigger>
+							<TooltipContent>
+								<p>{t('common:sender.addMoreFolders')}</p>
+							</TooltipContent>
+						</Tooltip>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<motion.button
+										key="add-file-button"
+										type="button"
+										initial={{
+											opacity: 0,
+											filter: 'blur(4px)',
+										}}
+										animate={{
+											opacity: 1,
+											filter: 'blur(0px)',
+										}}
+										onClick={(e) => {
+											e.stopPropagation()
+											void onAddFiles()
+										}}
+										className={buttonVariants({
+											variant: 'ghost',
+											size: 'icon',
+										})}
+										aria-label="Add more files"
+									>
+										<FilePlus strokeWidth={1.5} />
+									</motion.button>
+								}
+							></TooltipTrigger>
+							<TooltipContent>
+								<p>{t('common:sender.addMoreFiles')}</p>
+							</TooltipContent>
+						</Tooltip>
+						<motion.button
+							key="clear-button"
+							type="button"
+							initial={{ opacity: 0, filter: 'blur(4px)' }}
+							animate={{ opacity: 1, filter: 'blur(0px)' }}
+							onClick={(e) => {
+								e.stopPropagation()
+								onClearSelection()
+							}}
+							className={buttonVariants({
+								variant: 'secondary',
+							})}
+							aria-label="Clear selection"
+						>
+							<X />
+							Clear ({selectedPaths.length})
+						</motion.button>
+					</div>
+				</TooltipProvider>
+			)}
+			<motion.div
+				key={selectedPath ? 'selected' : 'empty'}
+				initial={{ opacity: 0, filter: 'blur(4px)' }}
+				animate={{ opacity: 1, filter: 'blur(0px)' }}
+				exit={{ opacity: 0, filter: 'blur(4px)' }}
+				transition={{ duration: 0.25 }}
+				className="h-full w-full p-4 sm:p-6"
+			>
+				{!hasSelection && (
+					<div className="h-full w-full flex flex-col items-center justify-center space-y-4">
+						<div className="flex justify-center items-center h-16">
+							<Upload
+								className="h-12 w-12 text-foreground/60 data-active:text-accent-foreground transition-transform"
+								data-active={isDragActive ? 'true' : 'false'}
+							/>
+						</div>
+
+						<div>
+							<p className=" hidden sm:block text-lg font-medium mb-2 text-accent-foreground">
+								{getStatusText()}
+							</p>
+							<div className="text-sm truncate text-muted-foreground">
+								{getSubText()}
+							</div>
+						</div>
+					</div>
+				)}
+
+				<AnimatePresence initial={false}>
+					{hasSelection && (
+						<motion.div
+							key="selected-files-preview"
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: 6 }}
+							transition={{ duration: 0.2 }}
+							className="h-full w-full flex flex-col justify-center pt-4 gap-4"
+						>
+							<ScrollArea
+								ref={attachPreviewScroller}
+								className="overflow-x-auto overflow-y-hidden"
+								scrollFade
+								scrollbarGutter
+								onWheel={handlePreviewWheel}
+								aria-orientation="horizontal"
+							>
+								<motion.div
+									layout
+									className="inline-flex min-w-full justify-center gap-3 pr-3 pb-2.5"
+								>
+									<AnimatePresence initial={false}>
+										{selectedPaths.map((path) => {
+											const fileName = getPathBaseName(path)
+											return (
+												<motion.div
+													key={path}
+													layout
+													initial={{
+														opacity: 0,
+														scale: 0.94,
+													}}
+													animate={{
+														opacity: 1,
+														scale: 1,
+													}}
+													exit={{
+														opacity: 0,
+														scale: 0.94,
+													}}
+													transition={{
+														duration: 0.16,
+													}}
+													className="group relative w-44 shrink-0"
+												>
+													<div className="p-1">
+														<div className="relative flex h-36 w-full items-center justify-center overflow-hidden">
+															{renderPathIcon(path)}
+															<Tooltip>
+																<TooltipTrigger
+																	render={
+																		<button
+																			type="button"
+																			onClick={(e) => {
+																				e.stopPropagation()
+																				onRemoveSelectedPath(path)
+																			}}
+																			className="absolute right-2 top-2 z-10 rounded-full border bg-background p-1 text-muted-foreground opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
+																			aria-label={`Remove ${fileName}`}
+																		>
+																			<X className="h-3.5 w-3.5" />
+																		</button>
+																	}
+																></TooltipTrigger>
+																<TooltipContent>
+																	<p>
+																		{t('common:sender.removeFromSelection')}
+																	</p>
+																</TooltipContent>
+															</Tooltip>
+														</div>
+													</div>
+
+													<p className="mt-1 truncate text-sm text-muted-foreground">
+														{fileName}
+													</p>
+												</motion.div>
+											)
+										})}
+									</AnimatePresence>
+								</motion.div>
+							</ScrollArea>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</motion.div>
+		</motion.div>
+	)
 }

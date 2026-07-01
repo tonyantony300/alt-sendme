@@ -1,0 +1,25 @@
+{
+	"$schema": "https://ui.shadcn.com/schema.json",
+	"style": "new-york",
+	"rsc": false,
+	"tsx": true,
+	"tailwind": {
+		"config": "",
+		"css": "web-app/src/index.css",
+		"baseColor": "neutral",
+		"cssVariables": true,
+		"prefix": ""
+	},
+	"iconLibrary": "phosphor-react",
+	"aliases": {
+		"components": "@/components",
+		"utils": "@/lib/utils",
+		"ui": "@/components/ui",
+		"lib": "@/lib",
+		"hooks": "@/hooks"
+	},
+	"registries": {
+		"@coss": "https://coss.com/ui/r/{name}.json",
+		"@animate-ui": "https://animate-ui.com/r/{name}.json"
+	}
+}

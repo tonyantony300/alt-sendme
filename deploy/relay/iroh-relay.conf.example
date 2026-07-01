@@ -1,0 +1,84 @@
+# iroh-relay configuration for AltSendme self-hosting.
+#
+# Copy to iroh-relay.conf and edit before starting:
+#   cp iroh-relay.conf.example iroh-relay.conf
+#
+# Keys verified against iroh-relay v1.0.0. Reference:
+# https://github.com/n0-computer/iroh/blob/v1.0.0/iroh-relay/src/main.rs
+#
+# NOTE: iroh-relay.conf is gitignored — keep per-deployment values (and any
+# secret) here, not in the committed .example.
+
+# Report observed addresses over QUIC so clients can hole-punch.
+# Needs TLS configured and UDP 7842 open.
+enable_quic_addr_discovery = true
+
+[tls]
+cert_mode = "LetsEncrypt"
+hostname = "euc1-1.relay.example.com"
+# Multiple hostnames for one relay (optional):
+# hostname = ["use1-1.relay.example.com", "euc1-1.relay.example.com"]
+contact = "you@example.com"
+cert_dir = "/data/certs"
+
+# ---------------------------------------------------------------------------
+# Rate limiting — protects your bandwidth bill.
+#
+# An open relay with no caps lets a single client run up surprise terabyte-scale
+# egress. Rate limiting is disabled entirely when the [limits] block is absent,
+# so set sane values here. Start conservative and raise as needed.
+# ---------------------------------------------------------------------------
+[limits]
+# NOTE: as of iroh-relay v1.0.0 these two connection-rate knobs are parsed but
+# NOT yet enforced (see the upstream TODO in server.rs). They are kept here for
+# forward-compatibility; the per-client [limits.client.rx] block below is the
+# control that actually caps bandwidth today.
+accept_conn_limit = 100.0   # new connections/sec (float)
+accept_conn_burst = 100     # integer burst allowance
+
+[limits.client.rx]
+# This IS enforced: per-client steady-state cap on relayed bytes/sec (1 MiB/s) ...
+bytes_per_second = 1048576
+# ... plus a burst bucket (5 MiB) for short spikes.
+# Both must be non-zero; bytes_per_second is required whenever max_burst_bytes is set.
+max_burst_bytes = 5242880
+
+# ---------------------------------------------------------------------------
+# Access control.
+#
+# `access` is a SINGLE setting — pick AT MOST ONE of the tiers below. When all
+# are omitted the relay defaults to `access = "everyone"` (fully open).
+# ---------------------------------------------------------------------------
+
+# Tier 1 — Shared token (simplest private relay).
+# Set the SAME token in AltSendme -> Settings -> Network -> Auth token.
+#
+# Prefer supplying the secret via the IROH_RELAY_ACCESS_TOKEN environment
+# variable / platform secret instead of writing it here. When this line is
+# present, that env var REPLACES the whole list at startup — so a placeholder
+# value is fine, and the real secret never touches the config file or git.
+# (The env var is only consulted when this shared_token line exists.)
+# access.shared_token = ["CHANGE_ME_OR_SET_IROH_RELAY_ACCESS_TOKEN"]
+
+# Tier 2 — Endpoint-ID allow / deny lists (identity-bound, more granular than a
+# shared secret, and needs no token in the app). Values are hex endpoint ids.
+# access.allowlist = ["<endpoint-id>", "<endpoint-id>"]
+# access.denylist = ["<endpoint-id>"]
+
+# Tier 3 — HTTP callout (upstream's recommended choice for production).
+# The relay POSTs each connecting endpoint id (header X-Iroh-NodeId) to your
+# auth service, which must reply 200 with the body `true` to allow. This gives
+# you revocation and rotation without editing config or restarting.
+# access.http.url = "https://auth.example.com/relay-auth"
+# Optional bearer token sent to your auth service (or set IROH_RELAY_HTTP_BEARER_TOKEN):
+# access.http.bearer_token = "your-callout-token"
+
+# ---------------------------------------------------------------------------
+# Metrics.
+#
+# A Prometheus endpoint is ENABLED BY DEFAULT on [::]:9090 with NO auth. Do not
+# expose 9090 to the public internet — firewall it to your scraper, bind it to a
+# private address, or disable it. See deploy/relay/README.md for a scrape config.
+# ---------------------------------------------------------------------------
+# enable_metrics = false
+# metrics_bind_addr = "127.0.0.1:9090"

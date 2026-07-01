@@ -1,0 +1,65 @@
+import { useLottie } from 'lottie-react'
+import pulseAnimationOriginal from '../../assets/pulse.json'
+import { useMemo } from 'react'
+import { cn } from '@/lib/utils'
+
+interface PulseAnimationProps {
+	isTransporting: boolean
+	hasActiveConnections?: boolean
+	className?: string
+}
+
+function modifyAnimationColor(animationData: any, color: number[]) {
+	const cloned = JSON.parse(JSON.stringify(animationData))
+
+	if (cloned.assets?.[0]?.layers) {
+		cloned.assets[0].layers.forEach((layer: any) => {
+			if (layer.shapes) {
+				layer.shapes.forEach((shape: any) => {
+					if (shape.it) {
+						shape.it.forEach((item: any) => {
+							if (item.ty === 'fl' && item.c && item.c.k) {
+								item.c.k = color
+							}
+						})
+					}
+				})
+			}
+		})
+	}
+
+	return cloned
+}
+
+export function PulseAnimation({
+	isTransporting,
+	hasActiveConnections = false,
+	className = '',
+}: PulseAnimationProps) {
+	const animationData = useMemo(() => {
+		let color: number[]
+
+		if (isTransporting || hasActiveConnections) {
+			// Active transfer or active connections: green
+			color = [37 / 255, 211 / 255, 101 / 255, 0.687]
+		} else {
+			// Waiting/idle: gray
+			color = [183 / 255, 183 / 255, 183 / 255, 1]
+		}
+
+		return modifyAnimationColor(pulseAnimationOriginal, color)
+	}, [isTransporting, hasActiveConnections])
+
+	const { View } = useLottie({
+		animationData,
+		loop: true,
+		autoplay: true,
+		style: { width: 180, height: 180 },
+	})
+
+	return (
+		<div className={cn(className, isTransporting && 'max-sm:hidden')}>
+			{View}
+		</div>
+	)
+}

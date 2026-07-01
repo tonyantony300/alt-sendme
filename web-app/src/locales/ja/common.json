@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "送信",
+	"comingSoon": "近日公開",
+	"receive": "受信",
+	"ok": "OK",
+	"undo": "元に戻す",
+	"cancel": "キャンセル",
+	"confirm": "確認",
+	"loading": "読み込み中...",
+	"browse": "参照",
+	"donate": "寄付する",
+	"privacyPolicy": "プライバシーポリシー",
+	"license": "ライセンス",
+	"notFound": {
+		"title": "ページが見つかりません",
+		"subtitle": "お探しのページは存在しないか、移動されました。",
+		"goBack": "戻る",
+		"goHome": "ホームへ"
+	},
+	"sender": {
+		"title": "送信",
+		"subtitle": "暗号化されたピアツーピア接続でファイルまたはフォルダを共有します。",
+		"stoppingTransmission": "転送を停止しています...",
+		"startSharing": "共有を開始",
+		"startingShare": "共有を開始しています...",
+		"stopSharing": "共有を停止",
+		"shareThisTicket": "このチケットを共有：",
+		"sendThisTicket": "ファイルを受け取りたい相手にこのチケットを送信してください",
+		"keepAppOpen": "他の人があなたのファイルをダウンロードしている間、このアプリを開いたままにしてください",
+		"fileLabel": "ファイル：",
+		"listeningForConnection": "接続を待機中",
+		"sharingInProgress": "共有中",
+		"transferCompleted": "転送完了",
+		"filesBeingTransmitted": "ファイルを転送中",
+		"preparingForTransport": "転送の準備中...",
+		"pleaseWaitProcessing": "共有するファイルを処理しています。しばらくお待ちください...",
+		"dropFilesHere": "ファイルまたはフォルダをここにドロップ",
+		"dragAndDrop": "ドラッグ＆ドロップ",
+		"orBrowse": "または参照してファイルまたはフォルダを選択",
+		"fileSelected": "ファイルを選択しました",
+		"folderSelected": "フォルダを選択しました",
+		"itemSelected": "アイテムを選択しました",
+		"multipleFilesSelected": "{{name}} ... 他 {{count}} 件",
+		"browseFile": "ファイルを参照",
+		"browseFolder": "フォルダを参照",
+		"addMoreFiles": "ファイルを追加",
+		"addMoreFolders": "フォルダを追加",
+		"multipleItemsSelected": "{{firstName}} 他 {{count}} 件",
+		"removeFromSelection": "選択から削除",
+		"copyToClipboard": "クリップボードにコピー",
+		"description": "説明（任意）",
+		"broadcastMode": {
+			"index": "ブロードキャスト",
+			"on": {
+				"label": "ブロードキャスト中",
+				"description": "チケットを持つ複数の人が、ブロードキャストモードで同時にファイルをダウンロードできます。"
+			},
+			"off": {
+				"label": "プライベート共有",
+				"description": "チケットを共有した相手のみがファイルをダウンロードできます。"
+			}
+		}
+	},
+	"receiver": {
+		"title": "ファイルを受信",
+		"subtitle": "暗号化されたピアツーピア接続で送信者からファイルをダウンロードします。",
+		"saveToFolder": "フォルダに保存：",
+		"noFolderSelected": "フォルダが選択されていません",
+		"conflictsMore": "... 他 {{count}} 件",
+		"pasteTicket": "ここにチケットを貼り付け：",
+		"ticketPlaceholder": "sendme 受信チケット...",
+		"howToReceive": "ファイルの受信方法",
+		"instruction1": "送信者がオンラインでファイルを共有している必要があります",
+		"instruction2": "送信者からチケットを取得",
+		"instruction3": "テキストエリアにチケットを貼り付け",
+		"instruction4": "ダウンロードをクリックして受信を開始",
+		"instruction5": "ファイルは選択したフォルダに保存されます",
+		"keepAppOpen": "ファイルをダウンロードしている間、このアプリを開いたままにしてください",
+		"connectingToSender": "送信者に接続中",
+		"previewMultipleItems": "{{name}} ... 他 {{count}} 件",
+		"multipleFilesFound": "複数のファイルが見つかりました",
+		"expandPreviewList": "ファイル一覧を表示",
+		"collapsePreviewList": "ファイル一覧を非表示",
+		"downloadingInProgress": "ダウンロード中",
+		"downloadCompleted": "ダウンロード完了",
+		"downloadCompletedWithConflicts": "ダウンロード完了（名前の競合を解決済み）",
+		"downloadedFile": "ダウンロードしたファイル",
+		"stopReceiving": "受信を停止",
+		"download": "ダウンロード"
+	},
+	"transfer": {
+		"progress": "転送の進行状況",
+		"speed": "速度",
+		"eta": "ETA",
+		"timeRemaining": "残り時間",
+		"calculating": "計算中...",
+		"complete": "転送完了！",
+		"stopped": "転送が停止されました",
+		"newTransfer": "新しい転送",
+		"done": "完了",
+		"open": "開く",
+		"wasStopped": "転送は完了前に停止されました。",
+		"successMessage": "転送が正常に完了しました。",
+		"file": "ファイル",
+		"files": "ファイル",
+		"folder": "フォルダ",
+		"fileName": "ファイル名",
+		"fileSize": "ファイルサイズ",
+		"folderSize": "フォルダサイズ",
+		"downloadPath": "ダウンロードパス",
+		"duration": "所要時間",
+		"avgSpeed": "平均速度",
+		"multipleFiles": "{{count}} 件のファイル",
+		"donatePrompt": "もっと良くする -"
+	},
+	"errors": {
+		"sharingFailed": "共有に失敗しました",
+		"sharingFailedDesc": "共有を開始できませんでした",
+		"stopSharingFailed": "共有の停止に失敗しました",
+		"stopSharingFailedDesc": "共有を停止できませんでした",
+		"copyFailed": "コピーに失敗しました",
+		"copyFailedDesc": "チケットをコピーできませんでした",
+		"folderDialogFailed": "フォルダダイアログに失敗しました",
+		"folderDialogFailedDesc": "フォルダダイアログを開けませんでした",
+		"fileDialogFailed": "ファイルダイアログに失敗しました",
+		"fileDialogFailedDesc": "ファイルダイアログを開けませんでした",
+		"receiveFailed": "受信に失敗しました",
+		"receiveFailedDesc": "ファイルを受信できませんでした",
+		"openFolderFailed": "フォルダを開くのに失敗しました",
+		"openFolderFailedDesc": "ダウンロードフォルダを開けませんでした"
+	},
+	"settings": {
+		"title": "設定",
+		"navItems": {
+			"appearance": "テーマと言語",
+			"general": "一般",
+			"relay": "リレー",
+			"network": "ネットワーク",
+			"notification": "通知"
+		},
+		"theme": {
+			"description": "希望のテーマを選択してください",
+			"title": "外観",
+			"light": "ライト",
+			"dark": "ダーク",
+			"auto": "システムに合わせる"
+		},
+		"language": {
+			"title": "言語",
+			"description": "使用する言語を選択してください",
+			"noResults": "言語が見つかりません"
+		},
+		"general": {
+			"title": "一般",
+			"autoCheckUpdates": {
+				"label": "更新を自動的に確認",
+				"description": "起動時に更新を自動確認します"
+			},
+			"systembar": {
+				"title": "システムトレイ",
+				"minimizeToTray": {
+					"label": "システムトレイに最小化",
+					"description": "閉じるときは終了せずに最小化します"
+				},
+				"showProgressOnIcon": {
+					"label": "アイコンに転送の進捗を表示",
+					"description": "アプリアイコンに進捗バーを重ねて表示します"
+				},
+				"runOnSystemStartup": {
+					"label": "システム起動時に実行",
+					"description": "システムの起動時に自動でアプリを起動します"
+				},
+				"contextMenu": {
+					"label": "エクスプローラーの右クリックメニュー",
+					"description": "Windows エクスプローラーの右クリックに「AltSendme で送信」を追加します"
+				}
+			},
+			"broadcast": {
+				"title": "ブロードキャスト",
+				"showToggle": {
+					"label": "共有中にブロードキャスト切り替えを表示",
+					"description": "共有画面にブロードキャストスイッチを表示し、複数の受信者が同時に同じファイルをダウンロードできるようにします。"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "リレーサーバー",
+				"description": "AltSendme が NAT トラバーサルと暗号化フォールバック接続に使用する iroh リレーサーバーを制御します。",
+				"modeDefault": "自動（公開リレー）",
+				"modeDefaultDesc": "デフォルトの公開 iroh リレーを使用します。ほとんどのユーザーに最適です。",
+				"modeCustom": "カスタム（自己ホスト）",
+				"modeCustomDesc": "独自のリレーサーバーを使用します。プロジェクトリポジトリの deploy/relay を参照してください。",
+				"modeDisabled": "無効",
+				"modeDisabledDesc": "リレーを使用しません。直接接続のみ。厳格な NAT では失敗する場合があります。",
+				"urlsLabel": "リレー URL",
+				"urlsDescription": "地域フェイルオーバー用に 1 つ以上の HTTPS リレー URL を追加します。",
+				"addUrl": "リレー URL を追加",
+				"removeUrl": "リレー URL を削除",
+				"urlInvalidHint": "有効な HTTPS URL を入力してください",
+				"urlChecking": "接続を確認中",
+				"urlVerified": "確認済み",
+				"urlVerifyFailedHint": "このリレーに接続できませんでした",
+				"verifySummary": "{{total}} 件中 {{ok}} 件のリレーを確認しました。",
+				"verifyAuthHint": "リレーに認証トークンが必要な場合、サーバーの access.shared_token と一致していることを確認してください。",
+				"authTokenLabel": "認証トークン（任意）",
+				"authTokenPlaceholder": "リレーが認証を要求する場合の共有シークレット",
+				"authTokenDescription": "リレーが設定で access.shared_token を使用する場合に必要です。",
+				"showAuthToken": "表示",
+				"hideAuthToken": "非表示",
+				"privacyNote": "完全にプライベートな構成にするには、送信側と受信側の両方で同じリレー URL を設定してください。",
+				"testConnection": "接続をテスト",
+				"verifySuccess": "リレー接続 OK",
+				"verifySuccessDesc": "{{url}}\n正常に確認されました（{{latency}} ms）。",
+				"verifySuccessDescGeneric": "設定したリレーサーバーへの登録に成功しました。",
+				"verifyFailed": "リレー接続に失敗しました",
+				"urlRequired": "少なくとも 1 つのリレー URL を追加してください。",
+				"invalidUrl": "無効なリレー URL: {{url}}",
+				"disabledHint": "接続をテストするには、自動またはカスタムリレーを有効にしてください。",
+				"confirmDisableTitle": "リレーを無効にしますか?",
+				"confirmDisableDescription": "リレーを無効にすることを選択しました。ローカルネットワーク外の相手とファイルを共有しようとすると、ファイル転送が失敗する場合があります。リレーは、困難なネットワーク状況でデバイスが互いを見つけて接続するのを助け、転送は常にエンドツーエンドで暗号化されたままです。",
+				"confirmCustomTitle": "カスタムリレーを使用しますか?",
+				"confirmCustomDescription": "自分でホストするカスタムリレーを使用することを選択しました。カスタムリレーに接続できない場合、転送は自動的に公開リレーにフォールバックし、通知されます。リレーは困難なネットワーク状況でデバイスが接続するのを助けるだけで、転送は常にエンドツーエンドで暗号化されたままです。",
+				"confirmContinue": "続行"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "新しいアップデートがあります",
+		"newVersionAvailable": "バージョン {{version}} が利用できます。",
+		"newVersionAvailableInline": "新しいバージョンがあります — {{version}}",
+		"updateNow": "今すぐ更新",
+		"later": "後で",
+		"checkForUpdates": "更新を確認",
+		"noUpdatesTitle": "更新はありません",
+		"noUpdatesDescription": "すでに最新バージョンを使用しています",
+		"checkFailed": "確認に失敗しました",
+		"checkFailedDesc": "更新を確認できませんでした",
+		"installFailed": "インストールに失敗しました",
+		"installFailedDesc": "更新をインストールできませんでした"
+	},
+	"android": {
+		"preparingFile": "ファイルを準備中..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "リレー接続状態",
+			"publicHeading": "公開リレー",
+			"customHeading": "カスタムリレー",
+			"disabledHeading": "リレー無効",
+			"unavailableHeading": "リレー利用不可",
+			"fellBackToPublic": "カスタムリレーに到達できません。代わりに公開リレーを使用しています。",
+			"fellBackToastTitle": "公開リレーを使用中",
+			"fellBackToastSend": "カスタムリレーに到達できませんでした — この転送は公開リレーを使用しています。",
+			"fellBackToastReceive": "カスタムリレーに到達できませんでした — このダウンロードは公開リレーを使用しています。",
+			"dialogDescription": "このアプリが現在接続に使用しているリレーサーバーを表示します。",
+			"connectedRelay": "接続中のリレー",
+			"checking": "接続を確認中…",
+			"configuredMode": "設定で構成済み",
+			"configuredDefault": "自動（公開リレー）",
+			"configuredCustom": "カスタム（自己ホスト）",
+			"configuredDisabled": "無効",
+			"openSettings": "ネットワーク設定",
+			"infoToggle": "リレーについて",
+			"purpose": "リレーはデバイス同士が見つけ合って接続するのを助けるだけです。",
+			"directNote": "直接接続が確立されると、ファイルはデバイス間で直接転送され、リレーは使用されなくなります。",
+			"lanNote": "同じローカルネットワーク上では、リレーは完全にスキップされます。",
+			"encryptedNote": "転送は常にエンドツーエンドで暗号化されているため、リレーがファイルを見ることはありません。",
+			"disabledNote": "リレーは無効です。直接接続のみのため、厳格なファイアウォールや NAT では転送が失敗することがあります。"
+		}
+	}
+}

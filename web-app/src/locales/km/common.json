@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "ផ្ញើ",
+	"comingSoon": "មកដល់ឆាប់ៗនេះ",
+	"receive": "ទទួល",
+	"ok": "យល់ព្រម",
+	"undo": "មិនធ្វើវិញ",
+	"cancel": "បោះបង់",
+	"confirm": "បញ្ជាក់",
+	"loading": "កំពុងផ្ទុក...",
+	"browse": "រកមើល",
+	"donate": "បរិច្ចាគ",
+	"privacyPolicy": "គោលការណ៍ឯកជនភាព",
+	"license": "អាជ្ញាបណ្ណ",
+	"notFound": {
+		"title": "រកមិនឃើញទំព័រ",
+		"subtitle": "ទំព័រដែលអ្នកកំពុងស្វែងរកមិនមានទេ ឬត្រូវបានផ្លាស់ទី។",
+		"goBack": "ត្រលប់ក្រោយ",
+		"goHome": "ទៅទំព័រដើម"
+	},
+	"sender": {
+		"title": "ផ្ញើ",
+		"subtitle": "ចែករំលែកឯកសារ ឬថតឯកសារតាមការតភ្ជាប់ peer-to-peer ដែលបានអ៊ិនគ្រីបទិន្នន័យ។",
+		"stoppingTransmission": "កំពុងបញ្ឈប់ការផ្ញើ...",
+		"startSharing": "ចាប់ផ្តើមចែករំលែក",
+		"startingShare": "កំពុងចាប់ផ្តើមចែករំលែក...",
+		"stopSharing": "បញ្ឈប់ការចែករំលែក",
+		"shareThisTicket": "ចែករំលែកសំបុត្រនេះ៖",
+		"sendThisTicket": "ផ្ញើសំបុត្រនេះទៅមនុស្សដែលចង់ទទួលឯកសាររបស់អ្នក",
+		"keepAppOpen": "រក្សាឲ្យកម្មវិធីនេះបើកនៅពេលដែលអ្នកដទៃកំពុងទាញយកឯកសារ",
+		"fileLabel": "ឯកសារ៖",
+		"listeningForConnection": "កំពុងរង់ចាំការតភ្ជាប់",
+		"sharingInProgress": "កំពុងចែករំលែក",
+		"transferCompleted": "ការផ្ទេរបានបញ្ចប់",
+		"filesBeingTransmitted": "ឯកសារកំពុងផ្ញើ",
+		"preparingForTransport": "កំពុងរៀបចំសម្រាប់ការផ្ទេរ...",
+		"pleaseWaitProcessing": "សូមរង់ចាំ ខណៈពេលយើងកំពុងដំណើរការឯកសាររបស់អ្នកសម្រាប់ចែករំលែក...",
+		"dropFilesHere": "ទម្លាក់ទៅទីនេះ ឯកសារ ឬថតឯកសារ",
+		"dragAndDrop": "អូស និងទម្លាក់",
+		"orBrowse": "ឬរកមើលដើម្បីជ្រើសឯកសារ ឬថតឯកសារ",
+		"fileSelected": "ឯកសារត្រូវបានជ្រើសរើស",
+		"folderSelected": "ថតឯកសារត្រូវបានជ្រើសរើស",
+		"itemSelected": "ធាតុត្រូវបានជ្រើសរើស",
+		"multipleFilesSelected": "{{name}} ... និង {{count}} ទៀត",
+		"browseFile": "រកមើលឯកសារ",
+		"browseFolder": "រកមើលថតឯកសារ",
+		"addMoreFiles": "បន្ថែមឯកសារបន្ថែម",
+		"addMoreFolders": "បន្ថែមថតបន្ថែម",
+		"multipleItemsSelected": "{{firstName}} និង {{count}} ទៀត",
+		"removeFromSelection": "ដកចេញពីការជ្រើស",
+		"copyToClipboard": "ចម្លងទៅកាន់ក្តារចម្លង",
+		"description": "សេចក្តីពិពណ៌នា (ជាជម្រើស)",
+		"broadcastMode": {
+			"index": "ផ្សាយផ្ទាល់",
+			"on": {
+				"label": "អ្នកកំពុងផ្សាយ",
+				"description": "មនុស្សច្រើនអាចទាញយកឯកសារដូចគ្នាបានក្នុងពេលតែមួយ ប្រើរបៀបផ្សាយ។"
+			},
+			"off": {
+				"label": "ចែករំលែកឯកជន",
+				"description": "មានតែអ្នកដែលអ្នកចែកសំបុត្រទៅទើបអាចទាញយកឯកសារ។"
+			}
+		}
+	},
+	"receiver": {
+		"title": "ទទួលឯកសារ",
+		"subtitle": "ទាញយកឯកសារពីអ្នកផ្ញើ តាមការតភ្ជាប់ peer-to-peer ដែលមានសុវត្ថិភាពតាមអ៊ីនធឺណិត។",
+		"saveToFolder": "រក្សាទុកទៅថត៖",
+		"noFolderSelected": "មិនបានជ្រើសថតទេ",
+		"conflictsMore": "... និង {{count}} ទៀត",
+		"pasteTicket": "បិទភ្ជាប់សំបុត្រនៅទីនេះ៖",
+		"ticketPlaceholder": "sendme receive ticket...",
+		"howToReceive": "របៀបទទួលឯកសារ",
+		"instruction1": "អ្នកផ្ញើត្រូវតែតភ្ជាប់អ៊ីនធឺណិត និងកំពុងចែកឯកសារ",
+		"instruction2": "ទទួលសំបុត្រពីអ្នកផ្ញើ",
+		"instruction3": "បិទភ្ជាប់សំបុត្រនៅក្នុងប្រអប់អត្ថបទ",
+		"instruction4": "ចុច ‘ទាញយក’ ដើម្បីចាប់ផ្តើមទទួលឯកសារ",
+		"instruction5": "ឯកសារនឹងត្រូវបានរក្សាទុកក្នុងថតដែលអ្នកបានជ្រើស",
+		"keepAppOpen": "រក្សាឲ្យកម្មវិធីបើកនៅពេលកំពុងទាញយកឯកសារ",
+		"connectingToSender": "កំពុងភ្ជាប់ទៅអ្នកផ្ញើ",
+		"previewMultipleItems": "{{name}} ... និង {{count}} ទៀត",
+		"multipleFilesFound": "រកឃើញឯកសារច្រើន",
+		"expandPreviewList": "បង្ហាញបញ្ជីឯកសារ",
+		"collapsePreviewList": "លាក់បញ្ជីឯកសារ",
+		"downloadingInProgress": "កំពុងទាញយក",
+		"downloadCompleted": "ការទាញយកបានបញ្ចប់",
+		"downloadCompletedWithConflicts": "ទាញយករួចរាល់ បានដោះស្រាយជំទាស់ឈ្មោះ",
+		"downloadedFile": "ឯកសារដែលបានទាញយក",
+		"stopReceiving": "បញ្ឈប់ការទទួល",
+		"download": "ទាញយក"
+	},
+	"transfer": {
+		"progress": "វឌ្ឍនភាពនៃការផ្ទេរ",
+		"speed": "ល្បឿន",
+		"eta": "ពេលវេលាដល់ទីបញ្ចប់",
+		"timeRemaining": "ពេលវេលាសល់",
+		"calculating": "កំពុងគណនា...",
+		"complete": "ការផ្ទេរបានបញ្ចប់!",
+		"stopped": "ការផ្ញើត្រូវបានបញ្ឈប់",
+		"newTransfer": "ការផ្ទេរថ្មី",
+		"done": "រួចរាល់",
+		"open": "បើក",
+		"wasStopped": "ការផ្ទេរត្រូវបានបញ្ឈប់មុនពេលបញ្ចប់។",
+		"successMessage": "ការផ្ទេររបស់អ្នកបានបញ្ចប់ដោយជោគជ័យ។",
+		"file": "ឯកសារ",
+		"files": "ឯកសារ",
+		"folder": "ថតឯកសារ",
+		"fileName": "ឈ្មោះឯកសារ",
+		"fileSize": "ទំហំឯកសារ",
+		"folderSize": "ទំហំថតឯកសារ",
+		"downloadPath": "ទីតាំងទាញយក",
+		"duration": "រយៈពេល",
+		"avgSpeed": "ល្បឿនមធ្យម",
+		"multipleFiles": "{{count}} ឯកសារ",
+		"donatePrompt": "ធ្វើឱ្យវាប្រសើរឡើង -"
+	},
+	"errors": {
+		"sharingFailed": "ការចែករំលែកបរាជ័យ",
+		"sharingFailedDesc": "បរាជ័យក្នុងការចាប់ផ្តើមចែករំលែក",
+		"stopSharingFailed": "បញ្ឈប់ការចែករំលែកបរាជ័យ",
+		"stopSharingFailedDesc": "មិនអាចបញ្ឈប់ការចែករំលែកបានទេ",
+		"copyFailed": "ចម្លងបរាជ័យ",
+		"copyFailedDesc": "មិនអាចចម្លងសំបុត្របានទេ",
+		"folderDialogFailed": "បើកប្រអប់ថតបរាជ័យ",
+		"folderDialogFailedDesc": "មិនអាចបើកប្រអប់ជ្រើសថតបានទេ",
+		"fileDialogFailed": "បើកប្រអប់ឯកសារបរាជ័យ",
+		"fileDialogFailedDesc": "មិនអាចបើកប្រអប់ជ្រើសឯកសារបានទេ",
+		"receiveFailed": "ការទទួលបរាជ័យ",
+		"receiveFailedDesc": "មិនអាចទទួលឯកសារបានទេ",
+		"openFolderFailed": "បើកថតបរាជ័យ",
+		"openFolderFailedDesc": "មិនអាចបើកថតទាញយកបានទេ"
+	},
+	"settings": {
+		"title": "ការកំណត់",
+		"navItems": {
+			"appearance": "រូបរាង និងភាសា",
+			"general": "ទូទៅ",
+			"relay": "Relay",
+			"network": "បណ្ដាញ",
+			"notification": "ការជូនដំណឹង"
+		},
+		"theme": {
+			"description": "ជ្រើសរូបរាងដែលអ្នកចូលចិត្ត",
+			"title": "រូបរាង",
+			"light": "ពន្លឺ",
+			"dark": "ងងឹត",
+			"auto": "ប្រព័ន្ធ"
+		},
+		"language": {
+			"title": "ភាសា",
+			"description": "ជ្រើសភាសាដែលអ្នកចូលចិត្ត",
+			"noResults": "រកមិនឃើញភាសា"
+		},
+		"general": {
+			"title": "ទូទៅ",
+			"autoCheckUpdates": {
+				"label": "ពិនិត្យការអាប់ដេតដោយស្វ័យប្រវត្តិ",
+				"description": "កម្មវិធីនឹងពិនិត្យការអាប់ដេតនៅពេលចាប់ផ្តើមដោយស្វ័យប្រវត្តិ"
+			},
+			"systembar": {
+				"title": "ប្រអប់ប្រព័ន្ធ",
+				"minimizeToTray": {
+					"label": "បង្រួមទៅប្រអប់ប្រព័ន្ធ",
+					"description": "នៅពេលបិទ ប្រើបង្រួមកម្មវិធី ជំនួសឱ្យបញ្ចប់"
+				},
+				"showProgressOnIcon": {
+					"label": "បង្ហាញពីដំណើរការការផ្ទេរនៅលើរូបតំណាងកម្មវិធី",
+					"description": "ប្រើរបារដំណើរការលើរូបតំណាង ដើម្បីបង្ហាញដំណើរការនៃការផ្ទេរ"
+				},
+				"runOnSystemStartup": {
+					"label": "ដំណើរការនៅពេលប្រព័ន្ធចាប់ផ្តើម",
+					"description": "បើកកម្មវិធីដោយស្វ័យប្រវត្តិនៅពេលប្រព័ន្ធចាប់ផ្តើម"
+				},
+				"contextMenu": {
+					"label": "ម៉ឺនុយតាមបរិបទក្នុង Explorer",
+					"description": "បន្ថែម ‘ផ្ញើដោយ AltSendme’ ទៅម៉ឺនុយចុចស្ដាំក្នុង Windows Explorer"
+				}
+			},
+			"broadcast": {
+				"title": "Broadcast",
+				"showToggle": {
+					"label": "បង្ហាញប៊ូតុង broadcast ពេលចែករំលែក",
+					"description": "បង្ហាញប៊ូតុង broadcast លើអេក្រង់ចែករំលែក ដើម្បីឱ្យអ្នកទទួលច្រើនអាចទាញយកឯកសារដូចគ្នាក្នុងពេលតែមួយ។"
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "ម៉ាស៊ីនមេ relay",
+				"description": "គ្រប់គ្រងម៉ាស៊ីនមេ relay iroh ដែល AltSendme ប្រើសម្រាប់ NAT traversal និងការតភ្ជាប់បម្រុងដែលអ៊ិនក្រីប។",
+				"modeDefault": "ស្វ័យប្រវត្តិ (relay សាធារណៈ)",
+				"modeDefaultDesc": "ប្រើ relay iroh សាធារណៈលំនាំដើម។ ល្អបំផុតសម្រាប់អ្នកប្រើភាគច្រើន។",
+				"modeCustom": "ផ្ទាល់ខ្លួន (self-hosted)",
+				"modeCustomDesc": "ប្រើម៉ាស៊ីនមេ relay ផ្ទាល់ខ្លួន។ មើល deploy/relay ក្នុង repo គម្រោង។",
+				"modeDisabled": "បិទ",
+				"modeDisabledDesc": "កុំប្រើ relay។ តភ្ជាប់ផ្ទាល់តែប៉ុណ្ណោះ។ អាចបរាជ័យក្រោម NAT តឹង។",
+				"urlsLabel": "URL relay",
+				"urlsDescription": "បន្ថែម URL HTTPS relay មួយ ឬច្រើនសម្រាប់ failover តាមតំបន់។",
+				"addUrl": "បន្ថែម URL relay",
+				"removeUrl": "លុប URL relay",
+				"urlInvalidHint": "បញ្ចូល URL HTTPS ត្រឹមត្រូវ",
+				"urlChecking": "កំពុងពិនិត្យការតភ្ជាប់",
+				"urlVerified": "បានផ្ទៀងផ្ទាត់",
+				"urlVerifyFailedHint": "មិនអាចតភ្ជាប់ relay នេះ",
+				"verifySummary": "បានផ្ទៀងផ្ទាត់ {{ok}} ក្នុង {{total}} relay។",
+				"verifyAuthHint": "ប្រសិនបើ relay ត្រូវការ auth token សូមប្រាកដថាវាត្រូវគ្នានឹង access.shared_token លើម៉ាស៊ីនមេ។",
+				"authTokenLabel": "Auth token (ជម្រើស)",
+				"authTokenPlaceholder": "អាថ៌កំបាំងរួមប្រសិនបើ relay ត្រូវការផ្ទៀងផ្ទាត់",
+				"authTokenDescription": "ត្រូវការនៅពេល relay ប្រើ access.shared_token ក្នុង config។",
+				"showAuthToken": "បង្ហាញ",
+				"hideAuthToken": "លាក់",
+				"privacyNote": "សម្រាប់ការកំណត់ឯកជនពេញលេញ សូមកំណត់ URL relay ដូចគ្នាលើឧបករណ៍ផ្ញើ និងទទួល។",
+				"testConnection": "សាកល្បងការតភ្ជាប់",
+				"verifySuccess": "ការតភ្ជាប់ relay OK",
+				"verifySuccessDesc": "{{url}}\nបានផ្ទៀងផ្ទាត់ដោយជោគជ័យ ({{latency}} ms)។",
+				"verifySuccessDescGeneric": "បានចុះឈ្មោះដោយជោគជ័យនៅម៉ាស៊ីនមេ relay ដែលបានកំណត់។",
+				"verifyFailed": "ការតភ្ជាប់ relay បរាជ័យ",
+				"urlRequired": "បន្ថែម URL relay យ៉ាងហោចណាស់មួយ។",
+				"invalidUrl": "URL relay មិនត្រឹមត្រូវ៖ {{url}}",
+				"disabledHint": "បើក relay ស្វ័យប្រវត្តិ ឬផ្ទាល់ខ្លួន ដើម្បីសាកល្បងការតភ្ជាប់។",
+				"confirmDisableTitle": "បិទ relay?",
+				"confirmDisableDescription": "អ្នកបានជ្រើសរើសបិទ relay។ ការផ្ទេរឯកសារអាចបរាជ័យ ប្រសិនបើអ្នកព្យាយាមចែករំលែកឯកសារជាមួយនរណាម្នាក់នៅខាងក្រៅបណ្តាញមូលដ្ឋានរបស់អ្នក។ relay ជួយឧបករណ៍ឱ្យស្វែងរក និងភ្ជាប់គ្នាក្នុងលក្ខខណ្ឌបណ្តាញពិបាក ហើយការផ្ទេររបស់អ្នកតែងតែរក្សាការអ៊ិនគ្រីបពីចុងដល់ចុង។",
+				"confirmCustomTitle": "ប្រើ relay ផ្ទាល់ខ្លួន?",
+				"confirmCustomDescription": "អ្នកបានជ្រើសរើសប្រើ relay ដែលអ្នកបង្ហោះដោយខ្លួនឯង។ ប្រសិនបើ relay ផ្ទាល់ខ្លួនរបស់អ្នកមិនអាចភ្ជាប់បាន ការផ្ទេរនឹងត្រឡប់ទៅ relay សាធារណៈដោយស្វ័យប្រវត្តិ ហើយអ្នកនឹងទទួលបានការជូនដំណឹង។ relay ជួយតែឧបករណ៍របស់អ្នកឱ្យភ្ជាប់ក្នុងលក្ខខណ្ឌបណ្តាញពិបាក ហើយការផ្ទេររបស់អ្នកតែងតែរក្សាការអ៊ិនគ្រីបពីចុងដល់ចុង។",
+				"confirmContinue": "បន្ត"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "មានការអាប់ដេតថ្មី!",
+		"newVersionAvailable": "មានកំណែថ្មី {{version}} អាចប្រើបាន។",
+		"newVersionAvailableInline": "មានកំណែថ្មីអាចប្រើបាន - {{version}}",
+		"updateNow": "អាប់ដេតឥឡូវนี้",
+		"later": "ពេលក្រោយ",
+		"checkForUpdates": "ពិនិត្យការអាប់ដេត",
+		"noUpdatesTitle": "គ្មានការអាប់ដេតថ្មីទេ",
+		"noUpdatesDescription": "អ្នកកំពុងប្រើកំណែចុងក្រោយរួចហើយ",
+		"checkFailed": "ពិនិត្យបរាជ័យ",
+		"checkFailedDesc": "មិនអាចពិនិត្យការអាប់ដេតបានទេ",
+		"installFailed": "ដំឡើងបរាជ័យ",
+		"installFailedDesc": "មិនអាចដំឡើងការអាប់ដេតបានទេ"
+	},
+	"android": {
+		"preparingFile": "កំពុងរៀបចំឯកសារ..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "ស្ថានភាពការតភ្ជាប់ relay",
+			"publicHeading": "Relay សាធារណៈ",
+			"customHeading": "Relay ផ្ទាល់ខ្លួន",
+			"disabledHeading": "Relay បិទ",
+			"unavailableHeading": "Relay មិនអាចប្រើ",
+			"fellBackToPublic": "Relay ផ្ទាល់ខ្លួន មិនអាចភ្ជាប់បាន កំពុងប្រើ relay សាធារណៈជំនួសវិញ។",
+			"fellBackToastTitle": "កំពុងប្រើ relay សាធារណៈ",
+			"fellBackToastSend": "Relay ផ្ទាល់ខ្លួន របស់អ្នកមិនអាចដល់ — ការផ្ទេរនេះប្រើ relay សាធារណៈ។",
+			"fellBackToastReceive": "Relay ផ្ទាល់ខ្លួន របស់អ្នកមិនអាចដល់ — ការទាញយកនេះប្រើ relay សាធារណៈ។",
+			"dialogDescription": "បង្ហាញម៉ាស៊ីនមេ relay ដែលកម្មវិធីកំពុងប្រើសម្រាប់ការតភ្ជាប់។",
+			"connectedRelay": "Relay ដែលបានតភ្ជាប់",
+			"checking": "កំពុងពិនិត្យការតភ្ជាប់…",
+			"configuredMode": "បានកំណត់ក្នុងការកំណត់",
+			"configuredDefault": "ស្វ័យប្រវត្តិ (relay សាធារណៈ)",
+			"configuredCustom": "ផ្ទាល់ខ្លួន (self-hosted)",
+			"configuredDisabled": "បិទ",
+			"openSettings": "ការកំណត់បណ្តាញ",
+			"infoToggle": "អំពី relay",
+			"purpose": "Relay គ្រាន់តែជួយឧបករណ៍របស់អ្នករកគ្នា និងភ្ជាប់គ្នាប៉ុណ្ណោះ។",
+			"directNote": "នៅពេលការតភ្ជាប់ផ្ទាល់ត្រូវបានបង្កើត ឯកសារត្រូវបានផ្ទេរដោយផ្ទាល់រវាងឧបករណ៍ ហើយ relay លែងត្រូវបានប្រើ។",
+			"lanNote": "នៅលើបណ្តាញមូលដ្ឋានដូចគ្នា relay ត្រូវបានរំលងទាំងស្រុង។",
+			"encryptedNote": "ការផ្ទេរត្រូវបានអ៊ិនគ្រីបពីចុងដល់ចុងជានិច្ច ដូច្នេះ relay មិនឃើញឯកសាររបស់អ្នកឡើយ។",
+			"disabledNote": "Relay ត្រូវបានបិទ។ មានតែការតភ្ជាប់ផ្ទាល់ ដូច្នេះការផ្ទេរអាចបរាជ័យឆ្លងកាត់ firewall ឬ NAT ដ៏តឹងរ៉ឹង។"
+		}
+	}
+}

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-select-send-document"
+description = "Enables the select_send_document command without any pre-configured scope."
+commands.allow = ["select_send_document"]
+
+[[permission]]
+identifier = "deny-select-send-document"
+description = "Denies the select_send_document command without any pre-configured scope."
+commands.deny = ["select_send_document"]

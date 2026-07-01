@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "Invia",
+	"comingSoon": "Prossimamente",
+	"receive": "Ricevi",
+	"ok": "OK",
+	"undo": "Annulla",
+	"cancel": "Annulla",
+	"confirm": "Conferma",
+	"loading": "Caricamento...",
+	"browse": "Sfoglia",
+	"donate": "Dona",
+	"privacyPolicy": "Informativa sulla privacy",
+	"license": "Licenza",
+	"notFound": {
+		"title": "Pagina non trovata",
+		"subtitle": "La pagina che cerchi non esiste o è stata spostata.",
+		"goBack": "Indietro",
+		"goHome": "Vai alla home"
+	},
+	"sender": {
+		"title": "Invia",
+		"subtitle": "Condividi file o cartelle tramite connessioni peer-to-peer cifrate.",
+		"stoppingTransmission": "Arresto trasmissione...",
+		"startSharing": "Inizia Condivisione",
+		"startingShare": "Inizio Condivisione...",
+		"stopSharing": "Ferma Condivisione",
+		"shareThisTicket": "Condividi questo ticket:",
+		"sendThisTicket": "Invia questo ticket al destinatario del tuo file",
+		"keepAppOpen": "Mantieni questa app aperta mentre gli altri scaricano i tuoi file",
+		"fileLabel": "File:",
+		"listeningForConnection": "In attesa di connessione",
+		"sharingInProgress": "Condivisione in corso",
+		"transferCompleted": "Trasferimento completato",
+		"filesBeingTransmitted": "I file sono in trasmissione",
+		"preparingForTransport": "Preparazione al trasferimento...",
+		"pleaseWaitProcessing": "Attendi mentre elaboriamo i tuoi file per la condivisione...",
+		"dropFilesHere": "Trascina qui file o cartelle",
+		"dragAndDrop": "Drag & drop",
+		"orBrowse": "o sfoglia per selezionare file o cartelle",
+		"fileSelected": "File selezionato",
+		"folderSelected": "Cartella selezionata",
+		"itemSelected": "Elemento selezionato",
+		"multipleFilesSelected": "{{name}} ... e altri {{count}}",
+		"browseFile": "Sfoglia File",
+		"browseFolder": "Sfoglia Cartella",
+		"addMoreFiles": "Aggiungi altri file",
+		"addMoreFolders": "Aggiungi altre cartelle",
+		"multipleItemsSelected": "{{firstName}} e altri {{count}}",
+		"removeFromSelection": "Rimuovi dalla selezione",
+		"copyToClipboard": "Copia negli appunti",
+		"description": "Descrizione (facoltativa)",
+		"broadcastMode": {
+			"index": "Trasmissione",
+			"on": {
+				"label": "Stai trasmettendo",
+				"description": "Più persone con il ticket possono scaricare file contemporaneamente in modalità broadcast."
+			},
+			"off": {
+				"label": "Condivisione privata",
+				"description": "Solo la persona con cui condividi il ticket può scaricare il file."
+			}
+		}
+	},
+	"receiver": {
+		"title": "Ricevi File",
+		"subtitle": "Scarica file dal mittente tramite internet utilizzando connessioni peer-to-peer cifrate.",
+		"saveToFolder": "Salva nella cartella:",
+		"noFolderSelected": "Nessuna cartella selezionata",
+		"conflictsMore": "... e altri {{count}}",
+		"pasteTicket": "Incolla il ticket qui:",
+		"ticketPlaceholder": "ticket di ricezione sendme...",
+		"howToReceive": "Come ricevere file",
+		"instruction1": "Il mittente deve essere online e avere un file in condivisione",
+		"instruction2": "Ottieni un ticket dal mittente",
+		"instruction3": "Incolla il ticket nell'area di testo",
+		"instruction4": "Clicca su scarica per iniziare a ricevere",
+		"instruction5": "I file verranno salvati nella cartella selezionata",
+		"keepAppOpen": "Mantieni questa app aperta durante il download dei file",
+		"connectingToSender": "Connessione al mittente",
+		"previewMultipleItems": "{{name}} ... e altri {{count}}",
+		"multipleFilesFound": "Trovati più file",
+		"expandPreviewList": "Mostra elenco file",
+		"collapsePreviewList": "Nascondi elenco file",
+		"downloadingInProgress": "Download in corso",
+		"downloadCompleted": "Download completato",
+		"downloadCompletedWithConflicts": "Download completato con conflitti di nomi risolti",
+		"downloadedFile": "File scaricato",
+		"stopReceiving": "Ferma ricezione",
+		"download": "Scarica"
+	},
+	"transfer": {
+		"progress": "Avanzamento Trasferimento",
+		"speed": "Velocità",
+		"eta": "ETA",
+		"timeRemaining": "Tempo Rimasto",
+		"calculating": "Calcolo...",
+		"complete": "Trasferimento Completato!",
+		"stopped": "Trasferimento Interrotto",
+		"newTransfer": "Nuovo Trasferimento",
+		"done": "Fatto",
+		"open": "Apri",
+		"wasStopped": "Il trasferimento è stato interrotto prima del completamento.",
+		"successMessage": "Il trasferimento è stato completato con successo.",
+		"file": "File",
+		"files": "File",
+		"folder": "Cartella",
+		"fileName": "Nome file",
+		"fileSize": "Dimensione file",
+		"folderSize": "Dimensione cartella",
+		"downloadPath": "Percorso di download",
+		"duration": "Durata",
+		"avgSpeed": "Velocità Media",
+		"multipleFiles": "{{count}} file",
+		"donatePrompt": "Rendilo migliore -"
+	},
+	"errors": {
+		"sharingFailed": "Condivisione Fallita",
+		"sharingFailedDesc": "Impossibile avviare la condivisione",
+		"stopSharingFailed": "Arresto Condivisione Fallito",
+		"stopSharingFailedDesc": "Impossibile arrestare la condivisione",
+		"copyFailed": "Copia Fallita",
+		"copyFailedDesc": "Impossibile copiare il ticket",
+		"folderDialogFailed": "Apertura Cartella Fallita",
+		"folderDialogFailedDesc": "Impossibile aprire la finestra di selezione della cartella",
+		"fileDialogFailed": "Apertura File Fallita",
+		"fileDialogFailedDesc": "Impossibile aprire la finestra di selezione del file",
+		"receiveFailed": "Ricevimento Fallito",
+		"receiveFailedDesc": "Impossibile ricevere il file",
+		"openFolderFailed": "Apertura Cartella Fallita",
+		"openFolderFailedDesc": "Impossibile aprire la cartella di download"
+	},
+	"settings": {
+		"title": "Impostazioni",
+		"navItems": {
+			"appearance": "Tema e lingua",
+			"general": "Generale",
+			"relay": "Relay",
+			"network": "Rete",
+			"notification": "Notifiche"
+		},
+		"theme": {
+			"description": "Seleziona il tema preferito",
+			"title": "Aspetto",
+			"light": "Chiaro",
+			"dark": "Scuro",
+			"auto": "Sistema"
+		},
+		"language": {
+			"title": "Lingua",
+			"description": "Seleziona la lingua preferita",
+			"noResults": "Nessuna lingua trovata"
+		},
+		"general": {
+			"title": "Generale",
+			"autoCheckUpdates": {
+				"label": "Cerca aggiornamenti automaticamente",
+				"description": "L’app cercherà aggiornamenti all’avvio"
+			},
+			"systembar": {
+				"title": "Area di notifica",
+				"minimizeToTray": {
+					"label": "Riduci a icona nell’area di notifica",
+					"description": "Alla chiusura riduci l’app invece di terminarla"
+				},
+				"showProgressOnIcon": {
+					"label": "Mostra l’avanzamento del trasferimento sull’icona",
+					"description": "Barra di avanzamento sull’icona per indicare il progresso"
+				},
+				"runOnSystemStartup": {
+					"label": "Esegui all’avvio del sistema",
+					"description": "Avvia automaticamente l’app all’accensione del sistema"
+				},
+				"contextMenu": {
+					"label": "Menu contestuale di Esplora risorse",
+					"description": "Aggiungi «Invia con AltSendme» al menu contestuale di Esplora risorse di Windows"
+				}
+			},
+			"broadcast": {
+				"title": "Broadcast",
+				"showToggle": {
+					"label": "Mostra interruttore broadcast durante la condivisione",
+					"description": "Mostra un interruttore broadcast nella schermata di condivisione così più destinatari possono scaricare gli stessi file contemporaneamente."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Server relay",
+				"description": "Controlla quali server relay iroh AltSendme usa per il NAT traversal e le connessioni di fallback crittografate.",
+				"modeDefault": "Automatico (relay pubblici)",
+				"modeDefaultDesc": "Usa i relay pubblici iroh predefiniti. Ideale per la maggior parte degli utenti.",
+				"modeCustom": "Personalizzato (self-hosted)",
+				"modeCustomDesc": "Usa i tuoi server relay. Vedi deploy/relay nel repository del progetto.",
+				"modeDisabled": "Disabilitato",
+				"modeDisabledDesc": "Non usare relay. Solo connessioni dirette; può fallire con NAT rigido.",
+				"urlsLabel": "URL relay",
+				"urlsDescription": "Aggiungi uno o più URL HTTPS relay per failover regionale.",
+				"addUrl": "Aggiungi URL relay",
+				"removeUrl": "Rimuovi URL relay",
+				"urlInvalidHint": "Inserisci un URL HTTPS valido",
+				"urlChecking": "Verifica connessione",
+				"urlVerified": "Verificato",
+				"urlVerifyFailedHint": "Impossibile connettersi a questo relay",
+				"verifySummary": "{{ok}} di {{total}} relay verificati.",
+				"verifyAuthHint": "Se il tuo relay richiede un token di autenticazione, assicurati che corrisponda a access.shared_token sul server.",
+				"authTokenLabel": "Token di autenticazione (opzionale)",
+				"authTokenPlaceholder": "Segreto condiviso se il tuo relay richiede autenticazione",
+				"authTokenDescription": "Richiesto quando il tuo relay usa access.shared_token nella configurazione.",
+				"showAuthToken": "Mostra",
+				"hideAuthToken": "Nascondi",
+				"privacyNote": "Per una configurazione completamente privata, configura gli stessi URL relay su dispositivi mittente e destinatario.",
+				"testConnection": "Test connessione",
+				"verifySuccess": "Connessione relay OK",
+				"verifySuccessDesc": "{{url}}\nverificato con successo ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Registrazione riuscita sul server relay configurato.",
+				"verifyFailed": "Connessione relay fallita",
+				"urlRequired": "Aggiungi almeno un URL relay.",
+				"invalidUrl": "URL relay non valido: {{url}}",
+				"disabledHint": "Abilita relay automatici o personalizzati per testare la connettività.",
+				"confirmDisableTitle": "Disabilitare i relay?",
+				"confirmDisableDescription": "Hai scelto di disabilitare i relay. I trasferimenti di file potrebbero non riuscire se provi a condividere file con qualcuno al di fuori della tua rete locale. I relay aiutano i dispositivi a trovarsi e connettersi in condizioni di rete difficili, e i tuoi trasferimenti restano sempre crittografati end-to-end.",
+				"confirmCustomTitle": "Usare relay personalizzati?",
+				"confirmCustomDescription": "Hai scelto di usare i tuoi relay self-hosted. Se i tuoi relay personalizzati non sono raggiungibili, i trasferimenti torneranno automaticamente ai relay pubblici e riceverai una notifica. I relay aiutano solo i tuoi dispositivi a connettersi in condizioni di rete difficili, e i tuoi trasferimenti restano sempre crittografati end-to-end.",
+				"confirmContinue": "Continua"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Nuovo aggiornamento!",
+		"newVersionAvailable": "È disponibile la versione {{version}}.",
+		"newVersionAvailableInline": "È disponibile una nuova versione: {{version}}",
+		"updateNow": "Aggiorna ora",
+		"later": "Più tardi",
+		"checkForUpdates": "Cerca aggiornamenti",
+		"noUpdatesTitle": "Nessun aggiornamento",
+		"noUpdatesDescription": "Stai già usando l’ultima versione",
+		"checkFailed": "Verifica non riuscita",
+		"checkFailedDesc": "Impossibile cercare aggiornamenti",
+		"installFailed": "Installazione non riuscita",
+		"installFailedDesc": "Impossibile installare l’aggiornamento"
+	},
+	"android": {
+		"preparingFile": "Preparazione file..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Stato connessione relay",
+			"publicHeading": "Relay pubblico",
+			"customHeading": "Relay personalizzato",
+			"disabledHeading": "Relay disabilitati",
+			"unavailableHeading": "Relay non disponibile",
+			"fellBackToPublic": "Relay personalizzato irraggiungibile, viene usato un relay pubblico.",
+			"fellBackToastTitle": "Uso del relay pubblico",
+			"fellBackToastSend": "Il tuo relay personalizzato era irraggiungibile — questo trasferimento usa un relay pubblico.",
+			"fellBackToastReceive": "Il tuo relay personalizzato era irraggiungibile — questo download usa un relay pubblico.",
+			"dialogDescription": "Mostra quale server relay l’app sta usando attualmente per le connessioni.",
+			"connectedRelay": "Relay connesso",
+			"checking": "Verifica connessione…",
+			"configuredMode": "Configurato nelle impostazioni",
+			"configuredDefault": "Automatico (relay pubblici)",
+			"configuredCustom": "Personalizzato (self-hosted)",
+			"configuredDisabled": "Disabilitato",
+			"openSettings": "Impostazioni di rete",
+			"infoToggle": "Informazioni sui relay",
+			"purpose": "I relay aiutano solo i tuoi dispositivi a trovarsi e a connettersi.",
+			"directNote": "Una volta stabilita una connessione diretta, i file vengono trasferiti direttamente tra i dispositivi e il relay non viene più usato.",
+			"lanNote": "Sulla stessa rete locale i relay vengono completamente saltati.",
+			"encryptedNote": "I trasferimenti sono sempre crittografati end-to-end, quindi i relay non vedono mai i tuoi file.",
+			"disabledNote": "I relay sono disattivati. Solo connessioni dirette, quindi i trasferimenti possono fallire con firewall o NAT restrittivi."
+		}
+	}
+}

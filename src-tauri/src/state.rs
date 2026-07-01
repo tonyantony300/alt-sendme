@@ -1,27 +1,27 @@
+use engine::SendResult;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use sendme::SendResult;
 
 /// Application state for managing sharing sessions
 #[derive(Default)]
 pub struct AppState {
     pub current_share: Option<ShareHandle>,
-    pub is_transporting: bool, // True when actual data transfer is happening
+    pub is_share_starting: bool, // True while start_sharing is preparing metadata/session
+    pub is_transporting: bool,   // True when actual data transfer is happening
+    pub launch_intent: Option<String>, // Path to file/folder passed via CLI (e.g. context menu)
 }
 
 /// Handle for an active sharing session
 /// CRITICAL: This struct holds the router and temp_tag which keeps the server alive
 pub struct ShareHandle {
     pub ticket: String,
-    pub _path: PathBuf, // Keep path for potential future use
+    pub _path: PathBuf,          // Keep path for potential future use
     pub send_result: SendResult, // This keeps router and temp_tag alive!
 }
 
 impl Drop for ShareHandle {
     fn drop(&mut self) {
-        tracing::info!("🧹 Cleaning up share session for ticket: {}", &self.ticket[..50.min(self.ticket.len())]);
-        
         // Clean up the temporary blobs directory when share is stopped
         // Use blocking cleanup since Drop is synchronous
         // Spawn a thread to avoid blocking the async runtime
@@ -29,11 +29,13 @@ impl Drop for ShareHandle {
         std::thread::spawn(move || {
             // Use blocking std::fs instead of tokio::fs for cleanup in Drop
             match std::fs::remove_dir_all(&blobs_dir) {
-                Ok(_) => {
-                    tracing::info!("✅ Successfully cleaned up blobs directory: {}", blobs_dir.display());
-                }
+                Ok(_) => {}
                 Err(e) => {
-                    tracing::warn!("⚠️  Failed to clean up blobs directory {}: {}", blobs_dir.display(), e);
+                    tracing::warn!(
+                        "Failed to clean up blobs directory {}: {}",
+                        blobs_dir.display(),
+                        e
+                    );
                 }
             }
         });
@@ -48,32 +50,32 @@ impl ShareHandle {
             send_result,
         }
     }
-    
+
     /// Explicitly stop the sharing session and clean up resources
     /// The actual cleanup will happen in Drop when the struct is destroyed
     pub async fn stop(&mut self) -> Result<(), String> {
         use std::time::Duration;
-        
-        tracing::info!("🛑 Stopping share session for ticket: {}", &self.ticket[..50.min(self.ticket.len())]);
-        
+
         // Gracefully shutdown the router with timeout (same as CLI implementation)
-        tracing::info!("🔄 Shutting down router...");
-        match tokio::time::timeout(Duration::from_secs(2), self.send_result.router.shutdown()).await {
-            Ok(Ok(())) => {
-                tracing::info!("✅ Router shutdown completed successfully");
-            }
+        match tokio::time::timeout(Duration::from_secs(2), self.send_result.router.shutdown()).await
+        {
+            Ok(Ok(())) => {}
             Ok(Err(e)) => {
-                tracing::warn!("⚠️  Router shutdown error: {}", e);
+                tracing::warn!("Router shutdown error: {}", e);
             }
             Err(_) => {
-                tracing::warn!("⚠️  Router shutdown timeout after 2 seconds");
+                tracing::warn!("Router shutdown timeout after 2 seconds");
             }
         }
-        
+
+        // Explicitly close the endpoint to avoid "Endpoint dropped without calling close" error
+        // This ensures graceful cleanup of the iroh endpoint resources
+        let endpoint = self.send_result.router.endpoint();
+        endpoint.close().await;
+
         // temp_tag, _store, and _progress_handle will be dropped automatically when the method ends
         // Cleanup of blobs directory will happen in Drop trait
-        tracing::info!("✅ All resources will be dropped when ShareHandle is destroyed");
-        
+
         Ok(())
     }
 }

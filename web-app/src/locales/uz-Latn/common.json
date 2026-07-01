@@ -1,0 +1,273 @@
+{
+	"appTitle": "AltSendme",
+	"send": "Yuborish",
+	"comingSoon": "Tez orada",
+	"receive": "Qabul qilish",
+	"ok": "OK",
+	"undo": "Ortga qaytarish",
+	"cancel": "Bekor qilish",
+	"confirm": "Tasdiqlash",
+	"loading": "Yuklanmoqda...",
+	"browse": "Ko'rib chiqish",
+	"donate": "Qo'llab-quvvatlash",
+	"privacyPolicy": "Maxfiylik siyosati",
+	"license": "Litsenziya",
+	"notFound": {
+		"title": "Sahifa topilmadi",
+		"subtitle": "Siz qidirayotgan sahifa mavjud emas yoki ko'chirilgan.",
+		"goBack": "Orqaga qaytish",
+		"goHome": "Bosh sahifaga o'tish"
+	},
+	"sender": {
+		"title": "Yuborish",
+		"subtitle": "Fayl yoki papkalarni shifrlangan peer-to-peer ulanishlari orqali ulashing.",
+		"stoppingTransmission": "Uzatish to'xtatilmoqda...",
+		"startSharing": "Ulashishni boshlash",
+		"startingShare": "Ulashish boshlanmoqda...",
+		"stopSharing": "Ulashishni to'xtatish",
+		"shareThisTicket": "Ushbu ticketni ulashing:",
+		"sendThisTicket": "Ushbu ticketni faylingizni qabul qiladigan kishiga yuboring",
+		"keepAppOpen": "Boshqalar fayllaringizni yuklab olayotganda ilovani ochiq qoldiring",
+		"fileLabel": "Fayl:",
+		"listeningForConnection": "Ulanish kutilmoqda",
+		"sharingInProgress": "Ulashish davom etmoqda",
+		"transferCompleted": "Uzatish yakunlandi",
+		"filesBeingTransmitted": "Fayllar uzatilmoqda",
+		"preparingForTransport": "Uzatishga tayyorlanmoqda...",
+		"pleaseWaitProcessing": "Fayllaringiz ulashish uchun qayta ishlanayotganda biroz kuting...",
+		"dropFilesHere": "Fayl yoki papkalarni bu yerga tashlang",
+		"dragAndDrop": "Sudrab tashlash",
+		"orBrowse": "yoki fayl/papka tanlash uchun ko'rib chiqing",
+		"fileSelected": "Fayl tanlandi",
+		"folderSelected": "Papka tanlandi",
+		"itemSelected": "Element tanlandi",
+		"multipleFilesSelected": "{{name}} ... va yana {{count}}",
+		"browseFile": "Faylni tanlash",
+		"browseFolder": "Papkani tanlash",
+		"addMoreFiles": "Yana fayllar qo'shish",
+		"addMoreFolders": "Yana papkalar qo'shish",
+		"multipleItemsSelected": "{{firstName}} va yana {{count}}",
+		"removeFromSelection": "Tanlovdan olib tashlash",
+		"copyToClipboard": "Buferga nusxalash",
+		"description": "Tavsif (ixtiyoriy)",
+		"broadcastMode": {
+			"index": "Ommaviy ulashish",
+			"on": {
+				"label": "Siz ommaviy ulashyapsiz",
+				"description": "Chiptaga ega bir nechta odam broadcast rejimida fayllarni bir vaqtning o‘zida yuklab olishi mumkin."
+			},
+			"off": {
+				"label": "Shaxsiy ulashish",
+				"description": "Faqat ticketni ulashgan odam faylni yuklab olishi mumkin."
+			}
+		}
+	},
+	"receiver": {
+		"title": "Fayllarni qabul qilish",
+		"subtitle": "Internet orqali shifrlangan peer-to-peer ulanishlar yordamida yuboruvchidan fayllarni yuklab oling.",
+		"saveToFolder": "Papkaga saqlash:",
+		"noFolderSelected": "Papka tanlanmagan",
+		"conflictsMore": "... va yana {{count}}",
+		"pasteTicket": "Ticketni bu yerga qo'ying:",
+		"ticketPlaceholder": "sendme qabul qilish ticketi...",
+		"howToReceive": "Fayllarni qanday qabul qilish",
+		"instruction1": "Yuboruvchi onlayn bo'lishi va fayl ulashayotgan bo'lishi kerak",
+		"instruction2": "Yuboruvchidan ticket oling",
+		"instruction3": "Ticketni matn maydoniga qo'ying",
+		"instruction4": "Qabul qilishni boshlash uchun Yuklab olishni bosing",
+		"instruction5": "Fayllar tanlagan papkangizga saqlanadi",
+		"keepAppOpen": "Fayllar yuklab olinayotganda ilovani ochiq qoldiring",
+		"connectingToSender": "Yuboruvchiga ulanilmoqda",
+		"previewMultipleItems": "{{name}} ... va yana {{count}}",
+		"multipleFilesFound": "Bir nechta fayl topildi",
+		"expandPreviewList": "Fayllar ro'yxatini ko'rsatish",
+		"collapsePreviewList": "Fayllar ro'yxatini yashirish",
+		"downloadingInProgress": "Yuklab olish davom etmoqda",
+		"downloadCompleted": "Yuklab olish yakunlandi",
+		"downloadCompletedWithConflicts": "Yuklab olish tugadi, nom ziddiyatlari hal qilindi",
+		"downloadedFile": "Yuklab olingan fayl",
+		"stopReceiving": "Qabul qilishni to'xtatish",
+		"download": "Yuklab olish"
+	},
+	"transfer": {
+		"progress": "Uzatish jarayoni",
+		"speed": "Tezlik",
+		"eta": "ETA",
+		"timeRemaining": "Qolgan vaqt",
+		"calculating": "Hisoblanmoqda...",
+		"complete": "Uzatish yakunlandi!",
+		"stopped": "Uzatish to'xtatildi",
+		"newTransfer": "Yangi uzatish",
+		"done": "Tayyor",
+		"open": "Ochish",
+		"wasStopped": "Uzatish yakunlanishidan oldin to'xtatildi.",
+		"successMessage": "Uzatish muvaffaqiyatli yakunlandi.",
+		"file": "Fayl",
+		"files": "Fayllar",
+		"folder": "Papka",
+		"fileName": "Fayl nomi",
+		"fileSize": "Fayl hajmi",
+		"folderSize": "Papka hajmi",
+		"downloadPath": "Yuklab olish manzili",
+		"duration": "Davomiyligi",
+		"avgSpeed": "O'rtacha tezlik",
+		"multipleFiles": "{{count}} ta fayl",
+		"donatePrompt": "Buni yaxshilang -"
+	},
+	"errors": {
+		"sharingFailed": "Ulashish muvaffaqiyatsiz",
+		"sharingFailedDesc": "Ulashishni boshlab bo'lmadi",
+		"stopSharingFailed": "Ulashishni to'xtatib bo'lmadi",
+		"stopSharingFailedDesc": "Ulashishni to'xtatishda xatolik yuz berdi",
+		"copyFailed": "Nusxalash muvaffaqiyatsiz",
+		"copyFailedDesc": "Ticketni nusxalab bo'lmadi",
+		"folderDialogFailed": "Papka oynasi xatosi",
+		"folderDialogFailedDesc": "Papka tanlash oynasini ochib bo'lmadi",
+		"fileDialogFailed": "Fayl oynasi xatosi",
+		"fileDialogFailedDesc": "Fayl tanlash oynasini ochib bo'lmadi",
+		"receiveFailed": "Qabul qilish muvaffaqiyatsiz",
+		"receiveFailedDesc": "Faylni qabul qilib bo'lmadi",
+		"openFolderFailed": "Papkani ochib bo'lmadi",
+		"openFolderFailedDesc": "Yuklab olish papkasini ochib bo'lmadi"
+	},
+	"settings": {
+		"title": "Sozlamalar",
+		"navItems": {
+			"appearance": "Ko'rinish va til",
+			"general": "Umumiy",
+			"relay": "Relay",
+			"network": "Tarmoq",
+			"notification": "Bildirishnomalar"
+		},
+		"theme": {
+			"description": "Afzal ko‘rgan mavzuingizni tanlang",
+			"title": "Ko'rinish",
+			"light": "Yorug'",
+			"dark": "Qorong'i",
+			"auto": "Tizim"
+		},
+		"language": {
+			"title": "Til",
+			"description": "Afzal ko'rgan tilingizni tanlang",
+			"noResults": "Tillar topilmadi"
+		},
+		"general": {
+			"title": "Umumiy",
+			"autoCheckUpdates": {
+				"label": "Yangilanishlarni avtomatik tekshirish",
+				"description": "Ilova ishga tushganda yangilanishlar avtomatik tekshiriladi"
+			},
+			"systembar": {
+				"title": "Tizim paneli",
+				"minimizeToTray": {
+					"label": "Tizim paneliga yig'ish",
+					"description": "Yopish oynasida ilovani yakunlash o'rniga yig'ish"
+				},
+				"showProgressOnIcon": {
+					"label": "Ilova ikonkasida uzatish jarayonini ko'rsatish",
+					"description": "Uzatish jarayonini ko'rsatish uchun ikonka ustiga progress panel qo'llanadi"
+				},
+				"runOnSystemStartup": {
+					"label": "Tizim bilan birga ishga tushirish",
+					"description": "Tizim ishga tushganda ilovani avtomatik ishga tushirish"
+				},
+				"contextMenu": {
+					"label": "Explorer kontekst menyusi",
+					"description": "Windows Explorer o‘ng tugma menyusiga «AltSendme bilan yuborish» qo‘shish"
+				}
+			},
+			"broadcast": {
+				"title": "Efir",
+				"showToggle": {
+					"label": "Ulashishda efir tugmasini ko'rsatish",
+					"description": "Ulashish ekranida efir tugmasini ko'rsatadi, shunda bir nechta qabul qiluvchi bir vaqtning o'zida bir xil fayllarni yuklab olishi mumkin."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay serverlari",
+				"description": "AltSendme NAT traversal va shifrlangan zaxira ulanishlar uchun qaysi iroh relay serverlaridan foydalanishini boshqaring.",
+				"modeDefault": "Avtomatik (ommaviy relay)",
+				"modeDefaultDesc": "Standart ommaviy iroh relay'laridan foydalanadi. Ko'pchilik foydalanuvchilar uchun eng yaxshi.",
+				"modeCustom": "Maxsus (self-hosted)",
+				"modeCustomDesc": "O'z relay server(lar)ingizdan foydalaning. Loyiha repo'sidagi deploy/relay'ga qarang.",
+				"modeDisabled": "O'chirilgan",
+				"modeDisabledDesc": "Relay ishlatmang. Faqat to'g'ridan-to'g'ri ulanishlar; qattiq NAT'da muvaffaqiyatsiz bo'lishi mumkin.",
+				"urlsLabel": "Relay URL'lari",
+				"urlsDescription": "Mintaqaviy failover uchun bitta yoki bir nechta HTTPS relay URL qo'shing.",
+				"addUrl": "Relay URL qo'shish",
+				"removeUrl": "Relay URL'ni olib tashlash",
+				"urlInvalidHint": "Yaroqli HTTPS URL kiriting",
+				"urlChecking": "Ulanish tekshirilmoqda",
+				"urlVerified": "Tasdiqlangan",
+				"urlVerifyFailedHint": "Bu relay'ga ulanib bo'lmadi",
+				"verifySummary": "{{total}} relay'dan {{ok}} tasi tasdiqlandi.",
+				"verifyAuthHint": "Agar relay'ingiz auth token talab qilsa, u serverdagi access.shared_token bilan mos kelishiga ishonch hosil qiling.",
+				"authTokenLabel": "Auth token (ixtiyoriy)",
+				"authTokenPlaceholder": "Relay autentifikatsiya talab qilsa, umumiy maxfiy kalit",
+				"authTokenDescription": "Relay konfiguratsiyasida access.shared_token ishlatilganda talab qilinadi.",
+				"showAuthToken": "Ko'rsatish",
+				"hideAuthToken": "Yashirish",
+				"privacyNote": "To'liq maxfiy sozlash uchun yuboruvchi va qabul qiluvchi qurilmalarda bir xil relay URL'larini sozlang.",
+				"testConnection": "Ulanishni sinash",
+				"verifySuccess": "Relay ulanishi OK",
+				"verifySuccessDesc": "{{url}}\nmuvaffaqiyatli tasdiqlandi ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Sozlangan relay serveringizda muvaffaqiyatli ro'yxatdan o'tdi.",
+				"verifyFailed": "Relay ulanishi muvaffaqiyatsiz",
+				"urlRequired": "Kamida bitta relay URL qo'shing.",
+				"invalidUrl": "Noto'g'ri relay URL: {{url}}",
+				"disabledHint": "Ulanishni sinash uchun avtomatik yoki maxsus relay'larni yoqing.",
+				"confirmDisableTitle": "Relay'lar o'chirilsinmi?",
+				"confirmDisableDescription": "Siz relay'larni o'chirishni tanladingiz. Agar siz fayllarni mahalliy tarmog'ingizdan tashqaridagi kimdir bilan ulashmoqchi bo'lsangiz, fayl uzatishlar muvaffaqiyatsiz tugashi mumkin. Relay'lar qurilmalarga murakkab tarmoq sharoitlarida bir-birini topish va ulanishda yordam beradi, va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",
+				"confirmCustomTitle": "Maxsus relay'lar ishlatilsinmi?",
+				"confirmCustomDescription": "Siz o'zingiz joylashtirgan maxsus relay'lardan foydalanishni tanladingiz. Agar maxsus relay'laringiz mavjud bo'lmasa, uzatishlar avtomatik ravishda ommaviy relay'larga qaytadi va sizga xabar beriladi. Relay'lar faqat qurilmalaringizga murakkab tarmoq sharoitlarida ulanishda yordam beradi, va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",
+				"confirmContinue": "Davom etish"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "Yangi yangilanish!",
+		"newVersionAvailable": "Yangi {{version}} versiyasi mavjud.",
+		"newVersionAvailableInline": "Yangi versiya mavjud - {{version}}",
+		"updateNow": "Hozir yangilash",
+		"later": "Keyinroq",
+		"checkForUpdates": "Yangilanishlarni tekshirish",
+		"noUpdatesTitle": "Yangilanishlar topilmadi",
+		"noUpdatesDescription": "Siz allaqachon eng so'nggi versiyadan foydalanmoqdasiz",
+		"checkFailed": "Tekshirish muvaffaqiyatsiz",
+		"checkFailedDesc": "Yangilanishlarni tekshirib bo'lmadi",
+		"installFailed": "O'rnatish muvaffaqiyatsiz",
+		"installFailedDesc": "Yangilanishni o'rnatib bo'lmadi"
+	},
+	"android": {
+		"preparingFile": "Fayl tayyorlanmoqda..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay ulanish holati",
+			"publicHeading": "Ommaviy relay",
+			"customHeading": "Maxsus relay",
+			"disabledHeading": "Relay o'chirilgan",
+			"unavailableHeading": "Relay mavjud emas",
+			"fellBackToPublic": "Maxsus relay'ga ulanib bo'lmadi, buning o'rniga ommaviy relay ishlatilmoqda.",
+			"fellBackToastTitle": "Ommaviy relay ishlatilmoqda",
+			"fellBackToastSend": "Maxsus relay'ingizga ulanib bo'lmadi — bu uzatish ommaviy relay ishlatmoqda.",
+			"fellBackToastReceive": "Maxsus relay'ingizga ulanib bo'lmadi — bu yuklab olish ommaviy relay ishlatmoqda.",
+			"dialogDescription": "Ilova hozir ulanishlar uchun qaysi relay serverdan foydalanayotganini ko'rsatadi.",
+			"connectedRelay": "Ulangan relay",
+			"checking": "Ulanish tekshirilmoqda…",
+			"configuredMode": "Sozlamalarda sozlangan",
+			"configuredDefault": "Avtomatik (ommaviy relay)",
+			"configuredCustom": "Maxsus (self-hosted)",
+			"configuredDisabled": "O'chirilgan",
+			"openSettings": "Tarmoq sozlamalari",
+			"infoToggle": "Relay haqida",
+			"purpose": "Relay'lar faqat qurilmalaringizga bir-birini topish va ulanishda yordam beradi.",
+			"directNote": "To'g'ridan-to'g'ri ulanish o'rnatilgach, fayllar qurilmalar o'rtasida to'g'ridan-to'g'ri uzatiladi va relay endi ishlatilmaydi.",
+			"lanNote": "Bitta mahalliy tarmoqda relay'lar butunlay o'tkazib yuboriladi.",
+			"encryptedNote": "Uzatishlar har doim uchma-uch shifrlangan, shuning uchun relay'lar fayllaringizni hech qachon ko'rmaydi.",
+			"disabledNote": "Relay'lar o'chirilgan. Faqat to'g'ridan-to'g'ri ulanishlar, shuning uchun qattiq fayervol yoki NAT orqali uzatishlar muvaffaqiyatsiz bo'lishi mumkin."
+		}
+	}
+}

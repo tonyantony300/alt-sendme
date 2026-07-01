@@ -1,0 +1,272 @@
+{
+	"appTitle": "AltSendme",
+	"send": "Send",
+	"comingSoon": "Coming Soon",
+	"receive": "Receive",
+	"ok": "OK",
+	"undo": "Undo",
+	"cancel": "Cancel",
+	"confirm": "Confirm",
+	"loading": "Loading...",
+	"browse": "Browse",
+	"donate": "Donate",
+	"privacyPolicy": "Privacy Policy",
+	"license": "License",
+	"notFound": {
+		"title": "Page Not Found",
+		"subtitle": "The page you're looking for doesn't exist or has been moved.",
+		"goBack": "Go Back",
+		"goHome": "Go Home"
+	},
+	"sender": {
+		"title": "Send",
+		"subtitle": "Share files or folders via encrypted peer-to-peer connections.",
+		"stoppingTransmission": "Stopping transmission...",
+		"startSharing": "Start Sharing",
+		"startingShare": "Starting Share...",
+		"stopSharing": "Stop Sharing",
+		"shareThisTicket": "Share this ticket:",
+		"sendThisTicket": "Send this ticket to the person who wants to receive your file",
+		"keepAppOpen": "Keep this app open while others download your files",
+		"fileLabel": "File:",
+		"listeningForConnection": "Listening for connection",
+		"sharingInProgress": "Sharing in progress",
+		"transferCompleted": "Transfer completed",
+		"filesBeingTransmitted": "Files are being transmitted",
+		"preparingForTransport": "Preparing for transport...",
+		"pleaseWaitProcessing": "Please wait while we process your files for sharing...",
+		"dropFilesHere": "Drop files or folders here",
+		"dragAndDrop": "Drag & drop",
+		"orBrowse": "or browse to select files or folders",
+		"fileSelected": "File selected",
+		"folderSelected": "Folder selected",
+		"itemSelected": "Item selected",
+		"multipleFilesSelected": "{{name}} ... and {{count}} more",
+		"browseFile": "Browse File",
+		"browseFolder": "Browse Folder",
+		"addMoreFiles": "Add more files",
+		"addMoreFolders": "Add more folders",
+		"multipleItemsSelected": "{{firstName}} and {{count}} more",
+		"removeFromSelection": "Remove from selection",
+		"copyToClipboard": "Copy to clipboard",
+		"description": "Description (optional)",
+		"broadcastMode": {
+			"index": "Broadcast",
+			"on": {
+				"label": "You are broadcasting",
+				"description": "Multiple people with the ticket can download files concurrently in broadcast mode."
+			},
+			"off": {
+				"label": "Private sharing",
+				"description": "Only the person you share the ticket with can download the file."
+			}
+		}
+	},
+	"receiver": {
+		"title": "Receive Files",
+		"subtitle": "Download files from sender using encrypted peer-to-peer connections over the internet.",
+		"saveToFolder": "Save to folder:",
+		"noFolderSelected": "No folder selected",
+		"conflictsMore": "... and {{count}} more",
+		"pasteTicket": "Paste the ticket here:",
+		"ticketPlaceholder": "sendme receive ticket...",
+		"howToReceive": "How to receive files",
+		"instruction1": "Sender must be online and sharing a file",
+		"instruction2": "Get a ticket from the sender",
+		"instruction3": "Paste the ticket in the text area",
+		"instruction4": "Click download to start receiving",
+		"instruction5": "Files will be saved to your selected folder",
+		"keepAppOpen": "Keep this app open while downloading files",
+		"connectingToSender": "Connecting to sender",
+		"previewMultipleItems": "{{name}} ... and {{count}} more",
+		"multipleFilesFound": "Multiple files found",
+		"expandPreviewList": "Show file list",
+		"collapsePreviewList": "Hide file list",
+		"downloadingInProgress": "Downloading in progress",
+		"downloadCompleted": "Download completed",
+		"downloadCompletedWithConflicts": "Download completed with name conflicts resolved",
+		"downloadedFile": "Downloaded File",
+		"stopReceiving": "Stop receiving",
+		"download": "Download"
+	},
+	"transfer": {
+		"progress": "Transfer Progress",
+		"speed": "Speed",
+		"eta": "ETA",
+		"timeRemaining": "Time Remaining",
+		"calculating": "Calculating...",
+		"complete": "Transfer Complete!",
+		"stopped": "Transmission Stopped",
+		"newTransfer": "New Transfer",
+		"done": "Done",
+		"open": "Open",
+		"wasStopped": "The transfer was stopped before completion.",
+		"successMessage": "Your transfer has been completed successfully.",
+		"file": "File",
+		"files": "Files",
+		"folder": "Folder",
+		"fileName": "File name",
+		"fileSize": "File size",
+		"folderSize": "Folder size",
+		"downloadPath": "Download path",
+		"duration": "Duration",
+		"avgSpeed": "Avg Speed",
+		"multipleFiles": "{{count}} Files",
+		"donatePrompt": "Make this better -"
+	},
+	"errors": {
+		"sharingFailed": "Sharing Failed",
+		"sharingFailedDesc": "Failed to start sharing",
+		"stopSharingFailed": "Stop Sharing Failed",
+		"stopSharingFailedDesc": "Failed to stop sharing",
+		"copyFailed": "Copy Failed",
+		"copyFailedDesc": "Failed to copy ticket",
+		"folderDialogFailed": "Folder Dialog Failed",
+		"folderDialogFailedDesc": "Failed to open folder dialog",
+		"fileDialogFailed": "File Dialog Failed",
+		"fileDialogFailedDesc": "Failed to open file dialog",
+		"receiveFailed": "Receive Failed",
+		"receiveFailedDesc": "Failed to receive file",
+		"openFolderFailed": "Open Folder Failed",
+		"openFolderFailedDesc": "Failed to open download folder"
+	},
+	"settings": {
+		"title": "Settings",
+		"navItems": {
+			"appearance": "Theme & Language",
+			"general": "General",
+			"relay": "Relay",
+			"network": "Network"
+		},
+		"theme": {
+			"description": "Select your preferred theme",
+			"title": "Appearance",
+			"light": "Light",
+			"dark": "Dark",
+			"auto": "System"
+		},
+		"language": {
+			"title": "Language",
+			"description": "Select your preferred language",
+			"noResults": "No languages found"
+		},
+		"general": {
+			"title": "General",
+			"autoCheckUpdates": {
+				"label": "Automatically check for updates",
+				"description": "The app will automatically check for updates on startup"
+			},
+			"systembar": {
+				"title": "System Tray",
+				"minimizeToTray": {
+					"label": "Minimize to system tray",
+					"description": "When close dialog, minimize the app instead of terminate"
+				},
+				"showProgressOnIcon": {
+					"label": "Show transfer progress on app icon",
+					"description": "Using a progress bar overlay on the app icon to indicate transfer progress"
+				},
+				"runOnSystemStartup": {
+					"label": "Run on system startup",
+					"description": "Automatically launch the app when the system starts"
+				},
+				"contextMenu": {
+					"label": "Explorer context menu",
+					"description": "Add 'Send with AltSendme' to the Windows Explorer right-click menu"
+				}
+			},
+			"broadcast": {
+				"title": "Broadcast",
+				"showToggle": {
+					"label": "Show broadcast toggle while sharing",
+					"description": "Display a broadcast switch on the sharing screen so multiple receivers can download the same files at once."
+				}
+			}
+		},
+		"network": {
+			"relay": {
+				"title": "Relay servers",
+				"description": "Control which iroh relay servers AltSendme uses for NAT traversal and encrypted fallback connections.",
+				"modeDefault": "Automatic (public relays)",
+				"modeDefaultDesc": "Use the default public iroh relays. Best for most users.",
+				"modeCustom": "Custom self-hosted",
+				"modeCustomDesc": "Use your own relay server(s). See deploy/relay in the project repo.",
+				"modeDisabled": "Disabled",
+				"modeDisabledDesc": "Do not use relays. Direct connections only; may fail across strict NATs.",
+				"urlsLabel": "Relay URLs",
+				"urlsDescription": "Add one or more HTTPS relay URLs for regional failover.",
+				"addUrl": "Add relay URL",
+				"removeUrl": "Remove relay URL",
+				"urlInvalidHint": "Enter a valid HTTPS URL",
+				"urlChecking": "Checking connection",
+				"urlVerified": "Verified",
+				"urlVerifyFailedHint": "Could not connect to this relay",
+				"verifySummary": "{{ok}} of {{total}} relays verified.",
+				"verifyAuthHint": "If your relay requires an auth token, make sure it matches access.shared_token on the server.",
+				"authTokenLabel": "Auth token (optional)",
+				"authTokenPlaceholder": "Shared secret if your relay requires authentication",
+				"authTokenDescription": "Required when your relay uses access.shared_token in its config.",
+				"showAuthToken": "Show",
+				"hideAuthToken": "Hide",
+				"privacyNote": "For a fully private setup, configure the same relay URLs on both sender and receiver devices.",
+				"testConnection": "Test connection",
+				"verifySuccess": "Relay connection OK",
+				"verifySuccessDesc": "{{url}}\nverified successfully ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Successfully registered with your configured relay server.",
+				"verifyFailed": "Relay connection failed",
+				"urlRequired": "Add at least one relay URL.",
+				"invalidUrl": "Invalid relay URL: {{url}}",
+				"disabledHint": "Enable automatic or custom relays to test connectivity.",
+				"confirmDisableTitle": "Disable relays?",
+				"confirmDisableDescription": "You've chosen to disable relays. File transfers may fail if you try to share files with someone outside your local network. Relays help devices find & connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmCustomTitle": "Use custom relays?",
+				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. If your custom relays are unreachable, transfers will automatically fall back to public relays and you'll be notified. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmContinue": "Continue"
+			}
+		}
+	},
+	"updater": {
+		"newUpdateTitle": "New update!",
+		"newVersionAvailable": "New version {{version}} is available.",
+		"newVersionAvailableInline": "A new version is available - {{version}}",
+		"updateNow": "Update now",
+		"later": "Later",
+		"checkForUpdates": "Check for updates",
+		"noUpdatesTitle": "No updates available",
+		"noUpdatesDescription": "You are already using the latest version",
+		"checkFailed": "Check Failed",
+		"checkFailedDesc": "Failed to check for updates",
+		"installFailed": "Installation Failed",
+		"installFailedDesc": "Failed to install update"
+	},
+	"android": {
+		"preparingFile": "Preparing file..."
+	},
+	"footer": {
+		"relay": {
+			"ariaLabel": "Relay connection status",
+			"publicHeading": "Public relay",
+			"customHeading": "Custom relay",
+			"disabledHeading": "Relays disabled",
+			"unavailableHeading": "Relay unavailable",
+			"fellBackToPublic": "Custom relay unreachable, using public relay instead.",
+			"fellBackToastTitle": "Using public relay",
+			"fellBackToastSend": "Your custom relay was unreachable — this transfer is using a public relay instead.",
+			"fellBackToastReceive": "Your custom relay was unreachable — this download is using a public relay instead.",
+			"dialogDescription": "Shows which relay server this app is currently using for connections.",
+			"connectedRelay": "Connected relay",
+			"checking": "Checking connection…",
+			"configuredMode": "Configured in settings",
+			"configuredDefault": "Automatic (public relays)",
+			"configuredCustom": "Custom self-hosted",
+			"configuredDisabled": "Disabled",
+			"openSettings": "Network settings",
+			"infoToggle": "About relays",
+			"purpose": "Relays only help your devices find each other and connect.",
+			"directNote": "Once a direct connection is established, files transfer directly between devices, and the relay is no longer used.",
+			"lanNote": "On the same local network, relays are skipped entirely.",
+			"encryptedNote": "Transfers are always end-to-end encrypted, so relays never see your files.",
+			"disabledNote": "Relays are off. Direct connections only, so transfers may fail across strict firewalls or NATs."
+		}
+	}
+}
