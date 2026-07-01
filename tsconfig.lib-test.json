@@ -1,0 +1,15 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": false,
+		"noEmit": false,
+		"outDir": "./tmp/lib-test-dist",
+		"rootDir": ".",
+		"types": ["node"]
+	},
+	"include": [
+		"web-app/src/lib/**/*.test.ts",
+		"web-app/src/lib/**/*.test.tsx",
+		"web-app/src/components/**/*.type-test.tsx"
+	]
+}

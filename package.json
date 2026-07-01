@@ -13,6 +13,7 @@
 		"release": "node ./scripts/release.js",
 		"sync-version": "node ./scripts/sync-version.js",
 		"validate-version": "node ./scripts/validate-version.js",
+		"test:lib": "node ./scripts/run-lib-tests.js",
 		"lint": "biome lint && tsc --noEmit --skipLibCheck",
 		"lint:fix": "biome lint --fix",
 		"format": "biome format --write && cargo fmt --manifest-path engine/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml",
@@ -22,12 +23,13 @@
 	"engines": {
 		"node": ">=20.19"
 	},
+	"packageManager": "npm@11.12.1",
 	"dependencies": {
 		"@base-ui/react": "^1.1.0",
 		"@phosphor-icons/react": "^2.1.10",
 		"@radix-ui/react-alert-dialog": "^1.1.15",
 		"@tanstack/react-query": "^5.90.21",
-		"@tauri-apps/api": "^2.10.0",
+		"@tauri-apps/api": "2.10.1",
 		"@tauri-apps/plugin-dialog": "^2.7.0",
 		"@tauri-apps/plugin-notification": "^2.3.3",
 		"@tauri-apps/plugin-opener": "^2.5.2",
@@ -51,7 +53,7 @@
 		"zustand": "^5.0.10"
 	},
 	"devDependencies": {
-		"@tauri-apps/cli": "^2.10.0",
+		"@tauri-apps/cli": "2.10.1",
 		"@biomejs/biome": "^2.3.11",
 		"@tailwindcss/postcss": "^4.1.18",
 		"@types/node": "^20.0.0",

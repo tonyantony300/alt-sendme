@@ -1,9 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { AlertCircle, Check, Loader2, Minus, Plus } from 'lucide-react'
 import ReactCountryFlag from 'react-country-flag'
 import { useTranslation } from '../../../i18n'
 import { useAppSettingStore } from '../../../store/app-setting'
+import { relayAuthTokenForIpc } from '../../../lib/relay-auth-token'
+import {
+	RELAY_FALLBACK_OPTIONS,
+	relayFallbackFromRadioValue,
+} from '../../../lib/relay-fallback-options'
+import {
+	MAX_RELAY_URL_LENGTH,
+	RELAY_URL_INVALID_MESSAGE_KEY,
+	isValidRelayUrl,
+} from '../../../lib/relay-url-validation'
 import { getRelayRegion } from '../../../lib/relay'
 import type { VerifyRelaysResponse } from '../../../lib/relay'
 import { cn } from '../../../lib/utils'
@@ -20,11 +30,9 @@ import { Label } from '../../ui/label'
 import { RadioGroup, RadioGroupItem } from '../../ui/radio-group'
 import { toastManager } from '../../ui/toast'
 
-const MAX_RELAY_URL_LENGTH = 2048
-
 function isDisallowedRelayUrlChar(char: string): boolean {
 	const code = char.charCodeAt(0)
-	// C0 controls (0x00–0x1f), DEL (0x7f), and C1 controls (0x80–0x9f).
+	// C0 controls (0x00-0x1f), DEL (0x7f), and C1 controls (0x80-0x9f).
 	if (code <= 0x1f || (code >= 0x7f && code <= 0x9f)) {
 		return true
 	}
@@ -43,42 +51,16 @@ function sanitizeRelayUrlInput(value: string): string {
 	return sanitized.join('')
 }
 
-function isLoopbackHost(hostname: string): boolean {
-	return (
-		hostname === 'localhost' ||
-		hostname === '127.0.0.1' ||
-		hostname === '::1' ||
-		hostname === '[::1]'
-	)
-}
-
-function isValidRelayUrl(url: string): boolean {
-	if (url.length === 0 || url.length > MAX_RELAY_URL_LENGTH) return false
-	let parsed: URL
-	try {
-		parsed = new URL(url)
-	} catch {
-		return false
-	}
-	// Require a real host and reject embedded credentials (user:pass@host).
-	if (!parsed.hostname) return false
-	if (parsed.username || parsed.password) return false
-	// Enforce HTTPS so auth tokens are never sent in cleartext; allow plain
-	// HTTP only against loopback hosts for local self-host testing.
-	if (parsed.protocol === 'https:') return true
-	if (parsed.protocol === 'http:' && isLoopbackHost(parsed.hostname))
-		return true
-	return false
-}
-
 export function RelaySettings() {
 	const { t } = useTranslation()
 	const relayMode = useAppSettingStore((s) => s.relayMode)
 	const relayUrls = useAppSettingStore((s) => s.relayUrls)
 	const relayAuthToken = useAppSettingStore((s) => s.relayAuthToken)
+	const relayFallback = useAppSettingStore((s) => s.relayFallback)
 	const setRelayMode = useAppSettingStore((s) => s.setRelayMode)
 	const setRelayUrls = useAppSettingStore((s) => s.setRelayUrls)
 	const setRelayAuthToken = useAppSettingStore((s) => s.setRelayAuthToken)
+	const setRelayFallback = useAppSettingStore((s) => s.setRelayFallback)
 
 	const [isTesting, setIsTesting] = useState(false)
 	const [verifyResults, setVerifyResults] = useState<
@@ -87,7 +69,9 @@ export function RelaySettings() {
 	const [showAuthToken, setShowAuthToken] = useState(
 		() => relayAuthToken.trim().length > 0
 	)
-	const urlRowIdsRef = useRef<string[]>([])
+	const urlRowIdsRef = useRef<string[]>(
+		relayUrls.map(() => crypto.randomUUID())
+	)
 
 	useEffect(() => {
 		while (urlRowIdsRef.current.length < relayUrls.length) {
@@ -103,6 +87,10 @@ export function RelaySettings() {
 		if (value === 'custom' && relayUrls.length === 0) {
 			setRelayUrls([''])
 		}
+	}
+
+	const handleFallbackChange = (value: string) => {
+		setRelayFallback(relayFallbackFromRadioValue(value))
 	}
 
 	const updateUrl = (index: number, value: string) => {
@@ -139,14 +127,28 @@ export function RelaySettings() {
 		if (invalid) {
 			toastManager.add({
 				title: t('settings.network.relay.verifyFailed'),
-				description: t('settings.network.relay.invalidUrl', { url: invalid }),
+				description: t(RELAY_URL_INVALID_MESSAGE_KEY),
 				type: 'error',
 			})
 			return
 		}
 
+		const authToken = relayAuthTokenForIpc(relayAuthToken)
+		if (authToken !== null) {
+			const cleartextUrl = trimmedUrls.find(
+				(url) => new URL(url).protocol !== 'https:'
+			)
+			if (cleartextUrl) {
+				toastManager.add({
+					title: t('settings.network.relay.verifyFailed'),
+					description: t(RELAY_URL_INVALID_MESSAGE_KEY),
+					type: 'error',
+				})
+				return
+			}
+		}
+
 		const uniqueUrls = [...new Set(trimmedUrls)]
-		const authToken = relayAuthToken.trim() || null
 
 		setIsTesting(true)
 		setVerifyResults((prev) => {
@@ -159,7 +161,12 @@ export function RelaySettings() {
 			uniqueUrls.map(async (url) => {
 				try {
 					await invoke<VerifyRelaysResponse>('verify_relays', {
-						relay: { mode: 'custom', urls: [url], auth_token: authToken },
+						relay: {
+							mode: 'custom',
+							urls: [url],
+							auth_token: authToken,
+							fallback: relayFallback,
+						},
 					})
 					return { url, ok: true }
 				} catch {
@@ -213,7 +220,12 @@ export function RelaySettings() {
 		setIsTesting(true)
 		try {
 			const result = await invoke<VerifyRelaysResponse>('verify_relays', {
-				relay: { mode: relayMode, urls: [], auth_token: null },
+				relay: {
+					mode: relayMode,
+					urls: [],
+					auth_token: null,
+					fallback: relayFallback,
+				},
 			})
 			toastManager.add({
 				title: t('settings.network.relay.verifySuccess'),
@@ -332,7 +344,9 @@ export function RelaySettings() {
 												)}
 												<Input
 													value={url}
-													onChange={(e) => updateUrl(index, e.target.value)}
+													onChange={(e: ChangeEvent<HTMLInputElement>) =>
+														updateUrl(index, e.target.value)
+													}
 													placeholder="https://euc1-1.relay.example.com"
 													aria-invalid={isInvalidFormat || status === 'failed'}
 													inputMode="url"
@@ -372,7 +386,7 @@ export function RelaySettings() {
 										</div>
 										{isInvalidFormat && (
 											<p className="pl-1 text-xs text-destructive">
-												{t('settings.network.relay.urlInvalidHint')}
+												{t(RELAY_URL_INVALID_MESSAGE_KEY)}
 											</p>
 										)}
 										{!isInvalidFormat && status === 'failed' && (
@@ -408,7 +422,9 @@ export function RelaySettings() {
 								<Input
 									type="password"
 									value={relayAuthToken}
-									onChange={(e) => setRelayAuthToken(e.target.value)}
+									onChange={(e: ChangeEvent<HTMLInputElement>) =>
+										setRelayAuthToken(e.target.value)
+									}
 									placeholder={t('settings.network.relay.authTokenPlaceholder')}
 									autoComplete="off"
 								/>
@@ -416,6 +432,39 @@ export function RelaySettings() {
 							<FrameDescription>
 								{t('settings.network.relay.authTokenDescription')}
 							</FrameDescription>
+						</div>
+
+						<div className="space-y-2">
+							<div className="space-y-1">
+								<Label>{t('settings.network.relay.fallbackLabel')}</Label>
+								<FrameDescription>
+									{t('settings.network.relay.fallbackDescription')}
+								</FrameDescription>
+							</div>
+							<RadioGroup
+								value={relayFallback}
+								onValueChange={handleFallbackChange}
+								className="gap-2"
+							>
+								{RELAY_FALLBACK_OPTIONS.map((option) => (
+									<button
+										key={option.value}
+										type="button"
+										onClick={() => setRelayFallback(option.value)}
+										className="flex cursor-pointer items-start gap-3 text-left"
+									>
+										<RadioGroupItem value={option.value} className="mt-0.5" />
+										<div>
+											<div className="text-sm font-medium">
+												{t(option.labelKey)}
+											</div>
+											<div className="text-sm text-muted-foreground">
+												{t(option.descriptionKey)}
+											</div>
+										</div>
+									</button>
+								))}
+							</RadioGroup>
 						</div>
 
 						<FrameDescription>

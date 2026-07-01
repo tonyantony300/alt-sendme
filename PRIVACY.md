@@ -9,7 +9,7 @@ AltSendme is designed with privacy and security as core principles. This privacy
 - **No Account Required**: AltSendme does not require user registration, accounts, or any personal information
 - **End-to-End Encryption**: All file transfers are encrypted end-to-end using QUIC + TLS 1.3
 - **Peer-to-Peer**: Files are transferred directly between sender and receiver when possible
-- **Analytics**: GoatCounter is used to collect anonymous transfer stats only — never IP, personal data or file contents.
+- **No Usage Tracking**: AltSendme does not collect telemetry or transfer statistics.
 
 ## How AltSendme Works
 
@@ -68,30 +68,13 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 - **Node IDs**: 256-bit cryptographic node identifiers are used for peer authentication
 - **No Plaintext**: File contents are never transmitted or stored in unencrypted form
 
-## Analytics and Usage Data
-
-This project uses [GoatCounter](https://www.goatcounter.com/), a privacy‑respecting, open‑source analytics service.
-
-**What GoatCounter Records:**
-- Anonymous total transfer volume
-
-
-**What Is Never Collected via GoatCounter:**
-- IP addresses
-- Personal information or user identities
-- File contents, file names, or per‑transfer details/sizes
-- Cross‑site tracking or profiling
-- No cookies, no device fingerprinting, no unique identifiers
-
-GoatCounter is privacy‑friendly by design and respects “Do Not Track”. Learn more on their [privacy page](https://www.goatcounter.com/help/privacy).
-
 ## What This Project Doesn't Do
 
 - ❌ No personal information is collected
 - ❌ File contents are not tracked
 - ❌ Files are not stored or accessed in any servers - no server end
 - ❌ Invasive tracking services or cookies are not used
-- ❌ Data is not shared with third parties (beyond aggregate analytics)
+- ❌ Data is not shared with third parties
 
 
 ## Open Source and Transparency
@@ -124,7 +107,6 @@ AltSendme uses the following third-party services:
 1. **Iroh Network Library**: Core P2P networking functionality ([Iroh Privacy](https://www.iroh.computer))
 2. **Default Relay Servers**: Operated by the Iroh project, used only when direct connections fail
 3. **DNS Discovery**: Used for peer discovery when necessary
-4. **GoatCounter Analytics**: Privacy-respecting analytics service for aggregate usage statistics ([GoatCounter Privacy](https://www.goatcounter.com/help/privacy))
 
 You may review the privacy policies of these services if you have concerns.
 
@@ -144,4 +126,3 @@ While AltSendme is designed with privacy and security in mind, no method of tran
 - Be aware that encrypted transfer metadata may still be visible to relay server operators (connection metadata only)
 - Consider using custom relay servers or disabling relays for maximum privacy
 - Understand that direct peer-to-peer connections may expose your IP address to the other party and also to any relay server facilitating the connection.
-

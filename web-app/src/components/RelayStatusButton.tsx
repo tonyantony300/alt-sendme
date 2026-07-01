@@ -4,6 +4,7 @@ import { buttonVariants } from './ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { LazyIcon } from './icons'
 import { useTranslation } from '@/i18n'
+import { buildRelayStatusConfig } from '@/lib/relay-status'
 import { useAppSettingStore } from '@/store/app-setting'
 import { cn } from '@/lib/utils'
 
@@ -21,18 +22,21 @@ export function RelayStatusButton() {
 	const relayMode = useAppSettingStore((s) => s.relayMode)
 	const relayUrls = useAppSettingStore((s) => s.relayUrls)
 	const relayAuthToken = useAppSettingStore((s) => s.relayAuthToken)
+	const relayFallback = useAppSettingStore((s) => s.relayFallback)
 
 	const [status, setStatus] = useState<RelayStatusResponse | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 	const [showInfo, setShowInfo] = useState(false)
 
 	const relayConfig = useMemo(
-		() => ({
-			mode: relayMode,
-			urls: relayUrls.map((url) => url.trim()).filter(Boolean),
-			auth_token: relayAuthToken.trim() || null,
-		}),
-		[relayMode, relayUrls, relayAuthToken]
+		() =>
+			buildRelayStatusConfig({
+				relayMode,
+				relayUrls,
+				relayAuthToken,
+				relayFallback,
+			}),
+		[relayMode, relayUrls, relayAuthToken, relayFallback]
 	)
 
 	useEffect(() => {

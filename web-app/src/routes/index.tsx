@@ -14,6 +14,7 @@ import {
 import { useTranslation } from '@/i18n'
 import { useSenderStore } from '@/store/sender-store'
 import { toastManager } from '@/components/ui/toast'
+import { relayFallbackToastDescriptionKey } from '@/lib/relay-fallback-toast'
 
 export function IndexPage() {
 	const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
@@ -55,12 +56,14 @@ export function IndexPage() {
 		const unlistenFellBackPromise = listen<string>(
 			'relay-fell-back',
 			(event) => {
+				const descriptionKey = relayFallbackToastDescriptionKey(event.payload)
+				if (!descriptionKey) {
+					return
+				}
+
 				toastManager.add({
 					title: t('footer.relay.fellBackToastTitle'),
-					description:
-						event.payload === 'receive'
-							? t('footer.relay.fellBackToastReceive')
-							: t('footer.relay.fellBackToastSend'),
+					description: t(descriptionKey),
 					type: 'warning',
 				})
 			}

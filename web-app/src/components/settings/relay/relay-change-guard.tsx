@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { useBlocker } from 'react-router-dom'
 import { useTranslation } from '../../../i18n'
+import { getRelayChangeWarningType } from '../../../lib/relay-change-warning'
 import { useAppSettingStore } from '../../../store/app-setting'
 import {
 	AlertDialog,
@@ -18,17 +19,20 @@ import { Button } from '../../ui/button'
 export function RelayChangeGuard() {
 	const { t } = useTranslation()
 	const relayMode = useAppSettingStore((s) => s.relayMode)
+	const relayFallback = useAppSettingStore((s) => s.relayFallback)
 
 	// The mode the user arrived in settings with. Comparing against this means we
 	// only warn on an actual change and never nag users who already had a
 	// non-default relay configured.
 	const initialRelayModeRef = useRef(relayMode)
+	const initialRelayFallbackRef = useRef(relayFallback)
 
-	const warningType: 'disabled' | 'custom' | null =
-		relayMode !== initialRelayModeRef.current &&
-		(relayMode === 'disabled' || relayMode === 'custom')
-			? relayMode
-			: null
+	const warningType = getRelayChangeWarningType({
+		initialMode: initialRelayModeRef.current,
+		initialFallback: initialRelayFallbackRef.current,
+		currentMode: relayMode,
+		currentFallback: relayFallback,
+	})
 
 	const blocker = useBlocker(
 		useCallback(
@@ -73,7 +77,7 @@ export function RelayChangeGuard() {
 					<AlertDialogDescription>
 						{warningType === 'disabled'
 							? t('settings.network.relay.confirmDisableDescription')
-							: t('settings.network.relay.confirmCustomDescription')}
+							: t('settings.network.relay.confirmCustomDescriptionWithPolicy')}
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

@@ -74,8 +74,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_http::init())
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_native_utils::init())
         .manage(Arc::new(tokio::sync::Mutex::new(app_state_initial())))
         .invoke_handler(tauri::generate_handler![

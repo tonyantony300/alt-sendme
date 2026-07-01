@@ -16,21 +16,6 @@
 		"notification:default",
 		"dialog:default",
 		"dialog:allow-open",
-		"dialog:allow-save",
-		"shell:allow-spawn",
-		{
-			"identifier": "http:default",
-			"allow": [
-				{
-					"url": "https://github.com/**"
-				},
-				{
-					"url": "https://gc.zgo.at/**"
-				},
-				{
-					"url": "https://alt-sendme.goatcounter.com/**"
-				}
-			]
-		}
+		"dialog:allow-save"
 	]
 }

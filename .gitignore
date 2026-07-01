@@ -22,9 +22,6 @@ node_modules/
 dist/
 build/
 
-# npm lockfile (not tracked to avoid noisy lockfile-only diffs in forks/PRs)
-package-lock.json
-
 # Temporary files
 tmp/
 tmp2/

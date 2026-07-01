@@ -34,19 +34,24 @@
 		"security": {
 			"capabilities": ["default", "sendme:default", "sendme:android"],
 			"csp": {
-				"default-src": "'self' customprotocol: asset: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
-				"connect-src": "ipc: http://ipc.localhost http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* https: http:",
-				"font-src": "'self' asset: http://asset.localhost blob: data: https:",
-				"img-src": "'self' asset: http://asset.localhost blob: data: https:",
+				"default-src": "'self' customprotocol:",
+				"connect-src": "ipc: http://ipc.localhost",
+				"font-src": "'self' blob: data: https:",
+				"img-src": "'self' blob: data:",
 				"style-src": "'unsafe-inline' 'self'",
-				"script-src": "'self' asset: http://asset.localhost https://gc.zgo.at"
+				"script-src": "'self'"
+			},
+			"devCsp": {
+				"default-src": "'self' customprotocol: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
+				"connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
+				"font-src": "'self' blob: data: https:",
+				"img-src": "'self' blob: data:",
+				"style-src": "'unsafe-inline' 'self'",
+				"script-src": "'self'"
 			},
 			"assetProtocol": {
-				"enable": true,
-				"scope": {
-					"requireLiteralLeadingDot": false,
-					"allow": ["**/*"]
-				}
+				"enable": false,
+				"scope": []
 			}
 		}
 	},

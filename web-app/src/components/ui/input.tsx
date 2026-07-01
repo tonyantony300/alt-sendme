@@ -5,22 +5,37 @@ import type * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-type InputProps = Omit<
-	InputPrimitive.Props & React.RefAttributes<HTMLInputElement>,
-	'size'
-> & {
+type InputPrimitiveProps = Omit<InputPrimitive.Props, 'size' | 'className'>
+type NativeInputProps = Omit<
+	React.ComponentPropsWithoutRef<'input'>,
+	'size' | 'className'
+>
+
+type SharedInputProps = {
+	className?: React.ComponentPropsWithoutRef<'span'>['className']
 	size?: 'sm' | 'default' | 'lg' | number
 	unstyled?: boolean
-	nativeInput?: boolean
 }
 
-function Input({
-	className,
-	size = 'default',
-	unstyled = false,
-	nativeInput = false,
-	...props
-}: InputProps) {
+type BaseUiInputProps = SharedInputProps &
+	InputPrimitiveProps & {
+		nativeInput?: false
+	}
+
+type BaseUiOnlyInputPropNames = Exclude<keyof InputPrimitiveProps, keyof NativeInputProps>
+type NativeSafeInputProps = NativeInputProps & {
+	[Key in BaseUiOnlyInputPropNames]?: never
+}
+
+type NativeInputModeProps = SharedInputProps &
+	NativeSafeInputProps & {
+		nativeInput?: boolean
+	}
+
+type InputProps = BaseUiInputProps | NativeInputModeProps
+
+function Input(props: InputProps) {
+	const { className, size = 'default', unstyled = false } = props
 	const inputClassName = cn(
 		'h-8.5 w-full min-w-0 rounded-[inherit] px-[calc(--spacing(3)-1px)] leading-8.5 outline-none placeholder:text-muted-foreground/72 sm:h-7.5 sm:leading-7.5',
 		size === 'sm' &&
@@ -32,7 +47,7 @@ function Input({
 			'text-muted-foreground file:me-3 file:bg-transparent file:font-medium file:text-foreground file:text-sm'
 	)
 
-	return (
+	const renderControl = (control: React.ReactNode) => (
 		<span
 			className={
 				cn(
@@ -44,22 +59,44 @@ function Input({
 			data-size={size}
 			data-slot="input-control"
 		>
-			{nativeInput ? (
-				<input
-					className={inputClassName}
-					data-slot="input"
-					size={typeof size === 'number' ? size : undefined}
-					{...props}
-				/>
-			) : (
-				<InputPrimitive
-					className={inputClassName}
-					data-slot="input"
-					size={typeof size === 'number' ? size : undefined}
-					{...props}
-				/>
-			)}
+			{control}
 		</span>
+	)
+
+	if (props.nativeInput) {
+		const {
+			className: _className,
+			size: _size,
+			unstyled: _unstyled,
+			nativeInput: _nativeInput,
+			...nativeProps
+		} = props
+
+		return renderControl(
+			<input
+				className={inputClassName}
+				data-slot="input"
+				size={typeof size === 'number' ? size : undefined}
+				{...nativeProps}
+			/>
+		)
+	}
+
+	const {
+		className: _className,
+		size: _size,
+		unstyled: _unstyled,
+		nativeInput: _nativeInput,
+		...baseUiProps
+	} = props
+
+	return renderControl(
+		<InputPrimitive
+			className={inputClassName}
+			data-slot="input"
+			size={typeof size === 'number' ? size : undefined}
+			{...(baseUiProps as InputPrimitiveProps)}
+		/>
 	)
 }
 
