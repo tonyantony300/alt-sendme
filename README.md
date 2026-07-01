@@ -254,7 +254,6 @@ So mixed setups are fine for getting files across, but they're **not fully priva
    cargo tauri android dev
    ```
    
-
 6. **Build locally** :
    ```bash
     cargo tauri build --no-bundle
@@ -266,6 +265,19 @@ So mixed setups are fine for getting files across, but they're **not fully priva
       
    adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
    ```
+
+### Pre-requirements for NixOS
+
+1. **Install [devenv](https://devenv.sh/getting-started/)**
+
+2. **Run**:
+  ```bash
+  devenv shell
+  ```
+
+Then proceed with the instructions above.
+
+
 
 ## Testing Locally
 
