@@ -35,7 +35,7 @@
 			"capabilities": ["default", "sendme:default", "sendme:android"],
 			"csp": {
 				"default-src": "'self' customprotocol:",
-				"connect-src": "ipc: http://ipc.localhost https://alt-sendme.goatcounter.com",
+				"connect-src": "ipc: http://ipc.localhost",
 				"font-src": "'self' blob: data: https:",
 				"img-src": "'self' blob: data:",
 				"style-src": "'unsafe-inline' 'self'",
@@ -43,7 +43,7 @@
 			},
 			"devCsp": {
 				"default-src": "'self' customprotocol: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
-				"connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* https://alt-sendme.goatcounter.com",
+				"connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
 				"font-src": "'self' blob: data: https:",
 				"img-src": "'self' blob: data:",
 				"style-src": "'unsafe-inline' 'self'",

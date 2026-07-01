@@ -8,23 +8,8 @@
 		"types": ["node"]
 	},
 	"include": [
-		"web-app/src/lib/analytics-decision.ts",
-		"web-app/src/lib/analytics-decision.test.ts",
-		"web-app/src/lib/analytics-transport.test.ts",
-		"web-app/src/lib/relay-change-warning.ts",
-		"web-app/src/lib/relay-change-warning.test.ts",
-		"web-app/src/lib/relay-auth-token.ts",
-		"web-app/src/lib/relay-auth-token.test.ts",
-		"web-app/src/lib/relay-config.ts",
-		"web-app/src/lib/relay-config.test.ts",
-		"web-app/src/lib/relay-fallback-options.ts",
-		"web-app/src/lib/relay-fallback-options.test.ts",
-		"web-app/src/lib/relay-fallback-toast.ts",
-		"web-app/src/lib/relay-fallback-toast.test.ts",
-		"web-app/src/lib/relay-status.ts",
-		"web-app/src/lib/relay-status.test.ts",
-		"web-app/src/lib/relay-url-validation.ts",
-		"web-app/src/lib/relay-url-validation.test.ts",
-		"web-app/src/components/ui/input.type-test.tsx"
+		"web-app/src/lib/**/*.test.ts",
+		"web-app/src/lib/**/*.test.tsx",
+		"web-app/src/components/**/*.type-test.tsx"
 	]
 }

@@ -36,4 +36,21 @@ describe('buildRelayConfigArg', () => {
 			}
 		)
 	})
+
+	it('strips persisted relay endpoints and tokens when relays are disabled', () => {
+		assert.deepEqual(
+			buildRelayConfigArg({
+				relayMode: 'disabled',
+				relayUrls: ['https://relay.example.com'],
+				relayAuthToken: 'secret-token',
+				relayFallback: 'public',
+			}),
+			{
+				mode: 'disabled',
+				urls: [],
+				auth_token: null,
+				fallback: 'public',
+			}
+		)
+	})
 })

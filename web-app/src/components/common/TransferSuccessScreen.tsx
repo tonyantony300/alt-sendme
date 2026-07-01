@@ -5,7 +5,6 @@ import {
 	XCircle,
 } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import { trackTransferComplete } from '../../lib/analytics'
 import { handleExternalLinkClick } from '../../lib/openExternalUrl'
 import { DONATE_LINK } from '../../lib/version'
 import { formatFileSize } from '../../lib/utils'
@@ -57,13 +56,6 @@ export function TransferSuccessScreen({
 	const isReceiver = !!metadata.downloadPath
 	const isDirectory = metadata.pathType === 'directory'
 	const { t } = useTranslation()
-
-	const handleDone = () => {
-		if (!wasStopped && !isReceiver) {
-			trackTransferComplete(metadata.fileSize, 'sender', metadata.duration)
-		}
-		onDone()
-	}
 
 	return (
 		<div className="flex flex-col items-center justify-center space-y-6 ">
@@ -178,12 +170,12 @@ export function TransferSuccessScreen({
 						<ExternalLinkIcon size={12} />
 						{t('common:transfer.open')}
 					</Button>
-					<Button type="button" className="flex-1" onClick={handleDone}>
+					<Button type="button" className="flex-1" onClick={onDone}>
 						{t('common:transfer.done')}
 					</Button>
 				</div>
 			) : (
-				<Button type="button" className="w-full" onClick={handleDone}>
+				<Button type="button" className="w-full" onClick={onDone}>
 					{t('common:transfer.done')}
 				</Button>
 			)}

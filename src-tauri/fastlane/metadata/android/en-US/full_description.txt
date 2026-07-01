@@ -12,4 +12,4 @@ Features:
 • CLI integration — Works with the Sendme CLI
 • Free & open source — AGPL-3.0; no upload costs or size limits
 
-The Android build has no analytics. For privacy details see the project’s PRIVACY.md.
+For privacy details see the project’s PRIVACY.md.

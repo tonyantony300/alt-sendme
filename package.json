@@ -13,7 +13,6 @@
 		"release": "node ./scripts/release.js",
 		"sync-version": "node ./scripts/sync-version.js",
 		"validate-version": "node ./scripts/validate-version.js",
-		"test:analytics": "npm run test:lib",
 		"test:lib": "node ./scripts/run-lib-tests.js",
 		"lint": "biome lint && tsc --noEmit --skipLibCheck",
 		"lint:fix": "biome lint --fix",
