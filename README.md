@@ -229,7 +229,7 @@ So mixed setups are fine for getting files across, but they're **not fully priva
 ### Prerequisites
 
 - Rust 1.91+
-- Node.js 18+
+- Node.js 20.19+
 - npm or yarn
 
 ### Getting Started
@@ -311,7 +311,7 @@ See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your da
 - Web version (Send and receive from browser)
 - iOS app
 
-[📫 Drop your Email to recieve updates](https://tally.so/r/ob2Vkx)
+[📫 Drop your Email to receive updates](https://tally.so/r/ob2Vkx)
 
 
 

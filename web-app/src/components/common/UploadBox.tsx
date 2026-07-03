@@ -103,7 +103,6 @@ export default function UploadBox({ onUpload }: UploadBoxProps) {
 		if (files.length === 0) return
 		const items = mapFilesToUploadItems(files)
 		onUpload?.(items)
-		console.log(items)
 	}
 
 	const handleInputChange = (files: FileList | null) => {

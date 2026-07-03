@@ -49,7 +49,7 @@ export function SharingActiveCard({
 						},
 					},
 				})
-				// Auto-close "You are broadcasting" notification after 1 seconds
+				// Auto-close "You are broadcasting" notification after 5 seconds
 				setTimeout(() => {
 					toastManager.close(toastId)
 				}, 5000)
