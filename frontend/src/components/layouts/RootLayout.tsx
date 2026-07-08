@@ -6,6 +6,7 @@ import { useTranslation } from '@/i18n'
 import { AppUpdater } from '../common/AppUpdater'
 import {
 	IS_ANDROID,
+	IS_FLATPAK,
 	IS_LINUX,
 	IS_MACOS,
 	IS_TAURI,
@@ -16,7 +17,7 @@ export function RootLayout() {
 	const { t } = useTranslation('common')
 	return (
 		<>
-			{IS_TAURI && !IS_ANDROID && <AppUpdater />}
+			{IS_TAURI && !IS_ANDROID && !IS_FLATPAK && <AppUpdater />}
 			<main
 				className={
 					IS_WEB
