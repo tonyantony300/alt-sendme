@@ -1,4 +1,4 @@
-id: com.altsendme.desktop
+id: com.altsendme.AltSendme
 runtime: org.freedesktop.Platform
 runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
@@ -8,6 +8,7 @@ sdk-extensions:
 command: altsendme
 
 finish-args:
+  - --share=ipc
   - --share=network
   - --socket=wayland
   - --socket=fallback-x11
@@ -54,7 +55,7 @@ modules:
       - node flatpak-node/pnpm/bin/pnpm.cjs run build
       - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
       - install -Dm755 src-tauri/target/release/alt-sendme /app/bin/altsendme
-      - install -Dm644 flatpak/com.altsendme.desktop.desktop /app/share/applications/com.altsendme.desktop.desktop
-      - install -Dm644 flatpak/com.altsendme.desktop.metainfo.xml /app/share/metainfo/com.altsendme.desktop.metainfo.xml
-      - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/com.altsendme.desktop.png
-      - install -Dm644 src-tauri/icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/com.altsendme.desktop.png
+      - install -Dm644 flatpak/com.altsendme.AltSendme.desktop /app/share/applications/com.altsendme.AltSendme.desktop
+      - install -Dm644 flatpak/com.altsendme.AltSendme.metainfo.xml /app/share/metainfo/com.altsendme.AltSendme.metainfo.xml
+      - install -Dm644 flatpak/icons/128x128.png /app/share/icons/hicolor/128x128/apps/com.altsendme.AltSendme.png
+      - install -Dm644 flatpak/icons/512x512.png /app/share/icons/hicolor/512x512/apps/com.altsendme.AltSendme.png
