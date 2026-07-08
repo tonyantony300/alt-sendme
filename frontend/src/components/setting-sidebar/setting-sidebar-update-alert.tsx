@@ -17,7 +17,6 @@ export function SettingSidebarUpdateAlert() {
 	const updateVersion = useCheckUpdateQuery({ enabled: autoUpdate })
 	const handleUpdate = useInstallUpdateMutation()
 
-	// Flatpak has no in-app updater, so this alert never applies there.
 	if (IS_FLATPAK || updateVersion.isLoading || !updateVersion.data) {
 		return null
 	}

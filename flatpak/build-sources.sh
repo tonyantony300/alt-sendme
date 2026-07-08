@@ -14,8 +14,7 @@ python3 -m pip install --quiet --root-user-action=ignore aiohttp tomlkit
 python3 "$TOOLS_DIR/cargo/flatpak-cargo-generator.py" \
 	src-tauri/Cargo.lock -o flatpak/cargo-sources.json
 
-# pnpm: the node generator is a pip-installable package (provides the
-# flatpak-node-generator console command). It vendors every workspace package.
+# pnpm: the node generator is now a pip-installable package.
 python3 -m pip install --quiet --root-user-action=ignore "$TOOLS_DIR/node"
 flatpak-node-generator pnpm pnpm-lock.yaml -o flatpak/node-sources.json
 
