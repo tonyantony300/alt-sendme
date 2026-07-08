@@ -25,6 +25,11 @@ export default defineConfig(({ mode }) => {
 			'import.meta.env.TAURI_PLATFORM': JSON.stringify(
 				process.env.TAURI_ENV_PLATFORM ?? ''
 			),
+			// Set to 'true' only by the Flatpak build so the frontend can hide
+			// the in-app updater (Flatpak updates are handled by the OS).
+			'import.meta.env.VITE_IS_FLATPAK': JSON.stringify(
+				process.env.VITE_IS_FLATPAK ?? ''
+			),
 		},
 		// 1. prevent vite from obscuring rust errors
 		clearScreen: false,
