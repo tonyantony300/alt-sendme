@@ -6,6 +6,6 @@ Comment=Frictionless peer-to-peer file transfer with NAT hole punching
 Exec=altsendme %U
 Icon=com.altsendme.desktop
 Terminal=false
-Categories=Network;FileTransfer;Utility;
+Categories=Network;FileTransfer;
 Keywords=p2p;share;transfer;send;files;
 StartupWMClass=AltSendme
