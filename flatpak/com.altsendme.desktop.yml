@@ -12,11 +12,11 @@ finish-args:
   - --socket=wayland
   - --socket=fallback-x11
   - --device=dri
-  # File-transfer app: sends and receives to arbitrary user-chosen paths and
-  # supports drag-and-drop, which can hand raw host paths to the app.
+  # Transfer app: users send/receive to arbitrary paths, and drag-and-drop can
+  # hand the app raw host paths the file portal wouldn't cover.
   - --filesystem=home
-  # System tray icon (Tauri tray-icon feature).
   - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.Notifications
 
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node22/bin
@@ -27,38 +27,32 @@ modules:
   - name: altsendme
     buildsystem: simple
     sources:
+      # The vendored cargo/node sources below MUST be regenerated from this exact
+      # tag's Cargo.lock / pnpm-lock.yaml (see flatpak/build-sources.sh), or the
+      # offline build resolves against mismatched dependencies.
       - type: git
         url: https://github.com/tonyantony300/alt-sendme.git
         tag: v0.4.2
       - cargo-sources.json
       - node-sources.json
-      # The node22 SDK ships node + npm but not pnpm, and corepack would need
-      # network. Vendor the pnpm CLI and run it via `node flatpak-node/pnpm/bin/pnpm.cjs`.
+      # node22 SDK ships node + npm but not pnpm, and corepack needs network.
       - type: archive
         url: https://registry.npmjs.org/pnpm/-/pnpm-10.12.1.tgz
         sha256: 889bac470ec93ccc3764488a19d6ba8f9c648ad5e50a9a6e4be3768a5de387a3
         dest: flatpak-node/pnpm
     build-options:
       env:
-        # Baked into the frontend bundle so the in-app updater is hidden.
         VITE_IS_FLATPAK: 'true'
     build-commands:
-      # 1. WASM bridge. `pnpm run build` runs `tsc -b`, which type-checks the
-      #    web-only frontend/src/wasm/pkg. That directory is gitignored and is
-      #    NOT in the source archive, so it must be regenerated here.
-      #    OPEN ITEM: Flathub builds offline, so this step still needs the
-      #    wasm32-unknown-unknown std target and wasm-bindgen-cli made available
-      #    without network (vendor them, or drop the web-only bridge from the
-      #    desktop tsc build). Verify/resolve on the VM before submitting.
+      # BLOCKER: `pnpm run build` (tsc + vite) requires frontend/src/wasm/pkg,
+      # which is web-only, gitignored, and absent from the source tag. Building it
+      # here needs the wasm32 std + wasm-bindgen offline (not yet solved). The
+      # clean fix is to stop the desktop build from bundling the web-only bridge.
       - ./scripts/build-wasm-bridge.sh --release
-      # 2. Install frontend deps from the vendored pnpm store. node-sources.json
-      #    already populated the store and wrote store-dir into .npmrc.
+      # Install from the vendored pnpm store (node-sources.json set store-dir in .npmrc).
       - node flatpak-node/pnpm/bin/pnpm.cjs install --offline --frozen-lockfile
-      # 3. Build the frontend, then the Tauri app. The override sets
-      #    beforeBuildCommand to empty (step 2/3 do it) and disables updater artifacts.
       - node flatpak-node/pnpm/bin/pnpm.cjs run build
       - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
-      # 4. Install the binary and assets into the sandbox.
       - install -Dm755 src-tauri/target/release/alt-sendme /app/bin/altsendme
       - install -Dm644 flatpak/com.altsendme.desktop.desktop /app/share/applications/com.altsendme.desktop.desktop
       - install -Dm644 flatpak/com.altsendme.desktop.metainfo.xml /app/share/metainfo/com.altsendme.desktop.metainfo.xml
