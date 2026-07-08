@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.altsendme.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-only</project_license>
+  <name>AltSendme</name>
+  <summary>Frictionless peer-to-peer file transfer</summary>
+  <description>
+    <p>
+      AltSendme sends files directly between devices over an encrypted
+      peer-to-peer connection with NAT hole punching, so transfers do not pass
+      through a central server. Pick files, share a ticket, and the receiver
+      pulls them straight from your machine.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Direct device-to-device transfer with NAT traversal</li>
+      <li>No account required and no file size limits</li>
+      <li>Encrypted connections</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">com.altsendme.desktop.desktop</launchable>
+  <url type="homepage">https://altsendme.com</url>
+  <url type="bugtracker">https://github.com/tonyantony300/alt-sendme/issues</url>
+  <url type="vcs-browser">https://github.com/tonyantony300/alt-sendme</url>
+  <developer id="com.altsendme">
+    <name>Tony Antony</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <screenshots>
+    <screenshot type="default">
+      <image>https://altsendme.com/assets/flatpak/screenshot-main.png</image>
+      <caption>Sharing files from the AltSendme main window</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.4.2" date="2026-07-08"/>
+  </releases>
+</component>

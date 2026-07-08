@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=AltSendme
+GenericName=File Transfer
+Comment=Frictionless peer-to-peer file transfer with NAT hole punching
+Exec=altsendme %U
+Icon=com.altsendme.desktop
+Terminal=false
+Categories=Network;FileTransfer;Utility;
+Keywords=p2p;share;transfer;send;files;
+StartupWMClass=AltSendme
