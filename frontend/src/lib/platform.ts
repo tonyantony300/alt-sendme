@@ -25,6 +25,5 @@ export const IS_MACOS = IS_TAURI && platform.includes('darwin')
 export const IS_WINDOWS = IS_TAURI && platform.includes('windows')
 export const IS_LINUX = IS_TAURI && platform.includes('linux')
 
-// Baked in at build time by the Flatpak build (VITE_IS_FLATPAK=true). The in-app
-// updater is disabled in Flatpak, so UI and update checks key off this flag.
+// Set by the Flatpak build; the in-app updater is disabled there (OS handles it).
 export const IS_FLATPAK = IS_TAURI && import.meta.env.VITE_IS_FLATPAK === 'true'
