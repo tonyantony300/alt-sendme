@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.altsendme.desktop</id>
+  <id>com.altsendme.AltSendme</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>AGPL-3.0-only</project_license>
   <name>AltSendme</name>
@@ -19,7 +19,7 @@
       <li>Encrypted connections</li>
     </ul>
   </description>
-  <launchable type="desktop-id">com.altsendme.desktop.desktop</launchable>
+  <launchable type="desktop-id">com.altsendme.AltSendme.desktop</launchable>
   <url type="homepage">https://altsendme.com</url>
   <url type="bugtracker">https://github.com/tonyantony300/alt-sendme/issues</url>
   <url type="vcs-browser">https://github.com/tonyantony300/alt-sendme</url>
