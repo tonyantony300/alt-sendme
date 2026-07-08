@@ -9,7 +9,7 @@ import { relaunch } from '@tauri-apps/plugin-process'
 import { check } from '@tauri-apps/plugin-updater'
 import { toastManager } from '../components/ui/toast'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import { IS_WEB } from '../lib/platform'
+import { IS_WEB, IS_FLATPAK } from '../lib/platform'
 import { isWindowsPortableBuild } from './use-windows-portable'
 
 type UpdateInfo = Awaited<ReturnType<typeof check>>

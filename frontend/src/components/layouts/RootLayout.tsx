@@ -11,6 +11,7 @@ import { WindowsContextMenuSync } from '../settings/system-tray/context-menu-tog
 import { useIsWindowsPortable } from '@/hooks/use-windows-portable'
 import {
 	IS_ANDROID,
+	IS_FLATPAK,
 	IS_LINUX,
 	IS_MACOS,
 	IS_PAIRING_CAPABLE,
@@ -24,7 +25,7 @@ export function RootLayout() {
 	const { data: isWindowsPortable = false } = useIsWindowsPortable()
 	return (
 		<ReceiverProvider>
-			{IS_TAURI && !IS_ANDROID && !isWindowsPortable && <AppUpdater />}
+			{IS_TAURI && !IS_ANDROID && !isWindowsPortable && !IS_FLATPAK && <AppUpdater />}
 			{IS_WINDOWS && <WindowsContextMenuSync />}
 			{IS_PAIRING_CAPABLE && <DeviceNodeSync />}
 			{IS_PAIRING_CAPABLE && <PairedInviteDialog />}
