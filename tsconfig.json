@@ -23,7 +23,8 @@
 		/* Path mapping */
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./frontend/src/*"]
+			"@/*": ["./frontend/src/*"],
+			"wasm-bridge-engine": ["./frontend/src/wasm/wasm-bridge-stub.ts"]
 		}
 	},
 	"include": ["./frontend/**/*.ts", "./frontend/**/*.tsx"],
