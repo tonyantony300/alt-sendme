@@ -3,7 +3,7 @@
 	"productName": "AltSendme",
 	"mainBinaryName": "AltSendme",
 	"version": "0.6.0",
-	"identifier": "com.altsendme.desktop",
+	"identifier": "com.altsendme.AltSendme",
 	"build": {
 		"frontendDist": "../frontend/dist",
 		"devUrl": "http://localhost:1420",
