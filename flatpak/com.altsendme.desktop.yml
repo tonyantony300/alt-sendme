@@ -22,8 +22,6 @@ build-options:
   append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node22/bin
   env:
     CARGO_HOME: /run/build/altsendme/cargo
-    # Baked into the frontend bundle so the in-app updater is hidden.
-    VITE_IS_FLATPAK: 'true'
 
 modules:
   - name: altsendme
@@ -34,15 +32,33 @@ modules:
         tag: v0.4.2
       - cargo-sources.json
       - node-sources.json
+      # The node22 SDK ships node + npm but not pnpm, and corepack would need
+      # network. Vendor the pnpm CLI and run it via `node flatpak-node/pnpm/bin/pnpm.cjs`.
+      - type: archive
+        url: https://registry.npmjs.org/pnpm/-/pnpm-10.12.1.tgz
+        sha256: 889bac470ec93ccc3764488a19d6ba8f9c648ad5e50a9a6e4be3768a5de387a3
+        dest: flatpak-node/pnpm
     build-options:
       env:
-        # pnpm uses the offline store populated by node-sources.json.
-        npm_config_offline: 'true'
+        # Baked into the frontend bundle so the in-app updater is hidden.
+        VITE_IS_FLATPAK: 'true'
     build-commands:
-      - corepack enable
-      - pnpm install --offline --frozen-lockfile
-      - pnpm build
-      - cargo tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
+      # 1. WASM bridge. `pnpm run build` runs `tsc -b`, which type-checks the
+      #    web-only frontend/src/wasm/pkg. That directory is gitignored and is
+      #    NOT in the source archive, so it must be regenerated here.
+      #    OPEN ITEM: Flathub builds offline, so this step still needs the
+      #    wasm32-unknown-unknown std target and wasm-bindgen-cli made available
+      #    without network (vendor them, or drop the web-only bridge from the
+      #    desktop tsc build). Verify/resolve on the VM before submitting.
+      - ./scripts/build-wasm-bridge.sh --release
+      # 2. Install frontend deps from the vendored pnpm store. node-sources.json
+      #    already populated the store and wrote store-dir into .npmrc.
+      - node flatpak-node/pnpm/bin/pnpm.cjs install --offline --frozen-lockfile
+      # 3. Build the frontend, then the Tauri app. The override sets
+      #    beforeBuildCommand to empty (step 2/3 do it) and disables updater artifacts.
+      - node flatpak-node/pnpm/bin/pnpm.cjs run build
+      - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
+      # 4. Install the binary and assets into the sandbox.
       - install -Dm755 src-tauri/target/release/alt-sendme /app/bin/altsendme
       - install -Dm644 flatpak/com.altsendme.desktop.desktop /app/share/applications/com.altsendme.desktop.desktop
       - install -Dm644 flatpak/com.altsendme.desktop.metainfo.xml /app/share/metainfo/com.altsendme.desktop.metainfo.xml
