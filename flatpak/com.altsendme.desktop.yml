@@ -1,0 +1,50 @@
+id: com.altsendme.desktop
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node22
+command: altsendme
+
+finish-args:
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # File-transfer app: sends and receives to arbitrary user-chosen paths and
+  # supports drag-and-drop, which can hand raw host paths to the app.
+  - --filesystem=home
+  # System tray icon (Tauri tray-icon feature).
+  - --talk-name=org.kde.StatusNotifierWatcher
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node22/bin
+  env:
+    CARGO_HOME: /run/build/altsendme/cargo
+    # Baked into the frontend bundle so the in-app updater is hidden.
+    VITE_IS_FLATPAK: 'true'
+
+modules:
+  - name: altsendme
+    buildsystem: simple
+    sources:
+      - type: git
+        url: https://github.com/tonyantony300/alt-sendme.git
+        tag: v0.4.2
+      - cargo-sources.json
+      - node-sources.json
+    build-options:
+      env:
+        # pnpm uses the offline store populated by node-sources.json.
+        npm_config_offline: 'true'
+    build-commands:
+      - corepack enable
+      - pnpm install --offline --frozen-lockfile
+      - pnpm build
+      - cargo tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
+      - install -Dm755 src-tauri/target/release/alt-sendme /app/bin/altsendme
+      - install -Dm644 flatpak/com.altsendme.desktop.desktop /app/share/applications/com.altsendme.desktop.desktop
+      - install -Dm644 flatpak/com.altsendme.desktop.metainfo.xml /app/share/metainfo/com.altsendme.desktop.metainfo.xml
+      - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/com.altsendme.desktop.png
+      - install -Dm644 src-tauri/icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/com.altsendme.desktop.png
