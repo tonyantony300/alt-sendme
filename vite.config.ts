@@ -16,6 +16,11 @@ export default defineConfig(({ mode }) => {
 			alias: {
 				'@': path.resolve(__dirname, './frontend/src'),
 				'lottie-web': 'lottie-web/build/player/lottie_light',
+				// Web-only engine: the desktop build resolves it to a stub so it
+				// never pulls in the web-only frontend/src/wasm/pkg.
+				'wasm-bridge-engine': isWeb
+					? path.resolve(__dirname, './frontend/src/wasm/pkg/wasm_bridge.js')
+					: path.resolve(__dirname, './frontend/src/wasm/wasm-bridge-stub.ts'),
 			},
 		},
 		define: {

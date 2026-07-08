@@ -45,11 +45,6 @@ modules:
       env:
         VITE_IS_FLATPAK: 'true'
     build-commands:
-      # BLOCKER: `pnpm run build` (tsc + vite) requires frontend/src/wasm/pkg,
-      # which is web-only, gitignored, and absent from the source tag. Building it
-      # here needs the wasm32 std + wasm-bindgen offline (not yet solved). The
-      # clean fix is to stop the desktop build from bundling the web-only bridge.
-      - ./scripts/build-wasm-bridge.sh --release
       # Install from the vendored pnpm store (node-sources.json set store-dir in .npmrc).
       - node flatpak-node/pnpm/bin/pnpm.cjs install --offline --frozen-lockfile
       - node flatpak-node/pnpm/bin/pnpm.cjs run build

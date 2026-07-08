@@ -1,7 +1,7 @@
 import { dispatchWebEvent } from './web-event-bus'
 import type { RelayConfigArg } from './relay-config'
 
-type WasmBridgeModule = typeof import('../wasm/pkg/wasm_bridge.js')
+type WasmBridgeModule = typeof import('wasm-bridge-engine')
 
 export type VerifyRelaysResponse = {
 	url: string | null
@@ -24,7 +24,7 @@ function relayJson(relay?: RelayConfigArg | null): string | undefined {
 }
 
 async function loadWasmBridge(): Promise<WasmBridgeModule> {
-	const wasm = await import('../wasm/pkg/wasm_bridge.js')
+	const wasm = await import('wasm-bridge-engine')
 	await wasm.default()
 
 	wasm.set_event_callback(
