@@ -1,6 +1,6 @@
 id: com.altsendme.AltSendme
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
@@ -28,12 +28,13 @@ modules:
   - name: altsendme
     buildsystem: simple
     sources:
-      # The vendored cargo/node sources below MUST be regenerated from this exact
-      # tag's Cargo.lock / pnpm-lock.yaml (see flatpak/build-sources.sh), or the
-      # offline build resolves against mismatched dependencies.
+      # Point at the release tag. The vendored cargo/node sources below MUST be
+      # regenerated from this exact tag's Cargo.lock / pnpm-lock.yaml (see
+      # flatpak/build-sources.sh), or the offline build resolves against
+      # mismatched dependencies.
       - type: git
         url: https://github.com/tonyantony300/alt-sendme.git
-        tag: v0.4.2
+        tag: v0.5.0
       - cargo-sources.json
       - node-sources.json
       # node22 SDK ships node + npm but not pnpm, and corepack needs network.
