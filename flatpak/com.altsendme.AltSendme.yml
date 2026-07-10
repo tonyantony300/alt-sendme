@@ -13,8 +13,7 @@ finish-args:
   - --socket=wayland
   - --socket=fallback-x11
   - --device=dri
-  # Transfer app: users send/receive to arbitrary paths, and drag-and-drop can
-  # hand the app raw host paths the file portal wouldn't cover.
+  # See: https://docs.flathub.org/linter#finish-args-home-filesystem-access
   - --filesystem=home
   - --talk-name=org.kde.StatusNotifierWatcher
   - --talk-name=org.freedesktop.Notifications
@@ -28,27 +27,21 @@ modules:
   - name: altsendme
     buildsystem: simple
     sources:
-      # Point at the release tag. The vendored cargo/node sources below MUST be
-      # regenerated from this exact tag's Cargo.lock / pnpm-lock.yaml (see
-      # flatpak/build-sources.sh), or the offline build resolves against
-      # mismatched dependencies.
       - type: git
         url: https://github.com/tonyantony300/alt-sendme.git
         tag: v0.5.0
+        commit: 36a6c66eabb0baca1595f0a3c319f044f73fcd33
       - cargo-sources.json
       - node-sources.json
-      # node22 SDK ships node + npm but not pnpm, and corepack needs network.
       - type: archive
         url: https://registry.npmjs.org/pnpm/-/pnpm-10.12.1.tgz
         sha256: 889bac470ec93ccc3764488a19d6ba8f9c648ad5e50a9a6e4be3768a5de387a3
         dest: flatpak-node/pnpm
-        # npm tarballs nest under package/; strip it so bin/pnpm.cjs is at the root.
         strip-components: 1
     build-options:
       env:
         VITE_IS_FLATPAK: 'true'
     build-commands:
-      # Install from the vendored pnpm store (node-sources.json set store-dir in .npmrc).
       - node flatpak-node/pnpm/bin/pnpm.cjs install --offline --frozen-lockfile
       - node flatpak-node/pnpm/bin/pnpm.cjs run build
       - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
