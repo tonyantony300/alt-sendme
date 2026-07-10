@@ -27,6 +27,10 @@
     <name>Tony Antony</name>
   </developer>
   <content_rating type="oars-1.1" />
+  <branding>
+    <color type="primary" scheme_preference="light">#25d365</color>
+    <color type="primary" scheme_preference="dark">#0a0a0a</color>
+  </branding>
   <screenshots>
     <screenshot type="default">
       <image>https://altsendme.com/assets/flatpak/screenshot-main.png</image>
