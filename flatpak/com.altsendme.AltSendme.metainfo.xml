@@ -33,8 +33,16 @@
   </branding>
   <screenshots>
     <screenshot type="default">
-      <image>https://altsendme.com/assets/flatpak/screenshot-main.png</image>
-      <caption>Sharing files from the AltSendme main window</caption>
+      <image>https://altsendme.com/assets/flatpak/screenshot-1.png</image>
+      <caption>AltSendme in action</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://altsendme.com/assets/flatpak/screenshot-2.png</image>
+      <caption>Transferring files</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://altsendme.com/assets/flatpak/screenshot-3.png</image>
+      <caption>Receiving files</caption>
     </screenshot>
   </screenshots>
   <releases>
