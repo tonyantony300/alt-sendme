@@ -1,10 +1,10 @@
 name: Flatpak lint
 
 # Lints the Flathub packaging (manifest + metainfo) on PRs, no full build.
-# Non-blocking on purpose: two findings are expected until we submit and deploy
-# (--filesystem=home, and screenshot URLs that aren't live yet), so they
-# shouldn't fail every PR. To enforce later, drop continue-on-error and add an
-# --exceptions file for those two.
+# Report-only: findings go to the run summary and the job stays green. Two are
+# expected until we submit and deploy (--filesystem=home, and screenshot URLs
+# that aren't live yet). To enforce later, fail on the linter exit code and add
+# an --exceptions file for those two.
 
 on:
   push:
@@ -26,16 +26,16 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Lint manifest
-        continue-on-error: true
+      - name: Lint manifest and metainfo
         run: |
-          docker run --rm -v "$PWD":/w -w /w \
-            ghcr.io/flathub-infra/flatpak-builder-lint:latest \
-            manifest flatpak/com.altsendme.AltSendme.yml
-
-      - name: Lint appstream metainfo
-        continue-on-error: true
-        run: |
-          docker run --rm -v "$PWD":/w -w /w \
-            ghcr.io/flathub-infra/flatpak-builder-lint:latest \
-            appstream flatpak/com.altsendme.AltSendme.metainfo.xml
+          img=ghcr.io/flathub-infra/flatpak-builder-lint:latest
+          {
+            echo '### Manifest'
+            echo '```'
+            docker run --rm -v "$PWD":/w -w /w "$img" manifest flatpak/com.altsendme.AltSendme.yml 2>&1 || true
+            echo '```'
+            echo '### AppStream metainfo'
+            echo '```'
+            docker run --rm -v "$PWD":/w -w /w "$img" appstream flatpak/com.altsendme.AltSendme.metainfo.xml 2>&1 || true
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
