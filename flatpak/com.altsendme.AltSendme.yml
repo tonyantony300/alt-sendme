@@ -29,6 +29,8 @@ modules:
     sources:
       - type: git
         url: https://github.com/tonyantony300/alt-sendme.git
+        # Bump both to the release tag cut after this PR merges. v0.5.0 predates
+        # the flatpak/ dir and the wasm decoupling, so the build fails against it.
         tag: v0.5.0
         commit: 36a6c66eabb0baca1595f0a3c319f044f73fcd33
       - cargo-sources.json
