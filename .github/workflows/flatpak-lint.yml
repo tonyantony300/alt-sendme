@@ -1,0 +1,41 @@
+name: Flatpak lint
+
+# Lints the Flathub packaging (manifest + metainfo) on PRs, no full build.
+# Non-blocking on purpose: two findings are expected until we submit and deploy
+# (--filesystem=home, and screenshot URLs that aren't live yet), so they
+# shouldn't fail every PR. To enforce later, drop continue-on-error and add an
+# --exceptions file for those two.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'flatpak/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'flatpak/**'
+  workflow_dispatch:
+
+jobs:
+  flatpak-lint:
+    name: Flatpak manifest + appstream lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Lint manifest
+        continue-on-error: true
+        run: |
+          docker run --rm -v "$PWD":/w -w /w \
+            ghcr.io/flathub-infra/flatpak-builder-lint:latest \
+            manifest flatpak/com.altsendme.AltSendme.yml
+
+      - name: Lint appstream metainfo
+        continue-on-error: true
+        run: |
+          docker run --rm -v "$PWD":/w -w /w \
+            ghcr.io/flathub-infra/flatpak-builder-lint:latest \
+            appstream flatpak/com.altsendme.AltSendme.metainfo.xml
