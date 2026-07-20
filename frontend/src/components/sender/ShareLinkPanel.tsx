@@ -1,4 +1,5 @@
 import { CheckCircle, Copy, MonitorSmartphone, Share2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { IS_MOBILE, IS_WEB } from '../../lib/platform'
 import { buildReceiveLink } from '../../lib/receive-link'
@@ -158,8 +159,17 @@ function TicketDisplay({
 	onSetBroadcast,
 }: TicketDisplayProps) {
 	const { t } = useTranslation()
+	const [linkCopySuccess, setLinkCopySuccess] = useState(false)
+	const linkCopyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const showBroadcastToggle = useAppSettingStore(
 		(state) => state.showBroadcastToggle
+	)
+
+	useEffect(
+		() => () => {
+			if (linkCopyTimer.current) clearTimeout(linkCopyTimer.current)
+		},
+		[]
 	)
 
 	const handleBroadcastChange = (next: boolean) => {
@@ -199,10 +209,21 @@ function TicketDisplay({
 				await navigator.share({ url })
 			} else {
 				await navigator.clipboard.writeText(url)
+				setLinkCopySuccess(true)
+				if (linkCopyTimer.current) clearTimeout(linkCopyTimer.current)
+				linkCopyTimer.current = setTimeout(
+					() => setLinkCopySuccess(false),
+					2000
+				)
 			}
 		} catch (error) {
 			if ((error as DOMException).name !== 'AbortError') {
 				console.error('Failed to share receive link:', error)
+				toastManager.add({
+					title: t('common:errors.sharingFailed'),
+					description: String(error),
+					type: 'error',
+				})
 			}
 		}
 	}
@@ -241,7 +262,11 @@ function TicketDisplay({
 						onClick={() => void shareTicket()}
 						title={t('common:sender.shareThisTicket')}
 					>
-						<Share2 className="h-3.5 w-3.5" />
+						{linkCopySuccess ? (
+							<CheckCircle className="h-3.5 w-3.5" />
+						) : (
+							<Share2 className="h-3.5 w-3.5" />
+						)}
 					</Button>
 					<Button
 						type="button"

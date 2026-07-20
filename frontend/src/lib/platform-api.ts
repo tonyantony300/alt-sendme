@@ -295,15 +295,22 @@ export async function listenForReceiveLinks(
 	handler(window.location.href)
 	if (IS_WEB) return noopUnlisten
 
-	const { getCurrent, onOpenUrl } = await import('@tauri-apps/plugin-deep-link')
-	const unlisten = await onOpenUrl((urls) => urls.forEach(handler))
 	try {
-		const current = await getCurrent()
-		current?.forEach(handler)
+		const { getCurrent, onOpenUrl } = await import(
+			'@tauri-apps/plugin-deep-link'
+		)
+		const unlisten = await onOpenUrl((urls) => urls.forEach(handler))
+		try {
+			const current = await getCurrent()
+			current?.forEach(handler)
+		} catch (error) {
+			console.error('Failed to read the current receive link:', error)
+		}
+		return unlisten
 	} catch (error) {
-		console.error('Failed to read the current receive link:', error)
+		console.error('Failed to listen for receive links:', error)
+		return noopUnlisten
 	}
-	return unlisten
 }
 
 export async function openDialog(

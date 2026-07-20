@@ -1,4 +1,0 @@
-{
-	"*.{js,jsx,ts,tsx,json,css,html}": "biome check --write --no-errors-on-unmatched",
-	"*.{md,yaml,yml,toml}": "prettier --ignore-unknown --write"
-}
