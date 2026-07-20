@@ -1,8 +1,6 @@
-export const RECEIVE_LINK_BASE = 'https://app.altsendme.com/receive'
-
 export function buildReceiveLink(
 	ticket: string,
-	baseUrl = RECEIVE_LINK_BASE
+	baseUrl = 'https://app.altsendme.com/receive'
 ): string {
 	const url = new URL('/receive', baseUrl)
 	url.searchParams.set('ticket', ticket)
