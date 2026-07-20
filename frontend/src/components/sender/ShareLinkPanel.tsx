@@ -1,6 +1,6 @@
 import { CheckCircle, Copy, MonitorSmartphone, Share2 } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
-import { IS_WEB } from '../../lib/platform'
+import { IS_MOBILE, IS_WEB } from '../../lib/platform'
 import { buildReceiveLink } from '../../lib/receive-link'
 import { useAppSettingStore } from '../../store/app-setting'
 import type { TransferProgress } from '../../types/transfer'
@@ -190,8 +190,12 @@ function TicketDisplay({
 			ticket,
 			IS_WEB ? window.location.origin : undefined
 		)
+		const isMobileBrowser =
+			IS_WEB &&
+			(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+				(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1))
 		try {
-			if (navigator.share) {
+			if ((IS_MOBILE || isMobileBrowser) && navigator.share) {
 				await navigator.share({ url })
 			} else {
 				await navigator.clipboard.writeText(url)
