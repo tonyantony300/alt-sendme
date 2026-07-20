@@ -1,4 +1,3 @@
-import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect, useRef, useState } from 'react'
 import {
 	Tabs,
@@ -13,8 +12,7 @@ import { Sender } from '@/components/sender/Sender'
 import { Frame, FrameHeader, FramePanel } from '@/components/ui/frame'
 import { toastManager } from '@/components/ui/toast'
 import { useTranslation } from '@/i18n'
-import { IS_TAURI } from '@/lib/platform'
-import { invoke, listen } from '@/lib/platform-api'
+import { invoke, listen, listenForReceiveLinks } from '@/lib/platform-api'
 import { ticketFromReceiveLink } from '@/lib/receive-link'
 import { relayFallbackToastDescriptionKey } from '@/lib/relay-fallback-toast'
 import { useSenderStore } from '@/store/sender-store'
@@ -44,11 +42,7 @@ export function IndexPage() {
 			setActiveTab('receive')
 		}
 
-		applyReceiveLink(window.location.href)
-		if (!IS_TAURI) return
-
-		void getCurrent().then((urls) => urls?.forEach(applyReceiveLink))
-		const unlisten = onOpenUrl((urls) => urls.forEach(applyReceiveLink))
+		const unlisten = listenForReceiveLinks(applyReceiveLink)
 		return () => {
 			void unlisten.then((stop) => stop())
 		}

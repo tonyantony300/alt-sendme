@@ -1,5 +1,6 @@
 import { CheckCircle, Copy, MonitorSmartphone, Share2 } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
+import { IS_WEB } from '../../lib/platform'
 import { buildReceiveLink } from '../../lib/receive-link'
 import { useAppSettingStore } from '../../store/app-setting'
 import type { TransferProgress } from '../../types/transfer'
@@ -185,7 +186,10 @@ function TicketDisplay({
 	}
 
 	const shareTicket = async () => {
-		const url = buildReceiveLink(ticket)
+		const url = buildReceiveLink(
+			ticket,
+			IS_WEB ? window.location.origin : undefined
+		)
 		try {
 			if (navigator.share) {
 				await navigator.share({ url })

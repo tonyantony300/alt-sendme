@@ -1,6 +1,8 @@
 export type { UnlistenFn } from '@tauri-apps/api/event'
 
 import type { UnlistenFn } from '@tauri-apps/api/event'
+import { IS_TAURI, IS_WEB } from './platform'
+import type { RelayConfigArg } from './relay-config'
 import {
 	ensureWasmBridge,
 	getWebSharingTicket,
@@ -11,13 +13,7 @@ import {
 	wasmStopSharing,
 	wasmVerifyRelays,
 } from './wasm-bridge-client'
-import type { RelayConfigArg } from './relay-config'
-import { IS_TAURI, IS_WEB } from './platform'
 import { dispatchWebEvent, subscribeWebEvent } from './web-event-bus'
-import {
-	initWebSaveLocation,
-	writeReceivedCollection,
-} from './web-save-location'
 import {
 	getWebFile,
 	isWebDirectory,
@@ -27,6 +23,10 @@ import {
 	webFilePathKey,
 } from './web-file-store'
 import { WebPreviewError } from './web-preview-error'
+import {
+	initWebSaveLocation,
+	writeReceivedCollection,
+} from './web-save-location'
 import { collectWebSendPayload } from './web-send-items'
 
 type DialogOptions = {
@@ -287,6 +287,23 @@ export async function listen<T>(
 
 	const { listen: tauriListen } = await import('@tauri-apps/api/event')
 	return tauriListen<T>(event, handler)
+}
+
+export async function listenForReceiveLinks(
+	handler: (url: string) => void
+): Promise<UnlistenFn> {
+	handler(window.location.href)
+	if (IS_WEB) return noopUnlisten
+
+	const { getCurrent, onOpenUrl } = await import('@tauri-apps/plugin-deep-link')
+	const unlisten = await onOpenUrl((urls) => urls.forEach(handler))
+	try {
+		const current = await getCurrent()
+		current?.forEach(handler)
+	} catch (error) {
+		console.error('Failed to read the current receive link:', error)
+	}
+	return unlisten
 }
 
 export async function openDialog(

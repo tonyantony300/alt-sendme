@@ -14,8 +14,21 @@ describe('receive links', () => {
 		assert.equal(ticketFromReceiveLink(link), ticket)
 	})
 
+	it('uses the current web deployment origin when supplied', () => {
+		assert.equal(
+			buildReceiveLink('ticket', 'http://localhost:1420'),
+			'http://localhost:1420/receive?ticket=ticket'
+		)
+	})
+
 	it('ignores unrelated and malformed URLs', () => {
 		assert.equal(ticketFromReceiveLink('https://app.altsendme.com/'), null)
+		assert.equal(
+			ticketFromReceiveLink(
+				'https://app.altsendme.com/settings?ticket=should-not-load'
+			),
+			null
+		)
 		assert.equal(ticketFromReceiveLink('not a URL'), null)
 	})
 })
