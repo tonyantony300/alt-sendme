@@ -1,20 +1,24 @@
-import { invoke, listen } from '@/lib/platform-api'
+import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect, useRef, useState } from 'react'
-import * as SingleLayoutPage from '@/components/common/SingleLayoutPage'
-import { Receiver } from '@/components/receiver/Receiver'
-import { Sender } from '@/components/sender/Sender'
-import { Frame, FrameHeader, FramePanel } from '@/components/ui/frame'
 import {
 	Tabs,
-	TabsList,
 	TabsContent,
+	TabsList,
 	TabsTrigger,
 } from '@/components/animate-ui/components/tabs'
+import * as SingleLayoutPage from '@/components/common/SingleLayoutPage'
+import { Receiver } from '@/components/receiver/Receiver'
+import { useReceiverContext } from '@/components/receiver/ReceiverProvider'
+import { Sender } from '@/components/sender/Sender'
+import { Frame, FrameHeader, FramePanel } from '@/components/ui/frame'
+import { toastManager } from '@/components/ui/toast'
 import { useTranslation } from '@/i18n'
+import { IS_TAURI } from '@/lib/platform'
+import { invoke, listen } from '@/lib/platform-api'
+import { ticketFromReceiveLink } from '@/lib/receive-link'
+import { relayFallbackToastDescriptionKey } from '@/lib/relay-fallback-toast'
 import { useSenderStore } from '@/store/sender-store'
 import { useTransferTabStore } from '@/store/transfer-tab-store'
-import { toastManager } from '@/components/ui/toast'
-import { relayFallbackToastDescriptionKey } from '@/lib/relay-fallback-toast'
 
 export function IndexPage() {
 	const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send')
@@ -22,6 +26,7 @@ export function IndexPage() {
 	const [isReceiving, setIsReceiving] = useState(false)
 	const isInitialRender = useRef(false)
 	const { t } = useTranslation()
+	const { handleTicketChange } = useReceiverContext()
 
 	// Store actions
 	const setSelectedPath = useSenderStore((state) => state.setSelectedPath)
@@ -30,6 +35,24 @@ export function IndexPage() {
 	const clearRequestedTab = useTransferTabStore(
 		(state) => state.clearRequestedTab
 	)
+
+	useEffect(() => {
+		const applyReceiveLink = (url: string) => {
+			const ticket = ticketFromReceiveLink(url)
+			if (!ticket) return
+			handleTicketChange(ticket)
+			setActiveTab('receive')
+		}
+
+		applyReceiveLink(window.location.href)
+		if (!IS_TAURI) return
+
+		void getCurrent().then((urls) => urls?.forEach(applyReceiveLink))
+		const unlisten = onOpenUrl((urls) => urls.forEach(applyReceiveLink))
+		return () => {
+			void unlisten.then((stop) => stop())
+		}
+	}, [handleTicketChange])
 
 	useEffect(() => {
 		if (requestedTab) {

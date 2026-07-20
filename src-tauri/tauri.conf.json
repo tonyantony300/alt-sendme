@@ -33,7 +33,12 @@
 			}
 		],
 		"security": {
-			"capabilities": ["default", "sendme:default", "sendme:android"],
+			"capabilities": [
+				"default",
+				"sendme:default",
+				"sendme:android",
+				"sendme:ios"
+			],
 			"csp": {
 				"default-src": "'self' customprotocol:",
 				"connect-src": "ipc: http://ipc.localhost",
@@ -57,6 +62,16 @@
 		}
 	},
 	"plugins": {
+		"deep-link": {
+			"mobile": [
+				{
+					"scheme": ["https"],
+					"host": "app.altsendme.com",
+					"pathPrefix": ["/receive"],
+					"appLink": true
+				}
+			]
+		},
 		"updater": {
 			"endpoints": [
 				"https://github.com/tonyantony300/alt-sendme/releases/latest/download/latest.json"

@@ -1,13 +1,13 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { getRouterBasename } from '@/lib/router-basename'
-import { SettingsPage } from './settings'
-import { IndexPage } from '.'
 import { RootLayout } from '@/components/layouts/RootLayout'
-import { NotFoundPage } from './notfound'
-import { SettingGeneralPage } from './settings.general'
-import { SettingDevicesPage } from './settings.devices'
-import { SettingNetworkPage } from './settings.network'
+import { getRouterBasename } from '@/lib/router-basename'
 import { SettingLayout } from '../components/layouts/SettingLayout'
+import { IndexPage } from '.'
+import { NotFoundPage } from './notfound'
+import { SettingsPage } from './settings'
+import { SettingDevicesPage } from './settings.devices'
+import { SettingGeneralPage } from './settings.general'
+import { SettingNetworkPage } from './settings.network'
 
 export interface RouteConfig {
 	path: string
@@ -22,6 +22,10 @@ export const routers = createBrowserRouter(
 			children: [
 				{
 					index: true,
+					Component: IndexPage,
+				},
+				{
+					path: '/receive',
 					Component: IndexPage,
 				},
 				{

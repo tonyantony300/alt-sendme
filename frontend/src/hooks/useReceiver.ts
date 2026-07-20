@@ -1,3 +1,6 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { PairedInvitePayload } from '@/lib/pairing-api'
+import { IS_ANDROID, IS_WEB } from '@/lib/platform'
 import {
 	downloadDir,
 	invoke,
@@ -9,27 +12,24 @@ import {
 	supportsWebSaveLocationPicker,
 	type UnlistenFn,
 } from '@/lib/platform-api'
-import { selectDownloadFolder, openDownloadFolder } from '@/plugins/nativeUtils'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+	getWebPreviewErrorMessage,
+	isWebPreviewError,
+} from '@/lib/web-preview-error'
+import { openDownloadFolder, selectDownloadFolder } from '@/plugins/nativeUtils'
+import { useAppSettingStore } from '@/store/app-setting'
+import { useReceiverActionsStore } from '@/store/receiver-actions-store'
+import { useTransferTabStore } from '@/store/transfer-tab-store'
 import { useTranslation } from '../i18n/react-i18next-compat'
+import { getRelayConfigArg } from '../lib/relay'
 import { sendSystemNotification } from '../lib/systemNotification'
-import type { AlertDialogState, AlertType } from '../types/ui'
 import type {
 	TicketPreviewMetadata,
 	TransferMetadata,
 	TransferProgress,
 } from '../types/transfer'
-import { SpeedAverager, calculateETA } from '../utils/etaUtils'
-import { IS_ANDROID, IS_WEB } from '@/lib/platform'
-import {
-	getWebPreviewErrorMessage,
-	isWebPreviewError,
-} from '@/lib/web-preview-error'
-import { getRelayConfigArg } from '../lib/relay'
-import { useAppSettingStore } from '@/store/app-setting'
-import { useReceiverActionsStore } from '@/store/receiver-actions-store'
-import { useTransferTabStore } from '@/store/transfer-tab-store'
-import type { PairedInvitePayload } from '@/lib/pairing-api'
+import type { AlertDialogState, AlertType } from '../types/ui'
+import { calculateETA, SpeedAverager } from '../utils/etaUtils'
 
 interface BackendFileMetadata {
 	file_name: string
@@ -537,9 +537,9 @@ export function useReceiver(): UseReceiverReturn {
 		}
 	}, [t, showAlert])
 
-	const handleTicketChange = (newTicket: string) => {
+	const handleTicketChange = useCallback((newTicket: string) => {
 		setTicket(newTicket)
-	}
+	}, [])
 
 	const handleBrowseFolder = useCallback(async () => {
 		if (isReceiving) return

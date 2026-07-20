@@ -1,5 +1,7 @@
-import { CheckCircle, Copy, MonitorSmartphone } from 'lucide-react'
+import { CheckCircle, Copy, MonitorSmartphone, Share2 } from 'lucide-react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
+import { buildReceiveLink } from '../../lib/receive-link'
+import { useAppSettingStore } from '../../store/app-setting'
 import type { TransferProgress } from '../../types/transfer'
 import { PulseAnimation } from '../common/PulseAnimation'
 import { TransferProgressBar } from '../common/TransferProgressBar'
@@ -8,7 +10,6 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { toastManager } from '../ui/toast'
-import { useAppSettingStore } from '../../store/app-setting'
 import { SharingActiveHeader } from './SharingActiveHeader'
 
 interface ShareLinkPanelProps {
@@ -183,6 +184,21 @@ function TicketDisplay({
 		}
 	}
 
+	const shareTicket = async () => {
+		const url = buildReceiveLink(ticket)
+		try {
+			if (navigator.share) {
+				await navigator.share({ url })
+			} else {
+				await navigator.clipboard.writeText(url)
+			}
+		} catch (error) {
+			if ((error as DOMException).name !== 'AbortError') {
+				console.error('Failed to share receive link:', error)
+			}
+		}
+	}
+
 	return (
 		<div className="w-full space-y-2.5">
 			<div className="flex items-center justify-between gap-3">
@@ -211,6 +227,14 @@ function TicketDisplay({
 					readOnly
 				/>
 				<InputGroupAddon align="inline-end">
+					<Button
+						type="button"
+						size="icon-xs"
+						onClick={() => void shareTicket()}
+						title={t('common:sender.shareThisTicket')}
+					>
+						<Share2 className="h-3.5 w-3.5" />
+					</Button>
 					<Button
 						type="button"
 						size="icon-xs"
