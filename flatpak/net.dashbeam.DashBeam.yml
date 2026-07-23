@@ -45,7 +45,7 @@ modules:
     build-commands:
       - node flatpak-node/pnpm/bin/pnpm.cjs install --offline --frozen-lockfile
       - node flatpak-node/pnpm/bin/pnpm.cjs run build
-      - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
+      - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-default-features --features custom-protocol,default-tls,dialog-xdg-portal --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json
       - install -Dm755 src-tauri/target/release/alt-sendme /app/bin/dashbeam
       - install -Dm644 flatpak/net.dashbeam.DashBeam.desktop /app/share/applications/net.dashbeam.DashBeam.desktop
       - install -Dm644 flatpak/net.dashbeam.DashBeam.metainfo.xml /app/share/metainfo/net.dashbeam.DashBeam.metainfo.xml

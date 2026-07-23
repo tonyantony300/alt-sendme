@@ -11,12 +11,21 @@ on:
       - main
     paths:
       - 'flatpak/**'
+      - '.github/workflows/flatpak-lint.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'flatpak/**'
+      - '.github/workflows/flatpak-lint.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flatpak-lint-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   flatpak-lint:
@@ -24,6 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Lint manifest and metainfo
         run: |
@@ -31,10 +42,10 @@ jobs:
           {
             echo '### Manifest'
             echo '```'
-            docker run --rm -v "$PWD":/w -w /w "$img" manifest flatpak/net.dashbeam.DashBeam.yml 2>&1 || true
+            docker run --rm -v "$PWD":/w:ro -w /w "$img" manifest flatpak/net.dashbeam.DashBeam.yml 2>&1 || true
             echo '```'
             echo '### AppStream metainfo'
             echo '```'
-            docker run --rm -v "$PWD":/w -w /w "$img" appstream flatpak/net.dashbeam.DashBeam.metainfo.xml 2>&1 || true
+            docker run --rm -v "$PWD":/w:ro -w /w "$img" appstream flatpak/net.dashbeam.DashBeam.metainfo.xml 2>&1 || true
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
