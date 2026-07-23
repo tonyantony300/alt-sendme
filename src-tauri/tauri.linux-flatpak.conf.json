@@ -1,8 +1,12 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"identifier": "com.altsendme.AltSendme",
+	"productName": "DashBeam",
+	"identifier": "net.dashbeam.DashBeam",
 	"build": {
 		"beforeBuildCommand": ""
+	},
+	"app": {
+		"enableGTKAppId": true
 	},
 	"bundle": {
 		"createUpdaterArtifacts": false

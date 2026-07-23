@@ -1,11 +1,14 @@
 [Desktop Entry]
 Type=Application
-Name=AltSendme
+Name=DashBeam
 GenericName=File Transfer
 Comment=Frictionless peer-to-peer file transfer with NAT hole punching
-Exec=altsendme %U
-Icon=com.altsendme.AltSendme
+Exec=dashbeam %U
+Icon=net.dashbeam.DashBeam
 Terminal=false
 Categories=Network;FileTransfer;
 Keywords=p2p;share;transfer;send;files;
-StartupWMClass=AltSendme
+# Matches the GTK app ID, which the flatpak tauri config sets from the app
+# identifier via enableGTKAppId. Without that flag GTK falls back to the binary
+# name and the window never associates with this entry.
+StartupWMClass=net.dashbeam.DashBeam

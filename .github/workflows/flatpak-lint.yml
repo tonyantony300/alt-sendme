@@ -32,10 +32,10 @@ jobs:
           {
             echo '### Manifest'
             echo '```'
-            docker run --rm -v "$PWD":/w -w /w "$img" manifest flatpak/com.altsendme.AltSendme.yml 2>&1 || true
+            docker run --rm -v "$PWD":/w -w /w "$img" manifest flatpak/net.dashbeam.DashBeam.yml 2>&1 || true
             echo '```'
             echo '### AppStream metainfo'
             echo '```'
-            docker run --rm -v "$PWD":/w -w /w "$img" appstream flatpak/com.altsendme.AltSendme.metainfo.xml 2>&1 || true
+            docker run --rm -v "$PWD":/w -w /w "$img" appstream flatpak/net.dashbeam.DashBeam.metainfo.xml 2>&1 || true
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
