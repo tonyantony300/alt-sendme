@@ -1,10 +1,9 @@
 name: Flatpak lint
 
 # Lints the Flathub packaging (manifest + metainfo) on PRs, no full build.
-# Report-only: findings go to the run summary and the job stays green. Two are
-# expected until we submit and deploy (--filesystem=home, and screenshot URLs
-# that aren't live yet). To enforce later, fail on the linter exit code and add
-# an --exceptions file for those two.
+# Report-only: findings go to the run summary and the job stays green. The
+# screenshot warnings clear once the site deploys; drop the `|| true` after
+# that to make this blocking.
 
 on:
   push:

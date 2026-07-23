@@ -20,7 +20,7 @@ tauri = { version = "=2.10.1", features = ["tray-icon", "image-png"] }
 mime_guess="2.0"
 base64 = "0.22.1"
 image="0.25"
-tauri-plugin-dialog = "2.7"
+tauri-plugin-dialog = { version = "2.7", default-features = false, features = ["xdg-portal"] }
 tauri-plugin-opener = "2.5.3"
 tauri-plugin-os = "2.3"
 tauri-plugin-single-instance = "2.4"

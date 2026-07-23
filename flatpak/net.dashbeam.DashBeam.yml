@@ -13,8 +13,7 @@ finish-args:
   - --socket=wayland
   - --socket=fallback-x11
   - --device=dri
-  # See: https://docs.flathub.org/linter#finish-args-home-filesystem-access
-  - --filesystem=home
+  - --filesystem=xdg-download:create
   - --talk-name=org.kde.StatusNotifierWatcher
   - --talk-name=org.freedesktop.Notifications
 
