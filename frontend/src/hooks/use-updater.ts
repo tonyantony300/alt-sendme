@@ -15,7 +15,9 @@ import { isWindowsPortableBuild } from './use-windows-portable'
 type UpdateInfo = Awaited<ReturnType<typeof check>>
 
 async function checkForDesktopUpdate(): Promise<UpdateInfo> {
-	if (IS_WEB) {
+	// Flatpak ships immutable app files and updates via `flatpak update`, so the
+	// updater plugin is never registered there and check() would throw.
+	if (IS_WEB || IS_FLATPAK) {
 		return null
 	}
 	// Portable ZIP users must download a new archive; applying the NSIS/MSI

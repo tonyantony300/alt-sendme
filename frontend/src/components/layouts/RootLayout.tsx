@@ -25,7 +25,9 @@ export function RootLayout() {
 	const { data: isWindowsPortable = false } = useIsWindowsPortable()
 	return (
 		<ReceiverProvider>
-			{IS_TAURI && !IS_ANDROID && !isWindowsPortable && !IS_FLATPAK && <AppUpdater />}
+			{IS_TAURI && !IS_ANDROID && !isWindowsPortable && !IS_FLATPAK && (
+				<AppUpdater />
+			)}
 			{IS_WINDOWS && <WindowsContextMenuSync />}
 			{IS_PAIRING_CAPABLE && <DeviceNodeSync />}
 			{IS_PAIRING_CAPABLE && <PairedInviteDialog />}
