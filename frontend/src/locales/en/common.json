@@ -69,6 +69,8 @@
 		"multipleItemsSelected": "{{firstName}} and {{count}} more",
 		"removeFromSelection": "Remove from selection",
 		"copyToClipboard": "Copy to clipboard",
+		"shareReceiveLink": "Share receive link",
+		"copyReceiveLink": "Copy receive link",
 		"description": "Description (optional)",
 		"broadcastMode": {
 			"index": "Broadcast",

@@ -66,7 +66,7 @@
 			"mobile": [
 				{
 					"scheme": ["https"],
-					"host": "app.altsendme.com",
+					"host": "app.dashbeam.net",
 					"pathPrefix": ["/receive"],
 					"appLink": true
 				}
@@ -74,7 +74,7 @@
 		},
 		"updater": {
 			"endpoints": [
-				"https://github.com/tonyantony300/alt-sendme/releases/latest/download/latest.json"
+				"https://github.com/tonyantony300/dashbeam/releases/latest/download/latest.json"
 			],
 			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMzRTE3OEU4QjYyQkIzNzMKUldSenN5dTI2SGpoTS9PZ21kbmYzUkJ3Q1VKa2FtdEllVWJ4N3QwWnRGZmZId0RPM3BlQzdxVmQK"
 		}

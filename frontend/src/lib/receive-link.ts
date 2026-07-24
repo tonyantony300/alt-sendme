@@ -1,6 +1,6 @@
 export function buildReceiveLink(
 	ticket: string,
-	baseUrl = 'https://app.altsendme.com/receive'
+	baseUrl = 'https://app.dashbeam.net/receive'
 ): string {
 	const url = new URL('/receive', baseUrl)
 	url.searchParams.set('ticket', ticket)

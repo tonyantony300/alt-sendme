@@ -9,7 +9,7 @@ describe('receive links', () => {
 
 		assert.equal(
 			link,
-			'https://app.altsendme.com/receive?ticket=blob-ticket%2Fwith+%2B+symbols'
+			'https://app.dashbeam.net/receive?ticket=blob-ticket%2Fwith+%2B+symbols'
 		)
 		assert.equal(ticketFromReceiveLink(link), ticket)
 	})
@@ -22,10 +22,10 @@ describe('receive links', () => {
 	})
 
 	it('ignores unrelated and malformed URLs', () => {
-		assert.equal(ticketFromReceiveLink('https://app.altsendme.com/'), null)
+		assert.equal(ticketFromReceiveLink('https://app.dashbeam.net/'), null)
 		assert.equal(
 			ticketFromReceiveLink(
-				'https://app.altsendme.com/settings?ticket=should-not-load'
+				'https://app.dashbeam.net/settings?ticket=should-not-load'
 			),
 			null
 		)

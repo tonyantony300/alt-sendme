@@ -195,17 +195,22 @@ function TicketDisplay({
 		}
 	}
 
+	const canNativeShare =
+		typeof navigator !== 'undefined' &&
+		typeof navigator.share === 'function' &&
+		(IS_MOBILE ||
+			(IS_WEB &&
+				(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+					(navigator.platform === 'MacIntel' &&
+						navigator.maxTouchPoints > 1))))
+
 	const shareTicket = async () => {
 		const url = buildReceiveLink(
 			ticket,
 			IS_WEB ? window.location.origin : undefined
 		)
-		const isMobileBrowser =
-			IS_WEB &&
-			(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-				(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1))
 		try {
-			if ((IS_MOBILE || isMobileBrowser) && navigator.share) {
+			if (canNativeShare) {
 				await navigator.share({ url })
 			} else {
 				await navigator.clipboard.writeText(url)
@@ -260,7 +265,17 @@ function TicketDisplay({
 						type="button"
 						size="icon-xs"
 						onClick={() => void shareTicket()}
-						title={t('common:sender.shareThisTicket')}
+						style={{
+							backgroundColor: linkCopySuccess
+								? 'var(--app-primary)'
+								: 'var(--color-foreground)',
+							border: '1px solid var(--border)',
+						}}
+						title={t(
+							canNativeShare
+								? 'common:sender.shareReceiveLink'
+								: 'common:sender.copyReceiveLink'
+						)}
 					>
 						{linkCopySuccess ? (
 							<CheckCircle className="h-3.5 w-3.5" />
