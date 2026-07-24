@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "ផ្ញើ",
 	"webPreview": {
 		"banner": "របៀបមើលជាមុន - ការផ្ទេរឯកសារត្រូវការកម្មវិធី desktop។",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "ទាញយកកម្មវិធី desktop និងតំណភ្ជាប់គម្រោង",
 		"notice": "កំណែគេហទំព័រមិនគាំទ្រការតភ្ជាប់ផ្ទាល់ - ចរាចរណ៍ត្រូវបញ្ជូនតាម relay សាធារណៈដែលបានអ៊ិនគ្រីប ហើយល្បឿនត្រូវបានដាក់កំហិត។ ឯកសាររបស់អ្នកនៅតែអ៊ិនគ្រីបគ្រប់ដូចគ្នា។ ប្រើកម្មវិធី desktop/CLI ឬ relay ផ្ទាល់ខ្លួនសម្រាប់បទពិសោធន៍ល្អប្រសើរជាង។",
-		"platforms": "AltSendme មានសម្រាប់ desktop, Android, CLI និងគេហទំព័រ។",
+		"platforms": "DashBeam មានសម្រាប់ desktop, Android, CLI និងគេហទំព័រ។",
 		"website": "គេហទំព័រ"
 	},
 	"receive": "ទទួល",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "មិនបានជ្រើសថតទេ",
 		"conflictsMore": "... និង {{count}} ទៀត",
 		"pasteTicket": "បិទភ្ជាប់សំបុត្រនៅទីនេះ៖",
-		"ticketPlaceholder": "AltSendme receive ticket...",
+		"ticketPlaceholder": "DashBeam receive ticket...",
 		"howToReceive": "របៀបទទួលឯកសារ",
 		"instruction1": "អ្នកផ្ញើត្រូវតែតភ្ជាប់អ៊ីនធឺណិត និងកំពុងចែកឯកសារ",
 		"instruction2": "ទទួលសំបុត្រពីអ្នកផ្ញើ",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "ម៉ឺនុយតាមបរិបទក្នុង Explorer",
-					"description": "បន្ថែម ‘ផ្ញើដោយ AltSendme’ ទៅម៉ឺនុយចុចស្ដាំក្នុង Windows Explorer"
+					"description": "បន្ថែម ‘ផ្ញើដោយ DashBeam’ ទៅម៉ឺនុយចុចស្ដាំក្នុង Windows Explorer"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "ម៉ាស៊ីនមេ relay",
-				"description": "គ្រប់គ្រងម៉ាស៊ីនមេ relay iroh ដែល AltSendme ប្រើសម្រាប់ NAT traversal និងការតភ្ជាប់បម្រុងដែលអ៊ិនក្រីប។",
+				"description": "គ្រប់គ្រងម៉ាស៊ីនមេ relay iroh ដែល DashBeam ប្រើសម្រាប់ NAT traversal និងការតភ្ជាប់បម្រុងដែលអ៊ិនក្រីប។",
 				"modeDefault": "ស្វ័យប្រវត្តិ (relay សាធារណៈ)",
 				"modeDefaultDesc": "ប្រើ relay iroh សាធារណៈលំនាំដើម។ ល្អបំផុតសម្រាប់អ្នកប្រើភាគច្រើន។",
 				"modeCustom": "ផ្ទាល់ខ្លួន (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "ប្រើ relay ផ្ទាល់ខ្លួន?",
 				"confirmCustomDescription": "អ្នកបានជ្រើសរើសប្រើ relay ដែលអ្នកបង្ហោះដោយខ្លួនឯង។ ប្រសិនបើ relay ផ្ទាល់ខ្លួនរបស់អ្នកមិនអាចភ្ជាប់បាន ការផ្ទេរនឹងត្រឡប់ទៅ relay សាធារណៈដោយស្វ័យប្រវត្តិ ហើយអ្នកនឹងទទួលបានការជូនដំណឹង។ relay ជួយតែឧបករណ៍របស់អ្នកឱ្យភ្ជាប់ក្នុងលក្ខខណ្ឌបណ្តាញពិបាក ហើយការផ្ទេររបស់អ្នកតែងតែរក្សាការអ៊ិនគ្រីបពីចុងដល់ចុង។",
 				"confirmContinue": "បន្ត",
-				"confirmCustomDescriptionWithPolicy": "អ្នកបានជ្រើសប្រើ relay ផ្ទាល់ខ្លួនដែលដំណើរការលើម៉ាស៊ីនផ្ទាល់។ ប្រសិនបើមិនអាចទាក់ទងបាន AltSendme នឹងអនុវត្តតាមគោលការណ៍បម្រុងដែលបានជ្រើសក្នុងការកំណត់ Relay។ relay ជួយឱ្យឧបករណ៍របស់អ្នកតភ្ជាប់គ្នាក្នុងស្ថានភាពបណ្តាញពិបាក ហើយការផ្ទេររបស់អ្នកនៅតែអ៊ិនគ្រីបពីចុងទៅចុងជានិច្ច។",
+				"confirmCustomDescriptionWithPolicy": "អ្នកបានជ្រើសប្រើ relay ផ្ទាល់ខ្លួនដែលដំណើរការលើម៉ាស៊ីនផ្ទាល់។ ប្រសិនបើមិនអាចទាក់ទងបាន DashBeam នឹងអនុវត្តតាមគោលការណ៍បម្រុងដែលបានជ្រើសក្នុងការកំណត់ Relay។ relay ជួយឱ្យឧបករណ៍របស់អ្នកតភ្ជាប់គ្នាក្នុងស្ថានភាពបណ្តាញពិបាក ហើយការផ្ទេររបស់អ្នកនៅតែអ៊ិនគ្រីបពីចុងទៅចុងជានិច្ច។",
 				"fallbackDescription": "ជ្រើសរើសអ្វីដែលកើតឡើងនៅពេល relay ផ្ទាល់ខ្លួនមិនអាចទាក់ទងបាន។",
 				"fallbackLabel": "គោលការណ៍បម្រុង",
 				"fallbackPublic": "ប្រើ relay សាធារណៈប្រសិនបើចាំបាច់",

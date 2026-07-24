@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Küldés",
 	"webPreview": {
 		"banner": "Előnézeti mód - fájlátvitelhez asztali alkalmazás szükséges.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Asztali alkalmazás és projektlinkek",
 		"notice": "A webes verzió nem támogat közvetlen kapcsolatokat - a forgalom titkosított nyilvános relay-ken keresztül megy, és a sebesség korlátozott. A fájljaid mindenesetre titkosítva maradnak. Jobb élményért használd az asztali/CLI alkalmazást vagy egyéni relay-ket.",
-		"platforms": "Az AltSendme elérhető asztali, Android, CLI és webes formában.",
+		"platforms": "Az DashBeam elérhető asztali, Android, CLI és webes formában.",
 		"website": "Weboldal"
 	},
 	"receive": "Fogadás",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Intéző helyi menü",
-					"description": "„Küldés az AltSendme-val” hozzáadása a Windows Intéző helyi menüjéhez"
+					"description": "„Küldés az DashBeam-val” hozzáadása a Windows Intéző helyi menüjéhez"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Relay szerverek",
-				"description": "Szabályozza, mely iroh relay szervereket használja az AltSendme NAT átjáráshoz és titkosított tartalék kapcsolatokhoz.",
+				"description": "Szabályozza, mely iroh relay szervereket használja az DashBeam NAT átjáráshoz és titkosított tartalék kapcsolatokhoz.",
 				"modeDefault": "Automatikus (nyilvános relay)",
 				"modeDefaultDesc": "Az alapértelmezett nyilvános iroh relay-ket használja. A legtöbb felhasználónak ideális.",
 				"modeCustom": "Egyéni (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Egyéni relay-eket használ?",
 				"confirmCustomDescription": "Úgy döntött, hogy saját, önállóan üzemeltetett relay-eket használ. Ha az egyéni relay-ei nem elérhetők, az átvitelek automatikusan visszaállnak a nyilvános relay-ekre, és értesítést kap. A relay-ek csak abban segítenek, hogy az eszközei nehéz hálózati körülmények között is kapcsolódjanak, és az átvitelei mindig végpontok közötti titkosítással védettek maradnak.",
 				"confirmContinue": "Folytatás",
-				"confirmCustomDescriptionWithPolicy": "Saját, self-hosted relay használatát választottad. Ha elérhetetlenek, az AltSendme a Relay beállításokban kiválasztott tartalék szabályzatot követi. A relay csak a nehéz hálózati körülmények közötti kapcsolódásban segít, az átvitelek mindig end-to-end titkosítottak maradnak.",
+				"confirmCustomDescriptionWithPolicy": "Saját, self-hosted relay használatát választottad. Ha elérhetetlenek, az DashBeam a Relay beállításokban kiválasztott tartalék szabályzatot követi. A relay csak a nehéz hálózati körülmények közötti kapcsolódásban segít, az átvitelek mindig end-to-end titkosítottak maradnak.",
 				"fallbackDescription": "Válaszd ki, mi történjen, ha az egyéni relay elérhetetlen.",
 				"fallbackLabel": "Tartalék szabályzat",
 				"fallbackPublic": "Szükség esetén nyilvános relay használata",

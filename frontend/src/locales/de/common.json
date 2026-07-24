@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Senden",
 	"webPreview": {
 		"banner": "Vorschaumodus - Dateiübertragungen erfordern die Desktop-App.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Desktop-App und Projektlinks",
 		"notice": "Die Webversion unterstützt keine direkten Verbindungen - der Datenverkehr wird über verschlüsselte öffentliche Relays geleitet und die Geschwindigkeit ist gedrosselt. Ihre Dateien bleiben in jedem Fall verschlüsselt. Für ein besseres Erlebnis nutzen Sie die Desktop-/CLI-App oder eigene Relays.",
-		"platforms": "AltSendme ist als Desktop-, Android-, CLI- und Web-App verfügbar.",
+		"platforms": "DashBeam ist als Desktop-, Android-, CLI- und Web-App verfügbar.",
 		"website": "Website"
 	},
 	"receive": "Empfangen",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "Kein Ordner ausgewählt",
 		"conflictsMore": "... und {{count}} weitere",
 		"pasteTicket": "Ticket hier einfügen:",
-		"ticketPlaceholder": "AltSendme Empfangsticket...",
+		"ticketPlaceholder": "DashBeam Empfangsticket...",
 		"howToReceive": "So empfangen Sie Dateien",
 		"instruction1": "Der Absender muss online sein und eine Datei freigeben",
 		"instruction2": "Holen Sie sich ein Ticket vom Absender",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Kontextmenü im Explorer",
-					"description": "„Mit AltSendme senden“ zum Rechtsklickmenü im Windows-Explorer hinzufügen"
+					"description": "„Mit DashBeam senden“ zum Rechtsklickmenü im Windows-Explorer hinzufügen"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Relay-Server",
-				"description": "Steuern Sie, welche iroh-Relay-Server AltSendme für NAT-Traversal und verschlüsselte Fallback-Verbindungen verwendet.",
+				"description": "Steuern Sie, welche iroh-Relay-Server DashBeam für NAT-Traversal und verschlüsselte Fallback-Verbindungen verwendet.",
 				"modeDefault": "Automatisch (öffentliche Relays)",
 				"modeDefaultDesc": "Verwendet die standardmäßigen öffentlichen iroh-Relays. Am besten für die meisten Nutzer.",
 				"modeCustom": "Benutzerdefiniert (Self-Hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Benutzerdefinierte Relays verwenden?",
 				"confirmCustomDescription": "Sie haben sich entschieden, eigene selbst gehostete Relays zu verwenden. Wenn Ihre benutzerdefinierten Relays nicht erreichbar sind, wechseln Übertragungen automatisch auf öffentliche Relays und Sie werden benachrichtigt. Relays helfen Ihren Geräten nur, sich unter schwierigen Netzwerkbedingungen zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
 				"confirmContinue": "Weiter",
-				"confirmCustomDescriptionWithPolicy": "Sie haben sich für eigene, selbst gehostete Relays entschieden. Wenn sie nicht erreichbar sind, folgt AltSendme der in den Relay-Einstellungen gewählten Fallback-Richtlinie. Relays helfen Ihren Geräten nur, sich unter schwierigen Netzwerkbedingungen zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
+				"confirmCustomDescriptionWithPolicy": "Sie haben sich für eigene, selbst gehostete Relays entschieden. Wenn sie nicht erreichbar sind, folgt DashBeam der in den Relay-Einstellungen gewählten Fallback-Richtlinie. Relays helfen Ihren Geräten nur, sich unter schwierigen Netzwerkbedingungen zu verbinden, und Ihre Übertragungen bleiben immer Ende-zu-Ende-verschlüsselt.",
 				"fallbackDescription": "Legen Sie fest, was passiert, wenn Ihr benutzerdefiniertes Relay nicht erreichbar ist.",
 				"fallbackLabel": "Fallback-Richtlinie",
 				"fallbackPublic": "Bei Bedarf öffentliche Relays verwenden",

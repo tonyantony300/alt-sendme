@@ -1,8 +1,8 @@
-# Self-host an iroh relay for AltSendme
+# Self-host an iroh relay for DashBeam
 
-Run your own relay so AltSendme transfers do not use the public iroh relay infrastructure. Relays are stateless connection facilitators — all file data stays end-to-end encrypted.
+Run your own relay so DashBeam transfers do not use the public iroh relay infrastructure. Relays are stateless connection facilitators — all file data stays end-to-end encrypted.
 
-## Using self-hosted relays with AltSendme
+## Using self-hosted relays with DashBeam
 
 1. Deploy a relay using the assets in this directory (Docker Compose on a VPS or Fly.io).
 2. In the app, open **Settings → Network** and choose **Custom self-hosted**.
@@ -47,13 +47,13 @@ So mixed setups are fine for getting files across, but they're **not fully priva
 | Ports | `80/tcp`, `443/tcp`, `7842/udp` (QUIC address discovery). `9090/tcp` is metrics — keep it **private** (see [Observability](#observability)) |
 | TLS | Automatic via Let's Encrypt (built into `iroh-relay`) |
 
-For production, run **at least two relays** in different regions and add both URLs in AltSendme → Settings → Network.
+For production, run **at least two relays** in different regions and add both URLs in DashBeam → Settings → Network.
 
 ## Option 1: Fly.io
 
 Fly supports UDP and raw ports, which many PaaS providers do not.
 
-[![Deploy on Fly.io](https://img.shields.io/badge/Deploy%20on-Fly.io-4d24f9?logo=flydotio&logoColor=white)](https://fly.io/launch?source=https://github.com/tonyantony300/alt-sendme/tree/main/deploy/relay)
+[![Deploy on Fly.io](https://img.shields.io/badge/Deploy%20on-Fly.io-4d24f9?logo=flydotio&logoColor=white)](https://fly.io/launch?source=https://github.com/tonyantony300/dashbeam/tree/main/deploy/relay)
 
 ```bash
 cd deploy/relay
@@ -83,7 +83,7 @@ fly deploy --config fly.dev.toml
 fly status   # confirm the machine is running
 ```
 
-Then in AltSendme → **Settings → Network → Custom self-hosted**, add
+Then in DashBeam → **Settings → Network → Custom self-hosted**, add
 `https://<your-unique-name>.fly.dev` and click **Test connection**.
 
 > **Caveat:** this mode provides **relaying only** — QUIC address discovery / holepunch
@@ -111,7 +111,7 @@ Then in AltSendme → **Settings → Network → Custom self-hosted**, add
    docker compose up -d
    ```
 
-4. In AltSendme → **Settings → Network**, choose **Custom self-hosted**, add `https://euc1-1.relay.example.com` (see [Region naming](#region-naming-optional-enables-location-flags)), and paste your auth token if you enabled access control.
+4. In DashBeam → **Settings → Network**, choose **Custom self-hosted**, add `https://euc1-1.relay.example.com` (see [Region naming](#region-naming-optional-enables-location-flags)), and paste your auth token if you enabled access control.
 
 ## Rate limiting 
 
@@ -164,7 +164,7 @@ echo "IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)" >> deploy/relay/.env
 fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
 ```
 
-Use the same value in AltSendme → Settings → Network → **Auth token** on every device.
+Use the same value in DashBeam → Settings → Network → **Auth token** on every device.
 
 > Static tokens have no expiry and no per-client revocation — rotating one means updating
 > every client. For revocation without restarts, use Tier 3.
@@ -252,14 +252,14 @@ this unit at `/etc/systemd/system/iroh-relay.service`:
 
 ```ini
 [Unit]
-Description=AltSendme iroh-relay
+Description=DashBeam iroh-relay
 Requires=docker.service
 After=docker.service network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/alt-sendme/deploy/relay
-EnvironmentFile=-/opt/alt-sendme/deploy/relay/.env
+WorkingDirectory=/opt/dashbeam/deploy/relay
+EnvironmentFile=-/opt/dashbeam/deploy/relay/.env
 ExecStart=/usr/bin/docker compose up
 ExecStop=/usr/bin/docker compose down
 Restart=always
@@ -299,7 +299,7 @@ No upstream NixOS module exists yet; run the container declaratively with
 
 ## Verify
 
-After deployment, open AltSendme → Settings → Network → **Test connection**. A successful test confirms the app can register with your relay.
+After deployment, open DashBeam → Settings → Network → **Test connection**. A successful test confirms the app can register with your relay.
 
 ## Troubleshooting
 
@@ -316,7 +316,7 @@ After deployment, open AltSendme → Settings → Network → **Test connection*
 
 ## Region naming (optional, enables location flags)
 
-AltSendme shows a country flag next to a relay URL when the hostname starts with an
+DashBeam shows a country flag next to a relay URL when the hostname starts with an
 AWS/iroh-style region code (e.g. `euc1` → Frankfurt, `use1` → US East, `aps1` → Mumbai).
 Following the `https://<region>-<n>.relay.example.com` convention is purely cosmetic and
 never required.

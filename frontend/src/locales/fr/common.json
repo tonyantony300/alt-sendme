@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Envoyer",
 	"webPreview": {
 		"banner": "Mode aperçu - les transferts de fichiers nécessitent l’application de bureau.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Application de bureau et liens du projet",
 		"notice": "La version web ne prend pas en charge les connexions directes - le trafic passe par des relais publics chiffrés et la vitesse est limitée. Vos fichiers restent chiffrés dans tous les cas. Utilisez l’application de bureau/CLI ou des relais personnalisés pour une meilleure expérience.",
-		"platforms": "AltSendme est disponible en version bureau, Android, CLI et web.",
+		"platforms": "DashBeam est disponible en version bureau, Android, CLI et web.",
 		"website": "Site web"
 	},
 	"receive": "Recevoir",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "Aucun dossier sélectionné",
 		"conflictsMore": "... et {{count}} de plus",
 		"pasteTicket": "Collez le ticket ici :",
-		"ticketPlaceholder": "ticket de réception AltSendme...",
+		"ticketPlaceholder": "ticket de réception DashBeam...",
 		"howToReceive": "Comment recevoir des fichiers",
 		"instruction1": "L'expéditeur doit être en ligne et partager un fichier",
 		"instruction2": "Obtenez un ticket de l'expéditeur",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Menu contextuel de l’Explorateur",
-					"description": "Ajouter « Envoyer avec AltSendme » au menu contextuel de l’Explorateur Windows"
+					"description": "Ajouter « Envoyer avec DashBeam » au menu contextuel de l’Explorateur Windows"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Serveurs relais",
-				"description": "Contrôlez quels serveurs relais iroh AltSendme utilise pour le traversée NAT et les connexions de secours chiffrées.",
+				"description": "Contrôlez quels serveurs relais iroh DashBeam utilise pour le traversée NAT et les connexions de secours chiffrées.",
 				"modeDefault": "Automatique (relais publics)",
 				"modeDefaultDesc": "Utilise les relais publics iroh par défaut. Recommandé pour la plupart des utilisateurs.",
 				"modeCustom": "Personnalisé (auto-hébergé)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Utiliser des relais personnalisés ?",
 				"confirmCustomDescription": "Vous avez choisi d'utiliser vos propres relais auto-hébergés. Si vos relais personnalisés sont injoignables, les transferts basculeront automatiquement vers les relais publics et vous serez averti. Les relais aident uniquement vos appareils à se connecter dans des conditions réseau difficiles, et vos transferts restent toujours chiffrés de bout en bout.",
 				"confirmContinue": "Continuer",
-				"confirmCustomDescriptionWithPolicy": "Vous avez choisi d’utiliser vos propres relais auto-hébergés. S’ils sont injoignables, AltSendme suivra la politique de repli sélectionnée dans les réglages Relais. Les relais aident uniquement vos appareils à se connecter dans des conditions réseau difficiles, et vos transferts restent toujours chiffrés de bout en bout.",
+				"confirmCustomDescriptionWithPolicy": "Vous avez choisi d’utiliser vos propres relais auto-hébergés. S’ils sont injoignables, DashBeam suivra la politique de repli sélectionnée dans les réglages Relais. Les relais aident uniquement vos appareils à se connecter dans des conditions réseau difficiles, et vos transferts restent toujours chiffrés de bout en bout.",
 				"fallbackDescription": "Choisissez ce qui se passe lorsque votre relais personnalisé est injoignable.",
 				"fallbackLabel": "Politique de repli",
 				"fallbackPublic": "Utiliser les relais publics si nécessaire",

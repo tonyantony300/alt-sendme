@@ -6,7 +6,7 @@ use engine::{download, start_share, ReceiveOptions, SendOptions};
 #[tokio::test]
 async fn e2e_single_text_file_roundtrip() {
     let fixture = TestFixture::new();
-    let source = fixture.create_file("hello.txt", b"Hello from AltSendme E2E test!");
+    let source = fixture.create_file("hello.txt", b"Hello from DashBeam E2E test!");
     let recv_dir = fixture.output_dir();
 
     let sender_emitter = MockEventEmitter::new();
@@ -41,7 +41,7 @@ async fn e2e_single_text_file_roundtrip() {
 
     let received = std::fs::read(recv_dir.join("hello.txt")).expect("received file should exist");
     assert_eq!(
-        received, b"Hello from AltSendme E2E test!",
+        received, b"Hello from DashBeam E2E test!",
         "file content should match exactly"
     );
 

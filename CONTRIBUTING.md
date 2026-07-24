@@ -1,4 +1,4 @@
-# Contributing to AltSendme
+# Contributing to DashBeam
 
 Thank you for your interest in contributing. This guide covers local setup and how to submit changes.
 
@@ -7,8 +7,8 @@ Thank you for your interest in contributing. This guide covers local setup and h
 **Prerequisites:** Rust 1.91+, Node.js 20+, pnpm 10+
 
 ```bash
-git clone https://github.com/tonyantony300/alt-sendme.git
-cd alt-sendme
+git clone https://github.com/tonyantony300/dashbeam.git
+cd dashbeam
 pnpm install
 ```
 
@@ -71,7 +71,7 @@ cargo test --manifest-path engine/Cargo.toml
 
 ## Pull requests
 
-1. Search [existing issues](https://github.com/tonyantony300/alt-sendme/issues) before opening a new one.
+1. Search [existing issues](https://github.com/tonyantony300/dashbeam/issues) before opening a new one.
 2. For bugs, use the [bug report template](.github/ISSUE_TEMPLATE/report-bug.md).
 3. Run checks before opening a PR:
 
@@ -91,7 +91,7 @@ git checkout origin/main -- pnpm-lock.yaml src-tauri/Cargo.lock engine/Cargo.loc
 ## Getting help
 
 - [Discord](https://discord.gg/xwb7z22Eve)
-- [GitHub Issues](https://github.com/tonyantony300/alt-sendme/issues)
+- [GitHub Issues](https://github.com/tonyantony300/dashbeam/issues)
 
 
 Please be respectful and considerate in all project spaces.

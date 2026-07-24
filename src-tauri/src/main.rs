@@ -19,7 +19,7 @@ fn main() {
     }
 
     tracing::info!(
-        "Starting AltSendme application v{}",
+        "Starting DashBeam application v{}",
         alt_sendme_lib::get_app_version()
     );
 

@@ -1,3 +1,5 @@
+<img src="assets/rename-banner.svg" alt="Announcement: AltSendme is now DashBeam. Same app, easier to find, remember and pronounce." width="1200" />
+
 <div align="center">
 
 # File transfer doesn't need to be complicated
@@ -5,11 +7,11 @@
 </div>
 
 
-![AltSendme Header](assets/header.png)
+![DashBeam Header](assets/header.png)
 
 <div align="center">
 
-![AltSendme working demo](assets/demo.gif)
+![DashBeam working demo](assets/demo.gif)
 
 </div>
 
@@ -17,15 +19,14 @@
 
 
 [![Discord][badge-discord]](https://discord.gg/xwb7z22Eve)
-[![Version][badge-version]](https://github.com/tonyantony300/alt-sendme/releases/latest)
+[![Version][badge-version]](https://github.com/tonyantony300/dashbeam/releases/latest)
 ![Website][badge-website]
 ![Platforms][badge-platforms]
 [![Sponsor][badge-sponsor]](https://github.com/sponsors/tonyantony300)
 
 
+
 </div>
-
-
 
 A free and open-source file transfer tool that harnesses the power of [cutting-edge peer-to-peer networking](https://www.iroh.computer), letting you transfer files directly without storing them on cloud servers.
 
@@ -76,43 +77,43 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
   <tr>
     <td>💻 <b>Windows (x64)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_x64-setup.exe'>Setup.exe</a></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_x64-portable.zip'>Portable ZIP</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_x64-setup.exe'>Setup.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_x64-portable.zip'>Portable ZIP</a></td>
     <td>~10 MB</td>
   </tr>
   <tr>
     <td>💻 <b>macOS (Universal)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_universal.dmg'>AltSendme.dmg</a></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_x64.dmg'>Intel</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_universal.dmg'>DashBeam.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_x64.dmg'>Intel</a></td>
     <td>~15 MB</td>
   </tr>
   <tr>
     <td>💻 <b>Linux (amd64)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_amd64.deb'>AltSendme.deb</a></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme-0.6.0-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme_0.6.0_amd64.AppImage'>AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_amd64.deb'>DashBeam.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme-0.6.0-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme_0.6.0_amd64.AppImage'>AppImage</a></td>
     <td>~13 MB</td>
   </tr>
   <tr>
     <td>📱 <b>Android (arm64)</b></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme-v0.6.0-arm64.apk'>AltSendme.apk</a></td>
-    <td><a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme-v0.6.0-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/alt-sendme/releases/download/v0.6.0/AltSendme-v0.6.0-universal.apk'>universal</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme-v0.6.0-arm64.apk'>DashBeam.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme-v0.6.0-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.0/AltSendme-v0.6.0-universal.apk'>universal</a></td>
     <td>~50 MB</td>
   </tr>
   <tr>
     <td>⌨️ <b>CLI</b></td>
-    <td><a href='https://www.altsendme.com/en/downloads'>Downloads</a></td>
+    <td><a href='https://www.dashbeam.net/en/downloads'>Downloads</a></td>
     <td>-</td>
     <td>~4-5 MB</td>
   </tr>
   <tr>
     <td>🌐 <b>Web (Limited throughput)</b></td>
-    <td><a href='https://app.altsendme.com'>app.altsendme.com</a></td>
+    <td><a href='https://app.dashbeam.net'>app.dashbeam.net</a></td>
     <td>-</td>
     <td>~2 MB</td>
   </tr>
 </table>
 
-More options at [GitHub Releases](https://github.com/tonyantony300/alt-sendme/releases) or in [Downloads](https://www.altsendme.com/en/downloads) page.
+More options at [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) or in [Downloads](https://www.dashbeam.net/en/downloads) page.
 
 
 
@@ -120,15 +121,15 @@ More options at [GitHub Releases](https://github.com/tonyantony300/alt-sendme/re
 
 <a href="https://www.testmuai.com" rel="nofollow">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.altsendme.com/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.altsendme.com/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.altsendme.com/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
+    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
+    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
   </picture>
 </a>
 
 We're looking for Partners to join our mission! Partner with us and support while we push the boundaries of peer-to-peer file transfer.
 
-[**LET'S CHAT**](https://www.altsendme.com/en/contact)
+[**LET'S CHAT**](https://www.dashbeam.net/en/contact)
 
 
 ## Supported Languages
@@ -137,7 +138,7 @@ We're looking for Partners to join our mission! Partner with us and support whil
  
 ## How it works 
 
-1. Drop your file or folder - AltSendme creates a one-time share code (called a "ticket").
+1. Drop your file or folder - DashBeam creates a one-time share code (called a "ticket").
 2. Share the ticket via chat, email, or text, **or** send directly to a paired device (desktop / Android).
 3. Your friend pastes the ticket in their app (or accepts a paired-device invite), and the transfer begins.
 
@@ -152,7 +153,7 @@ On macOS, Windows, Linux, and Android you can pair devices in **Settings → Dev
 
 ## Comparison
 
-| | **AltSendme** | **Blip** | **LocalSend** | **Magic Wormhole** | **PairDrop** |
+| | **DashBeam** | **Blip** | **LocalSend** | **Magic Wormhole** | **PairDrop** |
 |:---|:---:|:---:|:---:|:---:|:---:|
 | Networking stack | QUIC via Iroh | Unknown | HTTPS/REST over TCP | encrypted TCP | WebRTC/DTLS (SCTP) |
 | Works over the internet | ✅ | ✅ | LAN only | ✅ | ✅ |
@@ -166,11 +167,11 @@ On macOS, Windows, Linux, and Android you can pair devices in **Settings → Dev
 | Platforms | CLI + desktop + mobile + web | Desktop + mobile (no web/CLI) | Desktop + mobile (no web/CLI) | CLI only | Web/PWA + Android app + CLI |
 | The catch | WIP | Closed source; data handling cannot be audited | Same-network only, no resume | CLI-only; GUI front-ends are separate, community-maintained | WebRTC/SCTP throughput ceiling; browser memory limits |
 
-[Know more →](https://www.altsendme.com/en/compare)
+[Know more →](https://www.dashbeam.net/en/compare)
 
 ## Under the hood
 
-AltSendme is built on [Iroh](https://www.iroh.computer), a modern peer-to-peer networking stack that simplifies direct device-to-device communication. In practice, that means devices talk over encrypted QUIC, files move with content-addressed blobs, and relays help when a direct path isn’t available.
+DashBeam is built on [Iroh](https://www.iroh.computer), a modern peer-to-peer networking stack that simplifies direct device-to-device communication. In practice, that means devices talk over encrypted QUIC, files move with content-addressed blobs, and relays help when a direct path isn’t available.
 
 ### The building blocks
 
@@ -213,22 +214,22 @@ Either way, the payload is end-to-end encrypted. Relays see ciphertext, not your
 
 ### QUIC & encryption
 
-QUIC (UDP-based, same foundation as HTTP/3) brings TLS 1.3 into the transport. For AltSendme that buys encryption and authentication, multiple streams with shared congestion control, and fast reconnects when you’ve talked to a peer before.
+QUIC (UDP-based, same foundation as HTTP/3) brings TLS 1.3 into the transport. For DashBeam that buys encryption and authentication, multiple streams with shared congestion control, and fast reconnects when you’ve talked to a peer before.
 
 ### Paired devices
 
 Pairing doesn’t replace tickets; it delivers them for you.
 
-1. Devices exchange a short **pairing code** (the host’s endpoint id) over a dedicated control ALPN (`altsendme/control/1`).
+1. Devices exchange a short **pairing code** (the host’s endpoint id) over a dedicated control ALPN.
 2. Each side proves identity by signing connection-bound keying material with its device secret, then remembers the peer locally.
 3. A persistent control connection keeps presence (online/offline).
-4. When you share, AltSendme still creates a normal one-time blob ticket; choosing a paired device ships that ticket as an in-app **invite** instead of making you copy-paste it.
+4. When you share, DashBeam still creates a normal one-time blob ticket; choosing a paired device ships that ticket as an in-app **invite** instead of making you copy-paste it.
 
 Manual tickets and the [sendme CLI](https://www.iroh.computer/sendme) keep working exactly as before.
 
 ### Self-hosting relays
 
-For how to run your own iroh relay, configure AltSendme to use it, and how mixed public/self-hosted setups behave, see [`deploy/relay/README.md`](deploy/relay/README.md#using-self-hosted-relays-with-altsendme).
+For how to run your own iroh relay, configure DashBeam to use it, and how mixed public/self-hosted setups behave, see [`deploy/relay/README.md`](deploy/relay/README.md#using-self-hosted-relays-with-dashbeam).
 
 
 ## Development
@@ -247,21 +248,21 @@ AGPL-3.0
 
 ## Privacy Policy
 
-See [PRIVACY.md](PRIVACY.md) for information about how AltSendme handles your data and privacy.
+See [PRIVACY.md](PRIVACY.md) for information about how DashBeam handles your data and privacy.
 
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/tonyantony300) [![Buy Me Coffee](https://img.shields.io/badge/Buy%20Me%20Coffee-FF5A5F?style=for-the-badge&logo=coffee&logoColor=FFFFFF)](https://buymeacoffee.com/tny_antny)
 
 
 ## Contributors
 
-<a href="https://github.com/tonyantony300/alt-sendme/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tonyantony300/alt-sendme" />
+<a href="https://github.com/tonyantony300/dashbeam/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=tonyantony300/dashbeam" />
 </a>
 
 
 ## Contact
 
-Reach me [here](https://www.altsendme.com/en/contact) for suggestions, feedback or media related communication.
+Reach me [here](https://www.dashbeam.net/en/contact) for suggestions, feedback or media related communication.
 
 
 Thank you for checking out this project! If you find it useful, consider giving it a star and helping spread the word.
@@ -282,7 +283,7 @@ Thank you for checking out this project! If you find it useful, consider giving 
 
 <!-- <div align="center" style="color: gray;"></div> -->
 
-[badge-website]: https://img.shields.io/badge/website-altsendme.com-orange
+[badge-website]: https://img.shields.io/badge/website-dashbeam.net-orange
 [badge-version]: https://img.shields.io/badge/version-0.6.0-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20CLI%2C%20-green

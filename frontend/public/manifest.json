@@ -1,6 +1,6 @@
 {
-	"name": "AltSendme - Peer-to-peer file transfer",
-	"short_name": "AltSendme",
+	"name": "DashBeam - Peer-to-peer file transfer",
+	"short_name": "DashBeam",
 	"description": "Open-source peer-to-peer file transfer in the browser. No accounts, unlimited size, end-to-end encrypted with Iroh.",
 	"start_url": "/",
 	"display": "standalone",

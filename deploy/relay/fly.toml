@@ -9,7 +9,7 @@
 #   fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
 #   fly deploy
 
-app = "altsendme-relay"
+app = "dashbeam-relay"
 primary_region = "iad"
 
 [build]

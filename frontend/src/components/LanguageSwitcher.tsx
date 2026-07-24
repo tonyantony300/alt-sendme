@@ -103,19 +103,15 @@ export function LanguageSwitcher(props: ButtonProps) {
 				<ComboboxList>
 					{(item: { value: string; label: string; countryCode?: string }) => (
 						<ComboboxItem key={item.value} value={item}>
-							{item.countryCode && (
-								<CountryFlag
-									countryCode={item.countryCode}
-									style={{
-										width: '1.5em',
-										height: '1.5em',
-										verticalAlign: 'middle',
-										marginRight: '0.5em',
-										borderRadius: '0.25em',
-									}}
-								/>
-							)}
-							{item.label}
+							<span className="flex items-center gap-2">
+								{item.countryCode && (
+									<CountryFlag
+										countryCode={item.countryCode}
+										className="size-[1.25em] shrink-0 rounded-sm"
+									/>
+								)}
+								{item.label}
+							</span>
 						</ComboboxItem>
 					)}
 				</ComboboxList>

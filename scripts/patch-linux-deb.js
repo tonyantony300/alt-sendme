@@ -37,7 +37,7 @@ function findDebArtifacts() {
 }
 
 function patchDeb(debPath) {
-	const tmpDir = fs.mkdtempSync(path.join('/tmp', 'altsendme-deb-'))
+	const tmpDir = fs.mkdtempSync(path.join('/tmp', 'dashbeam-deb-'))
 	try {
 		execSync(
 			`dpkg-deb -R ${JSON.stringify(debPath)} ${JSON.stringify(tmpDir)}`,

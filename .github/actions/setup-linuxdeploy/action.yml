@@ -1,0 +1,64 @@
+name: Set up pinned linuxdeploy
+description: >
+  Download a checksum-verified linuxdeploy release into Tauri's cache dir so
+  `tauri build` uses it instead of Tauri's outdated binary-releases pin
+  (which lacks LINUXDEPLOY_EXCLUDED_LIBRARIES env-var support). Also exports
+  the exclusion env var so the AppImage omits libwayland-client and loads the
+  host copy at runtime. Fixes EGL_BAD_PARAMETER on Wayland compositors
+  (tonyantony300/dashbeam#241, #47).
+
+runs:
+  using: composite
+  steps:
+    - name: Download + verify + place linuxdeploy, export exclusion env
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Pinned to linuxdeploy `1-alpha-20251107-1` (first tagged release after
+        # LINUXDEPLOY_EXCLUDED_LIBRARIES support landed in 98f393c4, 2024-06-13).
+        # Avoid `continuous` — always pin a fixed tag + sha256.
+        #
+        # To bump:
+        # 1. Pick a newer tag from linuxdeploy/linuxdeploy releases (not continuous).
+        # 2. curl the AppImage(s) and sha256sum them.
+        # 3. Update URL tag + EXPECTED_SHA_* below.
+        readonly TAG='1-alpha-20251107-1'
+        readonly BASE="https://github.com/linuxdeploy/linuxdeploy/releases/download/${TAG}"
+
+        arch="$(uname -m)"
+        case "$arch" in
+          x86_64)
+            readonly FILENAME='linuxdeploy-x86_64.AppImage'
+            readonly EXPECTED_SHA='c20cd71e3a4e3b80c3483cef793cda3f4e990aca14014d23c544ca3ce1270b4d'
+            ;;
+          aarch64|arm64)
+            readonly FILENAME='linuxdeploy-aarch64.AppImage'
+            readonly EXPECTED_SHA='620095110d693282b8ebeb244a95b5e911cf8f65f76c88b4b47d16ae6346fcff'
+            ;;
+          *)
+            echo "Unsupported architecture for linuxdeploy pin: $arch" >&2
+            exit 1
+            ;;
+        esac
+
+        readonly URL="${BASE}/${FILENAME}"
+        # Follow XDG so a customized cache dir still matches dirs::cache_dir().
+        readonly TAURI_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/tauri"
+        readonly DEST="$TAURI_CACHE/$FILENAME"
+        readonly TMP="$(mktemp)"
+        mkdir -p "$TAURI_CACHE"
+
+        curl --fail --silent --show-error --location \
+          --max-time 120 --retry 3 --retry-delay 2 \
+          "$URL" --output "$TMP"
+
+        # Verify before placing so a bad download cannot poison the cache.
+        echo "$EXPECTED_SHA  $TMP" | sha256sum --check --quiet
+
+        mv "$TMP" "$DEST"
+        chmod +x "$DEST"
+        echo "Placed $DEST (sha256 verified)"
+
+        # Semicolon-separated fnmatch globs read by linuxdeploy on AppDir init.
+        # Excluding libwayland-client forces the host copy (matches compositor).
+        echo 'LINUXDEPLOY_EXCLUDED_LIBRARIES=libwayland-client.so*' >> "$GITHUB_ENV"

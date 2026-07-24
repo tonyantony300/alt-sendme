@@ -10,8 +10,8 @@ authors = ["Tony Antony <tonyantony300@gmail.com>"]
 keywords = ["scp", "sftp", "network", "p2p", "holepunching"]
 categories = ["network-programming"]
 license = "AGPL-3.0"
-repository = "https://github.com/tonyantony300/alt-sendme"
-description = "AltSendme - Frictionless peer-to-peer file transfer desktop application with NAT hole punching"
+repository = "https://github.com/tonyantony300/dashbeam"
+description = "DashBeam - Frictionless peer-to-peer file transfer desktop application with NAT hole punching"
 readme = "README.md"
 rust-version = "1.91"
 

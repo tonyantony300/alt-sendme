@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Tony Antony <tonyantony300@gmail.com>"]
 license = "AGPL-3.0"
-repository = "https://github.com/tonyantony300/alt-sendme"
-description = "wasm-bindgen bridge: exposes alt-sendme transfer APIs to the browser"
+repository = "https://github.com/tonyantony300/dashbeam"
+description = "wasm-bindgen bridge: exposes dashbeam transfer APIs to the browser"
 rust-version = "1.91"
 
 [lib]

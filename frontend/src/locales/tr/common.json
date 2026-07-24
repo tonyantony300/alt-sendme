@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Gönder",
 	"webPreview": {
 		"banner": "Önizleme modu - dosya aktarımı masaüstü uygulaması gerektirir.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Masaüstü uygulaması ve proje bağlantıları",
 		"notice": "Web sürümü doğrudan bağlantıları desteklemez - trafik şifreli genel relay'ler üzerinden yönlendirilir ve hızlar sınırlanır. Dosyalarınız yine de şifreli kalır. Daha iyi bir deneyim için masaüstü/CLI uygulamasını veya özel relay'leri kullanın.",
-		"platforms": "AltSendme masaüstü, Android, CLI ve web olarak kullanılabilir.",
+		"platforms": "DashBeam masaüstü, Android, CLI ve web olarak kullanılabilir.",
 		"website": "Web sitesi"
 	},
 	"receive": "Al",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "Klasör seçilmedi",
 		"conflictsMore": "... ve {{count}} tane daha",
 		"pasteTicket": "Anahtarı buraya yapıştırın:",
-		"ticketPlaceholder": "AltSendme alma anahtarı...",
+		"ticketPlaceholder": "DashBeam alma anahtarı...",
 		"howToReceive": "Dosya nasıl alınır",
 		"instruction1": "Gönderici çevrimiçi olmalı ve dosya paylaşıyor olmalı",
 		"instruction2": "Göndericiden bir anahtar alın",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Gezgin bağlam menüsü",
-					"description": "Windows Gezgini sağ tık menüsüne «AltSendme ile gönder» ekle"
+					"description": "Windows Gezgini sağ tık menüsüne «DashBeam ile gönder» ekle"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Relay sunucuları",
-				"description": "AltSendme'nin NAT geçişi ve şifreli yedek bağlantılar için hangi iroh relay sunucularını kullandığını kontrol edin.",
+				"description": "DashBeam'nin NAT geçişi ve şifreli yedek bağlantılar için hangi iroh relay sunucularını kullandığını kontrol edin.",
 				"modeDefault": "Otomatik (genel relay)",
 				"modeDefaultDesc": "Varsayılan genel iroh relay'lerini kullanır. Çoğu kullanıcı için en iyisi.",
 				"modeCustom": "Özel (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Özel relay'ler kullanılsın mı?",
 				"confirmCustomDescription": "Kendi barındırdığınız özel relay'leri kullanmayı seçtiniz. Özel relay'lerinize ulaşılamazsa, aktarımlar otomatik olarak genel relay'lere geri döner ve bilgilendirilirsiniz. Relay'ler yalnızca cihazlarınızın zorlu ağ koşullarında bağlanmasına yardımcı olur ve aktarımlarınız her zaman uçtan uca şifreli kalır.",
 				"confirmContinue": "Devam et",
-				"confirmCustomDescriptionWithPolicy": "Özel self-hosted relay kullanmayı seçtiniz. Erişilemezlerse AltSendme, Relay ayarlarında seçilen yedek ilkeyi uygular. Relay'ler yalnızca cihazlarınızın zor ağ koşullarında bağlanmasına yardımcı olur; aktarımlarınız her zaman uçtan uca şifreli kalır.",
+				"confirmCustomDescriptionWithPolicy": "Özel self-hosted relay kullanmayı seçtiniz. Erişilemezlerse DashBeam, Relay ayarlarında seçilen yedek ilkeyi uygular. Relay'ler yalnızca cihazlarınızın zor ağ koşullarında bağlanmasına yardımcı olur; aktarımlarınız her zaman uçtan uca şifreli kalır.",
 				"fallbackDescription": "Özel relay'inize ulaşılamadığında ne olacağını seçin.",
 				"fallbackLabel": "Yedek ilke",
 				"fallbackPublic": "Gerekirse genel relay'leri kullan",

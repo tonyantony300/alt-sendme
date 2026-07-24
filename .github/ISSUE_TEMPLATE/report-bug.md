@@ -19,7 +19,7 @@ Please describe what's happening and what you would have expected instead.
 
 ## Your environment
 
-- AltSendme version:
+- DashBeam version:
 - OS (e.g. macOS 14, Windows 11):
 
 ## Anything else you'd like to share?

@@ -1,4 +1,4 @@
-//! Windows Explorer "Send with AltSendme" shell verb registration.
+//! Windows Explorer "Send with DashBeam" shell verb registration.
 //!
 //! Registration is intentionally **per-user (HKCU)** so the settings toggle
 //! works without elevation. Older MSI builds wrote the same verb under **HKLM**,
@@ -15,7 +15,11 @@ use winreg::enums::*;
 use winreg::{RegKey, HKEY};
 
 #[cfg(target_os = "windows")]
-const VERB_NAME: &str = "Send with AltSendme";
+const VERB_NAME: &str = "Send with DashBeam";
+
+/// Pre-rename verb — still cleared on unregister so upgrades do not leave leftovers.
+#[cfg(target_os = "windows")]
+const LEGACY_VERB_NAME: &str = "Send with AltSendme";
 
 /// Shell classes that host the context-menu verb.
 #[cfg(target_os = "windows")]
@@ -49,6 +53,9 @@ pub fn register_context_menu() -> anyhow::Result<()> {
     // Drop any machine-wide leftover first so HKCU is the sole source of truth.
     // Best-effort: failure here is non-fatal if we can still write HKCU.
     let _ = remove_verb_from_hive(HKEY_LOCAL_MACHINE);
+    // Drop the pre-rename verb so upgrades do not leave two Explorer entries.
+    let _ = remove_named_verb_from_hive(HKEY_CURRENT_USER, LEGACY_VERB_NAME);
+    let _ = remove_named_verb_from_hive(HKEY_LOCAL_MACHINE, LEGACY_VERB_NAME);
 
     for &base in VERB_BASES {
         let arg = if base == "Directory\\Background" {
@@ -87,7 +94,7 @@ pub fn unregister_context_menu(allow_elevation: bool) -> anyhow::Result<()> {
             if allow_elevation {
                 anyhow::bail!(
                     "Could not remove the machine-wide Explorer context menu. \
-                     Run AltSendme once as administrator and disable the option again, \
+                     Run DashBeam once as administrator and disable the option again, \
                      or uninstall the app."
                 );
             }
@@ -163,6 +170,14 @@ fn write_registry_key(
 
 #[cfg(target_os = "windows")]
 fn remove_verb_from_hive(hive: HKEY) -> anyhow::Result<()> {
+    remove_named_verb_from_hive(hive, VERB_NAME)?;
+    // Always attempt legacy cleanup; ignore "already gone".
+    let _ = remove_named_verb_from_hive(hive, LEGACY_VERB_NAME);
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn remove_named_verb_from_hive(hive: HKEY, verb: &str) -> anyhow::Result<()> {
     let root = RegKey::predef(hive);
     let mut errors: Vec<String> = Vec::new();
 
@@ -170,7 +185,7 @@ fn remove_verb_from_hive(hive: HKEY) -> anyhow::Result<()> {
         let shell_path = format!(r"Software\Classes\{}\shell", base);
         match root.open_subkey_with_flags(&shell_path, KEY_READ | KEY_WRITE) {
             Ok(shell_key) => {
-                if let Err(e) = shell_key.delete_subkey_all(VERB_NAME) {
+                if let Err(e) = shell_key.delete_subkey_all(verb) {
                     // ERROR_FILE_NOT_FOUND (2) means already gone — treat as success.
                     if e.raw_os_error() != Some(2) {
                         errors.push(format!("{}: {}", shell_path, e));
@@ -203,11 +218,13 @@ fn remove_hklm_verb_elevated() -> anyhow::Result<()> {
 
     let deletes: String = VERB_BASES
         .iter()
-        .map(|base| {
-            format!(
-                r#"reg delete "HKLM\SOFTWARE\Classes\{}\shell\{}" /f"#,
-                base, VERB_NAME
-            )
+        .flat_map(|base| {
+            [VERB_NAME, LEGACY_VERB_NAME].into_iter().map(move |verb| {
+                format!(
+                    r#"reg delete "HKLM\SOFTWARE\Classes\{}\shell\{}" /f"#,
+                    base, verb
+                )
+            })
         })
         .collect::<Vec<_>>()
         .join(" & ");

@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Yuborish",
 	"webPreview": {
 		"banner": "Ko'rib chiqish rejimi - fayl uzatish desktop ilovasini talab qiladi.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Desktop ilova va loyiha havolalari",
 		"notice": "Veb versiyasi to'g'ridan-to'g'ri ulanishlarni qo'llab-quvvatlamaydi - trafik shifrlangan ommaviy relay'lar orqali o'tadi va tezlik cheklangan. Fayllaringiz har qanday holatda shifrlangan qoladi. Yaxshiroq tajriba uchun desktop/CLI ilova yoki maxsus relay'lardan foydalaning.",
-		"platforms": "AltSendme desktop, Android, CLI va veb sifatida mavjud.",
+		"platforms": "DashBeam desktop, Android, CLI va veb sifatida mavjud.",
 		"website": "Veb-sayt"
 	},
 	"receive": "Qabul qilish",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "Papka tanlanmagan",
 		"conflictsMore": "... va yana {{count}}",
 		"pasteTicket": "Ticketni bu yerga qo'ying:",
-		"ticketPlaceholder": "AltSendme qabul qilish ticketi...",
+		"ticketPlaceholder": "DashBeam qabul qilish ticketi...",
 		"howToReceive": "Fayllarni qanday qabul qilish",
 		"instruction1": "Yuboruvchi onlayn bo'lishi va fayl ulashayotgan bo'lishi kerak",
 		"instruction2": "Yuboruvchidan ticket oling",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Explorer kontekst menyusi",
-					"description": "Windows Explorer o‘ng tugma menyusiga «AltSendme bilan yuborish» qo‘shish"
+					"description": "Windows Explorer o‘ng tugma menyusiga «DashBeam bilan yuborish» qo‘shish"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Relay serverlari",
-				"description": "AltSendme NAT traversal va shifrlangan zaxira ulanishlar uchun qaysi iroh relay serverlaridan foydalanishini boshqaring.",
+				"description": "DashBeam NAT traversal va shifrlangan zaxira ulanishlar uchun qaysi iroh relay serverlaridan foydalanishini boshqaring.",
 				"modeDefault": "Avtomatik (ommaviy relay)",
 				"modeDefaultDesc": "Standart ommaviy iroh relay'laridan foydalanadi. Ko'pchilik foydalanuvchilar uchun eng yaxshi.",
 				"modeCustom": "Maxsus (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Maxsus relay'lar ishlatilsinmi?",
 				"confirmCustomDescription": "Siz o'zingiz joylashtirgan maxsus relay'lardan foydalanishni tanladingiz. Agar maxsus relay'laringiz mavjud bo'lmasa, uzatishlar avtomatik ravishda ommaviy relay'larga qaytadi va sizga xabar beriladi. Relay'lar faqat qurilmalaringizga murakkab tarmoq sharoitlarida ulanishda yordam beradi, va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",
 				"confirmContinue": "Davom etish",
-				"confirmCustomDescriptionWithPolicy": "Siz maxsus self-hosted relay'lardan foydalanishni tanladingiz. Agar ularga ulanib bo'lmasa, AltSendme Relay sozlamalarida tanlangan fallback siyosatiga amal qiladi. Relay'lar faqat murakkab tarmoq sharoitida qurilmalaringizni ulashga yordam beradi va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",
+				"confirmCustomDescriptionWithPolicy": "Siz maxsus self-hosted relay'lardan foydalanishni tanladingiz. Agar ularga ulanib bo'lmasa, DashBeam Relay sozlamalarida tanlangan fallback siyosatiga amal qiladi. Relay'lar faqat murakkab tarmoq sharoitida qurilmalaringizni ulashga yordam beradi va uzatishlaringiz har doim uchma-uch shifrlangan bo'lib qoladi.",
 				"fallbackDescription": "Maxsus relay'ingizga ulanib bo'lmaganda nima bo'lishini tanlang.",
 				"fallbackLabel": "Fallback siyosati",
 				"fallbackPublic": "Kerak bo'lsa ommaviy relay'lardan foydalanish",

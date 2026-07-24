@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.join(__dirname, '..')
 
-const PRODUCT_NAME = 'AltSendme'
+const PRODUCT_NAME = 'DashBeam'
 const PORTABLE_MARKER = '.portable'
 const PORTABLE_README = 'README-PORTABLE.txt'
 
@@ -66,7 +66,7 @@ function archLabel(rustTarget) {
 }
 
 /** Cargo package name → binary; Tauri may also rename via mainBinaryName / productName. */
-const EXE_CANDIDATES = [`${PRODUCT_NAME}.exe`, 'alt-sendme.exe']
+const EXE_CANDIDATES = [`${PRODUCT_NAME}.exe`, 'AltSendme.exe', 'alt-sendme.exe']
 
 function findBuiltExe(releaseDir) {
 	for (const name of EXE_CANDIDATES) {
@@ -164,7 +164,7 @@ function stagePortablePayload(releaseDir, stagingAppDir) {
 		)
 	}
 
-	// Always ship as AltSendme.exe for a stable portable layout / README.
+	// Always ship as DashBeam.exe for a stable portable layout / README.
 	const exeName = `${PRODUCT_NAME}.exe`
 	copyFile(builtExe, path.join(stagingAppDir, exeName))
 	if (path.basename(builtExe) !== exeName) {
@@ -348,7 +348,7 @@ function main() {
 	const zipName = `${PRODUCT_NAME}_${version}_${arch}-portable.zip`
 	const zipPath = path.join(outDir, zipName)
 
-	const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'altsendme-portable-'))
+	const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dashbeam-portable-'))
 	const stagingAppDir = path.join(tmpRoot, PRODUCT_NAME)
 
 	try {

@@ -24,7 +24,16 @@
                          KeyPath="yes"/>
         </RegistryKey>
 
-        <!-- Machine-wide leftovers from older MSI builds that created the verb -->
+        <!-- Machine-wide leftovers from current and pre-rename MSI builds -->
+        <RemoveRegistryKey Root="HKLM"
+                           Key="SOFTWARE\Classes\*\shell\Send with DashBeam"
+                           Action="removeOnUninstall"/>
+        <RemoveRegistryKey Root="HKLM"
+                           Key="SOFTWARE\Classes\Directory\shell\Send with DashBeam"
+                           Action="removeOnUninstall"/>
+        <RemoveRegistryKey Root="HKLM"
+                           Key="SOFTWARE\Classes\Directory\Background\shell\Send with DashBeam"
+                           Action="removeOnUninstall"/>
         <RemoveRegistryKey Root="HKLM"
                            Key="SOFTWARE\Classes\*\shell\Send with AltSendme"
                            Action="removeOnUninstall"/>

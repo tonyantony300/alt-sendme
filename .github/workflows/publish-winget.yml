@@ -25,8 +25,8 @@ jobs:
       - name: Publish x64 MSI to WinGet
         uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
         with:
-          identifier: TonyAntony.AltSendme
-          installers-regex: '^AltSendme_.*_x64_.*\.msi$'
+          identifier: TonyAntony.DashBeam
+          installers-regex: '^DashBeam_.*_x64_.*\.msi$'
           version: ${{ steps.version.outputs.value }}
           release-tag: ${{ steps.version.outputs.tag }}
           token: ${{ secrets.WINGET_TOKEN }}
@@ -34,30 +34,30 @@ jobs:
           root-locale: en-US
           locale: en-US
           publisher: Tony Antony
-          package-name: AltSendme
+          package-name: DashBeam
           short-description: Fast, private file sharing over networks.
           license: AGPL-3.0
           copyright: Copyright (c) 2026 Tony Antony
           urls: |
-            Homepage: https://github.com/tonyantony300/alt-sendme
-            License: https://github.com/tonyantony300/alt-sendme/blob/main/LICENSE
+            Homepage: https://github.com/tonyantony300/dashbeam
+            License: https://github.com/tonyantony300/dashbeam/blob/main/LICENSE
 
       # ARM64 Windows builds ship NSIS only (WiX MSI is not produced for aarch64 cross-builds).
       - name: Publish ARM64 NSIS to WinGet
         uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
         with:
-          identifier: TonyAntony.AltSendme
-          installers-regex: '^AltSendme_.*_aarch64-setup\.exe$'
+          identifier: TonyAntony.DashBeam
+          installers-regex: '^DashBeam_.*_aarch64-setup\.exe$'
           version: ${{ steps.version.outputs.value }}
           release-tag: ${{ steps.version.outputs.tag }}
           token: ${{ secrets.WINGET_TOKEN }}
           root-locale: en-US
           locale: en-US
           publisher: Tony Antony
-          package-name: AltSendme
+          package-name: DashBeam
           short-description: Fast, private file sharing over networks.
           license: AGPL-3.0
           copyright: Copyright (c) 2026 Tony Antony
           urls: |
-            Homepage: https://github.com/tonyantony300/alt-sendme
-            License: https://github.com/tonyantony300/alt-sendme/blob/main/LICENSE
+            Homepage: https://github.com/tonyantony300/dashbeam
+            License: https://github.com/tonyantony300/dashbeam/blob/main/LICENSE

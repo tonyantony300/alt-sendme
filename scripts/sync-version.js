@@ -30,14 +30,13 @@ fs.writeFileSync(cargoTomlPath, cargoToml)
 
 let readme = fs.readFileSync(readmePath, 'utf8')
 readme = readme.replace(/\/download\/v[\d.]+/g, `/download/v${version}`)
+// Keep AltSendme_* asset filenames until a release ships DashBeam_* artifacts.
 readme = readme.replace(/AltSendme_[\d.]+_/g, `AltSendme_${version}_`)
+readme = readme.replace(/AltSendme-v[\d.]+-/g, `AltSendme-v${version}-`)
+readme = readme.replace(/AltSendme-[\d.]+-1\./g, `AltSendme-${version}-1.`)
 readme = readme.replace(
 	/\[badge-version\]:\s*https:\/\/img\.shields\.io\/badge\/version-[\d.]+-blue/g,
 	`[badge-version]: https://img.shields.io/badge/version-${version}-blue`
-)
-readme = readme.replace(
-	/(<td><b>Android<\/b><\/td>\s*<td><a href='https:\/\/github\.com\/tonyantony300\/alt-sendme\/releases\/download\/)v[^']+('>AltSendme\.apk<\/a><\/td>)/g,
-	`$1v${version}/AltSendme-v${version}-universal.apk$2`
 )
 
 fs.writeFileSync(readmePath, readme)

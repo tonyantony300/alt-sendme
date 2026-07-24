@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "ส่ง",
 	"webPreview": {
 		"banner": "โหมดตัวอย่าง - การถ่ายโอนไฟล์ต้องใช้แอปเดสก์ท็อป",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "รับแอปเดสก์ท็อปและลิงก์โครงการ",
 		"notice": "เวอร์ชันเว็บไม่รองรับการเชื่อมต่อโดยตรง - ทราฟฟิกจะถูกส่งผ่าน relay สาธารณะที่เข้ารหัสและความเร็วถูกจำกัด ไฟล์ของคุณยังคงเข้ารหัสในทุกกรณี ใช้แอปเดสก์ท็อป/CLI หรือ relay แบบกำหนดเองเพื่อประสบการณ์ที่ดีกว่า",
-		"platforms": "AltSendme มีให้ใช้งานบนเดสก์ท็อป Android CLI และเว็บ",
+		"platforms": "DashBeam มีให้ใช้งานบนเดสก์ท็อป Android CLI และเว็บ",
 		"website": "เว็บไซต์"
 	},
 	"receive": "รับ",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "ยังไม่ได้เลือกโฟลเดอร์",
 		"conflictsMore": "... และอีก {{count}} รายการ",
 		"pasteTicket": "วางตั๋วที่นี่:",
-		"ticketPlaceholder": "ตั๋วรับ AltSendme...",
+		"ticketPlaceholder": "ตั๋วรับ DashBeam...",
 		"howToReceive": "วิธีรับไฟล์",
 		"instruction1": "ผู้ส่งต้องออนไลน์และกำลังแชร์ไฟล์",
 		"instruction2": "รับตั๋วจากผู้ส่ง",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "เมนูคลิกขวาของ Explorer",
-					"description": "เพิ่ม «ส่งด้วย AltSendme» ในเมนูคลิกขวาของ Windows Explorer"
+					"description": "เพิ่ม «ส่งด้วย DashBeam» ในเมนูคลิกขวาของ Windows Explorer"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "เซิร์ฟเวอร์ relay",
-				"description": "ควบคุมเซิร์ฟเวอร์ relay iroh ที่ AltSendme ใช้สำหรับ NAT traversal และการเชื่อมต่อสำรองที่เข้ารหัส",
+				"description": "ควบคุมเซิร์ฟเวอร์ relay iroh ที่ DashBeam ใช้สำหรับ NAT traversal และการเชื่อมต่อสำรองที่เข้ารหัส",
 				"modeDefault": "อัตโนมัติ (relay สาธารณะ)",
 				"modeDefaultDesc": "ใช้ relay สาธารณะ iroh เริ่มต้น เหมาะสำหรับผู้ใช้ส่วนใหญ่",
 				"modeCustom": "กำหนดเอง (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "ใช้ relay ที่กำหนดเองหรือไม่?",
 				"confirmCustomDescription": "คุณเลือกที่จะใช้ relay ที่โฮสต์เองแบบกำหนดเอง หาก relay ที่กำหนดเองของคุณไม่สามารถเข้าถึงได้ การถ่ายโอนจะกลับไปใช้ relay สาธารณะโดยอัตโนมัติและคุณจะได้รับการแจ้งเตือน relay ช่วยให้อุปกรณ์ของคุณเชื่อมต่อในสภาพเครือข่ายที่ยากลำบากเท่านั้น และการถ่ายโอนของคุณยังคงเข้ารหัสแบบ end-to-end เสมอ",
 				"confirmContinue": "ดำเนินการต่อ",
-				"confirmCustomDescriptionWithPolicy": "คุณเลือกใช้ relay แบบกำหนดเองที่โฮสต์เอง หากไม่สามารถเชื่อมต่อได้ AltSendme จะปฏิบัติตามนโยบายสำรองที่เลือกในการตั้งค่า Relay relay ช่วยให้อุปกรณ์เชื่อมต่อกันในสภาวะเครือข่ายที่ยากลำบากเท่านั้น และการถ่ายโอนของคุณยังคงเข้ารหัสแบบ end-to-end เสมอ",
+				"confirmCustomDescriptionWithPolicy": "คุณเลือกใช้ relay แบบกำหนดเองที่โฮสต์เอง หากไม่สามารถเชื่อมต่อได้ DashBeam จะปฏิบัติตามนโยบายสำรองที่เลือกในการตั้งค่า Relay relay ช่วยให้อุปกรณ์เชื่อมต่อกันในสภาวะเครือข่ายที่ยากลำบากเท่านั้น และการถ่ายโอนของคุณยังคงเข้ารหัสแบบ end-to-end เสมอ",
 				"fallbackDescription": "เลือกสิ่งที่จะเกิดขึ้นเมื่อ relay แบบกำหนดเองไม่สามารถเชื่อมต่อได้",
 				"fallbackLabel": "นโยบายสำรอง",
 				"fallbackPublic": "ใช้ relay สาธารณะหากจำเป็น",

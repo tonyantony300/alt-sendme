@@ -115,6 +115,8 @@ pub fn is_placeholder_display_name(name: &str) -> bool {
     trimmed.is_empty()
         || trimmed.eq_ignore_ascii_case("altsendme")
         || trimmed.eq_ignore_ascii_case("altsendme device")
+        || trimmed.eq_ignore_ascii_case("dashbeam")
+        || trimmed.eq_ignore_ascii_case("dashbeam device")
         || trimmed.eq_ignore_ascii_case("android phone")
         || trimmed.eq_ignore_ascii_case("android tablet")
 }
@@ -131,7 +133,7 @@ pub fn default_display_name() -> String {
             if cfg!(target_os = "android") {
                 "Android Phone".to_string()
             } else {
-                "AltSendme Device".to_string()
+                "DashBeam Device".to_string()
             }
         });
     let trimmed = raw.trim_end_matches(".local").trim();
@@ -139,7 +141,7 @@ pub fn default_display_name() -> String {
         if cfg!(target_os = "android") {
             "Android Phone".to_string()
         } else {
-            "AltSendme Device".to_string()
+            "DashBeam Device".to_string()
         }
     } else {
         trimmed.to_string()
@@ -391,6 +393,8 @@ mod tests {
         assert!(is_placeholder_display_name("  "));
         assert!(is_placeholder_display_name("altsendme"));
         assert!(is_placeholder_display_name("AltSendme Device"));
+        assert!(is_placeholder_display_name("dashbeam"));
+        assert!(is_placeholder_display_name("DashBeam Device"));
         assert!(is_placeholder_display_name("Android Phone"));
         assert!(!is_placeholder_display_name("Pixel 8"));
         assert!(!is_placeholder_display_name("Tony's phone"));

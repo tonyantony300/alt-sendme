@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "傳送",
 	"webPreview": {
 		"banner": "預覽模式 - 檔案傳輸需要桌面應用程式。",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "取得桌面應用程式與專案連結",
 		"notice": "Web 版不支援直連 - 流量經由加密的公共中繼轉送，速度受限。無論如何，您的檔案始終保持加密。建議使用桌面/CLI 應用程式或自訂中繼以獲得更好體驗。",
-		"platforms": "AltSendme 提供桌面版、Android 版、CLI 版與 Web 版。",
+		"platforms": "DashBeam 提供桌面版、Android 版、CLI 版與 Web 版。",
 		"website": "網站"
 	},
 	"receive": "接收",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "未選擇資料夾",
 		"conflictsMore": "... 等 {{count}} 項",
 		"pasteTicket": "在此處貼上票券：",
-		"ticketPlaceholder": "AltSendme 接收票券...",
+		"ticketPlaceholder": "DashBeam 接收票券...",
 		"howToReceive": "如何接收檔案",
 		"instruction1": "傳送者必須在線上並正在分享檔案",
 		"instruction2": "從傳送者處取得票券",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "檔案總管右鍵選單",
-					"description": "在 Windows 檔案總管右鍵選單中新增「使用 AltSendme 傳送」"
+					"description": "在 Windows 檔案總管右鍵選單中新增「使用 DashBeam 傳送」"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "中繼伺服器",
-				"description": "控制 AltSendme 用於 NAT 穿透和加密備用連線的 iroh 中繼伺服器。",
+				"description": "控制 DashBeam 用於 NAT 穿透和加密備用連線的 iroh 中繼伺服器。",
 				"modeDefault": "自動（公共中繼）",
 				"modeDefaultDesc": "使用預設的公共 iroh 中繼。適合大多數使用者。",
 				"modeCustom": "自訂（自行託管）",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "使用自訂中繼？",
 				"confirmCustomDescription": "您已選擇使用自行託管的自訂中繼。如果您的自訂中繼無法連線，傳輸將自動回退到公共中繼，並會通知您。中繼僅協助您的裝置在困難的網路條件下連線，而您的傳輸始終保持端對端加密。",
 				"confirmContinue": "繼續",
-				"confirmCustomDescriptionWithPolicy": "您已選擇使用自訂自架中繼。如果無法連線，AltSendme 將遵循中繼設定中選擇的備援策略。中繼僅協助裝置在複雜網路環境下建立連線，傳輸始終端對端加密。",
+				"confirmCustomDescriptionWithPolicy": "您已選擇使用自訂自架中繼。如果無法連線，DashBeam 將遵循中繼設定中選擇的備援策略。中繼僅協助裝置在複雜網路環境下建立連線，傳輸始終端對端加密。",
 				"fallbackDescription": "選擇自訂中繼無法連線時的處理方式。",
 				"fallbackLabel": "備援策略",
 				"fallbackPublic": "必要時使用公共中繼",

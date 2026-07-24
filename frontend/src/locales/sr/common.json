@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Пошаљи",
 	"webPreview": {
 		"banner": "Režim pregleda - prenos datoteka zahteva desktop aplikaciju.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Desktop aplikacija i linkovi projekta",
 		"notice": "Web verzija ne podržava direktne veze - saobraćaj ide kroz šifrovane javne relay servere, a brzine su ograničene. Tvoje datoteke ipak ostaju šifrovane. Koristi desktop/CLI aplikaciju ili prilagođene relay servere za bolje iskustvo.",
-		"platforms": "AltSendme je dostupan kao desktop, Android, CLI i web.",
+		"platforms": "DashBeam je dostupan kao desktop, Android, CLI i web.",
 		"website": "Veb sajt"
 	},
 	"receive": "Прими",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Контекстуални мени истраживача",
-					"description": "Додај „Пошаљи путем AltSendme” у контекстуални мени Windows истраживача"
+					"description": "Додај „Пошаљи путем DashBeam” у контекстуални мени Windows истраживача"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Relay serveri",
-				"description": "Kontrolišite koje iroh relay servere AltSendme koristi za NAT traversal i šifrovane rezervne veze.",
+				"description": "Kontrolišite koje iroh relay servere DashBeam koristi za NAT traversal i šifrovane rezervne veze.",
 				"modeDefault": "Automatski (javni relay)",
 				"modeDefaultDesc": "Koristi podrazumevane javne iroh relay servere. Najbolje za većinu korisnika.",
 				"modeCustom": "Prilagođeno (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Koristiti prilagođene relay servere?",
 				"confirmCustomDescription": "Odabrali ste da koristite sopstvene relay servere koje sami hostujete. Ako vaši prilagođeni relay serveri nisu dostupni, prenosi će se automatski vratiti na javne relay servere i bićete obavešteni. Relay serveri samo pomažu vašim uređajima da se povežu u teškim mrežnim uslovima, a vaši prenosi uvek ostaju end-to-end šifrovani.",
 				"confirmContinue": "Nastavi",
-				"confirmCustomDescriptionWithPolicy": "Izabrao si korišćenje sopstvenih self-hosted relay servera. Ako nisu dostupni, AltSendme će pratiti rezervnu politiku iz Relay podešavanja. Relay serveri samo pomažu uređajima da se povežu u teškim mrežnim uslovima, a tvoji prenosi uvek ostaju end-to-end šifrovani.",
+				"confirmCustomDescriptionWithPolicy": "Izabrao si korišćenje sopstvenih self-hosted relay servera. Ako nisu dostupni, DashBeam će pratiti rezervnu politiku iz Relay podešavanja. Relay serveri samo pomažu uređajima da se povežu u teškim mrežnim uslovima, a tvoji prenosi uvek ostaju end-to-end šifrovani.",
 				"fallbackDescription": "Izaberi šta se dešava kada tvoj prilagođeni relay nije dostupan.",
 				"fallbackLabel": "Rezervna politika",
 				"fallbackPublic": "Koristi javne relay servere po potrebi",

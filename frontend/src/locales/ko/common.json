@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "보내기",
 	"webPreview": {
 		"banner": "미리보기 모드 - 파일 전송에는 데스크톱 앱이 필요합니다.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "데스크톱 앱 및 프로젝트 링크",
 		"notice": "웹 버전은 직접 연결을 지원하지 않습니다 - 트래픽은 암호화된 공용 릴레이를 경유하며 속도가 제한됩니다. 어느 경우든 파일은 암호화된 상태로 유지됩니다. 더 나은 경험을 위해 데스크톱/CLI 앱 또는 사용자 지정 릴레이를 사용하세요.",
-		"platforms": "AltSendme는 데스크톱, Android, CLI, 웹으로 제공됩니다.",
+		"platforms": "DashBeam는 데스크톱, Android, CLI, 웹으로 제공됩니다.",
 		"website": "웹사이트"
 	},
 	"receive": "받기",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "선택된 폴더 없음",
 		"conflictsMore": "... 외 {{count}}개",
 		"pasteTicket": "티켓을 여기에 붙여넣기:",
-		"ticketPlaceholder": "AltSendme 수신 티켓...",
+		"ticketPlaceholder": "DashBeam 수신 티켓...",
 		"howToReceive": "파일 받는 방법",
 		"instruction1": "보낸 사람이 온라인 상태이고 파일을 공유하고 있어야 합니다",
 		"instruction2": "보낸 사람으로부터 티켓 받기",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "탐색기 바로 가기 메뉴",
-					"description": "Windows 탐색기의 오른쪽 클릭 메뉴에 «AltSendme로 보내기» 추가"
+					"description": "Windows 탐색기의 오른쪽 클릭 메뉴에 «DashBeam로 보내기» 추가"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "릴레이 서버",
-				"description": "AltSendme가 NAT 통과 및 암호화된 대체 연결에 사용하는 iroh 릴레이 서버를 제어합니다.",
+				"description": "DashBeam가 NAT 통과 및 암호화된 대체 연결에 사용하는 iroh 릴레이 서버를 제어합니다.",
 				"modeDefault": "자동(공개 릴레이)",
 				"modeDefaultDesc": "기본 공개 iroh 릴레이를 사용합니다. 대부분의 사용자에게 적합합니다.",
 				"modeCustom": "사용자 지정(자체 호스팅)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "사용자 지정 릴레이를 사용하시겠습니까?",
 				"confirmCustomDescription": "직접 호스팅하는 사용자 지정 릴레이를 사용하기로 선택했습니다. 사용자 지정 릴레이에 연결할 수 없는 경우 전송은 자동으로 공개 릴레이로 대체되며 알림을 받게 됩니다. 릴레이는 어려운 네트워크 환경에서 기기가 연결되도록 도와줄 뿐이며, 전송은 항상 종단 간 암호화된 상태로 유지됩니다.",
 				"confirmContinue": "계속",
-				"confirmCustomDescriptionWithPolicy": "사용자 지정 자체 호스팅 릴레이를 사용하도록 선택했습니다. 연결할 수 없으면 AltSendme는 릴레이 설정에서 선택한 대체 정책을 따릅니다. 릴레이는 어려운 네트워크 환경에서 기기 연결을 돕는 역할만 하며, 전송은 항상 종단 간 암호화됩니다.",
+				"confirmCustomDescriptionWithPolicy": "사용자 지정 자체 호스팅 릴레이를 사용하도록 선택했습니다. 연결할 수 없으면 DashBeam는 릴레이 설정에서 선택한 대체 정책을 따릅니다. 릴레이는 어려운 네트워크 환경에서 기기 연결을 돕는 역할만 하며, 전송은 항상 종단 간 암호화됩니다.",
 				"fallbackDescription": "사용자 지정 릴레이에 연결할 수 없을 때의 동작을 선택하세요.",
 				"fallbackLabel": "대체 정책",
 				"fallbackPublic": "필요 시 공용 릴레이 사용",

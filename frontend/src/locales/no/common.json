@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Send",
 	"webPreview": {
 		"banner": "Forhåndsvisningsmodus - filoverføringer krever skrivebordsappen.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Skrivebordsapp og prosjektlenker",
 		"notice": "Nettversjonen støtter ikke direkte tilkoblinger - trafikk sendes via krypterte offentlige relays, og hastigheten er begrenset. Filene dine forblir kryptert uansett. Bruk skrivebords-/CLI-appen eller tilpassede relays for en bedre opplevelse.",
-		"platforms": "AltSendme er tilgjengelig som skrivebordsapp, Android, CLI og web.",
+		"platforms": "DashBeam er tilgjengelig som skrivebordsapp, Android, CLI og web.",
 		"website": "Nettsted"
 	},
 	"receive": "Motta",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "Ingen mappe valgt",
 		"conflictsMore": "... og {{count}} til",
 		"pasteTicket": "Lim inn nøkkelen her:",
-		"ticketPlaceholder": "AltSendme overføringssnøkkel...",
+		"ticketPlaceholder": "DashBeam overføringssnøkkel...",
 		"howToReceive": "Hvordan motta filer",
 		"instruction1": "Avsender må være pålogget og dele en fil",
 		"instruction2": "Få en nøkkel fra avsenderen",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Hurtigmeny i Filutforsker",
-					"description": "Legg til «Send med AltSendme» i hurtigmenyen i Windows Filutforsker"
+					"description": "Legg til «Send med DashBeam» i hurtigmenyen i Windows Filutforsker"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Relay-servere",
-				"description": "Kontroller hvilke iroh relay-servere AltSendme bruker for NAT-traversering og krypterte reserveforbindelser.",
+				"description": "Kontroller hvilke iroh relay-servere DashBeam bruker for NAT-traversering og krypterte reserveforbindelser.",
 				"modeDefault": "Automatisk (offentlige relay)",
 				"modeDefaultDesc": "Bruker standard offentlige iroh-relay. Best for de fleste brukere.",
 				"modeCustom": "Tilpasset (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Bruke egendefinerte relay?",
 				"confirmCustomDescription": "Du har valgt å bruke dine egne selvhostede relay. Hvis dine egendefinerte relay er utilgjengelige, går overføringene automatisk tilbake til offentlige relay, og du blir varslet. Relay hjelper bare enhetene dine å koble til under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",
 				"confirmContinue": "Fortsett",
-				"confirmCustomDescriptionWithPolicy": "Du har valgt å bruke egne, selvhostede relays. Hvis de er utilgjengelige, følger AltSendme reservepolicyen valgt i Relay-innstillingene. Relays hjelper bare enhetene dine med å koble til under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",
+				"confirmCustomDescriptionWithPolicy": "Du har valgt å bruke egne, selvhostede relays. Hvis de er utilgjengelige, følger DashBeam reservepolicyen valgt i Relay-innstillingene. Relays hjelper bare enhetene dine med å koble til under vanskelige nettverksforhold, og overføringene dine forblir alltid ende-til-ende-kryptert.",
 				"fallbackDescription": "Velg hva som skjer når din tilpassede relay ikke kan nås.",
 				"fallbackLabel": "Reservepolicy",
 				"fallbackPublic": "Bruk offentlige relays ved behov",

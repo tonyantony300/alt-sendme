@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "送信",
 	"webPreview": {
 		"banner": "プレビューモード - ファイル転送にはデスクトップアプリが必要です。",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "デスクトップアプリとプロジェクトリンク",
 		"notice": "Web 版は直接接続に対応していません - トラフィックは暗号化されたパブリックリレーを経由し、速度は制限されます。いずれにしてもファイルは暗号化されたままです。より快適にご利用いただくには、デスクトップ/CLI アプリまたはカスタムリレーをご利用ください。",
-		"platforms": "AltSendme はデスクトップ、Android、CLI、Web で利用できます。",
+		"platforms": "DashBeam はデスクトップ、Android、CLI、Web で利用できます。",
 		"website": "ウェブサイト"
 	},
 	"receive": "受信",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "フォルダが選択されていません",
 		"conflictsMore": "... 他 {{count}} 件",
 		"pasteTicket": "ここにチケットを貼り付け：",
-		"ticketPlaceholder": "AltSendme 受信チケット...",
+		"ticketPlaceholder": "DashBeam 受信チケット...",
 		"howToReceive": "ファイルの受信方法",
 		"instruction1": "送信者がオンラインでファイルを共有している必要があります",
 		"instruction2": "送信者からチケットを取得",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "エクスプローラーの右クリックメニュー",
-					"description": "Windows エクスプローラーの右クリックに「AltSendme で送信」を追加します"
+					"description": "Windows エクスプローラーの右クリックに「DashBeam で送信」を追加します"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "リレーサーバー",
-				"description": "AltSendme が NAT トラバーサルと暗号化フォールバック接続に使用する iroh リレーサーバーを制御します。",
+				"description": "DashBeam が NAT トラバーサルと暗号化フォールバック接続に使用する iroh リレーサーバーを制御します。",
 				"modeDefault": "自動（公開リレー）",
 				"modeDefaultDesc": "デフォルトの公開 iroh リレーを使用します。ほとんどのユーザーに最適です。",
 				"modeCustom": "カスタム（自己ホスト）",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "カスタムリレーを使用しますか?",
 				"confirmCustomDescription": "自分でホストするカスタムリレーを使用することを選択しました。カスタムリレーに接続できない場合、転送は自動的に公開リレーにフォールバックし、通知されます。リレーは困難なネットワーク状況でデバイスが接続するのを助けるだけで、転送は常にエンドツーエンドで暗号化されたままです。",
 				"confirmContinue": "続行",
-				"confirmCustomDescriptionWithPolicy": "カスタムのセルフホスト型リレーを使用する設定です。リレーに接続できない場合、AltSendme はリレー設定で選択したフォールバックポリシーに従います。リレーは困難なネットワーク環境でデバイス同士の接続を支援するだけで、転送は常にエンドツーエンドで暗号化されます。",
+				"confirmCustomDescriptionWithPolicy": "カスタムのセルフホスト型リレーを使用する設定です。リレーに接続できない場合、DashBeam はリレー設定で選択したフォールバックポリシーに従います。リレーは困難なネットワーク環境でデバイス同士の接続を支援するだけで、転送は常にエンドツーエンドで暗号化されます。",
 				"fallbackDescription": "カスタムリレーに接続できない場合の動作を選択してください。",
 				"fallbackLabel": "フォールバックポリシー",
 				"fallbackPublic": "必要に応じてパブリックリレーを使用",

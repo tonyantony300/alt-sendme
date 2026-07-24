@@ -1,5 +1,5 @@
 {
-	"appTitle": "AltSendme",
+	"appTitle": "DashBeam",
 	"send": "Wyślij",
 	"webPreview": {
 		"banner": "Tryb podglądu - transfer plików wymaga aplikacji desktopowej.",
@@ -13,7 +13,7 @@
 		"github": "GitHub",
 		"linksLabel": "Pobierz aplikację desktopową i linki do projektu",
 		"notice": "Wersja webowa nie obsługuje bezpośrednich połączeń - ruch jest przekierowywany przez szyfrowane publiczne relay, a prędkości są ograniczane. Twoje pliki pozostają zaszyfrowane w każdym przypadku. Użyj aplikacji desktopowej/CLI lub niestandardowych relay, aby uzyskać lepsze doświadczenie.",
-		"platforms": "AltSendme jest dostępne jako aplikacja desktopowa, Android, CLI i web.",
+		"platforms": "DashBeam jest dostępne jako aplikacja desktopowa, Android, CLI i web.",
 		"website": "Strona internetowa"
 	},
 	"receive": "Odbierz",
@@ -127,7 +127,7 @@
 		"noFolderSelected": "Nie wybrano folderu",
 		"conflictsMore": "... i jeszcze {{count}}",
 		"pasteTicket": "Wklej bilet tutaj:",
-		"ticketPlaceholder": "AltSendme bilet odbioru...",
+		"ticketPlaceholder": "DashBeam bilet odbioru...",
 		"howToReceive": "Jak odbierać pliki",
 		"instruction1": "Nadawca musi być online i udostępniać plik",
 		"instruction2": "Odbierz bilet od nadawcy",
@@ -248,7 +248,7 @@
 				},
 				"contextMenu": {
 					"label": "Menu kontekstowe Eksploratora",
-					"description": "Dodaj „Wyślij przez AltSendme” do menu kontekstowego Eksploratora Windows"
+					"description": "Dodaj „Wyślij przez DashBeam” do menu kontekstowego Eksploratora Windows"
 				}
 			},
 			"broadcast": {
@@ -262,7 +262,7 @@
 		"network": {
 			"relay": {
 				"title": "Serwery relay",
-				"description": "Kontroluj, których serwerów relay iroh używa AltSendme do NAT traversal i szyfrowanych połączeń zapasowych.",
+				"description": "Kontroluj, których serwerów relay iroh używa DashBeam do NAT traversal i szyfrowanych połączeń zapasowych.",
 				"modeDefault": "Automatycznie (publiczne relay)",
 				"modeDefaultDesc": "Używa domyślnych publicznych relay iroh. Najlepsze dla większości użytkowników.",
 				"modeCustom": "Niestandardowe (self-hosted)",
@@ -298,7 +298,7 @@
 				"confirmCustomTitle": "Użyć niestandardowych relay?",
 				"confirmCustomDescription": "Wybrano korzystanie z własnych, samodzielnie hostowanych relay. Jeśli Twoje niestandardowe relay będą nieosiągalne, transfery automatycznie powrócą do publicznych relay i otrzymasz powiadomienie. Relay pomagają tylko Twoim urządzeniom połączyć się w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",
 				"confirmContinue": "Kontynuuj",
-				"confirmCustomDescriptionWithPolicy": "Wybrałeś korzystanie z własnych, samodzielnie hostowanych relay. Jeśli będą niedostępne, AltSendme zastosuje politykę zapasową wybraną w ustawieniach relay. Relay pomagają tylko Twoim urządzeniom połączyć się w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",
+				"confirmCustomDescriptionWithPolicy": "Wybrałeś korzystanie z własnych, samodzielnie hostowanych relay. Jeśli będą niedostępne, DashBeam zastosuje politykę zapasową wybraną w ustawieniach relay. Relay pomagają tylko Twoim urządzeniom połączyć się w trudnych warunkach sieciowych, a Twoje transfery zawsze pozostają szyfrowane end-to-end.",
 				"fallbackDescription": "Wybierz, co ma się stać, gdy niestandardowy relay będzie niedostępny.",
 				"fallbackLabel": "Polityka zapasowa",
 				"fallbackPublic": "W razie potrzeby użyj publicznych relay",

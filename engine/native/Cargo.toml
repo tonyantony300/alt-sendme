@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Tony Antony <tonyantony300@gmail.com>"]
 license = "AGPL-3.0"
-repository = "https://github.com/tonyantony300/alt-sendme"
-description = "Native filesystem I/O for alt-sendme (desktop/mobile)"
+repository = "https://github.com/tonyantony300/dashbeam"
+description = "Native filesystem I/O for dashbeam (desktop/mobile)"
 rust-version = "1.91"
 
 [lib]

@@ -1,4 +1,4 @@
-AltSendme is a free and open-source file transfer app that uses peer-to-peer networking to send files directly between devices—no cloud storage, no accounts, no personal data required.
+DashBeam is a free and open-source file transfer app that uses peer-to-peer networking to send files directly between devices—no cloud storage, no accounts, no personal data required.
 
 Features:
 • Send anywhere — Works on local networks or across the internet

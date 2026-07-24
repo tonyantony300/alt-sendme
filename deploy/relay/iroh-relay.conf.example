@@ -1,4 +1,4 @@
-# iroh-relay configuration for AltSendme self-hosting.
+# iroh-relay configuration for DashBeam self-hosting.
 #
 # Copy to iroh-relay.conf and edit before starting:
 #   cp iroh-relay.conf.example iroh-relay.conf
@@ -51,7 +51,7 @@ max_burst_bytes = 5242880
 # ---------------------------------------------------------------------------
 
 # Tier 1 — Shared token (simplest private relay).
-# Set the SAME token in AltSendme -> Settings -> Network -> Auth token.
+# Set the SAME token in DashBeam -> Settings -> Network -> Auth token.
 #
 # Prefer supplying the secret via the IROH_RELAY_ACCESS_TOKEN environment
 # variable / platform secret instead of writing it here. When this line is

@@ -1,19 +1,19 @@
 # Privacy Policy
 
-**Last Updated:** Nov 4 - 2025
+**Last Updated:** Jul 21 - 2026
 
-AltSendme is designed with privacy and security as core principles. This privacy policy explains how the application handles your data and what information may be visible to third parties.
+DashBeam is designed with privacy and security as core principles. This privacy policy explains how the application handles your data and what information may be visible to third parties.
 
 ## Core Privacy Principles
 
-- **No Account Required**: AltSendme does not require user registration, accounts, or any personal information
+- **No Account Required**: DashBeam does not require user registration, accounts, or any personal information
 - **End-to-End Encryption**: All file transfers are encrypted end-to-end using QUIC + TLS 1.3
 - **Peer-to-Peer**: Files are transferred directly between sender and receiver when possible
-- **No Usage Tracking**: AltSendme does not collect telemetry or transfer statistics.
+- **No Usage Tracking**: DashBeam does not collect telemetry or transfer statistics.
 
-## How AltSendme Works
+## How DashBeam Works
 
-AltSendme uses peer-to-peer (P2P) networking technology powered by [Iroh](https://www.iroh.computer) to transfer files directly between devices. The application:
+DashBeam uses peer-to-peer (P2P) networking technology powered by [Iroh](https://www.iroh.computer) to transfer files directly between devices. The application:
 
 1. **Establishes Direct Connections**: When possible, files are transferred directly between devices using NAT hole punching
 2. **Uses Relay Servers as Fallback**: If direct connection isn't possible, the application may use relay servers to facilitate the transfer
@@ -21,10 +21,10 @@ AltSendme uses peer-to-peer (P2P) networking technology powered by [Iroh](https:
 
 ## Data Stored Locally
 
-AltSendme stores the following data locally on your device:
+DashBeam stores the following data locally on your device:
 
 - **Secret Keys**: On desktop, your device's Iroh secret key is stored in the OS credential store (macOS Keychain, Windows Credential Manager, Linux Secret Service) under the `alt-sendme` service name. Public device metadata (display name, endpoint ID) is stored in the app data directory. During active transfers, temporary files are stored in your system's temp directory.
-- **Paired devices**: When you pair devices, AltSendme stores the remote device's endpoint ID and display name locally. Paired invites deliver the same one-time blob ticket as manual sharing; tickets are not reused across shares.
+- **Paired devices**: When you pair devices, DashBeam stores the remote device's endpoint ID and display name locally. Paired invites deliver the same one-time blob ticket as manual sharing; tickets are not reused across shares.
 - **Downloaded Files**: Files you receive are saved to a location you choose
 
 This data never leaves your device unless you explicitly share it (e.g., by sharing a transfer ticket).
@@ -33,7 +33,7 @@ This data never leaves your device unless you explicitly share it (e.g., by shar
 
 ### Relay Servers
 
-By default, AltSendme may use relay servers operated by the [Iroh project](https://www.iroh.computer) (n0) when direct peer-to-peer connections cannot be established. 
+By default, DashBeam may use relay servers operated by the [Iroh project](https://www.iroh.computer) (n0) when direct peer-to-peer connections cannot be established. 
 
 **What Relay Servers May See:**
 - Connection metadata (IP addresses, connection timestamps)
@@ -53,7 +53,7 @@ By default, AltSendme may use relay servers operated by the [Iroh project](https
 
 ### DNS Discovery
 
-When using Node ID-only tickets, AltSendme may use DNS-based discovery services (Pkarr) to find peer addresses. This service may temporarily store:
+When using Node ID-only tickets, DashBeam may use DNS-based discovery services (Pkarr) to find peer addresses. This service may temporarily store:
 - Node addresses (IP addresses) associated with Node IDs
 - This information is used only for connection establishment
 
@@ -73,14 +73,14 @@ When a direct peer-to-peer connection is established (the preferred method), no 
 - ❌ No personal information is collected
 - ❌ File contents are not tracked
 - ❌ Files are not stored or accessed in any servers - no server end
-- ❌ Invasive tracking services or cookies are not used
+- ❌ Tracking services or cookies are not used
 - ❌ Data is not shared with third parties
 
 
 ## Open Source and Transparency
 
-AltSendme is open source software licensed under AGPL-3.0. You can:
-- Review the complete source code on [GitHub](https://github.com/tonyantony300/alt-sendme)
+DashBeam is open source software licensed under AGPL-3.0. You can:
+- Review the complete source code on [GitHub](https://github.com/tonyantony300/dashbeam)
 - Verify how the application handles your data
 - Build and run the application yourself if desired
 - Contribute improvements to privacy and security features
@@ -102,7 +102,7 @@ You maintain full control over:
 
 ## Third-Party Services
 
-AltSendme uses the following third-party services:
+DashBeam uses the following third-party services:
 
 1. **Iroh Network Library**: Core P2P networking functionality ([Iroh Privacy](https://www.iroh.computer))
 2. **Default Relay Servers**: Operated by the Iroh project, used only when direct connections fail
@@ -112,16 +112,16 @@ You may review the privacy policies of these services if you have concerns.
 
 ## Changes to This Policy
 
-This privacy policy may be updated from time to time. The "Last Updated" date at the top indicates when changes were made. Continued use of AltSendme after changes constitutes acceptance of the updated policy.
+This privacy policy may be updated from time to time. The "Last Updated" date at the top indicates when changes were made. Continued use of DashBeam after changes constitutes acceptance of the updated policy.
 
 ## Contact
 
-If you have questions about this privacy policy or how AltSendme handles your data, please open an issue on [GitHub](https://github.com/tonyantony300/alt-sendme/issues).
+If you have questions about this privacy policy or how DashBeam handles your data, please open an issue on [GitHub](https://github.com/tonyantony300/dashbeam/issues).
 
 ## Disclaimer
 
 
-While AltSendme is designed with privacy and security in mind, no method of transmission over the internet is 100% secure. Users should:
+While DashBeam is designed with privacy and security in mind, no method of transmission over the internet is 100% secure. Users should:
 - Only share transfer tickets with trusted parties
 - Be aware that encrypted transfer metadata may still be visible to relay server operators (connection metadata only)
 - Consider using custom relay servers or disabling relays for maximum privacy

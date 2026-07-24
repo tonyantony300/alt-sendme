@@ -68,7 +68,7 @@ jobs:
             RELEASE_ID=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/releases" \
               -f tag_name="${TAG}" \
               -f target_commitish="${GITHUB_SHA}" \
-              -f name="AltSendme ${VERSION}" \
+              -f name="DashBeam ${VERSION}" \
               -f body="$(cat release_notes.txt)" \
               -F draft=true \
               -F prerelease=false \
@@ -161,6 +161,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils clang
+
+      # Exclude libwayland-client from AppImage so Wayland hosts load their own
+      # copy (fixes EGL_BAD_PARAMETER on Arch/Tumbleweed). Requires a linuxdeploy
+      # newer than Tauri's pin — see .github/actions/setup-linuxdeploy.
+      - name: Set up pinned linuxdeploy (ubuntu only)
+        if: contains(matrix.platform, 'ubuntu')
+        uses: ./.github/actions/setup-linuxdeploy
 
       - name: Install NSIS (Windows only)
         if: matrix.platform == 'windows-latest'
@@ -446,7 +453,7 @@ jobs:
               ls -la "$(dirname "$APK")" 2>&1 || true
               exit 1
             fi
-            RENAME="AltSendme-${TAG}-${variant}.apk"
+            RENAME="DashBeam-${TAG}-${variant}.apk"
             cp "$APK" "$RENAME"
             echo "Uploading $RENAME to release $TAG"
             ASSET_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets" \
