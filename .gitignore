@@ -152,3 +152,6 @@ random
 result
 result-*
 .envrc.local
+
+# flatpak-builder-lint scratch dir (created when linting the manifest locally)
+.flatpak-builder/
