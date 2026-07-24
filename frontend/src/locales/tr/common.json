@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Tema ve dil",
 			"general": "Genel",
-			"relay": "Relay",
 			"network": "Ağ",
 			"notification": "Bildirimler",
-			"devices": "Cihazlar"
+			"devices": "Cihazlar",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Tercih ettiğiniz temayı seçin",
@@ -266,7 +266,7 @@
 				"modeDefault": "Otomatik (genel relay)",
 				"modeDefaultDesc": "Varsayılan genel iroh relay'lerini kullanır. Çoğu kullanıcı için en iyisi.",
 				"modeCustom": "Özel (self-hosted)",
-				"modeCustomDesc": "Kendi relay sunucularınızı kullanın. Proje deposundaki deploy/relay'e bakın.",
+				"modeCustomDesc": "Kendi relay sunucularınızı kullanın. Bakın:",
 				"modeDisabled": "Devre dışı",
 				"modeDisabledDesc": "Relay kullanma. Yalnızca doğrudan bağlantılar; katı NAT'ta başarısız olabilir.",
 				"urlsLabel": "Relay URL'leri",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Gerekirse genel relay'leri kullan",
 				"fallbackPublicDesc": "Özel relay'lere ulaşılamadığında genel iroh relay'lerine geç.",
 				"fallbackStrict": "Özel relay'lerde kal",
-				"fallbackStrictDesc": "Genel relay'lere geçmek yerine aktarım başarısız olsun. Özel kurulumlar için en iyisi."
+				"fallbackStrictDesc": "Genel relay'lere geçmek yerine aktarım başarısız olsun. Özel kurulumlar için en iyisi.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Keşif sunucusu",
+				"description": "Cihazların genel anahtar (pkarr) ile birbirini nasıl bulacağını kontrol eder. Relay’lerden ayrıdır ve yalnızca uç nokta keşfini etkiler.",
+				"modeDefault": "Otomatik (genel keşif)",
+				"modeDefaultDesc": "iroh’un varsayılan genel keşif sunucularını kullanır. Çoğu kullanıcı için en iyisi.",
+				"modeCustom": "Özel (self-hosted)",
+				"modeCustomDesc": "Cihaz adreslerini kendi pkarr sunucunuz üzerinden HTTPS ile yayınlayın ve çözün. Bakın:",
+				"docsLink": "infra/dns",
+				"urlLabel": "Keşif (pkarr) URL’si",
+				"urlDescription": "Keşif sunucunuzun HTTPS pkarr uç noktası, örn. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Geçerli bir HTTPS URL girin",
+				"urlVerified": "Doğrulandı",
+				"privacyNote": "Tamamen özel bir kurulum için gönderici ve alıcı cihazlarda aynı keşif URL’sini yapılandırın.",
+				"testConnection": "Bağlantıyı test et",
+				"verifySuccess": "Keşif bağlantısı OK",
+				"verifySuccessDesc": "{{url}}\nbaşarıyla doğrulandı ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Yapılandırılan keşif sunucusuna başarıyla yayınlandı.",
+				"verifyFailed": "Keşif bağlantısı başarısız",
+				"confirmCustomTitle": "Özel keşif kullanılsın mı?",
+				"confirmCustomDescription": "Özel, kendi barındırdığınız bir keşif sunucusu seçtiniz. Cihazların genel anahtarla birbirini bulabilmesi için gönderici ve alıcının aynı keşif URL’sini kullanması gerekir. Keşif yalnızca uç noktaları bulmaya yardımcı olur; aktarımlarınız uçtan uca şifreli kalır.",
+				"confirmContinue": "Devam et"
 			}
 		},
 		"devices": {

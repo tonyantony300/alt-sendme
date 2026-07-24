@@ -1,11 +1,11 @@
 # Self-host an iroh relay for DashBeam
 
-Run your own relay so DashBeam transfers do not use the public iroh relay infrastructure. Relays are stateless connection facilitators — all file data stays end-to-end encrypted.
+Run your own relay so DashBeam transfers do not use the public iroh relay infrastructure. Relays are stateless connection facilitators - all file data stays end-to-end encrypted.
 
 ## Using self-hosted relays with DashBeam
 
 1. Deploy a relay using the assets in this directory (Docker Compose on a VPS or Fly.io).
-2. In the app, open **Settings → Network** and choose **Custom self-hosted**.
+2. In the app, open **Settings → Infra** and choose **Custom self-hosted**.
 3. Add your relay URL(s) and optional auth token if you enabled `access.shared_token` on the server.
 4. Use **Test connection** to verify registration.
 
@@ -15,28 +15,28 @@ For a fully private setup, configure the same relay URLs on both sender and rece
 
 Transfers can still work when one side uses custom relays and the other uses the default public relays. Here's the simple version:
 
-**Your relay setting controls where *your* device registers.** When you share a file, the ticket includes *your* relay URL. The other person connects using that ticket — they don't need to match your settings.
+**Your relay setting controls where *your* device registers.** When you share a file, the ticket includes *your* relay URL. The other person connects using that ticket - they don't need to match your settings.
 
 | Who shares | Sender uses | Receiver uses | Usually works? |
 |------------|-------------|---------------|----------------|
-| Alice | Custom (open relay) | Public relays | Yes — receiver reaches Alice via the relay URL in the ticket |
-| Alice | Custom (auth token required) | Public relays, no token | Often no — receiver can't authenticate to Alice's private relay |
+| Alice | Custom (open relay) | Public relays | Yes - receiver reaches Alice via the relay URL in the ticket |
+| Alice | Custom (auth token required) | Public relays, no token | Often no - receiver can't authenticate to Alice's private relay |
 | Alice | Custom (auth token required) | Same relay + same token | Yes |
-| Either side | Any | Any, same LAN or good NAT | Yes — direct peer-to-peer may skip relays entirely |
+| Either side | Any | Any, same LAN or good NAT | Yes - direct peer-to-peer may skip relays entirely |
 
 **Direction matters for privacy, not just connectivity:**
 
 - **You share, they use public relays:** If a relay is needed, traffic may go through *your* relay. They still use public relays for their own device.
-- **They share, you use a self-hosted relay:** If a relay is needed, traffic may go through *their* public relay — yours isn't used for that path.
+- **They share, you use a self-hosted relay:** If a relay is needed, traffic may go through *their* public relay - yours isn't used for that path.
 
 So mixed setups are fine for getting files across, but they're **not fully private** unless both people use the same self-hosted relay(s) (or connect directly without relay fallback).
 
 #### Quick rules of thumb
 
 - **Just want it to work?** An open self-hosted relay (no auth token) is enough; the other person can keep default public relays.
-- **Want a private relay?** Both people need your relay URL **and** the auth token in **Settings → Network**.
+- **Want a private relay?** Both people need your relay URL **and** the auth token in **Settings → Infra**.
 - **Want zero public relay use?** Both people must set **Custom self-hosted** to the same relay(s).
-- **Want no relays at all?** Both people set **Disabled** — only works when a direct connection is possible (e.g. same network).
+- **Want no relays at all?** Both people set **Disabled** - only works when a direct connection is possible (e.g. same network).
 
 ## Requirements
 
@@ -44,25 +44,25 @@ So mixed setups are fine for getting files across, but they're **not fully priva
 |-------------|---------|
 | Server | VM or container with a **public IP** |
 | DNS | `A` / `AAAA` record for your relay hostname |
-| Ports | `80/tcp`, `443/tcp`, `7842/udp` (QUIC address discovery). `9090/tcp` is metrics — keep it **private** (see [Observability](#observability)) |
+| Ports | `80/tcp`, `443/tcp`, `7842/udp` (QUIC address discovery). `9090/tcp` is metrics - keep it **private** (see [Observability](#observability)) |
 | TLS | Automatic via Let's Encrypt (built into `iroh-relay`) |
 
-For production, run **at least two relays** in different regions and add both URLs in DashBeam → Settings → Network.
+For production, run **at least two relays** in different regions and add both URLs in DashBeam → Settings → Infra.
 
 ## Option 1: Fly.io
 
 Fly supports UDP and raw ports, which many PaaS providers do not.
 
-[![Deploy on Fly.io](https://img.shields.io/badge/Deploy%20on-Fly.io-4d24f9?logo=flydotio&logoColor=white)](https://fly.io/launch?source=https://github.com/tonyantony300/dashbeam/tree/main/deploy/relay)
+[![Deploy on Fly.io](https://img.shields.io/badge/Deploy%20on-Fly.io-4d24f9?logo=flydotio&logoColor=white)](https://fly.io/launch?source=https://github.com/tonyantony300/dashbeam/tree/main/infra/relay)
 
 ```bash
-cd deploy/relay
+cd infra/relay
 cp iroh-relay.conf.example iroh-relay.conf
 # Edit hostname and contact
 
 fly launch --no-deploy
 fly volumes create relay_certs --size 1 --region <your-region>
-# Private relay only — set the token as a secret, never bake it into the image:
+# Private relay only - set the token as a secret, never bake it into the image:
 fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
 fly deploy
 ```
@@ -76,17 +76,17 @@ in `--dev` mode (plain HTTP on port 3340); Fly's edge terminates TLS and proxies
 the relay is reachable at `https://<app>.fly.dev` with a valid cert.
 
 ```bash
-cd deploy/relay
+cd infra/relay
 # edit fly.dev.toml: set a unique `app` name and a nearby `primary_region`
 fly apps create <your-unique-name>
 fly deploy --config fly.dev.toml
 fly status   # confirm the machine is running
 ```
 
-Then in DashBeam → **Settings → Network → Custom self-hosted**, add
+Then in DashBeam → **Settings → Infra → Custom self-hosted**, add
 `https://<your-unique-name>.fly.dev` and click **Test connection**.
 
-> **Caveat:** this mode provides **relaying only** — QUIC address discovery / holepunch
+> **Caveat:** this mode provides **relaying only** - QUIC address discovery / holepunch
 > assist is disabled in `--dev` (it needs direct UDP + TLS). It's ideal for trying the
 > feature, not for a production relay. For production, use the Let's Encrypt setup above
 > (`fly.toml` + your own domain).
@@ -96,12 +96,12 @@ Then in DashBeam → **Settings → Network → Custom self-hosted**, add
 1. Copy and edit the config:
 
    ```bash
-   cd deploy/relay
+   cd infra/relay
    cp iroh-relay.conf.example iroh-relay.conf
    # Set hostname, contact email, and review the [limits] block
    ```
 
-   `iroh-relay.conf` is gitignored, so it is safe to keep per-deployment values there. Keep the **access token out of the file** — pass it via the environment instead (see [Private relay](#private-relay-access-control)).
+   `iroh-relay.conf` is gitignored, so it is safe to keep per-deployment values there. Keep the **access token out of the file** - pass it via the environment instead (see [Private relay](#private-relay-access-control)).
 
 2. Point DNS at your server.
 
@@ -111,7 +111,7 @@ Then in DashBeam → **Settings → Network → Custom self-hosted**, add
    docker compose up -d
    ```
 
-4. In DashBeam → **Settings → Network**, choose **Custom self-hosted**, add `https://euc1-1.relay.example.com` (see [Region naming](#region-naming-optional-enables-location-flags)), and paste your auth token if you enabled access control.
+4. In DashBeam → **Settings → Infra**, choose **Custom self-hosted**, add `https://euc1-1.relay.example.com` (see [Region naming](#region-naming-optional-enables-location-flags)), and paste your auth token if you enabled access control.
 
 ## Rate limiting 
 
@@ -132,21 +132,21 @@ max_burst_bytes  = 5242880  # 5 MiB burst bucket                (enforced)
 > **Heads up:** as of `iroh-relay` v1.0.0 the `accept_conn_limit` / `accept_conn_burst`
 > connection-rate knobs are accepted by the parser but **not yet implemented** upstream, so
 > they currently do nothing. The per-client `[limits.client.rx]` block is the control that
-> actually caps bandwidth today — make sure you set it.
+> actually caps bandwidth today - make sure you set it.
 
 Tune these to your hardware and bill tolerance. `bytes_per_second` is required whenever
 `max_burst_bytes` is set, and both must be non-zero.
 
 ## Private relay (access control)
 
-`access` is a **single** setting — pick at most one tier. With none set, the relay is open
+`access` is a **single** setting - pick at most one tier. With none set, the relay is open
 to everyone (`access = "everyone"`).
 
-### Tier 1 — Shared token
+### Tier 1 - Shared token
 
 Simplest private relay. Prefer the environment variable over the config file so the secret
 never lands in an image layer or a commit. When an `access.shared_token` line is present,
-`IROH_RELAY_ACCESS_TOKEN` **replaces** it at startup — a placeholder in the file is fine.
+`IROH_RELAY_ACCESS_TOKEN` **replaces** it at startup - a placeholder in the file is fine.
 
 In `iroh-relay.conf`:
 
@@ -158,18 +158,18 @@ Then provide the real value out-of-band:
 
 ```bash
 # Docker Compose (local .env file, gitignored):
-echo "IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)" >> deploy/relay/.env
+echo "IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)" >> infra/relay/.env
 
 # Fly.io:
 fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
 ```
 
-Use the same value in DashBeam → Settings → Network → **Auth token** on every device.
+Use the same value in DashBeam → Settings → Infra → **Auth token** on every device.
 
-> Static tokens have no expiry and no per-client revocation — rotating one means updating
+> Static tokens have no expiry and no per-client revocation - rotating one means updating
 > every client. For revocation without restarts, use Tier 3.
 
-### Tier 2 — Endpoint-ID allowlist / denylist
+### Tier 2 - Endpoint-ID allowlist / denylist
 
 Identity-bound and more granular than a shared secret, with **no token in the app**. Gate by
 hex endpoint id:
@@ -180,7 +180,7 @@ access.allowlist = ["<endpoint-id>", "<endpoint-id>"]
 access.denylist = ["<endpoint-id>"]
 ```
 
-### Tier 3 — HTTP callout (recommended for production)
+### Tier 3 - HTTP callout (recommended for production)
 
 The relay POSTs each connecting endpoint id (header `X-Iroh-NodeId`) to your auth service,
 which must reply `200` with the body `true` to allow. This gives you live revocation and
@@ -214,7 +214,7 @@ To turn metrics off entirely, set `enable_metrics = false` in `iroh-relay.conf` 
 the compose healthcheck, which probes `/metrics`).
 
 For uptime monitoring the relay also serves a built-in **`/healthz`** endpoint (200 + JSON
-status) on its main HTTP(S) port — `https://relay.example.com/healthz` in production, or
+status) on its main HTTP(S) port - `https://relay.example.com/healthz` in production, or
 `http://<host>:3340/healthz` in `--dev` mode.
 
 ## Running behind an existing reverse proxy
@@ -258,8 +258,8 @@ After=docker.service network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/dashbeam/deploy/relay
-EnvironmentFile=-/opt/dashbeam/deploy/relay/.env
+WorkingDirectory=/opt/dashbeam/infra/relay
+EnvironmentFile=-/opt/dashbeam/infra/relay/.env
 ExecStart=/usr/bin/docker compose up
 ExecStop=/usr/bin/docker compose down
 Restart=always
@@ -288,7 +288,7 @@ No upstream NixOS module exists yet; run the container declaratively with
       "/etc/iroh-relay/iroh-relay.conf:/config/iroh-relay.conf:ro"
       "iroh-relay-certs:/data/certs"
     ];
-    # Keep the token out of the Nix store — load it from an agenix/sops secret:
+    # Keep the token out of the Nix store - load it from an agenix/sops secret:
     environmentFiles = [ "/run/secrets/iroh-relay.env" ];  # IROH_RELAY_ACCESS_TOKEN=...
   };
 
@@ -299,7 +299,7 @@ No upstream NixOS module exists yet; run the container declaratively with
 
 ## Verify
 
-After deployment, open DashBeam → Settings → Network → **Test connection**. A successful test confirms the app can register with your relay.
+After deployment, open DashBeam → Settings → Infra → **Test connection**. A successful test confirms the app can register with your relay.
 
 ## Troubleshooting
 

@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "المظهر واللغة",
 			"general": "عام",
-			"relay": "الترحيل",
 			"network": "الشبكة",
 			"notification": "الإشعارات",
-			"devices": "الأجهزة"
+			"devices": "الأجهزة",
+			"infra": "البنية التحتية"
 		},
 		"theme": {
 			"description": "اختر المظهر المفضل لديك",
@@ -266,7 +266,7 @@
 				"modeDefault": "تلقائي (ترحيل عام)",
 				"modeDefaultDesc": "استخدم ترحيل iroh العام الافتراضي. الأفضل لمعظم المستخدمين.",
 				"modeCustom": "مخصص (استضافة ذاتية)",
-				"modeCustomDesc": "استخدم خادم/خوادم ترحيل خاصة بك. راجع deploy/relay في مستودع المشروع.",
+				"modeCustomDesc": "استخدم خادم/خوادم ترحيل خاصة بك. راجع",
 				"modeDisabled": "معطل",
 				"modeDisabledDesc": "لا تستخدم الترحيل. اتصالات مباشرة فقط؛ قد تفشل عبر NAT صارم.",
 				"urlsLabel": "عناوين URL للترحيل",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "استخدام الترحيل العام عند الحاجة",
 				"fallbackPublicDesc": "التراجع إلى ترحيل iroh العام عندما تكون خوادم الترحيل المخصصة غير قابلة للوصول.",
 				"fallbackStrict": "البقاء على الترحيل المخصص",
-				"fallbackStrictDesc": "فشل النقل بدلاً من التبديل إلى الترحيل العام. الأفضل للإعدادات الخاصة."
+				"fallbackStrictDesc": "فشل النقل بدلاً من التبديل إلى الترحيل العام. الأفضل للإعدادات الخاصة.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "خادم الاكتشاف",
+				"description": "يتحكم في كيفية عثور الأجهزة على بعضها عبر المفتاح العام (pkarr). منفصل عن الترحيل ويؤثر فقط على اكتشاف نقاط النهاية.",
+				"modeDefault": "تلقائي (اكتشاف عام)",
+				"modeDefaultDesc": "يستخدم خوادم الاكتشاف العامة الافتراضية لـ iroh. الأفضل لمعظم المستخدمين.",
+				"modeCustom": "مخصص (استضافة ذاتية)",
+				"modeCustomDesc": "انشر واحل عناوين الأجهزة عبر خادم pkarr خاص بك باستخدام HTTPS. راجع",
+				"docsLink": "infra/dns",
+				"urlLabel": "عنوان URL للاكتشاف (pkarr)",
+				"urlDescription": "نقطة نهاية HTTPS pkarr لخادم الاكتشاف، مثل https://dns.example.com/pkarr.",
+				"urlInvalidHint": "أدخل عنوان URL HTTPS صالحًا",
+				"urlVerified": "تم التحقق",
+				"privacyNote": "لإعداد خاص بالكامل، اضبط نفس عنوان URL للاكتشاف على أجهزة المرسل والمستقبل.",
+				"testConnection": "اختبار الاتصال",
+				"verifySuccess": "اتصال الاكتشاف OK",
+				"verifySuccessDesc": "{{url}}\nتم التحقق بنجاح ({{latency}} مللي ثانية).",
+				"verifySuccessDescGeneric": "تم النشر بنجاح إلى خادم الاكتشاف المُعد.",
+				"verifyFailed": "فشل اتصال الاكتشاف",
+				"confirmCustomTitle": "استخدام اكتشاف مخصص؟",
+				"confirmCustomDescription": "لقد اخترت خادم اكتشاف مخصصًا مستضافًا ذاتيًا. يحتاج المرسل والمستقبل إلى نفس عنوان URL للاكتشاف حتى تجد الأجهزة بعضها عبر المفتاح العام. الاكتشاف يساعد فقط في تحديد مواقع نقاط النهاية؛ وتظل عمليات النقل مشفّرة من طرف إلى طرف.",
+				"confirmContinue": "متابعة"
 			}
 		},
 		"devices": {

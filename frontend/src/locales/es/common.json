@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Tema e idioma",
 			"general": "General",
-			"relay": "Relay",
 			"network": "Red",
 			"notification": "Notificaciones",
-			"devices": "Dispositivos"
+			"devices": "Dispositivos",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Selecciona tu tema preferido",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automático (relays públicos)",
 				"modeDefaultDesc": "Usa los relays públicos predeterminados de iroh. Lo mejor para la mayoría de usuarios.",
 				"modeCustom": "Personalizado (autoalojado)",
-				"modeCustomDesc": "Usa tu(s) propio(s) servidor(es) relay. Consulta deploy/relay en el repositorio del proyecto.",
+				"modeCustomDesc": "Usa tu(s) propio(s) servidor(es) relay. Consulta",
 				"modeDisabled": "Desactivado",
 				"modeDisabledDesc": "No usar relays. Solo conexiones directas; puede fallar con NAT estricto.",
 				"urlsLabel": "URLs de relay",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Usar relays públicos si es necesario",
 				"fallbackPublicDesc": "Recurre a relays públicos de iroh cuando los relays personalizados no estén disponibles.",
 				"fallbackStrict": "Permanecer en relays personalizados",
-				"fallbackStrictDesc": "Fallar la transferencia en lugar de cambiar a relays públicos. Ideal para configuraciones privadas."
+				"fallbackStrictDesc": "Fallar la transferencia en lugar de cambiar a relays públicos. Ideal para configuraciones privadas.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Servidor de descubrimiento",
+				"description": "Controla cómo los dispositivos se encuentran entre sí por clave pública (pkarr). Es independiente de los relays y solo afecta al descubrimiento de endpoints.",
+				"modeDefault": "Automático (descubrimiento público)",
+				"modeDefaultDesc": "Usa los servidores de descubrimiento públicos predeterminados de iroh. Ideal para la mayoría de usuarios.",
+				"modeCustom": "Personalizado (autoalojado)",
+				"modeCustomDesc": "Publica y resuelve direcciones de dispositivos a través de tu propio servidor pkarr por HTTPS. Consulta",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL de descubrimiento (pkarr)",
+				"urlDescription": "El endpoint HTTPS pkarr de tu servidor de descubrimiento, p. ej. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Introduce una URL HTTPS válida",
+				"urlVerified": "Verificado",
+				"privacyNote": "Para una configuración totalmente privada, configura la misma URL de descubrimiento en los dispositivos emisor y receptor.",
+				"testConnection": "Probar conexión",
+				"verifySuccess": "Conexión de descubrimiento OK",
+				"verifySuccessDesc": "{{url}}\nverificada correctamente ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Publicado correctamente en tu servidor de descubrimiento configurado.",
+				"verifyFailed": "Falló la conexión de descubrimiento",
+				"confirmCustomTitle": "¿Usar descubrimiento personalizado?",
+				"confirmCustomDescription": "Has elegido un servidor de descubrimiento autoalojado personalizado. Emisor y receptor necesitan la misma URL de descubrimiento para que los dispositivos se encuentren por clave pública. El descubrimiento solo ayuda a localizar endpoints; tus transferencias siempre permanecen cifradas de extremo a extremo.",
+				"confirmContinue": "Continuar"
 			}
 		},
 		"devices": {

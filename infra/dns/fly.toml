@@ -1,0 +1,54 @@
+# Fly.io deployment for iroh-dns-server (DashBeam self-hosted discovery).
+# Prerequisites: flyctl installed, DNS A/AAAA for your domain pointing at Fly.
+#
+# HTTPS pkarr only - no port 53 / NS delegation. DashBeam publishes and resolves
+# device addresses over https://<your-domain>/pkarr.
+#
+# Quick start:
+#   cp config.toml.example config.toml    # edit domain + contact
+#   fly launch --no-deploy
+#   fly volumes create discovery_data --size 1 --region <your-region>
+#   fly deploy
+#
+# Then set DashBeam -> Settings -> Infra -> Discovery to:
+#   https://<your-domain>/pkarr
+
+app = "dashbeam-discovery"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[mounts]
+  source = "discovery_data"
+  destination = "/data"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 443
+  processes = ["app"]
+
+  # The app terminates TLS itself (Let's Encrypt via cert_mode = "lets_encrypt"),
+  # so Fly passes raw TCP through on 443.
+  [[services.ports]]
+    port = 443
+
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 80
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+# Scrape Prometheus metrics over Fly's private network (the endpoint has no
+# auth). Set [metrics] bind_addr in config.toml to 0.0.0.0:9117 to enable.
+# [metrics]
+#   port = 9117
+#   path = "/metrics"

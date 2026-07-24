@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use protocol::{
-    run_share_session, AppHandle, FileMetadata, SendOptions, METADATA_ALPN,
+    run_share_session, AppHandle, DiscoveryModeOption, FileMetadata, SendOptions, METADATA_ALPN,
 };
 use iroh::endpoint::presets;
 use iroh::{address_lookup::pkarr::PkarrPublisher, endpoint::RelayMode, Endpoint};
@@ -41,13 +41,25 @@ pub async fn start_share_items(
     // the control endpoint is online, or the relay rejects duplicate endpoint ids.
     let secret_key = get_or_create_secret()?;
     let relay_mode: RelayMode = options.relay_mode.clone().into();
-    let mut builder = Endpoint::builder(presets::N0)
-        .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
-        .secret_key(secret_key)
-        .relay_mode(relay_mode.clone());
+    let mut builder = match &options.discovery_mode {
+        DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
+        DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
+    }
+    .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
+    .secret_key(secret_key)
+    .relay_mode(relay_mode.clone());
 
-    if options.ticket_type == AddrInfoOptions::Id {
-        builder = builder.address_lookup(PkarrPublisher::n0_dns());
+    match &options.discovery_mode {
+        // Self-hosted discovery: publish our home relay to the custom pkarr relay so
+        // peers can resolve us by endpoint id without touching n0's servers.
+        DiscoveryModeOption::Custom { pkarr_relay_url } => {
+            builder = builder.address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()));
+        }
+        DiscoveryModeOption::Default => {
+            if options.ticket_type == AddrInfoOptions::Id {
+                builder = builder.address_lookup(PkarrPublisher::n0_dns());
+            }
+        }
     }
     if let Some(addr) = options.magic_ipv4_addr {
         builder = builder.bind_addr(addr)?;

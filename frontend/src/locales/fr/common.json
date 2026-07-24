@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Thème et langue",
 			"general": "Général",
-			"relay": "Relais",
 			"network": "Réseau",
 			"notification": "Notifications",
-			"devices": "Appareils"
+			"devices": "Appareils",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Sélectionnez votre thème préféré",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automatique (relais publics)",
 				"modeDefaultDesc": "Utilise les relais publics iroh par défaut. Recommandé pour la plupart des utilisateurs.",
 				"modeCustom": "Personnalisé (auto-hébergé)",
-				"modeCustomDesc": "Utilisez votre/vos propre(s) serveur(s) relais. Voir deploy/relay dans le dépôt du projet.",
+				"modeCustomDesc": "Utilisez votre/vos propre(s) serveur(s) relais. Voir",
 				"modeDisabled": "Désactivé",
 				"modeDisabledDesc": "Ne pas utiliser de relais. Connexions directes uniquement ; peut échouer avec un NAT strict.",
 				"urlsLabel": "URL des relais",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Utiliser les relais publics si nécessaire",
 				"fallbackPublicDesc": "Basculer vers les relais publics iroh lorsque les relais personnalisés sont injoignables.",
 				"fallbackStrict": "Rester sur les relais personnalisés",
-				"fallbackStrictDesc": "Échouer le transfert au lieu de basculer vers les relais publics. Idéal pour les configurations privées."
+				"fallbackStrictDesc": "Échouer le transfert au lieu de basculer vers les relais publics. Idéal pour les configurations privées.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Serveur de découverte",
+				"description": "Contrôle la façon dont les appareils se trouvent via la clé publique (pkarr). Indépendant des relais et n’affecte que la découverte des points de terminaison.",
+				"modeDefault": "Automatique (découverte publique)",
+				"modeDefaultDesc": "Utilise les serveurs de découverte publics par défaut d’iroh. Idéal pour la plupart des utilisateurs.",
+				"modeCustom": "Personnalisé (auto-hébergé)",
+				"modeCustomDesc": "Publiez et résolvez les adresses des appareils via votre propre serveur pkarr en HTTPS. Voir",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL de découverte (pkarr)",
+				"urlDescription": "Le point de terminaison HTTPS pkarr de votre serveur de découverte, p. ex. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Entrez une URL HTTPS valide",
+				"urlVerified": "Vérifié",
+				"privacyNote": "Pour une configuration entièrement privée, configurez la même URL de découverte sur les appareils émetteur et récepteur.",
+				"testConnection": "Tester la connexion",
+				"verifySuccess": "Connexion découverte OK",
+				"verifySuccessDesc": "{{url}}\nvérifiée avec succès ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Publication réussie sur votre serveur de découverte configuré.",
+				"verifyFailed": "Échec de la connexion découverte",
+				"confirmCustomTitle": "Utiliser une découverte personnalisée ?",
+				"confirmCustomDescription": "Vous avez choisi un serveur de découverte auto-hébergé personnalisé. L’émetteur et le récepteur doivent utiliser la même URL de découverte pour que les appareils se trouvent via la clé publique. La découverte aide uniquement à localiser les points de terminaison ; vos transferts restent chiffrés de bout en bout.",
+				"confirmContinue": "Continuer"
 			}
 		},
 		"devices": {

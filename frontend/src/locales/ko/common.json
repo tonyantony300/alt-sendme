@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "테마 및 언어",
 			"general": "일반",
-			"relay": "릴레이",
 			"network": "네트워크",
 			"notification": "알림",
-			"devices": "기기"
+			"devices": "기기",
+			"infra": "인프라"
 		},
 		"theme": {
 			"description": "원하는 테마를 선택하세요",
@@ -266,7 +266,7 @@
 				"modeDefault": "자동(공개 릴레이)",
 				"modeDefaultDesc": "기본 공개 iroh 릴레이를 사용합니다. 대부분의 사용자에게 적합합니다.",
 				"modeCustom": "사용자 지정(자체 호스팅)",
-				"modeCustomDesc": "자체 릴레이 서버를 사용합니다. 프로젝트 저장소의 deploy/relay를 참조하세요.",
+				"modeCustomDesc": "자체 릴레이 서버를 사용합니다. 참조:",
 				"modeDisabled": "비활성화",
 				"modeDisabledDesc": "릴레이를 사용하지 않습니다. 직접 연결만; 엄격한 NAT에서는 실패할 수 있습니다.",
 				"urlsLabel": "릴레이 URL",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "필요 시 공용 릴레이 사용",
 				"fallbackPublicDesc": "사용자 지정 릴레이에 연결할 수 없으면 공용 iroh 릴레이로 대체합니다.",
 				"fallbackStrict": "사용자 지정 릴레이만 사용",
-				"fallbackStrictDesc": "공용 릴레이로 전환하지 않고 전송을 실패 처리합니다. 비공개 환경에 적합합니다."
+				"fallbackStrictDesc": "공용 릴레이로 전환하지 않고 전송을 실패 처리합니다. 비공개 환경에 적합합니다.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "디스커버리 서버",
+				"description": "기기가 공개 키(pkarr)로 서로를 찾는 방식을 제어합니다. 릴레이와 별개이며 엔드포인트 디스커버리에만 영향을 줍니다.",
+				"modeDefault": "자동(공개 디스커버리)",
+				"modeDefaultDesc": "iroh의 기본 공개 디스커버리 서버를 사용합니다. 대부분의 사용자에게 적합합니다.",
+				"modeCustom": "사용자 지정(자체 호스팅)",
+				"modeCustomDesc": "자체 pkarr 서버를 통해 HTTPS로 기기 주소를 게시하고 확인합니다. 참조:",
+				"docsLink": "infra/dns",
+				"urlLabel": "디스커버리(pkarr) URL",
+				"urlDescription": "디스커버리 서버의 HTTPS pkarr 엔드포인트(예: https://dns.example.com/pkarr).",
+				"urlInvalidHint": "유효한 HTTPS URL을 입력하세요",
+				"urlVerified": "확인됨",
+				"privacyNote": "완전히 비공개로 설정하려면 송신 및 수신 기기 모두에 동일한 디스커버리 URL을 구성하세요.",
+				"testConnection": "연결 테스트",
+				"verifySuccess": "디스커버리 연결 OK",
+				"verifySuccessDesc": "{{url}}\n확인 성공({{latency}} ms).",
+				"verifySuccessDescGeneric": "구성된 디스커버리 서버에 성공적으로 게시되었습니다.",
+				"verifyFailed": "디스커버리 연결 실패",
+				"confirmCustomTitle": "사용자 지정 디스커버리를 사용하시겠습니까?",
+				"confirmCustomDescription": "사용자 지정 자체 호스팅 디스커버리 서버를 선택했습니다. 기기가 공개 키로 서로를 찾으려면 송신 및 수신 기기에 동일한 디스커버리 URL이 필요합니다. 디스커버리는 엔드포인트 위치를 찾는 데만 도움이 되며, 전송은 항상 종단 간 암호화됩니다.",
+				"confirmContinue": "계속"
 			}
 		},
 		"devices": {

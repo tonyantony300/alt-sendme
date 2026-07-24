@@ -33,7 +33,9 @@ tmp2/
 .keystore.jks
 
 # Self-hosted relay config (per-deployment values; may contain secrets)
-deploy/relay/iroh-relay.conf
+infra/relay/iroh-relay.conf
+# Self-hosted discovery config (per-deployment values)
+infra/dns/config.toml
 
 # IDE and editor files
 .vscode/

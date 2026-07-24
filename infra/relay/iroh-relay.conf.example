@@ -6,7 +6,7 @@
 # Keys verified against iroh-relay v1.0.0. Reference:
 # https://github.com/n0-computer/iroh/blob/v1.0.0/iroh-relay/src/main.rs
 #
-# NOTE: iroh-relay.conf is gitignored — keep per-deployment values (and any
+# NOTE: iroh-relay.conf is gitignored - keep per-deployment values (and any
 # secret) here, not in the committed .example.
 
 # Report observed addresses over QUIC so clients can hole-punch.
@@ -22,7 +22,7 @@ contact = "you@example.com"
 cert_dir = "/data/certs"
 
 # ---------------------------------------------------------------------------
-# Rate limiting — protects your bandwidth bill.
+# Rate limiting - protects your bandwidth bill.
 #
 # An open relay with no caps lets a single client run up surprise terabyte-scale
 # egress. Rate limiting is disabled entirely when the [limits] block is absent,
@@ -46,26 +46,26 @@ max_burst_bytes = 5242880
 # ---------------------------------------------------------------------------
 # Access control.
 #
-# `access` is a SINGLE setting — pick AT MOST ONE of the tiers below. When all
+# `access` is a SINGLE setting - pick AT MOST ONE of the tiers below. When all
 # are omitted the relay defaults to `access = "everyone"` (fully open).
 # ---------------------------------------------------------------------------
 
-# Tier 1 — Shared token (simplest private relay).
-# Set the SAME token in DashBeam -> Settings -> Network -> Auth token.
+# Tier 1 - Shared token (simplest private relay).
+# Set the SAME token in DashBeam -> Settings -> Infra -> Auth token.
 #
 # Prefer supplying the secret via the IROH_RELAY_ACCESS_TOKEN environment
 # variable / platform secret instead of writing it here. When this line is
-# present, that env var REPLACES the whole list at startup — so a placeholder
+# present, that env var REPLACES the whole list at startup - so a placeholder
 # value is fine, and the real secret never touches the config file or git.
 # (The env var is only consulted when this shared_token line exists.)
 # access.shared_token = ["CHANGE_ME_OR_SET_IROH_RELAY_ACCESS_TOKEN"]
 
-# Tier 2 — Endpoint-ID allow / deny lists (identity-bound, more granular than a
+# Tier 2 - Endpoint-ID allow / deny lists (identity-bound, more granular than a
 # shared secret, and needs no token in the app). Values are hex endpoint ids.
 # access.allowlist = ["<endpoint-id>", "<endpoint-id>"]
 # access.denylist = ["<endpoint-id>"]
 
-# Tier 3 — HTTP callout (upstream's recommended choice for production).
+# Tier 3 - HTTP callout (upstream's recommended choice for production).
 # The relay POSTs each connecting endpoint id (header X-Iroh-NodeId) to your
 # auth service, which must reply 200 with the body `true` to allow. This gives
 # you revocation and rotation without editing config or restarting.
@@ -77,8 +77,8 @@ max_burst_bytes = 5242880
 # Metrics.
 #
 # A Prometheus endpoint is ENABLED BY DEFAULT on [::]:9090 with NO auth. Do not
-# expose 9090 to the public internet — firewall it to your scraper, bind it to a
-# private address, or disable it. See deploy/relay/README.md for a scrape config.
+# expose 9090 to the public internet - firewall it to your scraper, bind it to a
+# private address, or disable it. See infra/relay/README.md for a scrape config.
 # ---------------------------------------------------------------------------
 # enable_metrics = false
 # metrics_bind_addr = "127.0.0.1:9090"

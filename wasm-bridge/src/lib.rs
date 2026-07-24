@@ -192,6 +192,7 @@ pub async fn send_file(
     let relay_mode = resolve_relay_mode(relay_json).await?;
     let options = SendOptions {
         relay_mode,
+        discovery_mode: Default::default(),
         ticket_type: AddrInfoOptions::Relay,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
@@ -265,6 +266,7 @@ pub async fn send_items(
     let relay_mode = resolve_relay_mode(relay_json).await?;
     let options = SendOptions {
         relay_mode,
+        discovery_mode: Default::default(),
         ticket_type: AddrInfoOptions::Relay,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
@@ -316,6 +318,7 @@ pub async fn fetch_ticket_metadata(
     let options = ReceiveOptions {
         output_dir: None,
         relay_mode,
+        discovery_mode: Default::default(),
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
@@ -334,6 +337,7 @@ pub async fn receive_file(
     let options = ReceiveOptions {
         output_dir: None,
         relay_mode,
+        discovery_mode: Default::default(),
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };

@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Тема и језик",
 			"general": "Опште",
-			"relay": "Relay",
 			"network": "Мрежа",
 			"notification": "Обавештења",
-			"devices": "Uređaji"
+			"devices": "Uređaji",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Изаберите жељену тему",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automatski (javni relay)",
 				"modeDefaultDesc": "Koristi podrazumevane javne iroh relay servere. Najbolje za većinu korisnika.",
 				"modeCustom": "Prilagođeno (self-hosted)",
-				"modeCustomDesc": "Koristite sopstvene relay servere. Pogledajte deploy/relay u repozitorijumu projekta.",
+				"modeCustomDesc": "Koristite sopstvene relay servere. Pogledajte",
 				"modeDisabled": "Onemogućeno",
 				"modeDisabledDesc": "Ne koristite relay. Samo direktne veze; može da ne uspe iza strogog NAT-a.",
 				"urlsLabel": "Relay URL adrese",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Koristi javne relay servere po potrebi",
 				"fallbackPublicDesc": "Prebaci se na javne iroh relay servere kada prilagođeni relay nisu dostupni.",
 				"fallbackStrict": "Ostani na prilagođenim relay serverima",
-				"fallbackStrictDesc": "Prenos ne uspe umesto prebacivanja na javne relay servere. Najbolje za privatna okruženja."
+				"fallbackStrictDesc": "Prenos ne uspe umesto prebacivanja na javne relay servere. Najbolje za privatna okruženja.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Discovery server",
+				"description": "Kontroliše kako uređaji pronalaze jedni druge preko javnog ključa (pkarr). Odvojeno je od relay-a i utiče samo na otkrivanje endpoint-a.",
+				"modeDefault": "Automatski (javno discovery)",
+				"modeDefaultDesc": "Koristi podrazumevane javne discovery servere iroh. Najbolje za većinu korisnika.",
+				"modeCustom": "Prilagođeno (self-hosted)",
+				"modeCustomDesc": "Objavljujte i razrešavajte adrese uređaja preko sopstvenog pkarr servera preko HTTPS. Pogledajte",
+				"docsLink": "infra/dns",
+				"urlLabel": "Discovery (pkarr) URL",
+				"urlDescription": "HTTPS pkarr krajnja tačka vašeg discovery servera, npr. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Unesite važeći HTTPS URL",
+				"urlVerified": "Provereno",
+				"privacyNote": "Za potpuno privatno okruženje podesite isti discovery URL na uređajima pošiljaoca i primaoca.",
+				"testConnection": "Testiraj vezu",
+				"verifySuccess": "Discovery veza OK",
+				"verifySuccessDesc": "{{url}}\nuspešno provereno ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Uspešno objavljeno na konfigurisanom discovery serveru.",
+				"verifyFailed": "Discovery veza nije uspela",
+				"confirmCustomTitle": "Koristiti prilagođeno discovery?",
+				"confirmCustomDescription": "Izabrali ste prilagođeni self-hosted discovery server. Pošiljalac i primalac moraju koristiti isti discovery URL da bi uređaji pronašli jedni druge preko javnog ključa. Discovery samo pomaže u pronalaženju endpoint-a; prenosi ostaju end-to-end šifrovani.",
+				"confirmContinue": "Nastavi"
 			}
 		},
 		"devices": {

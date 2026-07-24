@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "テーマと言語",
 			"general": "一般",
-			"relay": "リレー",
 			"network": "ネットワーク",
 			"notification": "通知",
-			"devices": "デバイス"
+			"devices": "デバイス",
+			"infra": "インフラ"
 		},
 		"theme": {
 			"description": "希望のテーマを選択してください",
@@ -266,7 +266,7 @@
 				"modeDefault": "自動（公開リレー）",
 				"modeDefaultDesc": "デフォルトの公開 iroh リレーを使用します。ほとんどのユーザーに最適です。",
 				"modeCustom": "カスタム（自己ホスト）",
-				"modeCustomDesc": "独自のリレーサーバーを使用します。プロジェクトリポジトリの deploy/relay を参照してください。",
+				"modeCustomDesc": "独自のリレーサーバーを使用します。参照:",
 				"modeDisabled": "無効",
 				"modeDisabledDesc": "リレーを使用しません。直接接続のみ。厳格な NAT では失敗する場合があります。",
 				"urlsLabel": "リレー URL",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "必要に応じてパブリックリレーを使用",
 				"fallbackPublicDesc": "カスタムリレーに接続できない場合、パブリックの iroh リレーにフォールバックします。",
 				"fallbackStrict": "カスタムリレーのみを使用",
-				"fallbackStrictDesc": "パブリックリレーに切り替えず、転送を失敗させます。プライベート環境に最適です。"
+				"fallbackStrictDesc": "パブリックリレーに切り替えず、転送を失敗させます。プライベート環境に最適です。",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "ディスカバリーサーバー",
+				"description": "公開鍵（pkarr）でデバイス同士がどう見つかるかを制御します。リレーとは別で、エンドポイントの検出にのみ影響します。",
+				"modeDefault": "自動（公開ディスカバリー）",
+				"modeDefaultDesc": "iroh のデフォルト公開ディスカバリーサーバーを使用します。ほとんどのユーザーに最適です。",
+				"modeCustom": "カスタム（自己ホスト）",
+				"modeCustomDesc": "独自の pkarr サーバー経由で HTTPS によりデバイスアドレスを公開・解決します。参照:",
+				"docsLink": "infra/dns",
+				"urlLabel": "ディスカバリー（pkarr）URL",
+				"urlDescription": "ディスカバリーサーバーの HTTPS pkarr エンドポイント（例: https://dns.example.com/pkarr）。",
+				"urlInvalidHint": "有効な HTTPS URL を入力してください",
+				"urlVerified": "確認済み",
+				"privacyNote": "完全にプライベートな構成にするには、送信側と受信側の両方で同じディスカバリー URL を設定してください。",
+				"testConnection": "接続をテスト",
+				"verifySuccess": "ディスカバリー接続 OK",
+				"verifySuccessDesc": "{{url}}\nの確認に成功しました（{{latency}} ms）。",
+				"verifySuccessDescGeneric": "設定したディスカバリーサーバーへの公開に成功しました。",
+				"verifyFailed": "ディスカバリー接続に失敗しました",
+				"confirmCustomTitle": "カスタムディスカバリーを使用しますか?",
+				"confirmCustomDescription": "カスタムの自己ホスト型ディスカバリーサーバーを選択しました。公開鍵でデバイス同士が見つかるには、送信側と受信側で同じディスカバリー URL が必要です。ディスカバリーはエンドポイントの特定のみに役立ち、転送は常にエンドツーエンドで暗号化されます。",
+				"confirmContinue": "続行"
 			}
 		},
 		"devices": {

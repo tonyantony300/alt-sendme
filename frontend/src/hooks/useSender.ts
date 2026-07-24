@@ -9,6 +9,7 @@ import type { AlertType } from '../types/ui'
 import type { TransferMetadata, TransferProgress } from '../types/transfer'
 import { SpeedAverager, calculateETA } from '../utils/etaUtils'
 import { getRelayConfigArg } from '../lib/relay'
+import { getDiscoveryConfigArg } from '../lib/discovery'
 import { useSenderStore } from '../store/sender-store'
 import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import {
@@ -760,6 +761,7 @@ export function useSender(): UseSenderReturn {
 			const result = await invoke<string>('send_items', {
 				paths: selectedPaths,
 				relay: getRelayConfigArg(),
+				discovery: getDiscoveryConfigArg(),
 			})
 			// console.log('[useSender] startSharing: got ticket, setting state to SHARING')
 			setTicket(result)

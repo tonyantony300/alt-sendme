@@ -47,15 +47,21 @@ By default, DashBeam may use relay servers operated by the [Iroh project](https:
 - Who you are communicating with (only encrypted connection endpoints)
 
 **Your Control:**
-- You can disable relay servers entirely in **Settings → Network** (this may limit connectivity in some network configurations)
-- You can configure custom self-hosted relay servers in **Settings → Network** (see [`deploy/relay/`](deploy/relay/README.md) in the project repo)
+- You can disable relay servers entirely in **Settings → Infra** (this may limit connectivity in some network configurations)
+- You can configure custom self-hosted relay servers in **Settings → Infra** (see [`infra/relay/`](infra/relay/README.md) in the project repo)
+- You can configure a custom self-hosted discovery server in **Settings → Infra** (see [`infra/dns/`](infra/dns/README.md) in the project repo)
 - Relay servers are only used when direct connections fail
 
-### DNS Discovery
+### Discovery (Pkarr)
 
-When using Node ID-only tickets, DashBeam may use DNS-based discovery services (Pkarr) to find peer addresses. This service may temporarily store:
-- Node addresses (IP addresses) associated with Node IDs
-- This information is used only for connection establishment
+When using Node ID-only tickets, DashBeam uses public-key based discovery (Pkarr) to find peer addresses. This service may temporarily store:
+- Node addresses (relay URL and/or IP addresses) associated with Node IDs
+- This information is signed by the device's own key and used only for connection establishment
+
+**Your Control:**
+- By default, DashBeam uses the discovery servers operated by the [Iroh project](https://www.iroh.computer) (n0).
+- You can configure a custom self-hosted discovery server in **Settings → Infra** (see [`infra/dns/`](infra/dns/README.md) in the project repo). Discovery is independent of relays - you can self-host either, both, or neither.
+- Discovery records are self-authenticating: a discovery server never sees file contents or names, only small signed address records.
 
 ### Direct Connections
 
@@ -92,6 +98,7 @@ You maintain full control over:
 - Where files are saved on your device
 - Whether to use relay servers (can be disabled)
 - Whether to use custom relay servers
+- Whether to use a custom self-hosted discovery server
 - Local data storage (can be cleared by uninstalling the application)
 
 ## Data Retention

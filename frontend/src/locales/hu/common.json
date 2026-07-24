@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Téma és nyelv",
 			"general": "Általános",
-			"relay": "Relay",
 			"network": "Hálózat",
 			"notification": "Értesítések",
-			"devices": "Eszközök"
+			"devices": "Eszközök",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Válassza ki a kívánt témát",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automatikus (nyilvános relay)",
 				"modeDefaultDesc": "Az alapértelmezett nyilvános iroh relay-ket használja. A legtöbb felhasználónak ideális.",
 				"modeCustom": "Egyéni (self-hosted)",
-				"modeCustomDesc": "Saját relay szerverek használata. Lásd deploy/relay a projekt tárolóban.",
+				"modeCustomDesc": "Saját relay szerverek használata. Lásd",
 				"modeDisabled": "Letiltva",
 				"modeDisabledDesc": "Ne használjon relay-t. Csak közvetlen kapcsolatok; szigorú NAT mögött sikertelen lehet.",
 				"urlsLabel": "Relay URL-ek",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Szükség esetén nyilvános relay használata",
 				"fallbackPublicDesc": "Váltás nyilvános iroh relay-kre, ha az egyéni relay-k elérhetetlenek.",
 				"fallbackStrict": "Maradj az egyéni relay-knél",
-				"fallbackStrictDesc": "Az átvitel meghiúsul a nyilvános relay-kre váltás helyett. Privát környezetekhez ideális."
+				"fallbackStrictDesc": "Az átvitel meghiúsul a nyilvános relay-kre váltás helyett. Privát környezetekhez ideális.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Discovery szerver",
+				"description": "Szabályozza, hogyan találják meg egymást az eszközök nyilvános kulcs (pkarr) alapján. A relay-től független, csak az endpoint felfedezését érinti.",
+				"modeDefault": "Automatikus (nyilvános discovery)",
+				"modeDefaultDesc": "Az iroh alapértelmezett nyilvános discovery szervereit használja. A legtöbb felhasználónak ideális.",
+				"modeCustom": "Egyéni (self-hosted)",
+				"modeCustomDesc": "Eszközcímek közzététele és feloldása saját pkarr szerveren HTTPS-en. Lásd",
+				"docsLink": "infra/dns",
+				"urlLabel": "Discovery (pkarr) URL",
+				"urlDescription": "A discovery szerver HTTPS pkarr végpontja, pl. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Adjon meg érvényes HTTPS URL-t",
+				"urlVerified": "Ellenőrizve",
+				"privacyNote": "Teljesen privát beállításhoz ugyanazt a discovery URL-t konfigurálja a küldő és a fogadó eszközön.",
+				"testConnection": "Kapcsolat tesztelése",
+				"verifySuccess": "Discovery kapcsolat OK",
+				"verifySuccessDesc": "{{url}}\nsikeresen ellenőrizve ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Sikeresen közzétéve a konfigurált discovery szerveren.",
+				"verifyFailed": "Discovery kapcsolat sikertelen",
+				"confirmCustomTitle": "Egyéni discovery használata?",
+				"confirmCustomDescription": "Egyéni, saját üzemeltetésű discovery szervert választott. A küldőnek és a fogadónak ugyanazt a discovery URL-t kell használnia, hogy az eszközök nyilvános kulcs alapján megtalálják egymást. A discovery csak az endpointok megtalálásában segít; az átvitelek végpontok közötti titkosítással maradnak.",
+				"confirmContinue": "Folytatás"
 			}
 		},
 		"devices": {

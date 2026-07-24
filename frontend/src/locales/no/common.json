@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Tema og språk",
 			"general": "Generelt",
-			"relay": "Relay",
 			"network": "Nettverk",
 			"notification": "Varsler",
-			"devices": "Enheter"
+			"devices": "Enheter",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Velg ønsket tema",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automatisk (offentlige relay)",
 				"modeDefaultDesc": "Bruker standard offentlige iroh-relay. Best for de fleste brukere.",
 				"modeCustom": "Tilpasset (self-hosted)",
-				"modeCustomDesc": "Bruk dine egne relay-servere. Se deploy/relay i prosjektrepoet.",
+				"modeCustomDesc": "Bruk dine egne relay-servere. Se",
 				"modeDisabled": "Deaktivert",
 				"modeDisabledDesc": "Ikke bruk relay. Kun direkte tilkoblinger; kan feile bak streng NAT.",
 				"urlsLabel": "Relay-URL-er",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Bruk offentlige relays ved behov",
 				"fallbackPublicDesc": "Fall tilbake til offentlige iroh-relays når tilpassede relays er utilgjengelige.",
 				"fallbackStrict": "Hold deg til tilpassede relays",
-				"fallbackStrictDesc": "Avbryt overføringen i stedet for å bytte til offentlige relays. Best for private oppsett."
+				"fallbackStrictDesc": "Avbryt overføringen i stedet for å bytte til offentlige relays. Best for private oppsett.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Discovery-server",
+				"description": "Styrer hvordan enheter finner hverandre via offentlig nøkkel (pkarr). Dette er adskilt fra relay og påvirker kun endepunktsoppdagelse.",
+				"modeDefault": "Automatisk (offentlig discovery)",
+				"modeDefaultDesc": "Bruker irohs standard offentlige discovery-servere. Best for de fleste brukere.",
+				"modeCustom": "Tilpasset (self-hosted)",
+				"modeCustomDesc": "Publiser og resolv enhetsadresser via din egen pkarr-server over HTTPS. Se",
+				"docsLink": "infra/dns",
+				"urlLabel": "Discovery-(pkarr-)URL",
+				"urlDescription": "HTTPS pkarr-endepunktet til discovery-serveren din, f.eks. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Skriv inn en gyldig HTTPS-URL",
+				"urlVerified": "Verifisert",
+				"privacyNote": "For et helt privat oppsett, konfigurer samme discovery-URL på både avsender- og mottakerenheter.",
+				"testConnection": "Test tilkobling",
+				"verifySuccess": "Discovery-tilkobling OK",
+				"verifySuccessDesc": "{{url}}\nverifisert ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Publisert til den konfigurerte discovery-serveren.",
+				"verifyFailed": "Discovery-tilkobling mislyktes",
+				"confirmCustomTitle": "Bruke egendefinert discovery?",
+				"confirmCustomDescription": "Du har valgt en egendefinert, selvhostet discovery-server. Avsender og mottaker trenger samme discovery-URL for at enheter skal finne hverandre via offentlig nøkkel. Discovery hjelper bare med å finne endepunkter; overføringene dine forblir ende-til-ende-kryptert.",
+				"confirmContinue": "Fortsett"
 			}
 		},
 		"devices": {

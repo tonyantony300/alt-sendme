@@ -10,11 +10,13 @@ use iroh::endpoint::{
     presets, AfterHandshakeOutcome, Connection, Endpoint, EndpointHooks, RelayMode, Side,
 };
 use iroh::protocol::{AcceptError, ProtocolHandler, Router};
-use iroh::{address_lookup::pkarr::PkarrPublisher, EndpointAddr, EndpointId, TransportAddr};
+use iroh::address_lookup::pkarr::{PkarrPublisher, PkarrResolver};
+use iroh::{EndpointAddr, EndpointId, TransportAddr};
 use protocol::{
     apply_options, export_connection_keying_material, read_message, sign_challenge,
-    verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, InviteResponse,
-    PairedDevice, PairingStatus, RememberVote, CONTROL_ALPN, PRESENCE_CONNECT_TIMEOUT_SECS,
+    verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, DiscoveryModeOption,
+    InviteResponse, PairedDevice, PairingStatus, RememberVote, CONTROL_ALPN,
+    PRESENCE_CONNECT_TIMEOUT_SECS,
 };
 use tokio::sync::{Mutex, RwLock};
 use tokio::task::JoinHandle;
@@ -534,12 +536,14 @@ pub struct NodeService {
     presence: Arc<std::sync::RwLock<HashMap<String, bool>>>,
     app_handle: AppHandle,
     relay_mode: Mutex<RelayMode>,
+    discovery_mode: Mutex<DiscoveryModeOption>,
 }
 
 impl NodeService {
     pub async fn start(
         data_dir: &Path,
         relay_mode: RelayMode,
+        discovery_mode: DiscoveryModeOption,
         app_handle: AppHandle,
     ) -> anyhow::Result<Self> {
 
@@ -594,6 +598,7 @@ impl NodeService {
             paired_connections.clone(),
             network_ready.clone(),
             relay_mode.clone(),
+            discovery_mode.clone(),
         )
         .await?;
         let runtime = Arc::new(Mutex::new(runtime));
@@ -614,6 +619,7 @@ impl NodeService {
             presence,
             app_handle,
             relay_mode: Mutex::new(relay_mode),
+            discovery_mode: Mutex::new(discovery_mode),
         })
     }
 
@@ -632,14 +638,19 @@ impl NodeService {
         Ok(())
     }
 
-    pub async fn reconfigure_relay(&self, relay_mode: RelayMode) -> anyhow::Result<()> {
+    pub async fn reconfigure_network(
+        &self,
+        relay_mode: RelayMode,
+        discovery_mode: DiscoveryModeOption,
+    ) -> anyhow::Result<()> {
         {
-            let current = self.relay_mode.lock().await;
-            if format!("{current:?}") == format!("{relay_mode:?}") {
-
+            let current_relay = self.relay_mode.lock().await;
+            let current_discovery = self.discovery_mode.lock().await;
+            if format!("{current_relay:?}") == format!("{relay_mode:?}")
+                && format!("{current_discovery:?}") == format!("{discovery_mode:?}")
+            {
                 return Ok(());
             }
-
         }
 
         self.stop_pairing_host().await;
@@ -663,12 +674,14 @@ impl NodeService {
             self.paired_connections.clone(),
             self.network_ready.clone(),
             relay_mode.clone(),
+            discovery_mode.clone(),
         )
         .await?;
 
         *runtime = new_runtime;
         self.paired_connections.refresh().await;
         *self.relay_mode.lock().await = relay_mode;
+        *self.discovery_mode.lock().await = discovery_mode;
 
         Ok(())
     }
@@ -1178,15 +1191,27 @@ async fn build_runtime(
     paired_connections: Arc<PairedConnectionManager>,
     network_ready: Arc<AtomicBool>,
     relay_mode: RelayMode,
+    discovery_mode: DiscoveryModeOption,
 ) -> anyhow::Result<NodeRuntime> {
 
     let hook = PairedOnlyHook {
         access: access.clone(),
     };
 
-    let endpoint = Endpoint::builder(presets::N0)
+    // The control endpoint must both publish (so paired peers can find us by
+    // endpoint id) and resolve (to reach them). Custom mode uses a self-hosted
+    // pkarr relay via HTTPS; Default keeps iroh's n0 discovery.
+    let builder = match &discovery_mode {
+        DiscoveryModeOption::Custom { pkarr_relay_url } => Endpoint::builder(presets::Minimal)
+            .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
+            .address_lookup(PkarrResolver::builder(pkarr_relay_url.clone())),
+        DiscoveryModeOption::Default => {
+            Endpoint::builder(presets::N0).address_lookup(PkarrPublisher::n0_dns())
+        }
+    };
+
+    let endpoint = builder
         .secret_key(identity.secret_key.clone())
-        .address_lookup(PkarrPublisher::n0_dns())
         .relay_mode(relay_mode.clone())
         .hooks(hook)
         .alpns(vec![CONTROL_ALPN.to_vec()])

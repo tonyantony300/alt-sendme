@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Tema e idioma",
 			"general": "Geral",
-			"relay": "Relay",
 			"network": "Rede",
 			"notification": "Notificações",
-			"devices": "Dispositivos"
+			"devices": "Dispositivos",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Selecione o tema preferido",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automático (relays públicos)",
 				"modeDefaultDesc": "Usa os relays públicos padrão do iroh. Melhor para a maioria dos usuários.",
 				"modeCustom": "Personalizado (auto-hospedado)",
-				"modeCustomDesc": "Use seu(s) próprio(s) servidor(es) relay. Veja deploy/relay no repositório do projeto.",
+				"modeCustomDesc": "Use seu(s) próprio(s) servidor(es) relay. Veja",
 				"modeDisabled": "Desativado",
 				"modeDisabledDesc": "Não usar relays. Apenas conexões diretas; pode falhar com NAT restrito.",
 				"urlsLabel": "URLs de relay",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Usar relays públicos se necessário",
 				"fallbackPublicDesc": "Recorrer a relays públicos do iroh quando relays personalizados estiverem inacessíveis.",
 				"fallbackStrict": "Permanecer em relays personalizados",
-				"fallbackStrictDesc": "Falhar a transferência em vez de mudar para relays públicos. Ideal para configurações privadas."
+				"fallbackStrictDesc": "Falhar a transferência em vez de mudar para relays públicos. Ideal para configurações privadas.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Servidor de descoberta",
+				"description": "Controla como os dispositivos se encontram pela chave pública (pkarr). É separado dos relays e afeta apenas a descoberta de endpoints.",
+				"modeDefault": "Automático (descoberta pública)",
+				"modeDefaultDesc": "Usa os servidores de descoberta públicos padrão do iroh. Ideal para a maioria dos usuários.",
+				"modeCustom": "Personalizado (auto-hospedado)",
+				"modeCustomDesc": "Publique e resolva endereços de dispositivos pelo seu próprio servidor pkarr via HTTPS. Veja",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL de descoberta (pkarr)",
+				"urlDescription": "O endpoint HTTPS pkarr do seu servidor de descoberta, p. ex. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Digite uma URL HTTPS válida",
+				"urlVerified": "Verificado",
+				"privacyNote": "Para uma configuração totalmente privada, configure a mesma URL de descoberta nos dispositivos remetente e destinatário.",
+				"testConnection": "Testar conexão",
+				"verifySuccess": "Conexão de descoberta OK",
+				"verifySuccessDesc": "{{url}}\nverificada com sucesso ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Publicado com sucesso no servidor de descoberta configurado.",
+				"verifyFailed": "Falha na conexão de descoberta",
+				"confirmCustomTitle": "Usar descoberta personalizada?",
+				"confirmCustomDescription": "Você escolheu um servidor de descoberta auto-hospedado personalizado. Remetente e destinatário precisam da mesma URL de descoberta para que os dispositivos se encontrem pela chave pública. A descoberta só ajuda a localizar endpoints; suas transferências permanecem criptografadas de ponta a ponta.",
+				"confirmContinue": "Continuar"
 			}
 		},
 		"devices": {

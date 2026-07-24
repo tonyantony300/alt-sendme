@@ -1,8 +1,11 @@
 use protocol::{
-    download_to_store, get_or_create_secret, AppHandle, ReceiveOptions,
+    download_to_store, get_or_create_secret, AppHandle, DiscoveryModeOption, ReceiveOptions,
 };
 use iroh::endpoint::presets;
-use iroh::{address_lookup::dns::DnsAddressLookup, Endpoint};
+use iroh::{
+    address_lookup::{dns::DnsAddressLookup, pkarr::PkarrResolver},
+    Endpoint,
+};
 use iroh_blobs::ticket::BlobTicket;
 use std::str::FromStr;
 use tokio::select;
@@ -42,7 +45,14 @@ pub async fn download(
         .relay_mode(options.relay_mode.clone().into());
 
     if ticket.addr().relay_urls().count() == 0 && ticket.addr().ip_addrs().count() == 0 {
-        builder = builder.address_lookup(DnsAddressLookup::n0_dns());
+        builder = match &options.discovery_mode {
+            DiscoveryModeOption::Custom { pkarr_relay_url } => {
+                builder.address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()))
+            }
+            DiscoveryModeOption::Default => {
+                builder.address_lookup(DnsAddressLookup::n0_dns())
+            }
+        };
     }
     if let Some(addr) = options.magic_ipv4_addr {
         builder = builder.bind_addr(addr)?;
@@ -147,6 +157,7 @@ mod tests {
 
         let send_opts = SendOptions {
             relay_mode: RelayModeOption::Default,
+            discovery_mode: Default::default(),
             ticket_type: AddrInfoOptions::RelayAndAddresses,
             magic_ipv4_addr: None,
             magic_ipv6_addr: None,
@@ -159,6 +170,7 @@ mod tests {
         let recv_opts = ReceiveOptions {
             output_dir: None,
             relay_mode: RelayModeOption::Default,
+            discovery_mode: Default::default(),
             magic_ipv4_addr: None,
             magic_ipv6_addr: None,
         };

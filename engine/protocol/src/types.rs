@@ -19,6 +19,7 @@ pub type AppHandle = Option<Arc<dyn EventEmitter>>;
 #[derive(Debug, Default)]
 pub struct SendOptions {
     pub relay_mode: RelayModeOption,
+    pub discovery_mode: DiscoveryModeOption,
     pub ticket_type: AddrInfoOptions,
     pub magic_ipv4_addr: Option<std::net::SocketAddrV4>,
     pub magic_ipv6_addr: Option<std::net::SocketAddrV6>,
@@ -28,6 +29,7 @@ pub struct SendOptions {
 pub struct ReceiveOptions {
     pub output_dir: Option<std::path::PathBuf>,
     pub relay_mode: RelayModeOption,
+    pub discovery_mode: DiscoveryModeOption,
     pub magic_ipv4_addr: Option<std::net::SocketAddrV4>,
     pub magic_ipv6_addr: Option<std::net::SocketAddrV6>,
 }
@@ -62,6 +64,20 @@ impl From<RelayModeOption> for iroh::endpoint::RelayMode {
                 iroh::endpoint::RelayMode::Custom(map)
             }
         }
+    }
+}
+
+/// Discovery (pkarr) mode. `Default` keeps iroh's n0 discovery; `Custom` publishes
+/// and resolves against a self-hosted pkarr relay over HTTPS.
+#[derive(Clone, Debug)]
+pub enum DiscoveryModeOption {
+    Default,
+    Custom { pkarr_relay_url: url::Url },
+}
+
+impl Default for DiscoveryModeOption {
+    fn default() -> Self {
+        Self::Default
     }
 }
 

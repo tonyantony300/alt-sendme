@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Design & Sprache",
 			"general": "Allgemein",
-			"relay": "Relay",
 			"network": "Netzwerk",
 			"notification": "Benachrichtigungen",
-			"devices": "Geräte"
+			"devices": "Geräte",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Wählen Sie Ihr bevorzugtes Design",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automatisch (öffentliche Relays)",
 				"modeDefaultDesc": "Verwendet die standardmäßigen öffentlichen iroh-Relays. Am besten für die meisten Nutzer.",
 				"modeCustom": "Benutzerdefiniert (Self-Hosted)",
-				"modeCustomDesc": "Verwenden Sie Ihre eigenen Relay-Server. Siehe deploy/relay im Projekt-Repo.",
+				"modeCustomDesc": "Verwenden Sie Ihre eigenen Relay-Server. Siehe",
 				"modeDisabled": "Deaktiviert",
 				"modeDisabledDesc": "Keine Relays verwenden. Nur direkte Verbindungen; kann bei striktem NAT fehlschlagen.",
 				"urlsLabel": "Relay-URLs",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "Bei Bedarf öffentliche Relays verwenden",
 				"fallbackPublicDesc": "Auf öffentliche iroh-Relays zurückfallen, wenn benutzerdefinierte Relays nicht erreichbar sind.",
 				"fallbackStrict": "Bei benutzerdefinierten Relays bleiben",
-				"fallbackStrictDesc": "Übertragung abbrechen, statt auf öffentliche Relays umzuschalten. Am besten für private Setups."
+				"fallbackStrictDesc": "Übertragung abbrechen, statt auf öffentliche Relays umzuschalten. Am besten für private Setups.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Discovery-Server",
+				"description": "Steuert, wie Geräte einander über den öffentlichen Schlüssel (pkarr) finden. Unabhängig von Relays und betrifft nur die Endpoint-Erkennung.",
+				"modeDefault": "Automatisch (öffentliche Discovery)",
+				"modeDefaultDesc": "Verwendet irohs standardmäßige öffentliche Discovery-Server. Ideal für die meisten Nutzer.",
+				"modeCustom": "Benutzerdefiniert (Self-Hosted)",
+				"modeCustomDesc": "Geräteadressen über Ihren eigenen pkarr-Server per HTTPS veröffentlichen und auflösen. Siehe",
+				"docsLink": "infra/dns",
+				"urlLabel": "Discovery-(pkarr-)URL",
+				"urlDescription": "Der HTTPS-pkarr-Endpunkt Ihres Discovery-Servers, z. B. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Geben Sie eine gültige HTTPS-URL ein",
+				"urlVerified": "Verifiziert",
+				"privacyNote": "Für eine vollständig private Einrichtung konfigurieren Sie dieselbe Discovery-URL auf Sender- und Empfängergeräten.",
+				"testConnection": "Verbindung testen",
+				"verifySuccess": "Discovery-Verbindung OK",
+				"verifySuccessDesc": "{{url}}\nerfolgreich verifiziert ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Erfolgreich an Ihren konfigurierten Discovery-Server veröffentlicht.",
+				"verifyFailed": "Discovery-Verbindung fehlgeschlagen",
+				"confirmCustomTitle": "Benutzerdefinierte Discovery verwenden?",
+				"confirmCustomDescription": "Sie haben einen eigenen, selbst gehosteten Discovery-Server gewählt. Sender und Empfänger benötigen dieselbe Discovery-URL, damit Geräte sich über den öffentlichen Schlüssel finden. Discovery hilft nur beim Auffinden von Endpunkten; Ihre Übertragungen bleiben durchgängig Ende-zu-Ende-verschlüsselt.",
+				"confirmContinue": "Weiter"
 			}
 		},
 		"devices": {

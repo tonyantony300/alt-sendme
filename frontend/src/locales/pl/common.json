@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Motyw i język",
 			"general": "Ogólne",
-			"relay": "Relay",
 			"network": "Sieć",
 			"notification": "Powiadomienia",
-			"devices": "Urządzenia"
+			"devices": "Urządzenia",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Wybierz preferowany motyw",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automatycznie (publiczne relay)",
 				"modeDefaultDesc": "Używa domyślnych publicznych relay iroh. Najlepsze dla większości użytkowników.",
 				"modeCustom": "Niestandardowe (self-hosted)",
-				"modeCustomDesc": "Użyj własnych serwerów relay. Zobacz deploy/relay w repozytorium projektu.",
+				"modeCustomDesc": "Użyj własnych serwerów relay. Zobacz",
 				"modeDisabled": "Wyłączone",
 				"modeDisabledDesc": "Nie używaj relay. Tylko połączenia bezpośrednie; może zawieść przy restrykcyjnym NAT.",
 				"urlsLabel": "Adresy URL relay",
@@ -304,7 +304,30 @@
 				"fallbackPublic": "W razie potrzeby użyj publicznych relay",
 				"fallbackPublicDesc": "Przełącz się na publiczne relay iroh, gdy niestandardowe relay są niedostępne.",
 				"fallbackStrict": "Pozostań przy niestandardowych relay",
-				"fallbackStrictDesc": "Przerwij transfer zamiast przełączać się na publiczne relay. Najlepsze dla prywatnych konfiguracji."
+				"fallbackStrictDesc": "Przerwij transfer zamiast przełączać się na publiczne relay. Najlepsze dla prywatnych konfiguracji.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Serwer discovery",
+				"description": "Kontroluje, jak urządzenia znajdują się nawzajem po kluczu publicznym (pkarr). Jest niezależne od relay i dotyczy tylko wykrywania endpointów.",
+				"modeDefault": "Automatycznie (publiczne discovery)",
+				"modeDefaultDesc": "Używa domyślnych publicznych serwerów discovery iroh. Najlepsze dla większości użytkowników.",
+				"modeCustom": "Własne (self-hosted)",
+				"modeCustomDesc": "Publikuj i rozwiązuj adresy urządzeń przez własny serwer pkarr przez HTTPS. Zobacz",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL discovery (pkarr)",
+				"urlDescription": "Endpoint HTTPS pkarr Twojego serwera discovery, np. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Wprowadź prawidłowy adres URL HTTPS",
+				"urlVerified": "Zweryfikowano",
+				"privacyNote": "Dla w pełni prywatnej konfiguracji ustaw ten sam URL discovery na urządzeniach nadawcy i odbiorcy.",
+				"testConnection": "Testuj połączenie",
+				"verifySuccess": "Połączenie discovery OK",
+				"verifySuccessDesc": "{{url}}\nzweryfikowano pomyślnie ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Pomyślnie opublikowano na skonfigurowanym serwerze discovery.",
+				"verifyFailed": "Połączenie discovery nie powiodło się",
+				"confirmCustomTitle": "Użyć własnego discovery?",
+				"confirmCustomDescription": "Wybrano własny, self-hosted serwer discovery. Nadawca i odbiorca potrzebują tego samego URL discovery, aby urządzenia mogły się znaleźć po kluczu publicznym. Discovery pomaga tylko w lokalizacji endpointów; transfery pozostają szyfrowane end-to-end.",
+				"confirmContinue": "Kontynuuj"
 			}
 		},
 		"devices": {

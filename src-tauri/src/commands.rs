@@ -1,8 +1,9 @@
 use crate::features::thumbnail::generate_thumbnail;
 use crate::state::{AppStateMutex, ShareHandle};
 use engine::{
-    download, fetch_metadata, get_relay_status as engine_get_relay_status,
-    resolve_relay_mode_with_fallback, start_share_items, verify_relays as engine_verify_relays,
+    build_discovery_mode, download, fetch_metadata, get_relay_status as engine_get_relay_status,
+    resolve_relay_mode_with_fallback, start_share_items,
+    verify_discovery as engine_verify_discovery, verify_relays as engine_verify_relays,
     AddrInfoOptions, AppHandle, DeviceInfo, EventEmitter, FileMetadata, FilePreviewItem,
     NodeService, PairedDevice, PairedDeviceInfo, ReceiveOptions, SendOptions,
 };
@@ -14,8 +15,8 @@ use tauri::{Emitter, Manager, State};
 
 #[allow(unused_imports)]
 pub use engine::{
-    build_relay_mode, relay_fallback_policy, RelayConfigArg, RelayFallbackPolicy,
-    RelayStatusResponse, VerifyRelaysResponse,
+    build_relay_mode, relay_fallback_policy, DiscoveryConfigArg, RelayConfigArg,
+    RelayFallbackPolicy, RelayStatusResponse, VerifyDiscoveryResponse, VerifyRelaysResponse,
 };
 
 fn relay_fallback_event_payload(
@@ -94,10 +95,11 @@ pub async fn focus_main_window(app_handle: tauri::AppHandle) -> Result<(), Strin
 pub async fn start_sharing(
     path: String,
     relay: Option<RelayConfigArg>,
+    discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
-    send_items(vec![path], relay, state, app_handle).await
+    send_items(vec![path], relay, discovery, state, app_handle).await
 }
 
 /// New interface to start_sharing multiple items at once
@@ -105,6 +107,7 @@ pub async fn start_sharing(
 pub async fn send_items(
     paths: Vec<String>,
     relay: Option<RelayConfigArg>,
+    discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
@@ -136,8 +139,10 @@ pub async fn send_items(
 
         // Create send options from relay settings.
         let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
+        let discovery_mode = build_discovery_mode(discovery)?;
         let options = SendOptions {
             relay_mode,
+            discovery_mode,
             ticket_type: AddrInfoOptions::RelayAndAddresses,
             magic_ipv4_addr: None,
             magic_ipv6_addr: None,
@@ -256,14 +261,17 @@ async fn build_send_metadata(paths: &[PathBuf]) -> Result<FileMetadata, String> 
 pub async fn fetch_ticket_metadata(
     ticket: String,
     relay: Option<RelayConfigArg>,
+    discovery: Option<DiscoveryConfigArg>,
 ) -> Result<FileMetadata, String> {
     let ticket_len = ticket.len();
     tracing::info!(ticket_len, "fetch_ticket_metadata called");
 
     let (relay_mode, _) = resolve_relay_mode_with_fallback(relay).await?;
+    let discovery_mode = build_discovery_mode(discovery)?;
     let options = ReceiveOptions {
         output_dir: None,
         relay_mode,
+        discovery_mode,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
@@ -311,6 +319,7 @@ pub async fn receive_file(
     output_path: String,
     tree_uri: Option<String>,
     relay: Option<RelayConfigArg>,
+    discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
@@ -319,9 +328,11 @@ pub async fn receive_file(
 
     let output_dir = resolve_receive_output_dir(&app_handle, output_path)?;
     let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
+    let discovery_mode = build_discovery_mode(discovery)?;
     let options = ReceiveOptions {
         output_dir: Some(output_dir.clone()),
         relay_mode,
+        discovery_mode,
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
@@ -749,6 +760,14 @@ pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse
     engine_verify_relays(relay).await
 }
 
+/// Verify reachability of a custom self-hosted discovery (pkarr) server.
+#[tauri::command]
+pub async fn verify_discovery(
+    discovery: DiscoveryConfigArg,
+) -> Result<VerifyDiscoveryResponse, String> {
+    engine_verify_discovery(discovery).await
+}
+
 #[cfg(any(desktop, target_os = "android"))]
 pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), String> {
     let data_dir = app_handle
@@ -758,12 +777,13 @@ pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), Strin
 
     let (relay_mode, _) = resolve_relay_mode_with_fallback(None).await?;
     let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
+    let discovery_mode = build_discovery_mode(None)?;
 
     let emitter = Arc::new(TauriEventEmitter {
         app_handle: app_handle.clone(),
     });
     let boxed_handle: AppHandle = Some(emitter);
-    let node = NodeService::start(&data_dir, relay_mode, boxed_handle)
+    let node = NodeService::start(&data_dir, relay_mode, discovery_mode, boxed_handle)
         .await
         .map_err(|e| format!("Failed to start device node: {e}"))?;
     let state = app_handle.state::<AppStateMutex>();
@@ -822,16 +842,18 @@ pub async fn get_node_status(
 #[tauri::command]
 pub async fn reconfigure_node_relay(
     relay: Option<RelayConfigArg>,
+    discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
 ) -> Result<(), String> {
     let (relay_mode, _) = resolve_relay_mode_with_fallback(relay).await?;
     let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
+    let discovery_mode = build_discovery_mode(discovery)?;
 
     let node = {
         let guard = state.lock().await;
         if guard.current_share.is_some() || guard.is_share_starting {
             return Err(
-                "Stop sharing before changing relay settings for paired devices.".to_string(),
+                "Stop sharing before changing network settings for paired devices.".to_string(),
             );
         }
         guard
@@ -840,9 +862,9 @@ pub async fn reconfigure_node_relay(
             .ok_or_else(|| "Device pairing is not available on this device.".to_string())?
     };
 
-    node.reconfigure_relay(relay_mode)
+    node.reconfigure_network(relay_mode, discovery_mode)
         .await
-        .map_err(|e| format!("Failed to update device relay: {e}"))?;
+        .map_err(|e| format!("Failed to update device network settings: {e}"))?;
 
     Ok(())
 }
@@ -1077,6 +1099,7 @@ mod tests {
 
         let options = SendOptions {
             relay_mode: RelayModeOption::Default,
+            discovery_mode: Default::default(),
             ticket_type: AddrInfoOptions::RelayAndAddresses,
             magic_ipv4_addr: None,
             magic_ipv6_addr: None,

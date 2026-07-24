@@ -1,5 +1,5 @@
 import MobileSettingSidebar from '../components/setting-sidebar/mobile-setting-sidebar'
-import { RelaySettings } from '../components/settings/relay'
+import { DiscoverySettings, RelaySettings } from '../components/settings/relay'
 import { useTranslation } from '../i18n'
 
 export function SettingNetworkPage() {
@@ -7,9 +7,10 @@ export function SettingNetworkPage() {
 	return (
 		<>
 			<MobileSettingSidebar>
-				{t('settings.navItems.relay')}
+				{t('settings.navItems.infra')}
 			</MobileSettingSidebar>
 			<RelaySettings />
+			<DiscoverySettings />
 		</>
 	)
 }
