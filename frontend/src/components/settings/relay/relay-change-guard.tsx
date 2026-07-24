@@ -194,7 +194,7 @@ export function RelayChangeGuard() {
 					<AlertDialogTitle>{dialogTitle}</AlertDialogTitle>
 					<AlertDialogDescription>
 						{dialogDescription.map((part, index) => (
-							<span key={index}>
+							<span key={part}>
 								{index > 0 ? (
 									<>
 										<br />

@@ -42,6 +42,17 @@ function isValidDnsOriginLabel(label: string): boolean {
 	return /^[a-z0-9-]+$/i.test(label)
 }
 
+function hasDisallowedDnsOriginChar(value: string): boolean {
+	for (const char of value) {
+		const code = char.charCodeAt(0)
+		// C0 controls (0x00-0x1f), DEL (0x7f), C1 controls (0x80-0x9f), and whitespace.
+		if (code <= 0x1f || (code >= 0x7f && code <= 0x9f) || /\s/u.test(char)) {
+			return true
+		}
+	}
+	return false
+}
+
 /**
  * Validate an optional DNS origin hostname (e.g. `example.com`).
  * Empty string is valid (means HTTPS-only resolve). Rejects URL forms.
@@ -50,7 +61,7 @@ export function isValidDnsOrigin(origin: string): boolean {
 	const trimmed = origin.trim()
 	if (trimmed.length === 0) return true
 	if (trimmed.length > MAX_DNS_ORIGIN_LENGTH) return false
-	if (/[\s\u0000-\u001f\u007f-\u009f]/.test(trimmed)) return false
+	if (hasDisallowedDnsOriginChar(trimmed)) return false
 	if (
 		trimmed.includes('://') ||
 		trimmed.includes('/') ||
