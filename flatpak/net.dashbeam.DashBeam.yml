@@ -1,7 +1,7 @@
 id: net.dashbeam.DashBeam
-runtime: org.freedesktop.Platform
-runtime-version: '25.08'
-sdk: org.freedesktop.Sdk
+runtime: org.gnome.Platform
+runtime-version: '49'
+sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
   - org.freedesktop.Sdk.Extension.node22
@@ -46,7 +46,7 @@ modules:
       - node flatpak-node/pnpm/bin/pnpm.cjs install --offline --frozen-lockfile
       - node flatpak-node/pnpm/bin/pnpm.cjs run build
       - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json -- --no-default-features --features custom-protocol,default-tls,dialog-xdg-portal
-      - install -Dm755 src-tauri/target/release/alt-sendme /app/bin/dashbeam
+      - install -Dm755 src-tauri/target/release/DashBeam /app/bin/dashbeam
       - install -Dm644 flatpak/net.dashbeam.DashBeam.desktop /app/share/applications/net.dashbeam.DashBeam.desktop
       - install -Dm644 flatpak/net.dashbeam.DashBeam.metainfo.xml /app/share/metainfo/net.dashbeam.DashBeam.metainfo.xml
       - install -Dm644 flatpak/icons/128x128.png /app/share/icons/hicolor/128x128/apps/net.dashbeam.DashBeam.png
