@@ -1,0 +1,12 @@
+[
+	{
+		"relation": ["delegate_permission/common.handle_all_urls"],
+		"target": {
+			"namespace": "android_app",
+			"package_name": "com.altsendme.android",
+			"sha256_cert_fingerprints": [
+				"B4:5E:62:74:E9:6B:4A:72:73:AD:93:51:2D:D5:1C:0D:C6:DA:A5:CA:19:14:9D:C6:01:B9:0F:88:93:8F:09:59"
+			]
+		}
+	}
+]

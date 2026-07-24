@@ -1,0 +1,8 @@
+{
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "sendme:ios",
+	"description": "enables receive links on iOS",
+	"platforms": ["iOS"],
+	"windows": ["main"],
+	"permissions": ["core:default", "deep-link:default"]
+}

@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["9H7RVQAP36.com.altsendme.desktop"],
+        "components": [{ "/": "/receive", "comment": "Receive shared tickets" }]
+      }
+    ]
+  }
+}

@@ -38,6 +38,7 @@
 		"@radix-ui/react-alert-dialog": "^1.1.15",
 		"@tanstack/react-query": "^5.90.21",
 		"@tauri-apps/api": "2.10.1",
+		"@tauri-apps/plugin-deep-link": "2.4.6",
 		"@tauri-apps/plugin-dialog": "^2.7.0",
 		"@tauri-apps/plugin-notification": "^2.3.3",
 		"@tauri-apps/plugin-opener": "^2.5.2",

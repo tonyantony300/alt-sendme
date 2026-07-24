@@ -60,6 +60,18 @@
 	},
 	"overrides": [
 		{
+			"includes": ["frontend/src/wasm/pkg/wasm_bridge.d.ts"],
+			"formatter": {
+				"enabled": false
+			},
+			"linter": {
+				"enabled": false
+			},
+			"assist": {
+				"enabled": false
+			}
+		},
+		{
 			"includes": [
 				"src-tauri/plugins/tauri-plugin-native-utils/permissions/schemas/schema.json"
 			],

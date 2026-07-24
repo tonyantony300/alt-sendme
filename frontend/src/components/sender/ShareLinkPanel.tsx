@@ -1,5 +1,9 @@
-import { CheckCircle, Copy, MonitorSmartphone } from 'lucide-react'
+import { CheckCircle, Copy, MonitorSmartphone, Share2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
+import { IS_MOBILE, IS_WEB } from '../../lib/platform'
+import { buildReceiveLink } from '../../lib/receive-link'
+import { useAppSettingStore } from '../../store/app-setting'
 import type { TransferProgress } from '../../types/transfer'
 import { PulseAnimation } from '../common/PulseAnimation'
 import { TransferProgressBar } from '../common/TransferProgressBar'
@@ -8,7 +12,6 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { toastManager } from '../ui/toast'
-import { useAppSettingStore } from '../../store/app-setting'
 import { SharingActiveHeader } from './SharingActiveHeader'
 
 interface ShareLinkPanelProps {
@@ -156,8 +159,17 @@ function TicketDisplay({
 	onSetBroadcast,
 }: TicketDisplayProps) {
 	const { t } = useTranslation()
+	const [linkCopySuccess, setLinkCopySuccess] = useState(false)
+	const linkCopyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const showBroadcastToggle = useAppSettingStore(
 		(state) => state.showBroadcastToggle
+	)
+
+	useEffect(
+		() => () => {
+			if (linkCopyTimer.current) clearTimeout(linkCopyTimer.current)
+		},
+		[]
 	)
 
 	const handleBroadcastChange = (next: boolean) => {
@@ -180,6 +192,44 @@ function TicketDisplay({
 			setTimeout(() => {
 				toastManager.close(toastId)
 			}, 5000)
+		}
+	}
+
+	const canNativeShare =
+		typeof navigator !== 'undefined' &&
+		typeof navigator.share === 'function' &&
+		(IS_MOBILE ||
+			(IS_WEB &&
+				(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+					(navigator.platform === 'MacIntel' &&
+						navigator.maxTouchPoints > 1))))
+
+	const shareTicket = async () => {
+		const url = buildReceiveLink(
+			ticket,
+			IS_WEB ? window.location.origin : undefined
+		)
+		try {
+			if (canNativeShare) {
+				await navigator.share({ url })
+			} else {
+				await navigator.clipboard.writeText(url)
+				setLinkCopySuccess(true)
+				if (linkCopyTimer.current) clearTimeout(linkCopyTimer.current)
+				linkCopyTimer.current = setTimeout(
+					() => setLinkCopySuccess(false),
+					2000
+				)
+			}
+		} catch (error) {
+			if ((error as DOMException).name !== 'AbortError') {
+				console.error('Failed to share receive link:', error)
+				toastManager.add({
+					title: t('common:errors.sharingFailed'),
+					description: String(error),
+					type: 'error',
+				})
+			}
 		}
 	}
 
@@ -211,6 +261,28 @@ function TicketDisplay({
 					readOnly
 				/>
 				<InputGroupAddon align="inline-end">
+					<Button
+						type="button"
+						size="icon-xs"
+						onClick={() => void shareTicket()}
+						style={{
+							backgroundColor: linkCopySuccess
+								? 'var(--app-primary)'
+								: 'var(--color-foreground)',
+							border: '1px solid var(--border)',
+						}}
+						title={t(
+							canNativeShare
+								? 'common:sender.shareReceiveLink'
+								: 'common:sender.copyReceiveLink'
+						)}
+					>
+						{linkCopySuccess ? (
+							<CheckCircle className="h-3.5 w-3.5" />
+						) : (
+							<Share2 className="h-3.5 w-3.5" />
+						)}
+					</Button>
 					<Button
 						type="button"
 						size="icon-xs"
