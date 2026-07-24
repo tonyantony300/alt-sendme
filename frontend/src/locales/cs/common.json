@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Motiv a jazyk",
 			"general": "Obecné",
-			"relay": "Relay",
 			"network": "Síť",
 			"notification": "Oznámení",
-			"devices": "Zařízení"
+			"devices": "Zařízení",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Vyberte preferovaný motiv",
@@ -266,7 +266,7 @@
 				"modeDefault": "Automaticky (veřejné relay)",
 				"modeDefaultDesc": "Použije výchozí veřejné iroh relay. Nejlepší pro většinu uživatelů.",
 				"modeCustom": "Vlastní (self-hosted)",
-				"modeCustomDesc": "Použijte vlastní relay servery. Viz deploy/relay v repozitáři projektu.",
+				"modeCustomDesc": "Použijte vlastní relay servery. Viz",
 				"modeDisabled": "Zakázáno",
 				"modeDisabledDesc": "Nepoužívat relay. Pouze přímá připojení; může selhat za přísným NAT.",
 				"urlsLabel": "URL relay",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "V případě potřeby použít veřejné relay",
 				"fallbackPublicDesc": "Přepnout na veřejné relay iroh, když vlastní relay nejsou dostupné.",
 				"fallbackStrict": "Zůstat u vlastních relay",
-				"fallbackStrictDesc": "Přenos selže místo přepnutí na veřejné relay. Nejlepší pro soukromá nasazení."
+				"fallbackStrictDesc": "Přenos selže místo přepnutí na veřejné relay. Nejlepší pro soukromá nasazení.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Discovery server",
+				"description": "Řídí, jak se zařízení navzájem nacházejí podle veřejného klíče (pkarr). Je oddělené od relay a ovlivňuje jen discovery endpointů.",
+				"modeDefault": "Automaticky (veřejné discovery)",
+				"modeDefaultDesc": "Použije výchozí veřejné discovery servery iroh. Nejlepší pro většinu uživatelů.",
+				"modeCustom": "Vlastní (self-hosted)",
+				"modeCustomDesc": "Publikujte a resolvujte adresy zařízení přes vlastní pkarr server přes HTTPS. Viz",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL discovery (pkarr)",
+				"urlDescription": "HTTPS pkarr endpoint vašeho discovery serveru, např. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Zadejte platnou HTTPS URL",
+				"urlVerified": "Ověřeno",
+				"dnsOriginLabel": "DNS origin (volitelné)",
+				"dnsOriginDescription": "Hostname pro skutečné DNS rozlišení (DnsAddressLookup), např. example.com. Vyžaduje autoritativní DNS na portu 53 a NS delegaci na serveru. Ponechte prázdné pro rozlišení pouze přes HTTPS.",
+				"dnsOriginInvalidHint": "Zadejte hostname jako example.com, nebo nechte prázdné",
+				"privacyNote": "Pro plně soukromé nastavení nakonfigurujte stejnou discovery URL (a stejný DNS origin, pokud je nastaven) na odesílacím i přijímacím zařízení.",
+				"testConnection": "Otestovat připojení",
+				"verifySuccess": "Připojení discovery OK",
+				"verifySuccessDesc": "{{url}}\núspěšně ověřeno ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Úspěšně publikováno na nakonfigurovaný discovery server.",
+				"verifyFailed": "Připojení discovery selhalo",
+				"confirmCustomTitle": "Použít vlastní discovery?",
+				"confirmCustomDescription": "Zvolili jste vlastní self-hosted discovery server. Odesílatel i příjemce potřebují stejnou discovery URL (a stejný DNS origin, pokud je nastaven), aby se zařízení našla podle veřejného klíče. Discovery slouží jen k nalezení endpointů; přenosy zůstávají end-to-end šifrované.",
+				"confirmContinue": "Pokračovat"
 			}
 		},
 		"devices": {

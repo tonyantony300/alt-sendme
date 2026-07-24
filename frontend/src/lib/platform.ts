@@ -2,8 +2,11 @@
 // TAURI_PLATFORM is injected by Vite define from TAURI_ENV_PLATFORM (OS target when on Tauri).
 // Runtime detection wins: a plain browser must never call Tauri APIs even if the wrong
 // dev script or env file was used (e.g. opening the Tauri Vite port in Safari).
-const appPlatform = import.meta.env.VITE_APP_PLATFORM ?? ''
-const platform = import.meta.env.TAURI_PLATFORM ?? ''
+//
+// `import.meta.env` is undefined under plain Node (lib unit tests). Vite replaces
+// these identifiers at build time; optional chaining keeps the Node path safe.
+const appPlatform = import.meta.env?.VITE_APP_PLATFORM ?? ''
+const platform = import.meta.env?.TAURI_PLATFORM ?? ''
 
 function isTauriRuntime(): boolean {
 	if (typeof window === 'undefined') {

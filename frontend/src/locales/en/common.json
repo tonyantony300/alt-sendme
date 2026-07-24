@@ -222,7 +222,7 @@
 			"appearance": "Theme & Language",
 			"general": "General",
 			"devices": "Devices",
-			"relay": "Relay",
+			"infra": "Infra",
 			"network": "Network"
 		},
 		"theme": {
@@ -329,7 +329,8 @@
 				"modeDefault": "Automatic (public relays)",
 				"modeDefaultDesc": "Use the default public iroh relays. Best for most users.",
 				"modeCustom": "Custom self-hosted",
-				"modeCustomDesc": "Use your own relay server(s). See deploy/relay in the project repo.",
+				"modeCustomDesc": "Use your own relay server(s). See",
+				"docsLink": "infra/relay",
 				"modeDisabled": "Disabled",
 				"modeDisabledDesc": "Do not use relays. Direct connections only; may fail across strict NATs.",
 				"urlsLabel": "Relay URLs",
@@ -367,6 +368,31 @@
 				"confirmCustomTitle": "Use custom relays?",
 				"confirmCustomDescription": "You've chosen to use custom self-hosted relays. If your custom relays are unreachable, transfers will automatically fall back to public relays and you'll be notified. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
 				"confirmCustomDescriptionWithPolicy": "You've chosen to use custom self-hosted relays. If they are unreachable, DashBeam will follow the fallback policy selected in Relay settings. Relays only help your devices connect across difficult network conditions, and your transfers always stay end-to-end encrypted.",
+				"confirmContinue": "Continue"
+			},
+			"discovery": {
+				"title": "Discovery server",
+				"description": "Control how devices find each other by public key (pkarr). This is separate from relays and only affects endpoint discovery.",
+				"modeDefault": "Automatic (public discovery)",
+				"modeDefaultDesc": "Use iroh's default public discovery servers. Best for most users.",
+				"modeCustom": "Custom self-hosted",
+				"modeCustomDesc": "Publish and resolve device addresses through your own pkarr server over HTTPS. See",
+				"docsLink": "infra/dns",
+				"urlLabel": "Discovery (pkarr) URL",
+				"urlDescription": "The HTTPS pkarr endpoint of your discovery server, e.g. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Enter a valid HTTPS URL",
+				"urlVerified": "Verified",
+				"dnsOriginLabel": "DNS origin (optional)",
+				"dnsOriginDescription": "Hostname for real-DNS resolve (DnsAddressLookup), e.g. example.com. Requires authoritative DNS on port 53 and NS delegation on your server. Leave empty for HTTPS-only resolve.",
+				"dnsOriginInvalidHint": "Enter a hostname like example.com, or leave empty",
+				"privacyNote": "For a fully private setup, configure the same discovery URL (and DNS origin, if set) on both sender and receiver devices.",
+				"testConnection": "Test connection",
+				"verifySuccess": "Discovery connection OK",
+				"verifySuccessDesc": "{{url}}\nverified successfully ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Successfully published to your configured discovery server.",
+				"verifyFailed": "Discovery connection failed",
+				"confirmCustomTitle": "Use custom discovery?",
+				"confirmCustomDescription": "You've chosen to use a custom self-hosted discovery server. Both sender and receiver need the same discovery URL (and DNS origin, if set) for devices to find each other by public key. Discovery only helps devices locate endpoints; your transfers always stay end-to-end encrypted.",
 				"confirmContinue": "Continue"
 			}
 		}

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { listen } from '@/lib/platform-api'
 import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import { getRelayConfigArg } from '@/lib/relay'
+import { getDiscoveryConfigArg } from '@/lib/discovery'
 import { reconfigureNodeRelay } from '@/lib/pairing-api'
 import type {
 	PairedInvitePayload,
@@ -41,7 +42,10 @@ export function DeviceNodeSync() {
 	useEffect(() => {
 		if (!IS_PAIRING_CAPABLE || !isNodeReady || didSyncRelay.current) return
 		didSyncRelay.current = true
-		void reconfigureNodeRelay(getRelayConfigArg()).catch((error) => {
+		void reconfigureNodeRelay(
+			getRelayConfigArg(),
+			getDiscoveryConfigArg()
+		).catch((error) => {
 			// Allow a later retry if the first sync failed (e.g. node still settling).
 			didSyncRelay.current = false
 			console.warn('Failed to sync node relay on startup:', error)

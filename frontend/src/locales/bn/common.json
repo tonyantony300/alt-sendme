@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "থিম ও ভাষা",
 			"general": "সাধারণ",
-			"relay": "Relay",
 			"network": "নেটওয়ার্ক",
 			"notification": "বিজ্ঞপ্তি",
-			"devices": "ডিভাইস"
+			"devices": "ডিভাইস",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "আপনার পছন্দের থিম নির্বাচন করুন",
@@ -266,7 +266,7 @@
 				"modeDefault": "স্বয়ংক্রিয় (পাবলিক relay)",
 				"modeDefaultDesc": "ডিফল্ট পাবলিক iroh relay ব্যবহার করে। বেশিরভাগ ব্যবহারকারীর জন্য সেরা।",
 				"modeCustom": "কাস্টম (self-hosted)",
-				"modeCustomDesc": "নিজের relay সার্ভার ব্যবহার করুন। প্রকল্প repo-তে deploy/relay দেখুন।",
+				"modeCustomDesc": "নিজের relay সার্ভার ব্যবহার করুন। দেখুন",
 				"modeDisabled": "নিষ্ক্রিয়",
 				"modeDisabledDesc": "relay ব্যবহার করবেন না। শুধু সরাসরি সংযোগ; কঠোর NAT-এ ব্যর্থ হতে পারে।",
 				"urlsLabel": "Relay URL",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "প্রয়োজনে পাবলিক relay ব্যবহার",
 				"fallbackPublicDesc": "কাস্টম relay পৌঁছানো না গেলে পাবলিক iroh relay-তে ফিরে যান।",
 				"fallbackStrict": "কাস্টম relay-তেই থাকুন",
-				"fallbackStrictDesc": "পাবলিক relay-তে স্যুইচ না করে স্থানান্তর ব্যর্থ করুন। ব্যক্তিগত সেটআপের জন্য সেরা।"
+				"fallbackStrictDesc": "পাবলিক relay-তে স্যুইচ না করে স্থানান্তর ব্যর্থ করুন। ব্যক্তিগত সেটআপের জন্য সেরা।",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "ডিসকভারি সার্ভার",
+				"description": "ডিভাইসগুলো পাবলিক কী (pkarr) দিয়ে একে অপরকে কীভাবে খুঁজে পায় তা নিয়ন্ত্রণ করে। এটি relay থেকে আলাদা এবং শুধু endpoint ডিসকভারিকে প্রভাবিত করে।",
+				"modeDefault": "স্বয়ংক্রিয় (পাবলিক ডিসকভারি)",
+				"modeDefaultDesc": "iroh-এর ডিফল্ট পাবলিক ডিসকভারি সার্ভার ব্যবহার করে। বেশিরভাগ ব্যবহারকারীর জন্য সেরা।",
+				"modeCustom": "কাস্টম (self-hosted)",
+				"modeCustomDesc": "নিজের pkarr সার্ভারের মাধ্যমে HTTPS-এ ডিভাইস ঠিকানা প্রকাশ ও resolve করুন। দেখুন",
+				"docsLink": "infra/dns",
+				"urlLabel": "ডিসকভারি (pkarr) URL",
+				"urlDescription": "আপনার ডিসকভারি সার্ভারের HTTPS pkarr এন্ডপয়েন্ট, যেমন https://dns.example.com/pkarr।",
+				"urlInvalidHint": "একটি বৈধ HTTPS URL লিখুন",
+				"urlVerified": "যাচাইকৃত",
+				"dnsOriginLabel": "DNS origin (ঐচ্ছিক)",
+				"dnsOriginDescription": "প্রকৃত DNS রিজল্ভের (DnsAddressLookup) জন্য হোস্টনেম, যেমন example.com। সার্ভারে পোর্ট ৫৩-এ অথরিটেটিভ DNS এবং NS ডেলিগেশন প্রয়োজন। শুধু HTTPS রিজল্ভের জন্য খালি রাখুন।",
+				"dnsOriginInvalidHint": "example.com-এর মতো হোস্টনেম লিখুন, অথবা খালি রাখুন",
+				"privacyNote": "সম্পূর্ণ ব্যক্তিগত সেটআপের জন্য প্রেরক ও প্রাপক উভয় ডিভাইসে একই ডিসকভারি URL (এবং সেট থাকলে একই DNS origin) কনফিগার করুন।",
+				"testConnection": "সংযোগ পরীক্ষা",
+				"verifySuccess": "ডিসকভারি সংযোগ OK",
+				"verifySuccessDesc": "{{url}}\nসফলভাবে যাচাই হয়েছে ({{latency}} ms)।",
+				"verifySuccessDescGeneric": "কনফিগার করা ডিসকভারি সার্ভারে সফলভাবে প্রকাশিত হয়েছে।",
+				"verifyFailed": "ডিসকভারি সংযোগ ব্যর্থ",
+				"confirmCustomTitle": "কাস্টম ডিসকভারি ব্যবহার করবেন?",
+				"confirmCustomDescription": "আপনি একটি কাস্টম স্ব-হোস্টেড ডিসকভারি সার্ভার বেছে নিয়েছেন। ডিভাইসগুলো পাবলিক কী দিয়ে একে অপরকে খুঁজে পেতে প্রেরক ও প্রাপকের একই ডিসকভারি URL (এবং সেট থাকলে একই DNS origin) প্রয়োজন। ডিসকভারি শুধু এন্ডপয়েন্ট খুঁজে পেতে সাহায্য করে; ট্রান্সফার সবসময় এন্ড-টু-এন্ড এনক্রিপ্টেড থাকে।",
+				"confirmContinue": "চালিয়ে যান"
 			}
 		},
 		"devices": {

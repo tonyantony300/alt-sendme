@@ -1,0 +1,60 @@
+# iroh-dns-server configuration for DashBeam self-hosted discovery.
+#
+# This ships the HTTPS pkarr path only: devices publish and resolve their
+# addresses by public key over HTTPS (PUT/GET https://<domain>/pkarr/<key>).
+# For authoritative DNS (port 53 + NS delegation), use config.dns.toml.example
+# and see README.md "Advanced: authoritative DNS + NS delegation".
+#
+# Copy this to config.toml and edit the domain + contact before deploying:
+#   cp config.toml.example config.toml
+#
+# Unlike a relay, a discovery server needs NO shared secret: every published
+# packet is signed by the device's own key, so the server just stores and
+# serves signed records. Anyone can publish their own record; nobody can forge
+# someone else's.
+
+# Rate limit for `PUT /pkarr` (publishing). "smart" adapts to load; use
+# "disabled" only for local testing. See also fly.dev.toml for a no-domain test.
+pkarr_put_rate_limit = "smart"
+
+# Where the signed-packet store and the Let's Encrypt cert cache live. Set
+# explicitly (instead of relying on $HOME) and mount a volume here so both the
+# published records and issued TLS certs survive restarts - the latter avoids
+# hitting Let's Encrypt rate limits on every redeploy.
+data_dir = "/data"
+
+# --- HTTPS listener: this is the pkarr endpoint DashBeam talks to. -----------
+# Configure DashBeam (Settings -> Infra -> Discovery) with:
+#   https://<your-domain>/pkarr
+[https]
+port = 443
+domains = ["dns.example.com"]           # <-- your domain (A/AAAA must point here)
+cert_mode = "lets_encrypt"              # automatic TLS via Let's Encrypt
+letsencrypt_prod = true
+# letsencrypt_contact = "you@example.com"   # optional; recommended for expiry notices
+
+# --- HTTP listener: optional. Handy for health checks / redirects on port 80.
+[http]
+port = 80
+
+# --- DNS listener: REQUIRED by iroh-dns-server's config schema, but we do NOT
+# publish port 53 (no NS delegation). Bind it to loopback so it is never exposed
+# publicly; DashBeam resolves purely over HTTPS pkarr, so this is inert.
+[dns]
+port = 5300
+bind_addr = "127.0.0.1"
+default_soa = "dns1.example.com hostmaster.example.com 0 10800 3600 604800 3600"
+default_ttl = 30
+origins = ["dns.example.com", "."]
+
+# --- Mainline DHT fallback: when enabled, records not found in the local store
+# are looked up on the BitTorrent mainline DHT. Leave disabled for a fully
+# private / self-contained discovery server.
+[mainline]
+enabled = false
+
+# --- Metrics (Prometheus, no auth): defaults to 127.0.0.1:9117 when omitted.
+# Uncomment and set bind_addr only if you scrape it over a trusted network.
+# [metrics]
+# disabled = false
+# bind_addr = "127.0.0.1:9117"

@@ -22,6 +22,7 @@ import { useReceiverActionsStore } from '@/store/receiver-actions-store'
 import { useTransferTabStore } from '@/store/transfer-tab-store'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import { getRelayConfigArg } from '../lib/relay'
+import { getDiscoveryConfigArg } from '../lib/discovery'
 import { sendSystemNotification } from '../lib/systemNotification'
 import type {
 	TicketPreviewMetadata,
@@ -242,6 +243,7 @@ export function useReceiver(): UseReceiverReturn {
 					{
 						ticket: trimmed,
 						relay: getRelayConfigArg(),
+						discovery: getDiscoveryConfigArg(),
 					}
 				)
 
@@ -615,6 +617,7 @@ export function useReceiver(): UseReceiverReturn {
 					outputPath,
 					treeUri: IS_ANDROID ? downloadsUriRef.current.trim() || null : null,
 					relay: getRelayConfigArg(),
+					discovery: getDiscoveryConfigArg(),
 				})
 			} catch (error) {
 				if (

@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "រូបរាង និងភាសា",
 			"general": "ទូទៅ",
-			"relay": "Relay",
 			"network": "បណ្ដាញ",
 			"notification": "ការជូនដំណឹង",
-			"devices": "ឧបករណ៍"
+			"devices": "ឧបករណ៍",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "ជ្រើសរូបរាងដែលអ្នកចូលចិត្ត",
@@ -266,7 +266,7 @@
 				"modeDefault": "ស្វ័យប្រវត្តិ (relay សាធារណៈ)",
 				"modeDefaultDesc": "ប្រើ relay iroh សាធារណៈលំនាំដើម។ ល្អបំផុតសម្រាប់អ្នកប្រើភាគច្រើន។",
 				"modeCustom": "ផ្ទាល់ខ្លួន (self-hosted)",
-				"modeCustomDesc": "ប្រើម៉ាស៊ីនមេ relay ផ្ទាល់ខ្លួន។ មើល deploy/relay ក្នុង repo គម្រោង។",
+				"modeCustomDesc": "ប្រើម៉ាស៊ីនមេ relay ផ្ទាល់ខ្លួន។ មើល",
 				"modeDisabled": "បិទ",
 				"modeDisabledDesc": "កុំប្រើ relay។ តភ្ជាប់ផ្ទាល់តែប៉ុណ្ណោះ។ អាចបរាជ័យក្រោម NAT តឹង។",
 				"urlsLabel": "URL relay",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "ប្រើ relay សាធារណៈប្រសិនបើចាំបាច់",
 				"fallbackPublicDesc": "ប្តូរទៅប្រើ relay សាធារណៈ iroh នៅពេល relay ផ្ទាល់ខ្លួនមិនអាចទាក់ទងបាន។",
 				"fallbackStrict": "នៅលើ relay ផ្ទាល់ខ្លួន",
-				"fallbackStrictDesc": "ធ្វើឱ្យការផ្ទេរបរាជ័យជំនួសការប្តូរទៅ relay សាធារណៈ។ ល្អបំផុតសម្រាប់ការកំណត់ឯកជន។"
+				"fallbackStrictDesc": "ធ្វើឱ្យការផ្ទេរបរាជ័យជំនួសការប្តូរទៅ relay សាធារណៈ។ ល្អបំផុតសម្រាប់ការកំណត់ឯកជន។",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "ម៉ាស៊ីនមេ Discovery",
+				"description": "គ្រប់គ្រងរបៀបដែលឧបករណ៍រកគ្នាទៅវិញទៅមកតាមសោសាធារណៈ (pkarr)។ វាដាច់ដោយឡែកពី relay ហើយប៉ះពាល់តែការរកឃើញ endpoint ប៉ុណ្ណោះ។",
+				"modeDefault": "ស្វ័យប្រវត្តិ (discovery សាធារណៈ)",
+				"modeDefaultDesc": "ប្រើម៉ាស៊ីនមេ discovery សាធារណៈលំនាំដើមរបស់ iroh។ ល្អបំផុតសម្រាប់អ្នកប្រើភាគច្រើន។",
+				"modeCustom": "ផ្ទាល់ខ្លួន (self-hosted)",
+				"modeCustomDesc": "ផ្សព្វផ្សាយ និង resolve អាសយដ្ឋានឧបករណ៍តាមរយៈម៉ាស៊ីនមេ pkarr ផ្ទាល់ខ្លួនលើ HTTPS។ មើល",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL Discovery (pkarr)",
+				"urlDescription": "ចំណុចបញ្ចប់ HTTPS pkarr របស់ម៉ាស៊ីនមេ discovery របស់អ្នក ឧ. https://dns.example.com/pkarr។",
+				"urlInvalidHint": "បញ្ចូល URL HTTPS ត្រឹមត្រូវ",
+				"urlVerified": "បានផ្ទៀងផ្ទាត់",
+				"dnsOriginLabel": "DNS origin (ជាជម្រើស)",
+				"dnsOriginDescription": "ឈ្មោះ host សម្រាប់ការដោះស្រាយ DNS ពិត (DnsAddressLookup) ឧ. example.com។ ត្រូវការ DNS authoritative លើ port 53 និង NS delegation នៅលើម៉ាស៊ីនមេ។ ទុកទទេសម្រាប់ការដោះស្រាយតែ HTTPS។",
+				"dnsOriginInvalidHint": "បញ្ចូលឈ្មោះ host ដូច example.com ឬទុកទទេ",
+				"privacyNote": "សម្រាប់ការរៀបចំឯកជនពេញលេញ កំណត់ discovery URL ដូចគ្នា (និង DNS origin ដូចគ្នាបើបានកំណត់) នៅលើឧបករណ៍អ្នកផ្ញើ និងអ្នកទទួល។",
+				"testConnection": "សាកល្បងការភ្ជាប់",
+				"verifySuccess": "ការភ្ជាប់ Discovery OK",
+				"verifySuccessDesc": "{{url}}\nបានផ្ទៀងផ្ទាត់ដោយជោគជ័យ ({{latency}} ms)។",
+				"verifySuccessDescGeneric": "បានផ្សព្វផ្សាយទៅម៉ាស៊ីនមេ discovery ដែលបានកំណត់ដោយជោគជ័យ។",
+				"verifyFailed": "ការភ្ជាប់ Discovery បរាជ័យ",
+				"confirmCustomTitle": "ប្រើ discovery ផ្ទាល់ខ្លួន?",
+				"confirmCustomDescription": "អ្នកបានជ្រើសរើសម៉ាស៊ីនមេ discovery ផ្ទាល់ខ្លួន។ អ្នកផ្ញើ និងអ្នកទទួលត្រូវការប្រើ discovery URL ដូចគ្នា (និង DNS origin ដូចគ្នាបើបានកំណត់) ដើម្បីឱ្យឧបករណ៍រកគ្នាទៅវិញទៅមកតាមសោសាធារណៈ។ Discovery ជួយតែក្នុងការរក endpoint ប៉ុណ្ណោះ។ ការផ្ទេរនៅតែត្រូវបានអ៊ិនគ្រីបពីចុងដល់ចុង។",
+				"confirmContinue": "បន្ត"
 			}
 		},
 		"devices": {

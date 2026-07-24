@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "ธีมและภาษา",
 			"general": "ทั่วไป",
-			"relay": "Relay",
 			"network": "เครือข่าย",
 			"notification": "การแจ้งเตือน",
-			"devices": "อุปกรณ์"
+			"devices": "อุปกรณ์",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "เลือกธีมที่คุณต้องการ",
@@ -266,7 +266,7 @@
 				"modeDefault": "อัตโนมัติ (relay สาธารณะ)",
 				"modeDefaultDesc": "ใช้ relay สาธารณะ iroh เริ่มต้น เหมาะสำหรับผู้ใช้ส่วนใหญ่",
 				"modeCustom": "กำหนดเอง (self-hosted)",
-				"modeCustomDesc": "ใช้เซิร์ฟเวอร์ relay ของคุณเอง ดู deploy/relay ใน repo โปรเจกต์",
+				"modeCustomDesc": "ใช้เซิร์ฟเวอร์ relay ของคุณเอง ดู",
 				"modeDisabled": "ปิดใช้งาน",
 				"modeDisabledDesc": "ไม่ใช้ relay เชื่อมต่อโดยตรงเท่านั้น อาจล้มเหลวเมื่อ NAT เข้มงวด",
 				"urlsLabel": "URL relay",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "ใช้ relay สาธารณะหากจำเป็น",
 				"fallbackPublicDesc": "สลับไปใช้ relay สาธารณะของ iroh เมื่อ relay แบบกำหนดเองไม่สามารถเชื่อมต่อได้",
 				"fallbackStrict": "ใช้ relay แบบกำหนดเองเท่านั้น",
-				"fallbackStrictDesc": "ทำให้การถ่ายโอนล้มเหลวแทนการสลับไปใช้ relay สาธารณะ เหมาะสำหรับการตั้งค่าส่วนตัว"
+				"fallbackStrictDesc": "ทำให้การถ่ายโอนล้มเหลวแทนการสลับไปใช้ relay สาธารณะ เหมาะสำหรับการตั้งค่าส่วนตัว",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "เซิร์ฟเวอร์ค้นหาอุปกรณ์",
+				"description": "ควบคุมวิธีที่อุปกรณ์ค้นหาซึ่งกันและกันด้วยคีย์สาธารณะ (pkarr) แยกจากรีเลย์และมีผลเฉพาะการค้นหาเอนด์พอยต์",
+				"modeDefault": "อัตโนมัติ (การค้นหาสาธารณะ)",
+				"modeDefaultDesc": "ใช้เซิร์ฟเวอร์ค้นหาสาธารณะเริ่มต้นของ iroh เหมาะกับผู้ใช้ส่วนใหญ่",
+				"modeCustom": "กำหนดเอง (โฮสต์เอง)",
+				"modeCustomDesc": "เผยแพร่และ resolve ที่อยู่ของอุปกรณ์ผ่านเซิร์ฟเวอร์ pkarr ของคุณเองทาง HTTPS ดู",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL การค้นหา (pkarr)",
+				"urlDescription": "เอนด์พอยต์ HTTPS pkarr ของเซิร์ฟเวอร์ค้นหา เช่น https://dns.example.com/pkarr",
+				"urlInvalidHint": "ป้อน URL HTTPS ที่ถูกต้อง",
+				"urlVerified": "ยืนยันแล้ว",
+				"dnsOriginLabel": "ต้นทาง DNS (ไม่บังคับ)",
+				"dnsOriginDescription": "ชื่อโฮสต์สำหรับการแก้ชื่อ DNS จริง (DnsAddressLookup) เช่น example.com ต้องมี DNS แบบ authoritative บนพอร์ต 53 และการมอบหมาย NS บนเซิร์ฟเวอร์ เว้นว่างไว้หากใช้การแก้ชื่อผ่าน HTTPS เท่านั้น",
+				"dnsOriginInvalidHint": "ใส่ชื่อโฮสต์เช่น example.com หรือเว้นว่างไว้",
+				"privacyNote": "สำหรับการตั้งค่าแบบส่วนตัวอย่างเต็มที่ ให้กำหนด URL การค้นหาเดียวกัน (และต้นทาง DNS เดียวกันหากตั้งไว้) บนทั้งอุปกรณ์ผู้ส่งและผู้รับ",
+				"testConnection": "ทดสอบการเชื่อมต่อ",
+				"verifySuccess": "การเชื่อมต่อการค้นหา OK",
+				"verifySuccessDesc": "{{url}}\nยืนยันสำเร็จ ({{latency}} ms)",
+				"verifySuccessDescGeneric": "เผยแพร่ไปยังเซิร์ฟเวอร์ค้นหาที่กำหนดค่าไว้สำเร็จ",
+				"verifyFailed": "การเชื่อมต่อการค้นหาล้มเหลว",
+				"confirmCustomTitle": "ใช้การค้นหาแบบกำหนดเองหรือไม่?",
+				"confirmCustomDescription": "คุณเลือกเซิร์ฟเวอร์ค้นหาแบบโฮสต์เองแบบกำหนดเอง ผู้ส่งและผู้รับต้องใช้ URL การค้นหาเดียวกัน (และต้นทาง DNS เดียวกันหากตั้งไว้) เพื่อให้อุปกรณ์ค้นหากันด้วยคีย์สาธารณะ การค้นหาช่วยเพียงระบุตำแหน่งปลายทาง การถ่ายโอนยังคงเข้ารหัสแบบต้นทางถึงปลายทางเสมอ",
+				"confirmContinue": "ดำเนินการต่อ"
 			}
 		},
 		"devices": {

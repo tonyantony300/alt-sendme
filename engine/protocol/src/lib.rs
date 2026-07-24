@@ -1,4 +1,5 @@
 pub mod control;
+pub mod discovery;
 pub mod identity;
 pub mod pairing;
 pub mod pairing_auth;
@@ -24,6 +25,12 @@ pub use relay::{
     build_relay_mode, get_relay_status, relay_fallback_policy, resolve_relay_mode_with_fallback,
     verify_relays, RelayConfigArg, RelayFallbackPolicy, RelayStatusResponse, VerifyRelaysResponse,
 };
+pub use discovery::{
+    build_discovery_mode, parse_dns_origin, parse_pkarr_relay_url, DiscoveryConfigArg,
+    VerifyDiscoveryResponse,
+};
+#[cfg(not(target_arch = "wasm32"))]
+pub use discovery::verify_discovery;
 pub use control::{read_message, write_message};
 pub use send::{run_share_on_endpoint, run_share_session, MetadataProtocol, ShareSessionOutcome, METADATA_ALPN};
 pub use types::*;

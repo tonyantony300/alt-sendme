@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "تم و زبان",
 			"general": "عمومی",
-			"relay": "Relay",
 			"network": "شبکه",
 			"notification": "اعلان‌ها",
-			"devices": "دستگاه‌ها"
+			"devices": "دستگاه‌ها",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "تم دلخواه خود را انتخاب کنید",
@@ -266,7 +266,7 @@
 				"modeDefault": "خودکار (relay عمومی)",
 				"modeDefaultDesc": "از relayهای عمومی پیش‌فرض iroh استفاده می‌کند. بهترین برای اکثر کاربران.",
 				"modeCustom": "سفارشی (self-hosted)",
-				"modeCustomDesc": "از سرور(های) relay خود استفاده کنید. deploy/relay را در مخزن پروژه ببینید.",
+				"modeCustomDesc": "از سرور(های) relay خود استفاده کنید. ببینید",
 				"modeDisabled": "غیرفعال",
 				"modeDisabledDesc": "از relay استفاده نکنید. فقط اتصال مستقیم؛ ممکن است پشت NAT سخت شکست بخورد.",
 				"urlsLabel": "URLهای relay",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "در صورت نیاز از relayهای عمومی استفاده شود",
 				"fallbackPublicDesc": "وقتی relayهای سفارشی در دسترس نیستند، به relayهای عمومی iroh بازگردد.",
 				"fallbackStrict": "فقط relayهای سفارشی",
-				"fallbackStrictDesc": "به‌جای تغییر به relayهای عمومی، انتقال را متوقف کنید. بهترین برای راه‌اندازی‌های خصوصی."
+				"fallbackStrictDesc": "به‌جای تغییر به relayهای عمومی، انتقال را متوقف کنید. بهترین برای راه‌اندازی‌های خصوصی.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "سرور کشف",
+				"description": "نحوه پیدا کردن دستگاه‌ها از طریق کلید عمومی (pkarr) را کنترل می‌کند. جدا از رله است و فقط کشف نقاط پایانی را تحت تأثیر قرار می‌دهد.",
+				"modeDefault": "خودکار (کشف عمومی)",
+				"modeDefaultDesc": "از سرورهای کشف عمومی پیش‌فرض iroh استفاده می‌کند. بهترین گزینه برای بیشتر کاربران.",
+				"modeCustom": "سفارشی (خودمیزبان)",
+				"modeCustomDesc": "آدرس دستگاه‌ها را از طریق سرور pkarr خودتان روی HTTPS منتشر و resolve کنید. ببینید",
+				"docsLink": "infra/dns",
+				"urlLabel": "نشانی کشف (pkarr)",
+				"urlDescription": "نقطه پایانی HTTPS pkarr سرور کشف شما، مثلاً https://dns.example.com/pkarr.",
+				"urlInvalidHint": "یک URL معتبر HTTPS وارد کنید",
+				"urlVerified": "تأیید شد",
+				"dnsOriginLabel": "مبدأ DNS (اختیاری)",
+				"dnsOriginDescription": "نام میزبان برای وضوح‌یابی واقعی DNS (DnsAddressLookup)، مثلاً example.com. به DNS معتبر روی پورت ۵۳ و تفویض NS روی سرور نیاز دارد. برای وضوح‌یابی فقط HTTPS خالی بگذارید.",
+				"dnsOriginInvalidHint": "نام میزبانی مانند example.com وارد کنید یا خالی بگذارید",
+				"privacyNote": "برای راه‌اندازی کاملاً خصوصی، همان URL کشف (و همان مبدأ DNS در صورت تنظیم) را روی دستگاه‌های فرستنده و گیرنده پیکربندی کنید.",
+				"testConnection": "آزمایش اتصال",
+				"verifySuccess": "اتصال کشف OK",
+				"verifySuccessDesc": "{{url}}\nبا موفقیت تأیید شد ({{latency}} میلی‌ثانیه).",
+				"verifySuccessDescGeneric": "با موفقیت در سرور کشف پیکربندی‌شده منتشر شد.",
+				"verifyFailed": "اتصال کشف ناموفق بود",
+				"confirmCustomTitle": "استفاده از کشف سفارشی؟",
+				"confirmCustomDescription": "شما یک سرور کشف سفارشی خودمیزبان انتخاب کرده‌اید. فرستنده و گیرنده باید همان URL کشف (و همان مبدأ DNS در صورت تنظیم) را داشته باشند تا دستگاه‌ها با کلید عمومی یکدیگر را پیدا کنند. کشف فقط به یافتن نقاط پایانی کمک می‌کند؛ انتقال‌ها همیشه سرتاسر رمزگذاری‌شده می‌مانند.",
+				"confirmContinue": "ادامه"
 			}
 		},
 		"devices": {

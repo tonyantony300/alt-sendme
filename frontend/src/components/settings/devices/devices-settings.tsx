@@ -315,11 +315,7 @@ export function DevicesSettings() {
 	return (
 		<div className="flex flex-col gap-4">
 			{!readyToPaint ? (
-				<div
-					role="status"
-					aria-busy="true"
-					aria-label={t('common:loading')}
-				>
+				<div role="status" aria-busy="true" aria-label={t('common:loading')}>
 					<Frame>
 						<FramePanel className="flex flex-col gap-6 min-h-48">
 							<div className="space-y-2">

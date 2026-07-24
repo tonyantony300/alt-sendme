@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "主題與語言",
 			"general": "一般",
-			"relay": "中繼",
 			"network": "網路",
 			"notification": "通知",
-			"devices": "裝置"
+			"devices": "裝置",
+			"infra": "基礎建設"
 		},
 		"theme": {
 			"description": "選擇您偏好的主題",
@@ -266,7 +266,7 @@
 				"modeDefault": "自動（公共中繼）",
 				"modeDefaultDesc": "使用預設的公共 iroh 中繼。適合大多數使用者。",
 				"modeCustom": "自訂（自行託管）",
-				"modeCustomDesc": "使用您自己的中繼伺服器。請參閱專案儲存庫中的 deploy/relay。",
+				"modeCustomDesc": "使用您自己的中繼伺服器。請參閱",
 				"modeDisabled": "已停用",
 				"modeDisabledDesc": "不使用中繼。僅直接連線；在嚴格 NAT 下可能失敗。",
 				"urlsLabel": "中繼 URL",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "必要時使用公共中繼",
 				"fallbackPublicDesc": "自訂中繼無法連線時，改為使用公共 iroh 中繼。",
 				"fallbackStrict": "僅使用自訂中繼",
-				"fallbackStrictDesc": "不切換至公共中繼，直接使傳輸失敗。適合私有部署。"
+				"fallbackStrictDesc": "不切換至公共中繼，直接使傳輸失敗。適合私有部署。",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "探索伺服器",
+				"description": "控制裝置如何透過公開金鑰（pkarr）互相探索。與中繼無關，僅影響端點探索。",
+				"modeDefault": "自動（公共探索）",
+				"modeDefaultDesc": "使用 iroh 的預設公共探索伺服器。適合大多數使用者。",
+				"modeCustom": "自訂（自行託管）",
+				"modeCustomDesc": "透過您自己的 pkarr 伺服器以 HTTPS 發佈並解析裝置位址。請參閱",
+				"docsLink": "infra/dns",
+				"urlLabel": "探索（pkarr）URL",
+				"urlDescription": "探索伺服器的 HTTPS pkarr 端點，例如 https://dns.example.com/pkarr。",
+				"urlInvalidHint": "請輸入有效的 HTTPS URL",
+				"urlVerified": "已驗證",
+				"dnsOriginLabel": "DNS 來源（選用）",
+				"dnsOriginDescription": "用於真實 DNS 解析（DnsAddressLookup）的主機名稱，例如 example.com。需要伺服器上連接埠 53 的權威 DNS 以及 NS 委派。留空則僅使用 HTTPS 解析。",
+				"dnsOriginInvalidHint": "請輸入類似 example.com 的主機名稱，或留空",
+				"privacyNote": "如需完全私密的設定，請在傳送端與接收端裝置上設定相同的探索 URL（若已設定，還需相同的 DNS 來源）。",
+				"testConnection": "測試連線",
+				"verifySuccess": "探索連線正常",
+				"verifySuccessDesc": "{{url}}\n驗證成功（{{latency}} 毫秒）。",
+				"verifySuccessDescGeneric": "已成功發佈到所設定的探索伺服器。",
+				"verifyFailed": "探索連線失敗",
+				"confirmCustomTitle": "使用自訂探索？",
+				"confirmCustomDescription": "您選擇了自訂自架探索伺服器。傳送端與接收端需要使用相同的探索 URL（若已設定，還需相同的 DNS 來源），裝置才能透過公鑰互相找到。探索僅用於定位端點；傳輸始終保持端對端加密。",
+				"confirmContinue": "繼續"
 			}
 		},
 		"devices": {

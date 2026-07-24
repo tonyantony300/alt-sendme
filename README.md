@@ -227,9 +227,9 @@ Pairing doesn’t replace tickets; it delivers them for you.
 
 Manual tickets and the [sendme CLI](https://www.iroh.computer/sendme) keep working exactly as before.
 
-### Self-hosting relays
+### Self-hosting relays and discovery
 
-For how to run your own iroh relay, configure DashBeam to use it, and how mixed public/self-hosted setups behave, see [`deploy/relay/README.md`](deploy/relay/README.md#using-self-hosted-relays-with-dashbeam).
+For how to run your own iroh relay and discovery server, configure DashBeam to use them, and how mixed public/self-hosted setups behave, see [`infra/README.md`](infra/README.md) (relay: [`infra/relay/README.md`](infra/relay/README.md#using-self-hosted-relays-with-dashbeam), discovery: [`infra/dns/README.md`](infra/dns/README.md)).
 
 
 ## Development

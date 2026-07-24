@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "थीम और भाषा",
 			"general": "सामान्य",
-			"relay": "Relay",
 			"network": "नेटवर्क",
 			"notification": "सूचनाएँ",
-			"devices": "उपकरण"
+			"devices": "उपकरण",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "अपनी पसंदीदा थीम चुनें",
@@ -266,7 +266,7 @@
 				"modeDefault": "स्वचालित (सार्वजनिक relay)",
 				"modeDefaultDesc": "डिफ़ॉल्ट सार्वजनिक iroh relay का उपयोग करता है। अधिकांश उपयोगकर्ताओं के लिए सर्वोत्तम।",
 				"modeCustom": "कस्टम (self-hosted)",
-				"modeCustomDesc": "अपने relay सर्वर का उपयोग करें। प्रोजेक्ट repo में deploy/relay देखें।",
+				"modeCustomDesc": "अपने relay सर्वर का उपयोग करें। देखें",
 				"modeDisabled": "अक्षम",
 				"modeDisabledDesc": "relay का उपयोग न करें। केवल सीधे कनेक्शन; सख्त NAT पर विफल हो सकता है।",
 				"urlsLabel": "Relay URL",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "आवश्यकता होने पर सार्वजनिक relay का उपयोग करें",
 				"fallbackPublicDesc": "जब कस्टम relay पहुँच से बाहर हों, तो सार्वजनिक iroh relay पर वापस जाएँ।",
 				"fallbackStrict": "कस्टम relay पर ही रहें",
-				"fallbackStrictDesc": "सार्वजनिक relay पर स्विच करने के बजाय स्थानांतरण विफल करें। निजी सेटअप के लिए सर्वोत्तम।"
+				"fallbackStrictDesc": "सार्वजनिक relay पर स्विच करने के बजाय स्थानांतरण विफल करें। निजी सेटअप के लिए सर्वोत्तम।",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "डिस्कवरी सर्वर",
+				"description": "नियंत्रित करता है कि डिवाइस सार्वजनिक कुंजी (pkarr) से एक-दूसरे को कैसे खोजते हैं। यह relay से अलग है और केवल endpoint डिस्कवरी को प्रभावित करता है।",
+				"modeDefault": "स्वचालित (सार्वजनिक डिस्कवरी)",
+				"modeDefaultDesc": "iroh के डिफ़ॉल्ट सार्वजनिक डिस्कवरी सर्वर का उपयोग करता है। अधिकांश उपयोगकर्ताओं के लिए सर्वोत्तम।",
+				"modeCustom": "कस्टम (self-hosted)",
+				"modeCustomDesc": "अपने pkarr सर्वर के माध्यम से HTTPS पर डिवाइस पते प्रकाशित और resolve करें। देखें",
+				"docsLink": "infra/dns",
+				"urlLabel": "डिस्कवरी (pkarr) URL",
+				"urlDescription": "आपके डिस्कवरी सर्वर का HTTPS pkarr एंडपॉइंट, जैसे https://dns.example.com/pkarr।",
+				"urlInvalidHint": "मान्य HTTPS URL दर्ज करें",
+				"urlVerified": "सत्यापित",
+				"dnsOriginLabel": "DNS origin (वैकल्पिक)",
+				"dnsOriginDescription": "वास्तविक DNS रिज़ॉल्व (DnsAddressLookup) के लिए होस्टनाम, जैसे example.com। सर्वर पर पोर्ट 53 पर आधिकारिक DNS और NS डेलिगेशन आवश्यक है। केवल HTTPS रिज़ॉल्व के लिए खाली छोड़ें।",
+				"dnsOriginInvalidHint": "example.com जैसा होस्टनाम दर्ज करें, या खाली छोड़ें",
+				"privacyNote": "पूरी तरह निजी सेटअप के लिए, प्रेषक और प्राप्तकर्ता दोनों डिवाइस पर समान डिस्कवरी URL (और सेट होने पर समान DNS origin) कॉन्फ़िगर करें।",
+				"testConnection": "कनेक्शन परीक्षण",
+				"verifySuccess": "डिस्कवरी कनेक्शन OK",
+				"verifySuccessDesc": "{{url}}\nसफलतापूर्वक सत्यापित ({{latency}} ms)।",
+				"verifySuccessDescGeneric": "कॉन्फ़िगर किए गए डिस्कवरी सर्वर पर सफलतापूर्वक प्रकाशित।",
+				"verifyFailed": "डिस्कवरी कनेक्शन विफल",
+				"confirmCustomTitle": "कस्टम डिस्कवरी का उपयोग करें?",
+				"confirmCustomDescription": "आपने कस्टम स्व-होस्टेड डिस्कवरी सर्वर चुना है। डिवाइस सार्वजनिक कुंजी से एक-दूसरे को खोज सकें, इसके लिए प्रेषक और प्राप्तकर्ता को समान डिस्कवरी URL (और सेट होने पर समान DNS origin) चाहिए। डिस्कवरी केवल एंडपॉइंट खोजने में मदद करती है; ट्रांसफ़र हमेशा एंड-टू-एंड एन्क्रिप्टेड रहते हैं।",
+				"confirmContinue": "जारी रखें"
 			}
 		},
 		"devices": {

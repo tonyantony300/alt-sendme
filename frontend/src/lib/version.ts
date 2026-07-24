@@ -8,6 +8,10 @@ export const LICENSE_LINK =
 	'https://github.com/tonyantony300/dashbeam/blob/main/LICENSE'
 export const DONATE_LINK = 'https://buymeacoffee.com/tny_antny'
 export const GITHUB_REPO_LINK = 'https://github.com/tonyantony300/dashbeam'
+export const RELAY_DOCS_LINK =
+	'https://github.com/tonyantony300/dashbeam/blob/main/infra/relay/README.md'
+export const DISCOVERY_DOCS_LINK =
+	'https://github.com/tonyantony300/dashbeam/blob/main/infra/dns/README.md'
 export const DOWNLOAD_PAGE_LINK = 'https://www.dashbeam.net/en/downloads'
 export const COMPARE_PAGE_LINK = 'https://www.dashbeam.net/en/compare'
 export const WEBSITE_LINK = 'https://www.dashbeam.net/'

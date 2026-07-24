@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use common::{wait_until, MockEventEmitter};
 use engine::identity_store::identity_key_path;
-use engine::{NodeService, PairingStatus};
+use engine::{DiscoveryModeOption, NodeService, PairingStatus};
 use iroh::endpoint::RelayMode;
 use iroh::SecretKey;
 
@@ -24,7 +24,12 @@ fn seed_identity(data_dir: &Path) -> String {
 async fn start_node(data_dir: &Path, emitter: std::sync::Arc<MockEventEmitter>) -> NodeService {
     tokio::time::timeout(
         START_TIMEOUT,
-        NodeService::start(data_dir, RelayMode::Default, Some(emitter)),
+        NodeService::start(
+            data_dir,
+            RelayMode::Default,
+            DiscoveryModeOption::Default,
+            Some(emitter),
+        ),
     )
     .await
     .expect("node start timed out")

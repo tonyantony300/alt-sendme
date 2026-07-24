@@ -1,9 +1,12 @@
 use crate::send::METADATA_ALPN;
 use crate::time_compat::{sleep, timeout, Duration, Instant};
-use crate::types::{get_or_create_secret, AppHandle, FileMetadata, ReceiveOptions};
+use crate::types::{get_or_create_secret, AppHandle, DiscoveryModeOption, FileMetadata, ReceiveOptions};
 use iroh::endpoint::presets;
 #[cfg(not(target_arch = "wasm32"))]
-use iroh::{address_lookup::dns::DnsAddressLookup, Endpoint, TransportAddr};
+use iroh::{
+    address_lookup::{dns::DnsAddressLookup, pkarr::PkarrResolver},
+    Endpoint, TransportAddr,
+};
 #[cfg(target_arch = "wasm32")]
 use iroh::{Endpoint, TransportAddr};
 use iroh_blobs::{
@@ -256,16 +259,36 @@ pub async fn fetch_metadata(
     // Create a temporary endpoint to connect and fetch metadata
     let secret_key = get_or_create_secret()?;
 
-    let mut builder = Endpoint::builder(presets::N0)
-        // METADATA_ALPN only to indicate a metadata fetch
-        .alpns(vec![METADATA_ALPN.to_vec()])
-        .secret_key(secret_key)
-        .relay_mode(options.relay_mode.into());
+    let discovery_mode = options.discovery_mode.clone();
+    let mut builder = match &discovery_mode {
+        DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
+        DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
+    }
+    // METADATA_ALPN only to indicate a metadata fetch
+    .alpns(vec![METADATA_ALPN.to_vec()])
+    .secret_key(secret_key)
+    .relay_mode(options.relay_mode.into());
 
     #[cfg(not(target_arch = "wasm32"))]
     {
         if ticket.addr().relay_urls().count() == 0 && ticket.addr().ip_addrs().count() == 0 {
-            builder = builder.address_lookup(DnsAddressLookup::n0_dns());
+            builder = match &discovery_mode {
+                DiscoveryModeOption::Custom {
+                    pkarr_relay_url,
+                    dns_origin,
+                } => {
+                    let mut builder =
+                        builder.address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()));
+                    if let Some(origin) = dns_origin {
+                        builder =
+                            builder.address_lookup(DnsAddressLookup::builder(origin.clone()));
+                    }
+                    builder
+                }
+                DiscoveryModeOption::Default => {
+                    builder.address_lookup(DnsAddressLookup::n0_dns())
+                }
+            };
         }
         if let Some(addr) = options.magic_ipv4_addr {
             builder = builder.bind_addr(addr)?;

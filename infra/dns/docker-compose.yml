@@ -1,0 +1,32 @@
+services:
+  discovery:
+    image: n0computer/iroh-dns-server:v1.0.0
+    restart: unless-stopped
+    ports:
+      # HTTPS pkarr endpoint (PUT/GET /pkarr). This is what DashBeam talks to.
+      - "443:443"
+      # Optional HTTP (health / redirect). Port 53 is not mapped here (HTTPS
+      # pkarr default). For authoritative DNS, use docker-compose.dns.yml with
+      # config.dns.toml.example — see README.md.
+      - "80:80"
+    volumes:
+      - ./config.toml:/config/config.toml:ro
+      # Signed-packet store + Let's Encrypt cert cache live under data_dir = "/data".
+      - discovery-data:/data
+    command: ["-c", "/config/config.toml"]
+    healthcheck:
+      # The server serves a health endpoint on the HTTP listener.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          # Discovery is light: it stores small signed packets and serves them.
+          cpus: "1.0"
+          memory: 512M
+
+volumes:
+  discovery-data:

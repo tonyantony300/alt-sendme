@@ -1,4 +1,4 @@
-# Quick-test iroh relay on Fly.io — NO custom domain.
+# Quick-test iroh relay on Fly.io - NO custom domain.
 #
 # Runs iroh-relay in --dev mode (plain HTTP on :3340). Fly's edge terminates TLS and
 # proxies to it, so the relay is reachable at https://<app>.fly.dev with a valid cert.
@@ -6,7 +6,7 @@
 # production relay with your own domain + Let's Encrypt, use fly.toml instead.
 #
 # Deploy:
-#   cd deploy/relay
+#   cd infra/relay
 #   fly apps create --generate-name      # let Fly pick a random unique name...
 #   # ...or:  fly apps create my-relay   # ...or choose your own unique name
 #   # then set `app` below to the name Fly printed, and:
@@ -17,7 +17,7 @@
 # `access.shared_token = ["placeholder"]` line to a config you mount/bake, then:
 #   fly secrets set IROH_RELAY_ACCESS_TOKEN=$(openssl rand -hex 32)
 
-app = "your-unique-relay-name"       # must be globally unique — replace before deploying
+app = "your-unique-relay-name"       # must be globally unique - replace before deploying
 primary_region = "iad"               # pick a region near you (e.g. ams, sin, sjc)
 
 [build]

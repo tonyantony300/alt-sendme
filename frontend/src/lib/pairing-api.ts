@@ -1,5 +1,6 @@
 import { invoke } from './platform-api'
 import { IS_PAIRING_CAPABLE } from './platform'
+import type { DiscoveryConfigArg } from './discovery-config'
 import type { RelayConfigArg } from './relay-config'
 
 export interface DeviceInfo {
@@ -80,10 +81,11 @@ export async function getNodeStatus(): Promise<NodeStatus> {
 }
 
 export async function reconfigureNodeRelay(
-	relay: RelayConfigArg
+	relay: RelayConfigArg,
+	discovery: DiscoveryConfigArg
 ): Promise<void> {
 	if (!pairingCapable()) return
-	await invoke('reconfigure_node_relay', { relay })
+	await invoke('reconfigure_node_relay', { relay, discovery })
 }
 
 export async function getDeviceInfo(): Promise<DeviceInfo | null> {

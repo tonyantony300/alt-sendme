@@ -16,7 +16,7 @@ services:
       #
       # Bare passthrough (no `=`): the variable is injected ONLY when it is set in
       # your shell / .env, so leaving it unset is safe. Do NOT write
-      # `IROH_RELAY_ACCESS_TOKEN=${IROH_RELAY_ACCESS_TOKEN:-}` here — that injects
+      # `IROH_RELAY_ACCESS_TOKEN=${IROH_RELAY_ACCESS_TOKEN:-}` here - that injects
       # an EMPTY token, which the relay rejects at startup in shared-token mode and
       # which would also clobber a token set directly in the config file.
       # Provide the value via a gitignored .env file or your shell:

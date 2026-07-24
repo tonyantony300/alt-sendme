@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "主题与语言",
 			"general": "通用",
-			"relay": "中继",
 			"network": "网络",
 			"notification": "通知",
-			"devices": "设备"
+			"devices": "设备",
+			"infra": "基础设施"
 		},
 		"theme": {
 			"description": "选择您喜欢的主题",
@@ -266,7 +266,7 @@
 				"modeDefault": "自动（公共中继）",
 				"modeDefaultDesc": "使用默认的公共 iroh 中继。适合大多数用户。",
 				"modeCustom": "自定义（自托管）",
-				"modeCustomDesc": "使用您自己的中继服务器。请参阅项目仓库中的 deploy/relay。",
+				"modeCustomDesc": "使用您自己的中继服务器。请参阅",
 				"modeDisabled": "已禁用",
 				"modeDisabledDesc": "不使用中继。仅直接连接；在严格 NAT 下可能失败。",
 				"urlsLabel": "中继 URL",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "必要时使用公共中继",
 				"fallbackPublicDesc": "自定义中继不可达时回退到公共 iroh 中继。",
 				"fallbackStrict": "仅使用自定义中继",
-				"fallbackStrictDesc": "不切换到公共中继，直接使传输失败。适合私有部署。"
+				"fallbackStrictDesc": "不切换到公共中继，直接使传输失败。适合私有部署。",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "发现服务器",
+				"description": "控制设备如何通过公钥（pkarr）互相发现。与中继无关，仅影响端点发现。",
+				"modeDefault": "自动（公共发现）",
+				"modeDefaultDesc": "使用 iroh 的默认公共发现服务器。适合大多数用户。",
+				"modeCustom": "自定义（自托管）",
+				"modeCustomDesc": "通过您自己的 pkarr 服务器以 HTTPS 发布和解析设备地址。请参阅",
+				"docsLink": "infra/dns",
+				"urlLabel": "发现（pkarr）URL",
+				"urlDescription": "发现服务器的 HTTPS pkarr 端点，例如 https://dns.example.com/pkarr。",
+				"urlInvalidHint": "请输入有效的 HTTPS URL",
+				"urlVerified": "已验证",
+				"dnsOriginLabel": "DNS 源（可选）",
+				"dnsOriginDescription": "用于真实 DNS 解析（DnsAddressLookup）的主机名，例如 example.com。需要服务器上端口 53 的权威 DNS 以及 NS 委派。留空则仅使用 HTTPS 解析。",
+				"dnsOriginInvalidHint": "请输入类似 example.com 的主机名，或留空",
+				"privacyNote": "如需完全私密的设置，请在发送端和接收端设备上配置相同的发现 URL（若已设置，还需相同的 DNS 源）。",
+				"testConnection": "测试连接",
+				"verifySuccess": "发现连接正常",
+				"verifySuccessDesc": "{{url}}\n验证成功（{{latency}} 毫秒）。",
+				"verifySuccessDescGeneric": "已成功发布到所配置的发现服务器。",
+				"verifyFailed": "发现连接失败",
+				"confirmCustomTitle": "使用自定义发现？",
+				"confirmCustomDescription": "您选择了自定义自托管发现服务器。发送端和接收端需要使用相同的发现 URL（若已设置，还需相同的 DNS 源），设备才能通过公钥互相找到。发现仅用于定位端点；传输始终保持端到端加密。",
+				"confirmContinue": "继续"
 			}
 		},
 		"devices": {

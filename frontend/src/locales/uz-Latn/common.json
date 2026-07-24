@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Ko'rinish va til",
 			"general": "Umumiy",
-			"relay": "Relay",
 			"network": "Tarmoq",
 			"notification": "Bildirishnomalar",
-			"devices": "Qurilmalar"
+			"devices": "Qurilmalar",
+			"infra": "Infra"
 		},
 		"theme": {
 			"description": "Afzal ko‘rgan mavzuingizni tanlang",
@@ -266,7 +266,7 @@
 				"modeDefault": "Avtomatik (ommaviy relay)",
 				"modeDefaultDesc": "Standart ommaviy iroh relay'laridan foydalanadi. Ko'pchilik foydalanuvchilar uchun eng yaxshi.",
 				"modeCustom": "Maxsus (self-hosted)",
-				"modeCustomDesc": "O'z relay server(lar)ingizdan foydalaning. Loyiha repo'sidagi deploy/relay'ga qarang.",
+				"modeCustomDesc": "O'z relay server(lar)ingizdan foydalaning. Qarang:",
 				"modeDisabled": "O'chirilgan",
 				"modeDisabledDesc": "Relay ishlatmang. Faqat to'g'ridan-to'g'ri ulanishlar; qattiq NAT'da muvaffaqiyatsiz bo'lishi mumkin.",
 				"urlsLabel": "Relay URL'lari",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "Kerak bo'lsa ommaviy relay'lardan foydalanish",
 				"fallbackPublicDesc": "Maxsus relay'larga ulanib bo'lmaganda ommaviy iroh relay'lariga qaytish.",
 				"fallbackStrict": "Maxsus relay'larda qolish",
-				"fallbackStrictDesc": "Ommaviy relay'larga o'tmasdan uzatishni muvaffaqiyatsiz qilish. Maxfiy sozlamalar uchun eng yaxshi."
+				"fallbackStrictDesc": "Ommaviy relay'larga o'tmasdan uzatishni muvaffaqiyatsiz qilish. Maxfiy sozlamalar uchun eng yaxshi.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Discovery server",
+				"description": "Qurilmalar bir-birini ochiq kalit (pkarr) orqali qanday topishini boshqaradi. Relay’dan alohida va faqat endpoint discovery’ga ta’sir qiladi.",
+				"modeDefault": "Avtomatik (ommaviy discovery)",
+				"modeDefaultDesc": "iroh’ning standart ommaviy discovery serverlaridan foydalanadi. Ko‘pchilik foydalanuvchilar uchun eng yaxshi.",
+				"modeCustom": "Maxsus (self-hosted)",
+				"modeCustomDesc": "O'z pkarr serveringiz orqali HTTPS da qurilma manzillarini e'lon qiling va resolve qiling. Qarang:",
+				"docsLink": "infra/dns",
+				"urlLabel": "Discovery (pkarr) URL",
+				"urlDescription": "Discovery serveringizning HTTPS pkarr endpoint’i, masalan https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Yaroqli HTTPS URL kiriting",
+				"urlVerified": "Tasdiqlandi",
+				"dnsOriginLabel": "DNS origin (ixtiyoriy)",
+				"dnsOriginDescription": "Haqiqiy DNS rezolyutsiyasi (DnsAddressLookup) uchun host nomi, masalan example.com. Serverda 53-portda authoritative DNS va NS delegatsiyasi talab qilinadi. Faqat HTTPS rezolyutsiya uchun bo‘sh qoldiring.",
+				"dnsOriginInvalidHint": "example.com kabi host nomini kiriting yoki bo‘sh qoldiring",
+				"privacyNote": "To‘liq shaxsiy sozlash uchun yuboruvchi va qabul qiluvchi qurilmalarda bir xil discovery URL (va o‘rnatilgan bo‘lsa, bir xil DNS origin) ni sozlang.",
+				"testConnection": "Ulanishni tekshirish",
+				"verifySuccess": "Discovery ulanishi OK",
+				"verifySuccessDesc": "{{url}}\nmuvaffaqiyatli tasdiqlandi ({{latency}} ms).",
+				"verifySuccessDescGeneric": "Sozlangan discovery serverga muvaffaqiyatli e’lon qilindi.",
+				"verifyFailed": "Discovery ulanishi muvaffaqiyatsiz",
+				"confirmCustomTitle": "Maxsus discovery ishlatilsinmi?",
+				"confirmCustomDescription": "Siz maxsus self-hosted discovery serverini tanladingiz. Qurilmalar ochiq kalit orqali bir-birini topishi uchun yuboruvchi va qabul qiluvchi bir xil discovery URL (va o‘rnatilgan bo‘lsa, bir xil DNS origin) dan foydalanishi kerak. Discovery faqat endpointlarni topishga yordam beradi; uzatishlar uchdan-uch shifrlangan holda qoladi.",
+				"confirmContinue": "Davom etish"
 			}
 		},
 		"devices": {

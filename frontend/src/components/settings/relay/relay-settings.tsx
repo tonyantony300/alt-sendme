@@ -3,8 +3,10 @@ import { invoke } from '@/lib/platform-api'
 import { AlertCircle, Check, Loader2, Minus, Plus } from 'lucide-react'
 import { CountryFlag } from '@/components/CountryFlag'
 import { useTranslation } from '../../../i18n'
+import { handleExternalLinkClick } from '../../../lib/openExternalUrl'
 import { IS_WEB } from '../../../lib/platform'
 import { useAppSettingStore } from '../../../store/app-setting'
+import { RELAY_DOCS_LINK } from '../../../lib/version'
 import { relayAuthTokenForIpc } from '../../../lib/relay-auth-token'
 import {
 	RELAY_FALLBACK_OPTIONS,
@@ -296,7 +298,18 @@ export function RelaySettings() {
 								{t('settings.network.relay.modeCustom')}
 							</div>
 							<div className="text-sm text-muted-foreground">
-								{t('settings.network.relay.modeCustomDesc')}
+								{t('settings.network.relay.modeCustomDesc')}{' '}
+								<a
+									href={RELAY_DOCS_LINK}
+									onClick={(event) =>
+										handleExternalLinkClick(event, RELAY_DOCS_LINK)
+									}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="underline hover:text-foreground"
+								>
+									{t('settings.network.relay.docsLink')}
+								</a>
 							</div>
 						</div>
 					</button>

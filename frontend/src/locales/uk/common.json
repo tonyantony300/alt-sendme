@@ -209,10 +209,10 @@
 		"navItems": {
 			"appearance": "Тема та мова",
 			"general": "Загальні",
-			"relay": "Реле",
 			"network": "Мережа",
 			"notification": "Сповіщення",
-			"devices": "Пристрої"
+			"devices": "Пристрої",
+			"infra": "Інфра"
 		},
 		"theme": {
 			"description": "Виберіть бажану тему",
@@ -266,7 +266,7 @@
 				"modeDefault": "Автоматично (публічні реле)",
 				"modeDefaultDesc": "Використовує публічні реле iroh за замовчуванням. Найкраще для більшості користувачів.",
 				"modeCustom": "Власні (self-hosted)",
-				"modeCustomDesc": "Використовуйте власні сервери реле. Див. deploy/relay у репозиторії проєкту.",
+				"modeCustomDesc": "Використовуйте власні сервери реле. Див.",
 				"modeDisabled": "Вимкнено",
 				"modeDisabledDesc": "Не використовувати реле. Лише прямі з'єднання; може не працювати за суворим NAT.",
 				"urlsLabel": "URL реле",
@@ -304,7 +304,33 @@
 				"fallbackPublic": "За потреби використовувати публічні relay",
 				"fallbackPublicDesc": "Перейти на публічні relay iroh, якщо власні relay недоступні.",
 				"fallbackStrict": "Залишатися на власних relay",
-				"fallbackStrictDesc": "Передача не вдасться замість перемикання на публічні relay. Найкраще для приватних налаштувань."
+				"fallbackStrictDesc": "Передача не вдасться замість перемикання на публічні relay. Найкраще для приватних налаштувань.",
+				"docsLink": "infra/relay"
+			},
+			"discovery": {
+				"title": "Сервер discovery",
+				"description": "Керує тим, як пристрої знаходять одне одного за відкритим ключем (pkarr). Окремо від реле і впливає лише на виявлення endpoint.",
+				"modeDefault": "Автоматично (публічне discovery)",
+				"modeDefaultDesc": "Використовує публічні сервери discovery iroh за замовчуванням. Найкраще для більшості користувачів.",
+				"modeCustom": "Власні (self-hosted)",
+				"modeCustomDesc": "Публікуйте та розв'язуйте адреси пристроїв через власний pkarr-сервер по HTTPS. Див.",
+				"docsLink": "infra/dns",
+				"urlLabel": "URL discovery (pkarr)",
+				"urlDescription": "HTTPS pkarr-ендпоінт вашого сервера discovery, напр. https://dns.example.com/pkarr.",
+				"urlInvalidHint": "Введіть дійсну HTTPS URL",
+				"urlVerified": "Перевірено",
+				"dnsOriginLabel": "DNS-origin (необов’язково)",
+				"dnsOriginDescription": "Ім’я хоста для справжнього DNS-розв’язання (DnsAddressLookup), напр. example.com. Потрібен авторитетний DNS на порту 53 і делегування NS на сервері. Залиште порожнім для розв’язання лише через HTTPS.",
+				"dnsOriginInvalidHint": "Введіть ім’я хоста на кшталт example.com або залиште порожнім",
+				"privacyNote": "Для повністю приватного налаштування вкажіть той самий URL discovery (і той самий DNS-origin, якщо задано) на пристроях відправника та отримувача.",
+				"testConnection": "Перевірити з’єднання",
+				"verifySuccess": "З’єднання discovery OK",
+				"verifySuccessDesc": "{{url}}\nуспішно перевірено ({{latency}} мс).",
+				"verifySuccessDescGeneric": "Успішно опубліковано на налаштованому сервері discovery.",
+				"verifyFailed": "Збій з’єднання discovery",
+				"confirmCustomTitle": "Використовувати власне discovery?",
+				"confirmCustomDescription": "Ви обрали власний self-hosted сервер discovery. Відправник і отримувач потребують того самого URL discovery (і того самого DNS-origin, якщо задано), щоб пристрої знаходили одне одного за відкритим ключем. Discovery лише допомагає знаходити кінцеві точки; передачі залишаються наскрізно зашифрованими.",
+				"confirmContinue": "Продовжити"
 			}
 		},
 		"devices": {

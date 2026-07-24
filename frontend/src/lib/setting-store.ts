@@ -18,6 +18,9 @@ export const defaultAppSettings: AppSettingsState = {
 	relayUrls: [''],
 	relayAuthToken: '',
 	relayFallback: 'strict',
+	discoveryMode: 'default',
+	pkarrRelayUrl: '',
+	dnsOrigin: '',
 	showBroadcastToggle: false,
 }
 
