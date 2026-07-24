@@ -52,6 +52,7 @@ export function RelayChangeGuard() {
 	const relayFallback = useAppSettingStore((s) => s.relayFallback)
 	const discoveryMode = useAppSettingStore((s) => s.discoveryMode)
 	const pkarrRelayUrl = useAppSettingStore((s) => s.pkarrRelayUrl)
+	const dnsOrigin = useAppSettingStore((s) => s.dnsOrigin)
 	const { isNodeReady } = useNodeCapability()
 
 	// Snapshot of network settings when the user entered settings. Comparing
@@ -62,6 +63,7 @@ export function RelayChangeGuard() {
 	const initialRelayAuthTokenRef = useRef(relayAuthToken)
 	const initialDiscoveryModeRef = useRef(discoveryMode)
 	const initialPkarrRelayUrlRef = useRef(pkarrRelayUrl)
+	const initialDnsOriginRef = useRef(dnsOrigin)
 	const wasInSettingsRef = useRef(location.pathname.startsWith('/settings'))
 	const didSyncOnLeaveRef = useRef(false)
 
@@ -85,7 +87,8 @@ export function RelayChangeGuard() {
 		!sameStringList(relayUrls, initialRelayUrlsRef.current) ||
 		relayAuthToken !== initialRelayAuthTokenRef.current ||
 		discoveryMode !== initialDiscoveryModeRef.current ||
-		pkarrRelayUrl.trim() !== initialPkarrRelayUrlRef.current.trim()
+		pkarrRelayUrl.trim() !== initialPkarrRelayUrlRef.current.trim() ||
+		dnsOrigin.trim() !== initialDnsOriginRef.current.trim()
 
 	const shouldSyncNode =
 		IS_PAIRING_CAPABLE && isNodeReady && networkSettingsChanged
@@ -171,9 +174,7 @@ export function RelayChangeGuard() {
 		if (relayWarningType === 'disabled') {
 			parts.push(t('settings.network.relay.confirmDisableDescription'))
 		} else if (relayWarningType === 'custom') {
-			parts.push(
-				t('settings.network.relay.confirmCustomDescriptionWithPolicy')
-			)
+			parts.push(t('settings.network.relay.confirmCustomDescriptionWithPolicy'))
 		}
 		if (discoveryWarning) {
 			parts.push(t('settings.network.discovery.confirmCustomDescription'))

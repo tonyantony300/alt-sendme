@@ -61,6 +61,7 @@ When using Node ID-only tickets, DashBeam uses public-key based discovery (Pkarr
 **Your Control:**
 - By default, DashBeam uses the discovery servers operated by the [Iroh project](https://www.iroh.computer) (n0).
 - You can configure a custom self-hosted discovery server in **Settings → Infra** (see [`infra/dns/`](infra/dns/README.md) in the project repo). Discovery is independent of relays - you can self-host either, both, or neither.
+- Custom discovery publishes over HTTPS pkarr. If you also set a **DNS origin** (advanced real-DNS path), resolution may use your system DNS resolver for TXT lookups under that origin, in addition to HTTPS — the same class of disclosure as default n0 DNS discovery.
 - Discovery records are self-authenticating: a discovery server never sees file contents or names, only small signed address records.
 
 ### Direct Connections
@@ -113,7 +114,7 @@ DashBeam uses the following third-party services:
 
 1. **Iroh Network Library**: Core P2P networking functionality ([Iroh Privacy](https://www.iroh.computer))
 2. **Default Relay Servers**: Operated by the Iroh project, used only when direct connections fail
-3. **DNS Discovery**: Used for peer discovery when necessary
+3. **DNS Discovery**: Used for peer discovery when necessary (default n0 path, or your configured DNS origin when the advanced real-DNS option is enabled)
 
 You may review the privacy policies of these services if you have concerns.
 

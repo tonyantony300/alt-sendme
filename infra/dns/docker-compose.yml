@@ -5,8 +5,9 @@ services:
     ports:
       # HTTPS pkarr endpoint (PUT/GET /pkarr). This is what DashBeam talks to.
       - "443:443"
-      # Optional HTTP (health / redirect). Port 53 is intentionally NOT mapped:
-      # DashBeam uses HTTPS pkarr only, so no authoritative DNS is exposed.
+      # Optional HTTP (health / redirect). Port 53 is not mapped here (HTTPS
+      # pkarr default). For authoritative DNS, use docker-compose.dns.yml with
+      # config.dns.toml.example — see README.md.
       - "80:80"
     volumes:
       - ./config.toml:/config/config.toml:ro

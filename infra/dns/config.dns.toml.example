@@ -1,0 +1,51 @@
+# Advanced iroh-dns-server config: HTTPS pkarr + authoritative DNS (port 53).
+#
+# Use this instead of config.toml.example when you want DashBeam devices to
+# resolve peers via real DNS (DnsAddressLookup) in addition to HTTPS pkarr.
+# Publish is still always HTTPS: PUT https://<domain>/pkarr/<key>.
+#
+# NOT supported on Fly.io (UDP/53 needs fly-global-services binds that stock
+# iroh-dns-server cannot do). Use Docker Compose / a VPS. See README.md
+# "Advanced: authoritative DNS + NS delegation".
+#
+# Copy and edit before deploying:
+#   cp config.dns.toml.example config.toml
+# Then map UDP+TCP 53 (see docker-compose.dns.yml) and set NS + glue at your
+# registrar.
+
+pkarr_put_rate_limit = "smart"
+data_dir = "/data"
+
+# --- HTTPS: pkarr publish / HTTPS resolve (required even with real DNS). ------
+[https]
+port = 443
+domains = ["example.com"]               # <-- your origin domain (A/AAAA + LE)
+cert_mode = "lets_encrypt"
+letsencrypt_prod = true
+# letsencrypt_contact = "you@example.com"
+
+[http]
+port = 80
+
+# --- Authoritative DNS: public UDP/TCP 53 for DnsAddressLookup. --------------
+# DashBeam Settings -> Infra -> Discovery: set pkarr URL to
+#   https://example.com/pkarr
+# and DNS origin to
+#   example.com
+# (must match an entry in `origins`, usually the apex you delegate).
+[dns]
+port = 53
+# Omit bind_addr (defaults to all interfaces) so port 53 is publicly reachable.
+default_soa = "ns1.example.com hostmaster.example.com 0 10800 3600 604800 3600"
+default_ttl = 30
+origins = ["example.com", "."]
+rr_a = "203.0.113.10"                   # <-- this host's public IPv4
+# rr_aaaa = "2001:db8::10"              # optional public IPv6
+rr_ns = "ns1.example.com."
+
+[mainline]
+enabled = false
+
+# [metrics]
+# disabled = false
+# bind_addr = "127.0.0.1:9117"

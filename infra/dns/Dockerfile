@@ -9,8 +9,11 @@ FROM n0computer/iroh-dns-server:v1.0.0
 # by their own public-key signatures, so it needs no shared token.
 COPY config.toml /config/config.toml
 
-# HTTPS pkarr only: 443 serves PUT/GET /pkarr over TLS. 80 is kept for optional
-# HTTP access / ACME. Port 53 (authoritative DNS) is intentionally NOT published.
+# Default image is HTTPS pkarr only (Fly / simple deploys): 443 serves
+# PUT/GET /pkarr over TLS; 80 for optional HTTP / ACME.
+# For authoritative DNS on a VPS, use config.dns.toml.example and also:
+#   EXPOSE 53/udp 53/tcp
+# (or publish those ports via docker-compose.dns.yml). Do not enable 53 on Fly.
 EXPOSE 80/tcp 443/tcp
 
 CMD ["-c", "/config/config.toml"]

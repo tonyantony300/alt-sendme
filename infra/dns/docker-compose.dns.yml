@@ -1,0 +1,19 @@
+# Overlay for the advanced real-DNS path (authoritative UDP/TCP 53).
+#
+# Prerequisites:
+#   cp config.dns.toml.example config.toml   # edit domain, rr_a, rr_ns, etc.
+#   # registrar: NS + glue for the origin (see README.md)
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dns.yml up -d
+#
+# Do not use this on Fly.io — real-DNS is unsupported there.
+
+services:
+  discovery:
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    # Binding privileged port 53 inside the container.
+    cap_add:
+      - NET_BIND_SERVICE

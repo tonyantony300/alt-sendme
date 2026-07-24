@@ -26,7 +26,8 @@ pub use relay::{
     verify_relays, RelayConfigArg, RelayFallbackPolicy, RelayStatusResponse, VerifyRelaysResponse,
 };
 pub use discovery::{
-    build_discovery_mode, parse_pkarr_relay_url, DiscoveryConfigArg, VerifyDiscoveryResponse,
+    build_discovery_mode, parse_dns_origin, parse_pkarr_relay_url, DiscoveryConfigArg,
+    VerifyDiscoveryResponse,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use discovery::verify_discovery;

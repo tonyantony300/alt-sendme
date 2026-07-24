@@ -20,6 +20,7 @@ export const defaultAppSettings: AppSettingsState = {
 	relayFallback: 'strict',
 	discoveryMode: 'default',
 	pkarrRelayUrl: '',
+	dnsOrigin: '',
 	showBroadcastToggle: false,
 }
 

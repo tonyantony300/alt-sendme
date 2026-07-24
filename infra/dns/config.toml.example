@@ -2,8 +2,8 @@
 #
 # This ships the HTTPS pkarr path only: devices publish and resolve their
 # addresses by public key over HTTPS (PUT/GET https://<domain>/pkarr/<key>).
-# There is NO authoritative-DNS / port-53 / NS-delegation setup here - that
-# advanced path is intentionally omitted for a simpler, single-port deployment.
+# For authoritative DNS (port 53 + NS delegation), use config.dns.toml.example
+# and see README.md "Advanced: authoritative DNS + NS delegation".
 #
 # Copy this to config.toml and edit the domain + contact before deploying:
 #   cp config.toml.example config.toml

@@ -2,9 +2,12 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
 	DISCOVERY_URL_INVALID_MESSAGE_KEY,
+	DNS_ORIGIN_INVALID_MESSAGE_KEY,
 	MAX_DISCOVERY_URL_LENGTH,
 	discoveryUrlValidationMessageKey,
+	dnsOriginValidationMessageKey,
 	isValidDiscoveryUrl,
+	isValidDnsOrigin,
 } from './discovery-url-validation.js'
 
 describe('discovery (pkarr) URL validation', () => {
@@ -48,6 +51,26 @@ describe('discovery (pkarr) URL validation', () => {
 		assert.equal(
 			DISCOVERY_URL_INVALID_MESSAGE_KEY,
 			'settings.network.discovery.urlInvalidHint'
+		)
+	})
+})
+
+describe('DNS origin validation', () => {
+	it('allows empty (HTTPS-only) and hostnames', () => {
+		assert.equal(isValidDnsOrigin(''), true)
+		assert.equal(isValidDnsOrigin('   '), true)
+		assert.equal(isValidDnsOrigin('example.com'), true)
+		assert.equal(isValidDnsOrigin('dns.example.com.'), true)
+	})
+
+	it('rejects URL forms and invalid labels', () => {
+		assert.equal(isValidDnsOrigin('https://example.com'), false)
+		assert.equal(isValidDnsOrigin('example.com/pkarr'), false)
+		assert.equal(isValidDnsOrigin('example.com:53'), false)
+		assert.equal(isValidDnsOrigin('-bad.example.com'), false)
+		assert.equal(
+			dnsOriginValidationMessageKey('https://example.com'),
+			DNS_ORIGIN_INVALID_MESSAGE_KEY
 		)
 	})
 })

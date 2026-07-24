@@ -68,11 +68,15 @@ impl From<RelayModeOption> for iroh::endpoint::RelayMode {
 }
 
 /// Discovery (pkarr) mode. `Default` keeps iroh's n0 discovery; `Custom` publishes
-/// and resolves against a self-hosted pkarr relay over HTTPS.
+/// and resolves against a self-hosted pkarr relay over HTTPS. When `dns_origin`
+/// is set, resolve also uses real DNS (`DnsAddressLookup`) under that origin.
 #[derive(Clone, Debug)]
 pub enum DiscoveryModeOption {
     Default,
-    Custom { pkarr_relay_url: url::Url },
+    Custom {
+        pkarr_relay_url: url::Url,
+        dns_origin: Option<String>,
+    },
 }
 
 impl Default for DiscoveryModeOption {

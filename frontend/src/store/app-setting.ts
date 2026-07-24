@@ -21,6 +21,7 @@ export type AppSettingsState = {
 	relayFallback: 'strict' | 'public'
 	discoveryMode: 'default' | 'custom'
 	pkarrRelayUrl: string
+	dnsOrigin: string
 	showBroadcastToggle: boolean
 }
 
@@ -40,6 +41,7 @@ export type AppSettingsActions = {
 	setRelayFallback: (value: 'strict' | 'public') => void
 	setDiscoveryMode: (value: 'default' | 'custom') => void
 	setPkarrRelayUrl: (value: string) => void
+	setDnsOrigin: (value: string) => void
 	setShowBroadcastToggle: (value: boolean) => void
 }
 
@@ -72,6 +74,7 @@ export const useAppSettingStore = create<AppSettings>()(
 			setDiscoveryMode: (value: 'default' | 'custom') =>
 				set({ discoveryMode: value }),
 			setPkarrRelayUrl: (value: string) => set({ pkarrRelayUrl: value }),
+			setDnsOrigin: (value: string) => set({ dnsOrigin: value }),
 			setShowBroadcastToggle: (value: boolean) =>
 				set({ showBroadcastToggle: value }),
 		}),

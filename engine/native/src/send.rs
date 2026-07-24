@@ -52,7 +52,7 @@ pub async fn start_share_items(
     match &options.discovery_mode {
         // Self-hosted discovery: publish our home relay to the custom pkarr relay so
         // peers can resolve us by endpoint id without touching n0's servers.
-        DiscoveryModeOption::Custom { pkarr_relay_url } => {
+        DiscoveryModeOption::Custom { pkarr_relay_url, .. } => {
             builder = builder.address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()));
         }
         DiscoveryModeOption::Default => {

@@ -11,6 +11,7 @@ use iroh::endpoint::{
 };
 use iroh::protocol::{AcceptError, ProtocolHandler, Router};
 use iroh::address_lookup::pkarr::{PkarrPublisher, PkarrResolver};
+use iroh::address_lookup::dns::DnsAddressLookup;
 use iroh::{EndpointAddr, EndpointId, TransportAddr};
 use protocol::{
     apply_options, export_connection_keying_material, read_message, sign_challenge,
@@ -1200,11 +1201,21 @@ async fn build_runtime(
 
     // The control endpoint must both publish (so paired peers can find us by
     // endpoint id) and resolve (to reach them). Custom mode uses a self-hosted
-    // pkarr relay via HTTPS; Default keeps iroh's n0 discovery.
+    // pkarr relay via HTTPS; optional dns_origin also enables real-DNS resolve.
+    // Default keeps iroh's n0 discovery.
     let builder = match &discovery_mode {
-        DiscoveryModeOption::Custom { pkarr_relay_url } => Endpoint::builder(presets::Minimal)
-            .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
-            .address_lookup(PkarrResolver::builder(pkarr_relay_url.clone())),
+        DiscoveryModeOption::Custom {
+            pkarr_relay_url,
+            dns_origin,
+        } => {
+            let mut builder = Endpoint::builder(presets::Minimal)
+                .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
+                .address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()));
+            if let Some(origin) = dns_origin {
+                builder = builder.address_lookup(DnsAddressLookup::builder(origin.clone()));
+            }
+            builder
+        }
         DiscoveryModeOption::Default => {
             Endpoint::builder(presets::N0).address_lookup(PkarrPublisher::n0_dns())
         }

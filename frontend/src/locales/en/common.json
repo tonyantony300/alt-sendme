@@ -382,14 +382,17 @@
 				"urlDescription": "The HTTPS pkarr endpoint of your discovery server, e.g. https://dns.example.com/pkarr.",
 				"urlInvalidHint": "Enter a valid HTTPS URL",
 				"urlVerified": "Verified",
-				"privacyNote": "For a fully private setup, configure the same discovery URL on both sender and receiver devices.",
+				"dnsOriginLabel": "DNS origin (optional)",
+				"dnsOriginDescription": "Hostname for real-DNS resolve (DnsAddressLookup), e.g. example.com. Requires authoritative DNS on port 53 and NS delegation on your server. Leave empty for HTTPS-only resolve.",
+				"dnsOriginInvalidHint": "Enter a hostname like example.com, or leave empty",
+				"privacyNote": "For a fully private setup, configure the same discovery URL (and DNS origin, if set) on both sender and receiver devices.",
 				"testConnection": "Test connection",
 				"verifySuccess": "Discovery connection OK",
 				"verifySuccessDesc": "{{url}}\nverified successfully ({{latency}} ms).",
 				"verifySuccessDescGeneric": "Successfully published to your configured discovery server.",
 				"verifyFailed": "Discovery connection failed",
 				"confirmCustomTitle": "Use custom discovery?",
-				"confirmCustomDescription": "You've chosen to use a custom self-hosted discovery server. Both sender and receiver need the same discovery URL for devices to find each other by public key. Discovery only helps devices locate endpoints; your transfers always stay end-to-end encrypted.",
+				"confirmCustomDescription": "You've chosen to use a custom self-hosted discovery server. Both sender and receiver need the same discovery URL (and DNS origin, if set) for devices to find each other by public key. Discovery only helps devices locate endpoints; your transfers always stay end-to-end encrypted.",
 				"confirmContinue": "Continue"
 			}
 		}

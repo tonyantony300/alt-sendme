@@ -12,7 +12,8 @@ export type VerifyDiscoveryResponse = {
 }
 
 export function getDiscoveryConfigArg(): DiscoveryConfigArg {
-	const { discoveryMode, pkarrRelayUrl } = useAppSettingStore.getState()
+	const { discoveryMode, pkarrRelayUrl, dnsOrigin } =
+		useAppSettingStore.getState()
 
-	return buildDiscoveryConfigArg({ discoveryMode, pkarrRelayUrl })
+	return buildDiscoveryConfigArg({ discoveryMode, pkarrRelayUrl, dnsOrigin })
 }

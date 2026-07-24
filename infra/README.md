@@ -7,7 +7,7 @@ both of the two independent pieces:
 | Service | What it does | Directory |
 | --- | --- | --- |
 | **Relay** | Forwards encrypted packets and helps with NAT hole-punching when a direct connection isn't possible. | [`relay/`](relay/README.md) |
-| **Discovery** | Maps a device's public key → its current address (pkarr), so peers can find each other by id. | [`dns/`](dns/README.md) |
+| **Discovery** | Maps a device's public key → its current address (pkarr over HTTPS; optionally also authoritative DNS on port 53). | [`dns/`](dns/README.md) |
 
 These are **separate concerns** - you can self-host one, both, or neither:
 
@@ -33,8 +33,8 @@ Both services are configured in the app under **Settings → Infra**:
 
 - **Relay** subsection → point at your relay URL(s). See
   [`relay/README.md`](relay/README.md).
-- **Discovery** subsection → point at your discovery (pkarr) URL. See
-  [`dns/README.md`](dns/README.md).
+- **Discovery** subsection → point at your discovery (pkarr) URL, and optionally
+  a DNS origin if you enabled authoritative DNS. See [`dns/README.md`](dns/README.md).
 
 For a private setup, configure the **same** relay and/or discovery settings on
 **both** the sending and receiving devices - a publisher and a resolver must

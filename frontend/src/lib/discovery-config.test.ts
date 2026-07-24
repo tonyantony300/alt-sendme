@@ -11,10 +11,12 @@ describe('buildDiscoveryConfigArg', () => {
 			buildDiscoveryConfigArg({
 				discoveryMode: 'default',
 				pkarrRelayUrl: 'https://dns.example.com/pkarr',
+				dnsOrigin: 'example.com',
 			}),
 			{
 				mode: 'default',
 				pkarr_relay_url: null,
+				dns_origin: null,
 			}
 		)
 	})
@@ -24,10 +26,12 @@ describe('buildDiscoveryConfigArg', () => {
 			buildDiscoveryConfigArg({
 				discoveryMode: 'custom',
 				pkarrRelayUrl: ' https://dns.example.com/pkarr ',
+				dnsOrigin: ' example.com ',
 			}),
 			{
 				mode: 'default',
 				pkarr_relay_url: null,
+				dns_origin: null,
 			}
 		)
 	})

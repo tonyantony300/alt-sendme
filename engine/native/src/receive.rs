@@ -46,8 +46,16 @@ pub async fn download(
 
     if ticket.addr().relay_urls().count() == 0 && ticket.addr().ip_addrs().count() == 0 {
         builder = match &options.discovery_mode {
-            DiscoveryModeOption::Custom { pkarr_relay_url } => {
-                builder.address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()))
+            DiscoveryModeOption::Custom {
+                pkarr_relay_url,
+                dns_origin,
+            } => {
+                let mut builder =
+                    builder.address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()));
+                if let Some(origin) = dns_origin {
+                    builder = builder.address_lookup(DnsAddressLookup::builder(origin.clone()));
+                }
+                builder
             }
             DiscoveryModeOption::Default => {
                 builder.address_lookup(DnsAddressLookup::n0_dns())

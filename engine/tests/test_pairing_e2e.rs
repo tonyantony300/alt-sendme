@@ -24,7 +24,12 @@ fn seed_identity(data_dir: &Path) -> String {
 async fn start_node(data_dir: &Path, emitter: std::sync::Arc<MockEventEmitter>) -> NodeService {
     tokio::time::timeout(
         START_TIMEOUT,
-        NodeService::start(data_dir, RelayMode::Default, DiscoveryModeOption::Default, Some(emitter)),
+        NodeService::start(
+            data_dir,
+            RelayMode::Default,
+            DiscoveryModeOption::Default,
+            Some(emitter),
+        ),
     )
     .await
     .expect("node start timed out")

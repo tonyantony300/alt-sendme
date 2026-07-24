@@ -1,8 +1,9 @@
 # Fly.io deployment for iroh-dns-server (DashBeam self-hosted discovery).
 # Prerequisites: flyctl installed, DNS A/AAAA for your domain pointing at Fly.
 #
-# HTTPS pkarr only - no port 53 / NS delegation. DashBeam publishes and resolves
-# device addresses over https://<your-domain>/pkarr.
+# HTTPS pkarr only. Real-DNS (UDP/TCP 53 + NS delegation) is NOT supported on
+# Fly: stock iroh-dns-server cannot do the fly-global-services UDP bind Fly
+# requires. Use Docker Compose / a VPS with config.dns.toml.example instead.
 #
 # Quick start:
 #   cp config.toml.example config.toml    # edit domain + contact

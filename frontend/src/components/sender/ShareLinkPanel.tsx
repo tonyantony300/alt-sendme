@@ -201,8 +201,7 @@ function TicketDisplay({
 		(IS_MOBILE ||
 			(IS_WEB &&
 				(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-					(navigator.platform === 'MacIntel' &&
-						navigator.maxTouchPoints > 1))))
+					(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1))))
 
 	const shareTicket = async () => {
 		const url = buildReceiveLink(

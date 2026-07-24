@@ -66,7 +66,11 @@ function archLabel(rustTarget) {
 }
 
 /** Cargo package name → binary; Tauri may also rename via mainBinaryName / productName. */
-const EXE_CANDIDATES = [`${PRODUCT_NAME}.exe`, 'AltSendme.exe', 'alt-sendme.exe']
+const EXE_CANDIDATES = [
+	`${PRODUCT_NAME}.exe`,
+	'AltSendme.exe',
+	'alt-sendme.exe',
+]
 
 function findBuiltExe(releaseDir) {
 	for (const name of EXE_CANDIDATES) {
