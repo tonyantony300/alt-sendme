@@ -178,7 +178,7 @@ pub async fn verify_discovery(
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
 
-    let endpoint = Endpoint::builder(presets::Minimal)
+    let endpoint = crate::tls_config::with_system_ca(Endpoint::builder(presets::Minimal))
         .secret_key(secret_key)
         .relay_mode(RelayMode::Default)
         .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))

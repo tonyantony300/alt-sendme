@@ -25,6 +25,7 @@ import {
 	usePairedDeviceEvents,
 } from '@/hooks/usePairedDeviceEvents'
 import { toastManager } from '../components/ui/toast'
+import { copyTextToClipboard } from '../lib/utils'
 
 export type PairedInviteStatus = 'sending' | 'sent' | 'failed'
 
@@ -997,7 +998,7 @@ export function useSender(): UseSenderReturn {
 	const copyTicket = async () => {
 		if (ticket) {
 			try {
-				await navigator.clipboard.writeText(ticket)
+				await copyTextToClipboard(ticket)
 				setCopySuccess(true)
 				setTimeout(() => setCopySuccess(false), 2000)
 			} catch (error) {

@@ -7,7 +7,8 @@ use wasm_io::{
 };
 use protocol::{
     get_relay_status as engine_get_relay_status, resolve_relay_mode_with_fallback,
-    set_wasm_secret_key, verify_relays as engine_verify_relays, RelayConfigArg,
+    set_wasm_secret_key, verify_relays as engine_verify_relays, with_system_ca,
+    RelayConfigArg,
 };
 use std::str::FromStr;
 use std::sync::{Arc, Mutex, OnceLock};
@@ -376,7 +377,7 @@ pub async fn smoke_test_endpoint() -> Result<String, JsValue> {
     use iroh::endpoint::presets;
     use iroh::Endpoint;
 
-    let endpoint = Endpoint::builder(presets::N0)
+    let endpoint = with_system_ca(Endpoint::builder(presets::N0))
         .bind()
         .await
         .map_err(|e| JsValue::from_str(&format!("endpoint bind failed: {e}")))?;

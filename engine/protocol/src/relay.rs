@@ -175,7 +175,7 @@ async fn probe_relay_mode(relay_mode: RelayModeOption) -> Result<Option<String>,
     }
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
-    let endpoint = Endpoint::builder(presets::Minimal)
+    let endpoint = crate::tls_config::with_system_ca(Endpoint::builder(presets::Minimal))
         .secret_key(secret_key)
         .relay_mode(relay_mode.into())
         .bind()
@@ -339,7 +339,7 @@ pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
 
-    let endpoint = Endpoint::builder(presets::Minimal)
+    let endpoint = crate::tls_config::with_system_ca(Endpoint::builder(presets::Minimal))
         .secret_key(secret_key)
         .relay_mode(relay_mode.into())
         .bind()

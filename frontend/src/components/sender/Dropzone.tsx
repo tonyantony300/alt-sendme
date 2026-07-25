@@ -39,6 +39,7 @@ export function Dropzone({
 	onAddFolders,
 	onRemoveSelectedPath,
 	onClearSelection,
+	onEmptyClick,
 	dropzoneDragProps,
 }: DropzoneProps) {
 	const { t } = useTranslation()
@@ -260,6 +261,20 @@ export function Dropzone({
 				transition={{ duration: 0.3, ease: 'easeInOut' }}
 				style={getDropzoneStyles()}
 				className="relative border-2 border-dashed rounded-lg text-center cursor-pointer transition-all duration-200 bg-accent text-accent-foreground h-fit min-h-64 border-border overflow-hidden"
+				role={!hasSelection ? 'button' : undefined}
+				tabIndex={!hasSelection && !isLoading ? 0 : undefined}
+				aria-label={!hasSelection ? t('common:sender.orBrowse') : undefined}
+				onClick={() => {
+					if (hasSelection || isLoading || !onEmptyClick) return
+					void onEmptyClick()
+				}}
+				onKeyDown={(event) => {
+					if (hasSelection || isLoading || !onEmptyClick) return
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault()
+						void onEmptyClick()
+					}
+				}}
 				{...dropzoneDragProps}
 			>
 				{hasSelection && !isLoading ? (

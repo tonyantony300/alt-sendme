@@ -67,6 +67,7 @@ export function DragDrop({
 				onAddFolders={addMoreFolders}
 				onRemoveSelectedPath={onRemoveSelectedPath}
 				onClearSelection={onClearSelection}
+				onEmptyClick={browseFile}
 				dropzoneDragProps={dropzoneDragProps}
 			/>
 

@@ -1,5 +1,5 @@
 use protocol::{
-    download_to_store, get_or_create_secret, AppHandle, ReceiveOptions,
+    download_to_store, get_or_create_secret, with_system_ca, AppHandle, ReceiveOptions,
 };
 use iroh::endpoint::presets;
 use iroh::Endpoint;
@@ -19,10 +19,12 @@ pub async fn download_files(
     let addr = ticket.addr().clone();
     let secret_key = get_or_create_secret()?;
 
-    let builder = Endpoint::builder(presets::Minimal)
-        .alpns(vec![])
-        .secret_key(secret_key)
-        .relay_mode(options.relay_mode.clone().into());
+    let builder = with_system_ca(
+        Endpoint::builder(presets::Minimal)
+            .alpns(vec![])
+            .secret_key(secret_key)
+            .relay_mode(options.relay_mode.clone().into()),
+    );
 
     anyhow::ensure!(
         ticket.addr().relay_urls().count() > 0,
