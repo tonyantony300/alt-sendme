@@ -1,4 +1,4 @@
-package com.altsendme.plugin.native_utils
+package com.dashbeam.plugin.native_utils
 
 import android.app.Activity
 import android.content.Intent

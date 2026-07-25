@@ -47,7 +47,8 @@ jobs:
         uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
         with:
           identifier: TonyAntony.DashBeam
-          installers-regex: '^DashBeam_.*_aarch64-setup\.exe$'
+          # Tauri NSIS uses arm64 (not aarch64) for Windows ARM setup.exe names.
+          installers-regex: '^DashBeam_.*_arm64-setup\.exe$'
           version: ${{ steps.version.outputs.value }}
           release-tag: ${{ steps.version.outputs.tag }}
           token: ${{ secrets.WINGET_TOKEN }}

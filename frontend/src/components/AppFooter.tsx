@@ -35,7 +35,7 @@ const CONTACTS = [
 	{
 		link: WEBSITE_LINK,
 		icon: <GlobeIcon />,
-		'aria-label': 'Alt SendMe website',
+		'aria-label': 'DashBeam website',
 	},
 ]
 

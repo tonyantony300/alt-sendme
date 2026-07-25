@@ -1,6 +1,6 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"identifier": "com.altsendme.android",
+	"identifier": "com.dashbeam.android",
 	"app": {
 		"macOSPrivateApi": false,
 		"windows": [

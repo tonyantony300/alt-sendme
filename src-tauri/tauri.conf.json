@@ -1,112 +1,128 @@
 {
-	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "DashBeam",
-	"mainBinaryName": "DashBeam",
-	"version": "0.6.0",
-	"identifier": "com.altsendme.desktop",
-	"build": {
-		"frontendDist": "../frontend/dist",
-		"devUrl": "http://localhost:1420",
-		"beforeDevCommand": "pnpm run dev",
-		"beforeBuildCommand": "pnpm run build:wasm && pnpm run build"
-	},
-	"app": {
-		"windows": [
-			{
-				"label": "main",
-				"title": "DashBeam",
-				"width": 1024,
-				"height": 680,
-				"resizable": true,
-				"fullscreen": false,
-				"maximizable": false,
-				"center": true,
-				"hiddenTitle": true,
-				"decorations": true,
-				"titleBarStyle": "Overlay",
-				"dragDropEnabled": true,
-				"windowEffects": {
-					"effects": ["fullScreenUI", "mica", "tabbed", "blur", "acrylic"],
-					"state": "active",
-					"radius": 8
-				}
-			}
-		],
-		"security": {
-			"capabilities": [
-				"default",
-				"sendme:default",
-				"sendme:android",
-				"sendme:ios"
-			],
-			"csp": {
-				"default-src": "'self' customprotocol:",
-				"connect-src": "ipc: http://ipc.localhost",
-				"font-src": "'self' blob: data: https:",
-				"img-src": "'self' blob: data:",
-				"style-src": "'unsafe-inline' 'self'",
-				"script-src": "'self'"
-			},
-			"devCsp": {
-				"default-src": "'self' customprotocol: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
-				"connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
-				"font-src": "'self' blob: data: https:",
-				"img-src": "'self' blob: data:",
-				"style-src": "'unsafe-inline' 'self'",
-				"script-src": "'self'"
-			},
-			"assetProtocol": {
-				"enable": false,
-				"scope": []
-			}
-		}
-	},
-	"plugins": {
-		"deep-link": {
-			"mobile": [
-				{
-					"scheme": ["https"],
-					"host": "app.dashbeam.net",
-					"pathPrefix": ["/receive"],
-					"appLink": true
-				}
-			]
-		},
-		"updater": {
-			"endpoints": [
-				"https://github.com/tonyantony300/dashbeam/releases/latest/download/latest.json"
-			],
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMzRTE3OEU4QjYyQkIzNzMKUldSenN5dTI2SGpoTS9PZ21kbmYzUkJ3Q1VKa2FtdEllVWJ4N3QwWnRGZmZId0RPM3BlQzdxVmQK"
-		}
-	},
-	"bundle": {
-		"active": true,
-		"createUpdaterArtifacts": true,
-		"targets": "all",
-		"icon": [
-			"icons/32x32.png",
-			"icons/128x128.png",
-			"icons/128x128@2x.png",
-			"icons/icon.icns",
-			"icons/icon.ico"
-		],
-		"resources": ["icons/128x128.png"],
-		"macOS": {
-			"signingIdentity": "Developer ID Application: Tony Antony (9H7RVQAP36)",
-			"providerShortName": "9H7RVQAP36"
-		},
-		"windows": {
-			"certificateThumbprint": null,
-			"digestAlgorithm": "sha256",
-			"timestampUrl": "",
-			"nsis": {
-				"installerHooks": "./windows/hooks.nsh"
-			},
-			"wix": {
-				"language": "en-US",
-				"fragmentPaths": ["WiX/context-menu.wxs"],
-				"componentRefs": ["ContextMenuRegistryFiles"]
-			}
-		}
-	}
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DashBeam",
+  "mainBinaryName": "DashBeam",
+  "version": "0.6.11",
+  "identifier": "com.dashbeam.desktop",
+  "build": {
+    "frontendDist": "../frontend/dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "pnpm run dev",
+    "beforeBuildCommand": "pnpm run build:wasm && pnpm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "DashBeam",
+        "width": 1024,
+        "height": 680,
+        "resizable": true,
+        "fullscreen": false,
+        "maximizable": false,
+        "center": true,
+        "hiddenTitle": true,
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "dragDropEnabled": true,
+        "windowEffects": {
+          "effects": [
+            "fullScreenUI",
+            "mica",
+            "tabbed",
+            "blur",
+            "acrylic"
+          ],
+          "state": "active",
+          "radius": 8
+        }
+      }
+    ],
+    "security": {
+      "capabilities": [
+        "default",
+        "sendme:default",
+        "sendme:android",
+        "sendme:ios"
+      ],
+      "csp": {
+        "default-src": "'self' customprotocol:",
+        "connect-src": "ipc: http://ipc.localhost",
+        "font-src": "'self' blob: data: https:",
+        "img-src": "'self' blob: data:",
+        "style-src": "'unsafe-inline' 'self'",
+        "script-src": "'self'"
+      },
+      "devCsp": {
+        "default-src": "'self' customprotocol: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
+        "connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
+        "font-src": "'self' blob: data: https:",
+        "img-src": "'self' blob: data:",
+        "style-src": "'unsafe-inline' 'self'",
+        "script-src": "'self'"
+      },
+      "assetProtocol": {
+        "enable": false,
+        "scope": []
+      }
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "mobile": [
+        {
+          "scheme": [
+            "https"
+          ],
+          "host": "app.dashbeam.net",
+          "pathPrefix": [
+            "/receive"
+          ],
+          "appLink": true
+        }
+      ]
+    },
+    "updater": {
+      "endpoints": [
+        "https://github.com/tonyantony300/dashbeam/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMzRTE3OEU4QjYyQkIzNzMKUldSenN5dTI2SGpoTS9PZ21kbmYzUkJ3Q1VKa2FtdEllVWJ4N3QwWnRGZmZId0RPM3BlQzdxVmQK"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "icons/128x128.png"
+    ],
+    "macOS": {
+      "signingIdentity": "Developer ID Application: Tony Antony (9H7RVQAP36)",
+      "providerShortName": "9H7RVQAP36"
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "nsis": {
+        "installerHooks": "./windows/hooks.nsh"
+      },
+      "wix": {
+        "language": "en-US",
+        "fragmentPaths": [
+          "WiX/context-menu.wxs"
+        ],
+        "componentRefs": [
+          "ContextMenuRegistryFiles"
+        ]
+      }
+    }
+  }
 }
