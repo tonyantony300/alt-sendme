@@ -55,6 +55,8 @@ data class CopyProgress(
     val copiedBytes: Long,
     val totalBytes: Long,
     val cachedPath: String?,
+    val cachedPaths: List<String>? = null,
+    val completed: Boolean = false,
 ) {
     val progress: Float = if (totalBytes == 0L) 0f else copiedBytes / totalBytes.toFloat()
 
@@ -62,6 +64,8 @@ data class CopyProgress(
         put("copiedBytes", copiedBytes.toString())
         put("totalBytes", totalBytes.toString())
         put("cachedPath", cachedPath)
+        put("cachedPaths", cachedPaths?.let { org.json.JSONArray(it).toString() })
+        put("completed", completed)
         put("progress", progress)
     }
 }
@@ -139,6 +143,7 @@ fun copyUri(
             copiedBytes = finalTotal,
             totalBytes = finalTotal,
             target.absolutePath,
+            completed = true,
         )
     )
 }
@@ -205,7 +210,8 @@ private fun copyUriTreeWithProgress(
         CopyProgress(
             copiedBytes = totalBytes,
             totalBytes = totalBytes,
-            targetFolder.absolutePath
+            targetFolder.absolutePath,
+            completed = true,
         )
     )
 }
