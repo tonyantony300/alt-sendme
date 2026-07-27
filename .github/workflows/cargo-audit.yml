@@ -19,9 +19,6 @@ jobs:
   audit:
     name: Cargo audit
     runs-on: ubuntu-latest
-    # Soft-fail until engine/wasm-bridge lockfiles catch up with known RustSec
-    # fixes already present in src-tauri. Flip to hard-fail after a dedicated bump PR.
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v5

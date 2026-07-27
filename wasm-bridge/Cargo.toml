@@ -17,7 +17,7 @@ console_error_panic_hook = "0.1"
 wasm-io = { path = "../engine/wasm-io", package = "sendme-wasm-io" }
 protocol = { path = "../engine/protocol", package = "sendme-protocol" }
 getrandom = { version = "0.3", features = ["wasm_js"] }
-iroh = { version = "1.0.0", default-features = false, features = ["tls-ring"] }
+iroh = { version = "1.0.3", default-features = false, features = ["tls-ring"] }
 js-sys = "0.3"
 serde_json = "1.0.108"
 wasm-bindgen = "0.2"

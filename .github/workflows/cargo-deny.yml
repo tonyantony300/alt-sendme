@@ -27,7 +27,7 @@ jobs:
       - uses: taiki-e/install-action@cargo-deny
       - name: Check bans, licenses, and sources
         run: |
-          # Advisories are covered by cargo-audit (soft-fail until lockfiles catch up).
+          # Advisories are covered by cargo-audit.
           for workspace in engine src-tauri wasm-bridge; do
             echo "::group::cargo deny — ${workspace}"
             cargo deny \

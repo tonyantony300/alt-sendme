@@ -13,8 +13,8 @@ all-features = true
 
 [advisories]
 # Unmaintained transitive crates (common in Tauri) are noisy.
-# RustSec vulns are gated by the cargo-audit workflow (soft-fail until
-# lockfiles catch up). Deny CI only runs bans/licenses/sources.
+# RustSec vulnerabilities are gated by the cargo-audit workflow.
+# Deny CI only runs bans/licenses/sources.
 unmaintained = "none"
 unsound = "all"
 ignore = [
