@@ -124,7 +124,7 @@ pnpm lint
 pnpm format
 ```
 
-5. Fill out the [pull request template](.github/PULL_REQUEST_TEMPLATE.md).
+1. Fill out the [pull request template](.github/PULL_REQUEST_TEMPLATE.md).
 **Lockfiles:** Do not commit lockfile-only changes. CI rejects PRs that modify `pnpm-lock.yaml` or `Cargo.lock` without a corresponding manifest change.
 
 ```bash

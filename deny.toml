@@ -12,8 +12,8 @@ targets = [
 all-features = true
 
 [advisories]
-# Unmaintained transitive crates (common in Tauri) are noisy; cargo-audit
-# remains the hard vulnerability gate. Soft-fail advisories in CI too.
+# Unmaintained transitive crates (common in Tauri) are noisy. Soft-fail
+# advisories in CI (cargo-deny + cargo-audit) until lockfiles catch up.
 unmaintained = "none"
 unsound = "all"
 ignore = [

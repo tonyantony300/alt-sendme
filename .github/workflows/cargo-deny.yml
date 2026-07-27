@@ -8,6 +8,13 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
+concurrency:
+  group: cargo-deny-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   cargo-deny:
     name: Deny ${{ matrix.workspace }} / ${{ matrix.checks }}
@@ -24,14 +31,16 @@ jobs:
           - bans
           - licenses
           - sources
-    # Advisories can break overnight when RustSec updates; cargo-audit is the
-    # hard vulnerability gate. Keep licenses/bans/sources as required checks.
+    # Advisories can break overnight when RustSec updates. Soft-fail them;
+    # keep licenses/bans/sources as required checks.
     continue-on-error: ${{ matrix.checks == 'advisories' }}
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           manifest-path: ${{ matrix.workspace }}/Cargo.toml
           command: check ${{ matrix.checks }}
-          arguments: --all-features
+          arguments: --all-features --locked
