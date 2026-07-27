@@ -24,6 +24,7 @@ import {
 } from '@/lib/pairing-api'
 import { getPairedSendCounts } from '@/lib/paired-send-counts'
 import { deviceTypeIcon } from '@/lib/device-icon'
+import { copyTextToClipboard } from '@/lib/utils'
 import { DevicePairingStatus } from '../../pairing/DevicePairingStatus'
 import { PairedDevicesSearchField } from '../../pairing/PairedDevicesSearchField'
 
@@ -272,7 +273,7 @@ export function DevicesSettings() {
 		try {
 			const code = pairingCode ?? pairingTicket
 			if (code) {
-				await navigator.clipboard.writeText(code)
+				await copyTextToClipboard(code)
 				setCopied(true)
 				window.setTimeout(() => setCopied(false), 2000)
 				// Open the pairing window in the background — never block copy.
@@ -289,7 +290,7 @@ export function DevicesSettings() {
 			// Code not hydrated yet: generate + open host, then copy.
 			const ticket = await openHostPairing()
 			if (!ticket) return
-			await navigator.clipboard.writeText(ticket)
+			await copyTextToClipboard(ticket)
 			setCopied(true)
 			window.setTimeout(() => setCopied(false), 2000)
 		} catch (error) {

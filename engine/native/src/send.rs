@@ -41,10 +41,11 @@ pub async fn start_share_items(
     // the control endpoint is online, or the relay rejects duplicate endpoint ids.
     let secret_key = get_or_create_secret()?;
     let relay_mode: RelayMode = options.relay_mode.clone().into();
-    let mut builder = match &options.discovery_mode {
+    let builder = match &options.discovery_mode {
         DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
         DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
-    }
+    };
+    let mut builder = protocol::with_system_ca(builder)
     .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
     .secret_key(secret_key)
     .relay_mode(relay_mode.clone());

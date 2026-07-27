@@ -1797,6 +1797,7 @@ dependencies = [
  "reqwest",
  "rustls",
  "rustls-pki-types",
+ "rustls-platform-verifier",
  "serde",
  "serde_bytes",
  "strum",
@@ -3261,6 +3262,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
+ "url",
  "web-time",
 ]
 

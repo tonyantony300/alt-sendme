@@ -39,7 +39,7 @@ pub async fn download(
     let addr = ticket.addr().clone();
     let secret_key = get_or_create_secret()?;
 
-    let mut builder = Endpoint::builder(presets::Minimal)
+    let mut builder = protocol::with_system_ca(Endpoint::builder(presets::Minimal))
         .alpns(vec![])
         .secret_key(secret_key)
         .relay_mode(options.relay_mode.clone().into());

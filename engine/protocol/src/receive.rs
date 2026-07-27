@@ -260,10 +260,11 @@ pub async fn fetch_metadata(
     let secret_key = get_or_create_secret()?;
 
     let discovery_mode = options.discovery_mode.clone();
-    let mut builder = match &discovery_mode {
+    let builder = match &discovery_mode {
         DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
         DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
-    }
+    };
+    let mut builder = crate::tls_config::with_system_ca(builder)
     // METADATA_ALPN only to indicate a metadata fetch
     .alpns(vec![METADATA_ALPN.to_vec()])
     .secret_key(secret_key)
