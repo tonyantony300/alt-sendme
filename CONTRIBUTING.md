@@ -89,6 +89,29 @@ Engine E2E tests:
 cargo test --manifest-path engine/Cargo.toml
 ```
 
+## Commit messages
+
+Use [Conventional Commits](https://www.conventionalcommits.org/). Format:
+
+```text
+type(scope): short description
+```
+
+Examples:
+
+```text
+fix(android): invalid sharesheet info
+feat(discovery): optional DNS origin support
+chore(nix): add flake and .envrc
+docs: update contributing guide
+```
+
+Common types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`. Scope is optional (`android`, `tls`, `ui`, …).
+
+After `pnpm install`, Husky installs a `commit-msg` hook that runs [commitlint](https://commitlint.js.org/). Invalid messages are rejected locally. Prefer fixing the message over `--no-verify`.
+
+Release notes are generated from these commits, so keeping the format consistent matters.
+
 ## Pull requests
 
 1. Search [existing issues](https://github.com/tonyantony300/dashbeam/issues) before opening a new one.
@@ -100,7 +123,7 @@ pnpm lint
 pnpm format
 ```
 
-4. Fill out the [pull request template](.github/PULL_REQUEST_TEMPLATE.md).
+4. Fill out the [pull request template](.github/PULL_REQUEST_TEMPLATE.md). Prefer a conventional PR title too (especially if the PR is squash-merged).
 
 **Lockfiles:** Do not commit lockfile-only changes. CI rejects PRs that modify `pnpm-lock.yaml` or `Cargo.lock` without a corresponding manifest change.
 
