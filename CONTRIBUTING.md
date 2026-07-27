@@ -113,5 +113,9 @@ git checkout origin/main -- pnpm-lock.yaml src-tauri/Cargo.lock engine/Cargo.loc
 - [Discord](https://discord.gg/xwb7z22Eve)
 - [GitHub Issues](https://github.com/tonyantony300/dashbeam/issues)
 
+## Code of conduct
 
-Please be respectful and considerate in all project spaces.
+Participation is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By
+contributing, you agree to uphold it.
+
+Security vulnerabilities should be reported privately — see [SECURITY.md](SECURITY.md).
