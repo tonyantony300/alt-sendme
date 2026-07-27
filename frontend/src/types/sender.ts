@@ -75,6 +75,8 @@ export interface DropzoneProps {
 	onAddFolders: () => Promise<void>
 	onRemoveSelectedPath: (path: string) => void
 	onClearSelection: () => void
+	/** Open the file picker when the empty dropzone is clicked. */
+	onEmptyClick?: () => void | Promise<void>
 	dropzoneDragProps?: DropzoneDragProps
 }
 

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { IS_MOBILE, IS_WEB } from '../../lib/platform'
 import { buildReceiveLink } from '../../lib/receive-link'
+import { randomUUID, copyTextToClipboard } from '../../lib/utils'
 import { useAppSettingStore } from '../../store/app-setting'
 import type { TransferProgress } from '../../types/transfer'
 import { PulseAnimation } from '../common/PulseAnimation'
@@ -175,7 +176,7 @@ function TicketDisplay({
 	const handleBroadcastChange = (next: boolean) => {
 		onSetBroadcast(next)
 		if (next) {
-			const toastId = crypto.randomUUID()
+			const toastId = randomUUID()
 			toastManager.add({
 				title: t('common:sender.broadcastMode.on.label'),
 				id: toastId,
@@ -212,7 +213,7 @@ function TicketDisplay({
 			if (canNativeShare) {
 				await navigator.share({ url })
 			} else {
-				await navigator.clipboard.writeText(url)
+				await copyTextToClipboard(url)
 				setLinkCopySuccess(true)
 				if (linkCopyTimer.current) clearTimeout(linkCopyTimer.current)
 				linkCopyTimer.current = setTimeout(

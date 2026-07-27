@@ -10,6 +10,8 @@ export type CopyProgress = {
 	totalBytes: string
 	progress: number
 	cachedPath?: string
+	cachedPaths?: string
+	completed?: boolean
 	error?: string
 }
 
@@ -54,7 +56,7 @@ export async function openDownloadFolder(treeUri: string): Promise<void> {
 type CopyHandlers = {
 	onStart: (path: string, size: bigint) => void
 	onEvent: (event: CopyProgress) => void
-	onComplete: (path: string) => void
+	onComplete: (paths: string[]) => void
 	onError?: (message: string) => void
 }
 
@@ -63,14 +65,22 @@ function bindCopyChannel(
 	handlers: CopyHandlers
 ) {
 	channel.onmessage = (event: CopyProgress) => {
+		const cachedPaths = event.cachedPaths
+			? (JSON.parse(event.cachedPaths) as string[])
+			: null
 		if (event.error) {
 			handlers.onError?.(event.error)
 			return
 		}
-		if (event.cachedPath && (event.progress === 0 || event.progress === 0.0)) {
+		if (cachedPaths && event.completed) {
+			handlers.onComplete(cachedPaths)
+		} else if (event.cachedPath && event.completed) {
+			handlers.onComplete([event.cachedPath])
+		} else if (
+			event.cachedPath &&
+			(event.progress === 0 || event.progress === 0.0)
+		) {
 			handlers.onStart(event.cachedPath, BigInt(event.totalBytes || '0'))
-		} else if (event.cachedPath && event.progress >= 1) {
-			handlers.onComplete(event.cachedPath)
 		} else {
 			handlers.onEvent(event)
 		}
@@ -80,7 +90,7 @@ function bindCopyChannel(
 export async function selectSendDocument(
 	onStart: (path: string, size: bigint) => void,
 	onEvent: (event: CopyProgress) => void,
-	onComplete: (path: string) => void,
+	onComplete: (paths: string[]) => void,
 	onError?: (message: string) => void
 ): Promise<FileSelectedHandler | null> {
 	if (!IS_TAURI) {
@@ -89,7 +99,7 @@ export async function selectSendDocument(
 		const paths = Array.isArray(selected) ? selected : [selected]
 		for (const path of paths) {
 			onStart(path, BigInt(0))
-			onComplete(path)
+			onComplete([path])
 		}
 		return null
 	}
@@ -110,7 +120,7 @@ export async function selectSendDocument(
 export async function selectSendFolder(
 	onStart: (path: string, size: bigint) => void,
 	onEvent: (event: CopyProgress) => void,
-	onComplete: (path: string) => void,
+	onComplete: (paths: string[]) => void,
 	onError?: (message: string) => void
 ): Promise<FileSelectedHandler | null> {
 	if (!IS_TAURI) {
@@ -119,7 +129,7 @@ export async function selectSendFolder(
 		const path = Array.isArray(selected) ? selected[0] : selected
 		if (!path) return null
 		onStart(path, BigInt(0))
-		onComplete(path)
+		onComplete([path])
 		return null
 	}
 
@@ -136,11 +146,10 @@ export async function selectSendFolder(
 	return new FileSelectedHandler(String(channel.id))
 }
 
-/** Consume a pending Android Share-sheet intent (ACTION_SEND). */
 export async function consumeShareIntent(
 	onStart: (path: string, size: bigint) => void,
 	onEvent: (event: CopyProgress) => void,
-	onComplete: (path: string) => void,
+	onComplete: (paths: string[]) => void,
 	onError?: (message: string) => void
 ): Promise<FileSelectedHandler | null> {
 	if (!IS_TAURI) return null

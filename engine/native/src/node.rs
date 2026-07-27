@@ -1208,7 +1208,7 @@ async fn build_runtime(
             pkarr_relay_url,
             dns_origin,
         } => {
-            let mut builder = Endpoint::builder(presets::Minimal)
+            let mut builder = protocol::with_system_ca(Endpoint::builder(presets::Minimal))
                 .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
                 .address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()));
             if let Some(origin) = dns_origin {
@@ -1217,7 +1217,8 @@ async fn build_runtime(
             builder
         }
         DiscoveryModeOption::Default => {
-            Endpoint::builder(presets::N0).address_lookup(PkarrPublisher::n0_dns())
+            protocol::with_system_ca(Endpoint::builder(presets::N0))
+                .address_lookup(PkarrPublisher::n0_dns())
         }
     };
 

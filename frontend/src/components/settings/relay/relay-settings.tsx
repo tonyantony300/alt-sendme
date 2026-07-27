@@ -19,7 +19,7 @@ import {
 } from '../../../lib/relay-url-validation'
 import { getRelayRegion } from '../../../lib/relay'
 import type { VerifyRelaysResponse } from '../../../lib/relay'
-import { cn } from '../../../lib/utils'
+import { cn, randomUUID } from '../../../lib/utils'
 import { Button } from '../../ui/button'
 import {
 	Frame,
@@ -72,13 +72,11 @@ export function RelaySettings() {
 	const [showAuthToken, setShowAuthToken] = useState(
 		() => relayAuthToken.trim().length > 0
 	)
-	const urlRowIdsRef = useRef<string[]>(
-		relayUrls.map(() => crypto.randomUUID())
-	)
+	const urlRowIdsRef = useRef<string[]>(relayUrls.map(() => randomUUID()))
 
 	useEffect(() => {
 		while (urlRowIdsRef.current.length < relayUrls.length) {
-			urlRowIdsRef.current.push(crypto.randomUUID())
+			urlRowIdsRef.current.push(randomUUID())
 		}
 		if (urlRowIdsRef.current.length > relayUrls.length) {
 			urlRowIdsRef.current = urlRowIdsRef.current.slice(0, relayUrls.length)

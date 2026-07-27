@@ -3,7 +3,7 @@ name = "sendme-native"
 version = "0.1.0"
 edition = "2021"
 authors = ["Tony Antony <tonyantony300@gmail.com>"]
-license = "AGPL-3.0"
+license = "AGPL-3.0-only"
 repository = "https://github.com/tonyantony300/dashbeam"
 description = "Native filesystem I/O for dashbeam (desktop/mobile)"
 rust-version = "1.91"
@@ -17,7 +17,7 @@ anyhow = "1.0.75"
 data-encoding = "2.8.0"
 dirs = "6.0.0"
 iroh-blobs = { version = "0.103" }
-iroh = "1.0.0"
+iroh = { version = "1.0.3", features = ["platform-verifier"] }
 n0-future = "0.3"
 num_cpus = "1.16.0"
 rand = "0.10"

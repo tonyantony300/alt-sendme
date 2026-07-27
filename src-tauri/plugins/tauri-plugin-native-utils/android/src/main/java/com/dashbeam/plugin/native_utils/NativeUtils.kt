@@ -1,6 +1,7 @@
 package com.dashbeam.plugin.native_utils
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.ConcurrentLinkedQueue
 
 @InvokeArg
 class SelectorArgs {
@@ -61,16 +62,13 @@ data class DownloadFolderSelectionResponse(
 class NativeUtils(private val activity: Activity) : Plugin(activity) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val jobs = ConcurrentHashMap<Long, Pair<Job, String>>()
-    private val pendingShareUri = AtomicReference<Uri?>(null)
+    private val pendingShareBatches = ConcurrentLinkedQueue<List<Uri>>()
 
     companion object {
         private const val RW_PERMISSION_FLAGS =
             Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
         private const val SHARE_RECEIVED_EVENT = "shareReceived"
     }
-
-    private val consumedShareUris =
-        java.util.Collections.synchronizedSet(mutableSetOf<String>())
 
     @Command
     fun select_download_folder(invoke: Invoke) = startActivityForResult(
@@ -98,10 +96,10 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
     @Command
     fun consume_share_intent(invoke: Invoke) {
         val args = invoke.parseArgs(SelectorArgs::class.java)
-        val uri = takePendingOrIntentShare()
+        val uris = takePendingOrIntentShare()
             ?: return invoke.resolveObject(false)
 
-        startUriCopy(uri, args.channel)
+        startUriCopy(uris, args.channel)
         invoke.resolveObject(true)
     }
 
@@ -210,18 +208,17 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
         val uri = result.data?.data ?: return invoke.resolveObject(false)
 
-        startUriCopy(uri, channel)
+        startUriCopy(listOf(uri), channel)
         invoke.resolveObject(true)
     }
 
     override fun load(webView: WebView) {
         super.load(webView)
-
         // Cold start: capture share URI before / as the frontend mounts.
         // Skip wiping file_cache when a share is pending so cleanup cannot race the copy.
-        val shareUri = peekShareUri(activity.intent)
-        if (shareUri != null) {
-            pendingShareUri.set(shareUri)
+        val shareUris = takeShareUris(activity.intent)
+        if (shareUris != null) {
+            pendingShareBatches.add(shareUris)
             // Notify after the WebView can register plugin listeners (cold-start race).
             webView.post {
                 trigger(SHARE_RECEIVED_EVENT, JSObject())
@@ -238,8 +235,8 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         // Without this, activity.intent stays the old MAIN launcher intent under singleTask.
         activity.intent = intent
 
-        val uri = peekShareUri(intent) ?: return
-        pendingShareUri.set(uri)
+        val uris = takeShareUris(intent) ?: return
+        pendingShareBatches.add(uris)
         trigger(SHARE_RECEIVED_EVENT, JSObject())
     }
 
@@ -247,11 +244,9 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         super.onResume()
         // Safety net: if the frontend missed the first event (listener not ready yet),
         // re-advertise any still-unconsumed share when we come to the foreground.
-        val uri = peekShareUri(activity.intent) ?: return
-        pendingShareUri.compareAndSet(null, uri)
-        if (pendingShareUri.get() != null) {
-            trigger(SHARE_RECEIVED_EVENT, JSObject())
-        }
+        val uris = takeShareUris(activity.intent) ?: return
+        pendingShareBatches.add(uris)
+        trigger(SHARE_RECEIVED_EVENT, JSObject())
     }
 
     override fun onDestroy() {
@@ -267,7 +262,7 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         super.onDestroy()
     }
 
-    private fun startUriCopy(uri: Uri, channel: Channel) {
+    private fun startUriCopy(uris: List<Uri>, channel: Channel) {
         val path = listOf(
             activity.cacheDir.absolutePath,
             "file_cache",
@@ -275,14 +270,46 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         ).joinToString(File.separator)
 
         val tempFolder = File(path)
-
         val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 tempFolder.parentFile?.mkdirs()
                     ?: throw IOException("Unable to create parent folders for ${tempFolder.absolutePath}")
 
-                copyUri(activity, uri, tempFolder).collect {
-                    channel.send(it.toJSObject())
+                if (uris.size == 1) {
+                    copyUri(activity, uris.single(), tempFolder).collect {
+                        channel.send(it.toJSObject())
+                    }
+                } else {
+                    val totalBytes = uris.sumOf { resolveContentLength(activity, it) }
+                    channel.send(CopyProgress(0, totalBytes, tempFolder.absolutePath).toJSObject())
+
+                    var copiedBytes = 0L
+                    val cachedPaths = mutableListOf<String>()
+                    uris.forEachIndexed { index, uri ->
+                        var fileBytes = 0L
+                        copyUri(activity, uri, tempFolder.resolve(index.toString())).collect { progress ->
+                            fileBytes = progress.copiedBytes
+                            progress.cachedPath?.takeIf { progress.completed }?.let(cachedPaths::add)
+                            channel.send(
+                                CopyProgress(
+                                    copiedBytes + progress.copiedBytes,
+                                    totalBytes,
+                                    null,
+                                ).toJSObject()
+                            )
+                        }
+                        copiedBytes += fileBytes
+                    }
+
+                    channel.send(
+                        CopyProgress(
+                            copiedBytes,
+                            if (totalBytes > 0) totalBytes else copiedBytes,
+                            null,
+                            cachedPaths,
+                            completed = true,
+                        ).toJSObject()
+                    )
                 }
             } catch (e: Exception) {
                 tempFolder.deleteRecursively()
@@ -304,59 +331,62 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
     }
 
     @Synchronized
-    private fun takePendingOrIntentShare(): Uri? {
-        pendingShareUri.getAndSet(null)?.let { uri ->
-            markShareConsumed(uri)
-            return uri
-        }
-        return takeAndMarkShareUri(activity.intent)
+    private fun takePendingOrIntentShare(): List<Uri>? {
+        return pendingShareBatches.poll() ?: takeShareUris(activity.intent)
     }
 
-    private fun peekShareUri(intent: Intent?): Uri? {
-        if (intent == null || intent.action != Intent.ACTION_SEND) {
+    private fun peekShareUris(intent: Intent?): List<Uri>? {
+        if (intent == null ||
+            (intent.action != Intent.ACTION_SEND && intent.action != Intent.ACTION_SEND_MULTIPLE)
+        ) {
             return null
         }
-        val uri = extractShareUri(intent) ?: return null
-        if (consumedShareUris.contains(uri.toString())) {
-            return null
-        }
-        return uri
+        return extractShareUris(intent).takeIf { it.isNotEmpty() }
     }
 
-    private fun takeAndMarkShareUri(intent: Intent?): Uri? {
-        val uri = peekShareUri(intent) ?: return null
-        markShareConsumed(uri)
-        return uri
+    private fun takeShareUris(intent: Intent?): List<Uri>? {
+        val uris = peekShareUris(intent) ?: return null
+        intent?.action = null
+        return uris
     }
 
-    private fun markShareConsumed(uri: Uri) {
-        consumedShareUris.add(uri.toString())
-    }
-
-    private fun extractShareUri(intent: Intent): Uri? {
-        parcelableStreamExtra(intent)?.let { return it }
+    private fun extractShareUris(intent: Intent): List<Uri> {
+        val uris = mutableListOf<Uri>()
+        parcelableStreamExtras(intent)?.let(uris::addAll)
 
         when (val stream = intent.extras?.get(Intent.EXTRA_STREAM)) {
-            is Uri -> return stream
-            is String -> if (stream.isNotBlank()) return Uri.parse(stream)
+            is Uri -> uris.add(stream)
+            is String -> if (stream.isNotBlank()) uris.add(Uri.parse(stream))
+            is List<*> -> uris.addAll(stream.filterIsInstance<Uri>())
         }
 
         val clip = intent.clipData
-        if (clip != null && clip.itemCount > 0) {
-            clip.getItemAt(0)?.uri?.let { return it }
+        if (clip != null) {
+            repeat(clip.itemCount) { index ->
+                clip.getItemAt(index)?.uri?.let(uris::add)
+            }
         }
 
-        intent.data?.let { return it }
+        intent.data?.let(uris::add)
 
-        return null
+        return uris.distinct().filter { it.scheme == ContentResolver.SCHEME_CONTENT }
     }
 
     @Suppress("DEPRECATION")
-    private fun parcelableStreamExtra(intent: Intent): Uri? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+    private fun parcelableStreamExtras(intent: Intent): List<Uri>? {
+        return if (intent.action == Intent.ACTION_SEND_MULTIPLE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri::class.java)
+            } else {
+                intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM)
+            }
         } else {
-            intent.getParcelableExtra(Intent.EXTRA_STREAM) as? Uri
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+            } else {
+                intent.getParcelableExtra(Intent.EXTRA_STREAM) as? Uri
+            }
+            uri?.let(::listOf)
         }
     }
 }

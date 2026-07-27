@@ -1,6 +1,7 @@
 [package]
 name = "tauri-plugin-native-utils"
 version = "0.1.0"
+license = "AGPL-3.0-only"
 authors = ["You"]
 description = ""
 edition = "2021"

@@ -7,6 +7,7 @@ pub mod receive;
 pub mod relay;
 pub mod send;
 pub mod time_compat;
+pub mod tls_config;
 pub mod types;
 
 pub use control::{ControlMessage, PairingTicket, CONTROL_ALPN, RememberVote, InviteResponse};
@@ -31,6 +32,7 @@ pub use discovery::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use discovery::verify_discovery;
+pub use tls_config::with_system_ca;
 pub use control::{read_message, write_message};
 pub use send::{run_share_on_endpoint, run_share_session, MetadataProtocol, ShareSessionOutcome, METADATA_ALPN};
 pub use types::*;

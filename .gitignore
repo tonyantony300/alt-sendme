@@ -127,6 +127,8 @@ src-tauri/gen/*
 !**/README
 !PRIVACY.md
 !CONTRIBUTING.md
+!SECURITY.md
+!CODE_OF_CONDUCT.md
 
 # Project docs (kept local; not published)
 docs/
@@ -141,3 +143,9 @@ monorepo-reference
 
 .vercel
 random
+
+# Nix / direnv (flake.nix, flake.lock and .envrc are tracked)
+.direnv/
+result
+result-*
+.envrc.local
