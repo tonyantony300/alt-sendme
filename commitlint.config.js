@@ -24,5 +24,9 @@ export default {
 			],
 		],
 	},
-	ignores: [(message) => /^Merge\b/.test(message)],
+	ignores: [
+		(message) => /^Merge\b/.test(message),
+		// Release PRs (see scripts/generate-release-notes.js)
+		(message) => /^release[\s-]+\d+\.\d+\.\d+/i.test(message),
+	],
 }

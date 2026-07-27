@@ -5,6 +5,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     groups:
       rust-minor-patch:
         patterns:
@@ -24,6 +27,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     groups:
       rust-minor-patch:
         patterns:
@@ -43,6 +49,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     groups:
       rust-minor-patch:
         patterns:
@@ -62,6 +71,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
     allow:
       - dependency-type: "direct"
     groups:
@@ -83,6 +96,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 2
+    commit-message:
+      prefix: "ci"
+      include: "scope"
     groups:
       github-actions-minor-patch:
         patterns:

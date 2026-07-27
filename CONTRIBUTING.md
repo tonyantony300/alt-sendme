@@ -110,21 +110,21 @@ Common types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, 
 
 After `pnpm install`, Husky installs a `commit-msg` hook that runs [commitlint](https://commitlint.js.org/). Invalid messages are rejected locally. Prefer fixing the message over `--no-verify`.
 
-Release notes are generated from these commits, so keeping the format consistent matters.
+**PR titles use the same format** and are enforced in CI (`Lint PR title`). PRs are squash-merged using the PR title as the commit on `main`, so the title is what lands in history and release notes.
 
 ## Pull requests
 
 1. Search [existing issues](https://github.com/tonyantony300/dashbeam/issues) before opening a new one.
 2. For bugs, use the [bug report template](.github/ISSUE_TEMPLATE/report-bug.md).
-3. Run checks before opening a PR:
+3. Use a conventional PR title (required — CI will fail otherwise), for example `fix(android): invalid sharesheet info`.
+4. Run checks before opening a PR:
 
 ```bash
 pnpm lint
 pnpm format
 ```
 
-4. Fill out the [pull request template](.github/PULL_REQUEST_TEMPLATE.md). Prefer a conventional PR title too (especially if the PR is squash-merged).
-
+5. Fill out the [pull request template](.github/PULL_REQUEST_TEMPLATE.md).
 **Lockfiles:** Do not commit lockfile-only changes. CI rejects PRs that modify `pnpm-lock.yaml` or `Cargo.lock` without a corresponding manifest change.
 
 ```bash

@@ -1,0 +1,40 @@
+name: PR Title
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  lint-title:
+    name: Lint PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 10.12.1
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if ! printf '%s\n' "$PR_TITLE" | pnpm exec commitlint; then
+            echo ""
+            echo "PR title must follow Conventional Commits:"
+            echo ""
+            echo "  type(scope): short description"
+            echo ""
+            echo "Examples:"
+            echo "  fix(android): invalid sharesheet info"
+            echo "  feat(discovery): optional DNS origin support"
+            echo "  chore(nix): add flake and .envrc"
+            echo "  docs: update contributing guide"
+            echo ""
+            echo "See CONTRIBUTING.md → Commit messages"
+            exit 1
+          fi
