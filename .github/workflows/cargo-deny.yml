@@ -1,0 +1,37 @@
+name: Cargo Deny
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  cargo-deny:
+    name: Deny ${{ matrix.workspace }} / ${{ matrix.checks }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - engine
+          - src-tauri
+          - wasm-bridge
+        checks:
+          - advisories
+          - bans
+          - licenses
+          - sources
+    # Advisories can break overnight when RustSec updates; cargo-audit is the
+    # hard vulnerability gate. Keep licenses/bans/sources as required checks.
+    continue-on-error: ${{ matrix.checks == 'advisories' }}
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: ${{ matrix.workspace }}/Cargo.toml
+          command: check ${{ matrix.checks }}
+          arguments: --all-features
