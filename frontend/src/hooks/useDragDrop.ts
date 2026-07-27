@@ -167,11 +167,13 @@ export function useDragDrop(
 			startCopy: (
 				onStart: (path: string, size: bigint) => void,
 				onEvent: (event: { progress: number }) => void,
-				onComplete: (path: string) => void,
+				onComplete: (paths: string[]) => void,
 				onError?: (message: string) => void
 			) => Promise<{ cancelJob: () => Promise<void> } | null>,
-			pathType: 'file' | 'directory'
+			pathType: 'file' | 'directory',
+			afterSelect?: () => void
 		) => {
+			let completed = false
 			const handler = await startCopy(
 				(path, size) => {
 					setCopyFileName(path.split(/[/\\]/).filter(Boolean).pop() || path)
@@ -182,15 +184,18 @@ export function useDragDrop(
 				(event) => {
 					setCopyProgress(event.progress)
 				},
-				async (path) => {
+				async (paths) => {
+					completed = true
 					setIsCopying(false)
 					setCopyProgress(0)
 					setCopyFileName('')
 					setCopyTotalBytes('0')
 					cancelRef.current = null
-					await triggerFilesSelect([path], pathType)
+					await triggerFilesSelect(paths, pathType)
+					afterSelect?.()
 				},
 				(message) => {
+					completed = true
 					setIsCopying(false)
 					setCopyProgress(0)
 					setCopyFileName('')
@@ -200,7 +205,7 @@ export function useDragDrop(
 				}
 			)
 
-			if (handler) {
+			if (handler && !completed) {
 				cancelRef.current = () => handler.cancelJob()
 			}
 
@@ -211,11 +216,9 @@ export function useDragDrop(
 
 	const consumeAndroidShare = useCallback(async (): Promise<boolean> => {
 		try {
-			useTransferTabStore.getState().requestTab('send')
-			if (cancelRef.current) {
-				await cancelCopy()
-			}
-			return await beginAndroidCacheCopy(consumeShareIntent, 'file')
+			return await beginAndroidCacheCopy(consumeShareIntent, 'file', () => {
+				useTransferTabStore.getState().requestTab('send')
+			})
 		} catch (error) {
 			console.error('Failed to consume Android share intent:', error)
 			showAlert(
@@ -225,7 +228,7 @@ export function useDragDrop(
 			)
 			return false
 		}
-	}, [beginAndroidCacheCopy, cancelCopy, showAlert, t])
+	}, [beginAndroidCacheCopy, showAlert, t])
 
 	const consumeAndroidShareRef = useRef(consumeAndroidShare)
 	consumeAndroidShareRef.current = consumeAndroidShare
@@ -447,21 +450,20 @@ export function useDragDrop(
 
 		let disposed = false
 		let unlistenShare: (() => void) | undefined
-		let settled = false
-		const retryTimers: number[] = []
-		// Widened window: cold-start IPC-bridge readiness can vary a lot across
-		// devices, so keep polling for several seconds rather than giving up early.
-		const retryDelaysMs = [400, 1000, 2000, 3500, 5500, 8000]
+		let pollInFlight = false
 
 		const run = async () => {
-			if (disposed || settled) return
-			const consumed = await consumeAndroidShareRef.current()
-			if (consumed) {
-				settled = true
+			if (disposed || pollInFlight || cancelRef.current) return
+			pollInFlight = true
+			try {
+				await consumeAndroidShareRef.current()
+			} finally {
+				pollInFlight = false
 			}
 		}
 
 		const setup = async () => {
+			void run()
 			unlistenShare = await onShareReceived(() => {
 				void run()
 			})
@@ -469,23 +471,15 @@ export function useDragDrop(
 				unlistenShare()
 				return
 			}
-			// Cold start: intent may already be pending before listeners registered.
-			void run()
-			// Native load() posts shareReceived after WebView is ready; these retries
-			// cover the case where the first consume ran before the URI was stashed.
-			for (const delay of retryDelaysMs) {
-				retryTimers.push(window.setTimeout(() => void run(), delay))
-			}
 		}
 
 		void setup()
+		const pollTimer = window.setInterval(() => void run(), 1000)
 
 		return () => {
 			disposed = true
 			unlistenShare?.()
-			for (const id of retryTimers) {
-				window.clearTimeout(id)
-			}
+			window.clearInterval(pollTimer)
 		}
 	}, [])
 
