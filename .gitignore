@@ -141,3 +141,9 @@ monorepo-reference
 
 .vercel
 random
+
+# Nix / direnv (flake.nix, flake.lock and .envrc are tracked)
+.direnv/
+result
+result-*
+.envrc.local

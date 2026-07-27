@@ -50,6 +50,26 @@ pnpm preview:web
 pnpm android:dev
 ```
 
+### Nix / NixOS
+
+A flake dev shell provides the pinned Rust toolchain (with the `wasm32-unknown-unknown` target), Node, pnpm, and the full WebKitGTK stack `tauri dev` needs — no system packages required.
+
+```bash
+nix develop      # or `direnv allow`, which uses the checked-in .envrc
+pnpm install
+pnpm tauri dev
+```
+
+The shell reads `rust-toolchain.toml`, so bumping the pin there is enough — the flake follows it.
+
+Notes:
+
+- **`programs.nix-ld.enable = true;`** is required on NixOS. pnpm downloads prebuilt binaries (Biome, Rollup, esbuild) that expect a standard dynamic loader; without nix-ld they fail with "no such file or directory" on an executable that plainly exists.
+- **`wasm-bindgen-cli` must match `wasm-bindgen` in `wasm-bridge/Cargo.lock` exactly.** The shell warns on entry if nixpkgs has drifted and prints the `cargo install` line that fixes it.
+- **Android is not covered** by the shell — the SDK/NDK are still on you.
+- **Bundling** (`pnpm tauri build` with installers) is not supported on NixOS; use `--no-bundle`.
+- The shell sets `WEBKIT_DISABLE_DMABUF_RENDERER=1`, which avoids a blank webview on NVIDIA and older Mesa. Drop it from `flake.nix` if your setup doesn't need it.
+
 ### Project layout
 
 | Path | Purpose |
