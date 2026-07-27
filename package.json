@@ -25,6 +25,7 @@
 		"lint": "biome lint && tsc --noEmit --skipLibCheck",
 		"lint:fix": "biome lint --fix",
 		"format": "biome format --write && cargo fmt --manifest-path engine/Cargo.toml && cargo fmt --manifest-path src-tauri/Cargo.toml",
+		"format:check": "biome format && cargo fmt --manifest-path engine/Cargo.toml -- --check && cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
 		"android:build:release": "node ./scripts/android-release-build.js",
 		"android:apply-gradle-patches": "node ./scripts/apply-android-release-gradle-patches.js"
 	},

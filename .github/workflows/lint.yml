@@ -10,7 +10,7 @@ on:
 
 jobs:
   lint:
-    name: Linting `frontend` codebase
+    name: Lint & format
     runs-on: ubuntu-latest
 
     steps:
@@ -23,12 +23,15 @@ jobs:
         with:
           node-version: '24.x'
           cache: pnpm
+      # rust-toolchain.toml pins the channel and includes rustfmt.
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Run lint script
         run: pnpm run lint
-      - name: Run format script
-        run: pnpm run lint:fix && pnpm run format
+      - name: Check formatting
+        run: pnpm run format:check
 
   lockfiles-check:
     name: Reject lockfile-only changes
