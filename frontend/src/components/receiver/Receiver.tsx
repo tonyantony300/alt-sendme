@@ -5,14 +5,14 @@ import { useTranslation } from '../../i18n/react-i18next-compat'
 import { PulseAnimation } from '../common/PulseAnimation'
 import { TransferSuccessScreen } from '../common/TransferSuccessScreen'
 import {
-	AlertDialog,
-	AlertDialogClose,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from '../ui/alert-dialog'
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '../ui/dialog'
 import { ReceivingActiveCard } from './ReceivingActiveCard'
 import { TicketInput } from './TicketInput'
 import { ReceiveSaveLocationPicker } from './ReceiveSaveLocationPicker'
@@ -121,33 +121,29 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 				</>
 			)}
 
-			<AlertDialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>{alertDialog.title}</AlertDialogTitle>
-						<AlertDialogDescription>
-							{alertDialog.description}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogClose
+			<Dialog open={alertDialog.isOpen} onOpenChange={closeAlert}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{alertDialog.title}</DialogTitle>
+						<DialogDescription>{alertDialog.description}</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<DialogClose
 							onClick={closeAlert}
 							render={<Button size="sm">{t('common:ok')}</Button>}
 						/>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
-			<AlertDialog
+			<Dialog
 				open={showInstructionsDialog}
 				onOpenChange={setShowInstructionsDialog}
 			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							{t('common:receiver.howToReceive')}
-						</AlertDialogTitle>
-						<AlertDialogDescription></AlertDialogDescription>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{t('common:receiver.howToReceive')}</DialogTitle>
+						<DialogDescription></DialogDescription>
 						<ol className="text-sm space-y-2 list-decimal list-inside mt-2">
 							<li>{t('common:receiver.instruction1')}</li>
 							<li>{t('common:receiver.instruction2')}</li>
@@ -155,15 +151,15 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 							<li>{t('common:receiver.instruction4')}</li>
 							<li>{t('common:receiver.instruction5')}</li>
 						</ol>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogClose
+					</DialogHeader>
+					<DialogFooter>
+						<DialogClose
 							render={<Button size="sm">{t('common:ok')}</Button>}
 							onClick={() => setShowInstructionsDialog(false)}
-						></AlertDialogClose>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+						/>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

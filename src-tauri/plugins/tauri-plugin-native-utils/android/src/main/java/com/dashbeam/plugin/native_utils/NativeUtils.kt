@@ -138,6 +138,17 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
     }
 
     @Command
+    fun get_window_insets(invoke: Invoke) {
+        activity.runOnUiThread {
+            try {
+                invoke.resolveObject(activity.readWindowInsets())
+            } catch (e: Exception) {
+                invoke.reject(e.message ?: "Failed to read window insets")
+            }
+        }
+    }
+
+    @Command
     fun open_download_folder(invoke: Invoke) {
         val args = invoke.parseArgs(OpenDownloadFolderArgs::class.java)
         val treeUriString = args.treeUri.trim()

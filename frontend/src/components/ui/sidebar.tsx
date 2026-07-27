@@ -202,8 +202,8 @@ function Sidebar({
 					<div
 						className="flex h-full w-full flex-col"
 						style={{
-							paddingTop: 'env(safe-area-inset-top)',
-							paddingBottom: 'env(safe-area-inset-bottom)',
+							paddingTop: 'var(--safe-area-top)',
+							paddingBottom: 'var(--safe-area-bottom)',
 						}}
 					>
 						{children}

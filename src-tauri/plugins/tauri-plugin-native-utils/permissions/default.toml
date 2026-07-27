@@ -7,5 +7,6 @@ permissions = [
     "allow-consume-share-intent",
     "allow-cancel-job",
     "allow-export-to-tree",
-    "allow-open-download-folder"
+    "allow-open-download-folder",
+    "allow-get-window-insets"
 ]

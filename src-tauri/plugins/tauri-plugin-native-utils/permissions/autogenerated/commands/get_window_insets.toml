@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-get-window-insets"
+description = "Enables the get_window_insets command without any pre-configured scope."
+commands.allow = ["get_window_insets"]
+
+[[permission]]
+identifier = "deny-get-window-insets"
+description = "Denies the get_window_insets command without any pre-configured scope."
+commands.deny = ["get_window_insets"]

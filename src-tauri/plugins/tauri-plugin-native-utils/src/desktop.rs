@@ -50,6 +50,13 @@ impl<R: Runtime> NativeUtils<R> {
 }
 
 impl<R: Runtime> NativeUtils<R> {
+    /// Desktop windows never draw behind system UI, so there is nothing to inset.
+    pub fn get_window_insets(&self) -> crate::Result<WindowInsets> {
+        Ok(WindowInsets::default())
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
     pub fn open_download_folder(&self, _: OpenDownloadFolderArgs) -> crate::Result<()> {
         Err(crate::Error::UnsupportedPlafrormError)
     }

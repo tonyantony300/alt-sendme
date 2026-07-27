@@ -1,12 +1,12 @@
 import {
-	AlertDialog,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogClose,
-} from './ui/alert-dialog'
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogClose,
+} from './ui/dialog'
 import type { AlertType } from '../types/ui'
 import { useTranslation } from '@/i18n'
 import { buttonVariants } from './ui/button'
@@ -27,21 +27,21 @@ export function AppAlertDialog({
 }: AppAlertDialogProps) {
 	const { t } = useTranslation()
 	return (
-		<AlertDialog open={isOpen} onOpenChange={onClose}>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>{title}</AlertDialogTitle>
-					<AlertDialogDescription>{description}</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogClose
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>{title}</DialogTitle>
+					<DialogDescription>{description}</DialogDescription>
+				</DialogHeader>
+				<DialogFooter>
+					<DialogClose
 						onClick={onClose}
 						className={buttonVariants({ variant: 'default', size: 'sm' })}
 					>
-						{t('common:close')}
-					</AlertDialogClose>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+						{t('common:ok')}
+					</DialogClose>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	)
 }

@@ -43,6 +43,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::cancel_job,
             commands::export_to_tree,
             commands::open_download_folder,
+            commands::get_window_insets,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]

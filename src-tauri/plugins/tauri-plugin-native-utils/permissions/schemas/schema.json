@@ -331,6 +331,18 @@
           "markdownDescription": "Denies the export_to_tree command without any pre-configured scope."
         },
         {
+          "description": "Enables the get_window_insets command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-window-insets",
+          "markdownDescription": "Enables the get_window_insets command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_window_insets command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-window-insets",
+          "markdownDescription": "Denies the get_window_insets command without any pre-configured scope."
+        },
+        {
           "description": "Enables the open_download_folder command without any pre-configured scope.",
           "type": "string",
           "const": "allow-open-download-folder",
@@ -379,10 +391,10 @@
           "markdownDescription": "Denies the select_send_folder command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`",
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-get-window-insets`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`"
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-get-window-insets`"
         }
       ]
     }

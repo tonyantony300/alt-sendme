@@ -74,6 +74,14 @@ impl<R: Runtime> NativeUtils<R> {
 }
 
 impl<R: Runtime> NativeUtils<R> {
+    pub fn get_window_insets(&self) -> crate::Result<WindowInsets> {
+        self.0
+            .run_mobile_plugin("get_window_insets", ())
+            .map_err(Into::into)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
     pub fn open_download_folder(&self, args: OpenDownloadFolderArgs) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("open_download_folder", args)

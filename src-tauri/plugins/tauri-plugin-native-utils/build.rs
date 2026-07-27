@@ -6,6 +6,7 @@ const COMMANDS: &[&str] = &[
     "cancel_job",
     "export_to_tree",
     "open_download_folder",
+    "get_window_insets",
 ];
 
 fn main() {
