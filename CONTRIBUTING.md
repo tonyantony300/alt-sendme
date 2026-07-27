@@ -4,7 +4,7 @@ Thank you for your interest in contributing. This guide covers local setup and h
 
 ## Development setup
 
-**Prerequisites:** Rust 1.91+, Node.js 20+, pnpm 10+
+**Prerequisites:** Rust 1.91+, Node.js 20.19+ or 22.12+ (recommended: 24 — see `.nvmrc`), pnpm 10+
 
 ```bash
 git clone https://github.com/tonyantony300/dashbeam.git
