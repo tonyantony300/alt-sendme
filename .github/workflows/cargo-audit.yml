@@ -17,24 +17,23 @@ concurrency:
 
 jobs:
   audit:
-    name: Audit ${{ matrix.workspace }}
+    name: Cargo audit
     runs-on: ubuntu-latest
     # Soft-fail until engine/wasm-bridge lockfiles catch up with known RustSec
-    # fixes already present in src-tauri. Keep the check visible without
-    # blocking this hygiene PR; flip to hard-fail after a dedicated bump PR.
+    # fixes already present in src-tauri. Flip to hard-fail after a dedicated bump PR.
     continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        workspace:
-          - engine
-          - src-tauri
-          - wasm-bridge
 
     steps:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
       - uses: taiki-e/install-action@cargo-audit
-      - name: Run cargo audit
-        run: cargo audit --file "${{ matrix.workspace }}/Cargo.lock"
+      - name: Audit Rust workspaces
+        run: |
+          status=0
+          for workspace in engine src-tauri wasm-bridge; do
+            echo "::group::cargo audit — ${workspace}"
+            cargo audit --file "${workspace}/Cargo.lock" || status=1
+            echo "::endgroup::"
+          done
+          exit "$status"

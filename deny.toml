@@ -12,8 +12,9 @@ targets = [
 all-features = true
 
 [advisories]
-# Unmaintained transitive crates (common in Tauri) are noisy. Soft-fail
-# advisories in CI (cargo-deny + cargo-audit) until lockfiles catch up.
+# Unmaintained transitive crates (common in Tauri) are noisy.
+# RustSec vulns are gated by the cargo-audit workflow (soft-fail until
+# lockfiles catch up). Deny CI only runs bans/licenses/sources.
 unmaintained = "none"
 unsound = "all"
 ignore = [
