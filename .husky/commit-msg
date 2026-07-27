@@ -1,0 +1,17 @@
+if ! pnpm exec commitlint --edit "$1"; then
+	echo ""
+	echo "Commit message must follow Conventional Commits:"
+	echo ""
+	echo "  type(scope): short description"
+	echo ""
+	echo "Examples:"
+	echo "  fix(android): invalid sharesheet info"
+	echo "  feat(discovery): optional DNS origin support"
+	echo "  chore(nix): add flake and .envrc"
+	echo "  docs: update contributing guide"
+	echo ""
+	echo "Types: feat, fix, docs, refactor, perf, test, build, ci, chore, …"
+	echo "See CONTRIBUTING.md → Commit messages"
+	echo ""
+	exit 1
+fi

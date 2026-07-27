@@ -127,6 +127,8 @@ src-tauri/gen/*
 !**/README
 !PRIVACY.md
 !CONTRIBUTING.md
+!SECURITY.md
+!CODE_OF_CONDUCT.md
 
 # Project docs (kept local; not published)
 docs/

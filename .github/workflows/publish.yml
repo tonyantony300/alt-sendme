@@ -29,7 +29,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '24.x'
+          node-version-file: '.nvmrc'
           package-manager-cache: false
 
       - name: Extract version from tag and validate
@@ -146,7 +146,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '24.x'
+          node-version-file: '.nvmrc'
           cache: pnpm
 
       # Pin encodes toolchain 1.91.0; `toolchain:` is not a valid input on this action form.
@@ -356,7 +356,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '24.x'
+          node-version-file: '.nvmrc'
           cache: pnpm
 
       - name: Set up JDK 17
@@ -482,7 +482,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '24.x'
+          node-version-file: '.nvmrc'
           cache: pnpm
 
       - name: Set up Rust (WASM)

@@ -76,7 +76,10 @@ function bindCopyChannel(
 			handlers.onComplete(cachedPaths)
 		} else if (event.cachedPath && event.completed) {
 			handlers.onComplete([event.cachedPath])
-		} else if (event.cachedPath && (event.progress === 0 || event.progress === 0.0)) {
+		} else if (
+			event.cachedPath &&
+			(event.progress === 0 || event.progress === 0.0)
+		) {
 			handlers.onStart(event.cachedPath, BigInt(event.totalBytes || '0'))
 		} else {
 			handlers.onEvent(event)

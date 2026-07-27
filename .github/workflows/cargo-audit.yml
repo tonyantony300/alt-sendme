@@ -1,0 +1,36 @@
+name: Cargo Audit
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cargo-audit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Cargo audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: taiki-e/install-action@cargo-audit
+      - name: Audit Rust workspaces
+        run: |
+          status=0
+          for workspace in engine src-tauri wasm-bridge; do
+            echo "::group::cargo audit — ${workspace}"
+            cargo audit --file "${workspace}/Cargo.lock" || status=1
+            echo "::endgroup::"
+          done
+          exit "$status"

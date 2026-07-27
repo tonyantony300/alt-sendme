@@ -1,0 +1,39 @@
+name: Cargo Deny
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cargo-deny-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cargo-deny:
+    name: Cargo deny
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: taiki-e/install-action@cargo-deny
+      - name: Check bans, licenses, and sources
+        run: |
+          # Advisories are covered by cargo-audit.
+          for workspace in engine src-tauri wasm-bridge; do
+            echo "::group::cargo deny — ${workspace}"
+            cargo deny \
+              --manifest-path "${workspace}/Cargo.toml" \
+              --all-features \
+              --locked \
+              check bans licenses sources
+            echo "::endgroup::"
+          done
