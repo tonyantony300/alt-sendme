@@ -1,0 +1,27 @@
+name: Cargo Audit
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  audit:
+    name: Audit ${{ matrix.workspace }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - engine
+          - src-tauri
+          - wasm-bridge
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: taiki-e/install-action@cargo-audit
+      - name: Run cargo audit
+        run: cargo audit --file "${{ matrix.workspace }}/Cargo.lock"
