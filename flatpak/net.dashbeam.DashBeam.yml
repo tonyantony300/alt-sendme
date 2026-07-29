@@ -31,7 +31,7 @@ modules:
         # Must point at a release tag whose tree contains this flatpak/ dir.
         # Set `commit` to the exact commit that tag v0.6.2 resolves to.
         tag: v0.6.2
-        commit: PLACEHOLDER_SET_TO_V0.6.2_COMMIT
+        commit: 84595357aeb5ff3fab9667cec47fcd82537817bd
       - cargo-sources.json
       - node-sources.json
       - type: archive
