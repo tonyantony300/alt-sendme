@@ -1,0 +1,59 @@
+name: Flatpak lint
+
+# Lints the Flathub packaging (manifest + metainfo) on PRs, no full build.
+# Manifest errors block the PR. The AppStream check stays report-only until
+# dashbeam.net serves the screenshots; drop its `|| true` afterward to make it
+# blocking too.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'flatpak/**'
+      - '.github/workflows/flatpak-lint.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'flatpak/**'
+      - '.github/workflows/flatpak-lint.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flatpak-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flatpak-lint:
+    name: Flatpak manifest + appstream lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Lint manifest and metainfo
+        run: |
+          set -euo pipefail
+          img=ghcr.io/flathub-infra/flatpak-builder-lint:latest
+          docker pull -q "$img"
+          test -f flatpak/net.dashbeam.DashBeam.yml
+          test -f flatpak/net.dashbeam.DashBeam.metainfo.xml
+
+          # Manifest lint blocks the PR on structural errors. Mount read-write so
+          # the linter can create its .flatpak-builder cache; :ro makes it crash.
+          { echo '### Manifest'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          docker run --rm -v "$PWD":/w -w /w "$img" \
+            manifest flatpak/net.dashbeam.DashBeam.yml 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          # AppStream lint is report-only until dashbeam.net serves the
+          # screenshots; drop the `|| true` afterward to make it blocking too.
+          { echo '### AppStream metainfo'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          docker run --rm -v "$PWD":/w:ro -w /w "$img" \
+            appstream flatpak/net.dashbeam.DashBeam.metainfo.xml 2>&1 | tee -a "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

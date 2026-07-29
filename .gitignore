@@ -125,18 +125,21 @@ src-tauri/gen/*
 !README
 !**/README.md
 !**/README
+!**/README*.md
 !PRIVACY.md
 !CONTRIBUTING.md
 !SECURITY.md
 !CODE_OF_CONDUCT.md
 
 # Project docs (kept local; not published)
-docs/
+# Use docs/* (not docs/) so docs/readme/ can be re-included
+docs/*
+!docs/readme/
+!docs/readme/**
 
 .github-reference/
 .github-reference-readest/
-docs/fdroid-metadata-example.yml
-docs/fdroid-metadata-example.yml
+!docs/fdroid-metadata-example.yml
 .pnpm-store/
 pnpm-store/
 monorepo-reference
@@ -149,3 +152,6 @@ random
 result
 result-*
 .envrc.local
+
+# flatpak-builder-lint scratch dir (created when linting the manifest locally)
+.flatpak-builder/

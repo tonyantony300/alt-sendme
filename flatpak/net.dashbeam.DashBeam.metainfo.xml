@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>net.dashbeam.DashBeam</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-only</project_license>
+  <name>DashBeam</name>
+  <summary>Frictionless peer-to-peer file transfer</summary>
+  <description>
+    <p>
+      DashBeam sends files directly between devices over an encrypted
+      peer-to-peer connection with NAT hole punching, so transfers do not pass
+      through a central server. Pick files, share a ticket, and the receiver
+      pulls them straight from your machine.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Direct device-to-device transfer with NAT traversal</li>
+      <li>No account required and no file size limits</li>
+      <li>Encrypted connections</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">net.dashbeam.DashBeam.desktop</launchable>
+  <url type="homepage">https://dashbeam.net</url>
+  <url type="bugtracker">https://github.com/tonyantony300/dashbeam/issues</url>
+  <url type="vcs-browser">https://github.com/tonyantony300/dashbeam</url>
+  <developer id="net.dashbeam">
+    <name>Tony Antony</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <branding>
+    <color type="primary" scheme_preference="light">#25d365</color>
+    <color type="primary" scheme_preference="dark">#1a6b3a</color>
+  </branding>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://dashbeam.net/assets/flatpak/screenshot-1.png</image>
+      <caption>DashBeam in action</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://dashbeam.net/assets/flatpak/screenshot-2.png</image>
+      <caption>Transferring files</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://dashbeam.net/assets/flatpak/screenshot-3.png</image>
+      <caption>Receiving files</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.6.1" date="2026-07-16"/>
+    <release version="0.6.0" date="2026-07-15"/>
+    <release version="0.5.0" date="2026-07-09"/>
+  </releases>
+</component>

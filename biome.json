@@ -72,6 +72,16 @@
 			}
 		},
 		{
+			"includes": ["**/*.svg"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"noSvgWithoutTitle": "off"
+					}
+				}
+			}
+		},
+		{
 			"includes": [
 				"src-tauri/plugins/tauri-plugin-native-utils/permissions/schemas/schema.json"
 			],

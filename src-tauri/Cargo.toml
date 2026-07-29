@@ -20,7 +20,7 @@ tauri = { version = "=2.10.1", features = ["tray-icon", "image-png"] }
 mime_guess="2.0"
 base64 = "0.22.1"
 image="0.25"
-tauri-plugin-dialog = "2.7"
+tauri-plugin-dialog = { version = "2.7", default-features = false }
 tauri-plugin-opener = "2.5.3"
 tauri-plugin-os = "2.3"
 tauri-plugin-single-instance = "2.4"
@@ -43,9 +43,12 @@ reqwest = "0.13.2"
 tauri-plugin-deep-link = "2.4.6"
 
 [features]
-default = ["custom-protocol", "default-tls"]
+default = ["custom-protocol", "default-tls", "dialog-gtk3"]
 default-tls = ["reqwest/default-tls"]
 custom-protocol = ["tauri/custom-protocol"]
+# GTK dialogs by default; the Flatpak build swaps in dialog-xdg-portal.
+dialog-gtk3 = ["tauri-plugin-dialog/gtk3"]
+dialog-xdg-portal = ["tauri-plugin-dialog/xdg-portal"]
 linux-gstreamer = ["dep:gstreamer", "dep:gstreamer-app", "dep:gstreamer-video"]
 cargo-clippy = []
 
