@@ -7,12 +7,17 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
+
+// --aab-only: build just the signed Play Store bundle (.aab), no APKs.
+const aabOnly = process.argv.slice(2).includes('--aab-only')
 const genAndroid = path.join(rootDir, 'src-tauri/gen/android')
 const universalApkDir = path.join(
 	genAndroid,
 	'app/build/outputs/apk/universal/release'
 )
 const extraSignedDir = path.join(rootDir, 'build/android-apks')
+const bundleOutRoot = path.join(genAndroid, 'app/build/outputs/bundle')
+const aabOutDir = path.join(rootDir, 'build/android-aab')
 
 const REQUIRED_UNIVERSAL_ABIS = ['arm64-v8a', 'armeabi-v7a']
 
@@ -100,6 +105,48 @@ function verifyUniversalApk(apkPath) {
 	console.log(
 		`android-release-build: verified universal APK contains all ABIs (${REQUIRED_UNIVERSAL_ABIS.join(', ')})`
 	)
+}
+
+/** Recursively find the release .aab Gradle emits under app/build/outputs/bundle. */
+function findAabInTree(dir) {
+	if (!fs.existsSync(dir)) {
+		return null
+	}
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		const full = path.join(dir, entry.name)
+		if (entry.isDirectory()) {
+			const found = findAabInTree(full)
+			if (found) {
+				return found
+			}
+		} else if (entry.name.endsWith('.aab')) {
+			return full
+		}
+	}
+	return null
+}
+
+/**
+ * AABs are signed by Gradle's release signingConfig (jarsigner v1), not
+ * apksigner. Confirm a signing block is present so we never ship an unsigned
+ * bundle that Play would reject on upload.
+ */
+function verifyAabSigned(aabPath) {
+	const listing = spawnSync('unzip', ['-l', aabPath], { encoding: 'utf8' })
+	if (listing.status !== 0) {
+		console.error('android-release-build: failed to inspect AAB:', aabPath)
+		process.exit(1)
+	}
+	const signed = /META-INF\/.+\.(RSA|EC|DSA)/i.test(listing.stdout)
+	if (!signed) {
+		console.error(
+			'android-release-build: AAB appears UNSIGNED (no META-INF/*.RSA|EC|DSA):',
+			`\n  ${aabPath}`,
+			'\n  Ensure keystore.properties exists and the release signingConfig patch applied.'
+		)
+		process.exit(1)
+	}
+	console.log('android-release-build: verified AAB is signed:', aabPath)
 }
 
 function run(cmd, args, opts = {}) {
@@ -205,6 +252,9 @@ function signApk(unsignedApk, signedApk, keystore) {
 }
 
 function selectedProfiles() {
+	if (aabOnly) {
+		return []
+	}
 	const raw =
 		process.env.ANDROID_APK_PROFILES || 'universal,arm64,armv7,x86,x86_64'
 	const names = raw
@@ -315,4 +365,40 @@ for (const profile of profiles) {
 	if (profile.name === 'universal') {
 		verifyUniversalApk(signedApk)
 	}
+}
+
+// AAB for the Play Store. Play requires an Android App Bundle (not an APK) and
+// signs the distributed APKs itself via Play App Signing, so the bundle only
+// needs our upload key — the same release keystore used for the APKs. The bundle
+// is Gradle-signed via the release signingConfig; there is no apksigner step.
+if (aabOnly) {
+	console.log('\nandroid-release-build: building AAB (Play Store bundle)')
+	if (!keystore) {
+		console.error(
+			'android-release-build: AAB build requested but no keystore.properties found.',
+			'\n  Play requires a signed bundle; set ANDROID_KEY_BASE64/ANDROID_KEY_ALIAS/ANDROID_KEY_PASSWORD.'
+		)
+		process.exit(1)
+	}
+
+	fs.rmSync(bundleOutRoot, { recursive: true, force: true })
+	run('npx', ['tauri', 'android', 'build', '--aab', '--', '--locked'], {
+		noCi: true,
+	})
+
+	const builtAab = findAabInTree(bundleOutRoot)
+	if (!builtAab) {
+		console.error(
+			'android-release-build: AAB not found after build (checked',
+			`${bundleOutRoot})`
+		)
+		process.exit(1)
+	}
+
+	verifyAabSigned(builtAab)
+
+	fs.mkdirSync(aabOutDir, { recursive: true })
+	const finalAab = path.join(aabOutDir, 'app-universal-release.aab')
+	fs.copyFileSync(builtAab, finalAab)
+	console.log('\nPlay Store AAB:', finalAab)
 }
