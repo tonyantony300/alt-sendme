@@ -20,8 +20,9 @@ export default {
 				'refactor',
 				'revert',
 				'style',
-				'test',
-			],
+			'release',
+			'test',
+		],
 		],
 	},
 	ignores: [
