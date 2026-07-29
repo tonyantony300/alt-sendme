@@ -113,8 +113,6 @@ pub fn detect_os() -> String {
 pub fn is_placeholder_display_name(name: &str) -> bool {
     let trimmed = name.trim();
     trimmed.is_empty()
-        || trimmed.eq_ignore_ascii_case("altsendme")
-        || trimmed.eq_ignore_ascii_case("altsendme device")
         || trimmed.eq_ignore_ascii_case("dashbeam")
         || trimmed.eq_ignore_ascii_case("dashbeam device")
         || trimmed.eq_ignore_ascii_case("android phone")
@@ -391,11 +389,10 @@ mod tests {
     fn placeholder_display_names() {
         assert!(is_placeholder_display_name(""));
         assert!(is_placeholder_display_name("  "));
-        assert!(is_placeholder_display_name("altsendme"));
-        assert!(is_placeholder_display_name("AltSendme Device"));
         assert!(is_placeholder_display_name("dashbeam"));
         assert!(is_placeholder_display_name("DashBeam Device"));
         assert!(is_placeholder_display_name("Android Phone"));
+        assert!(is_placeholder_display_name("Android Tablet"));
         assert!(!is_placeholder_display_name("Pixel 8"));
         assert!(!is_placeholder_display_name("Tony's phone"));
     }

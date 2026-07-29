@@ -6,6 +6,7 @@ import {
 	useInstallUpdateMutation,
 } from '../../hooks/use-updater'
 import { LazyIcon } from '../icons'
+import { IS_FLATPAK } from '../../lib/platform'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Button } from '../ui/button'
 
@@ -16,7 +17,7 @@ export function SettingSidebarUpdateAlert() {
 	const updateVersion = useCheckUpdateQuery({ enabled: autoUpdate })
 	const handleUpdate = useInstallUpdateMutation()
 
-	if (updateVersion.isLoading || !updateVersion.data) {
+	if (IS_FLATPAK || updateVersion.isLoading || !updateVersion.data) {
 		return null
 	}
 

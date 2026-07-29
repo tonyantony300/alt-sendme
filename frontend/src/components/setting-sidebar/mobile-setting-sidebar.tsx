@@ -27,10 +27,10 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 				)}
 				style={{
 					top: IS_WEB ? undefined : IS_LINUX ? LINUX_TITLE_BAR_HEIGHT : 0,
-					paddingTop: 'calc(0.625rem + env(safe-area-inset-top))',
+					paddingTop: 'calc(0.625rem + var(--safe-area-top))',
 					paddingBottom: '0.625rem',
-					paddingLeft: 'calc(0.75rem + env(safe-area-inset-left))',
-					paddingRight: 'calc(0.75rem + env(safe-area-inset-right))',
+					paddingLeft: 'calc(0.75rem + var(--safe-area-left))',
+					paddingRight: 'calc(0.75rem + var(--safe-area-right))',
 				}}
 				{...rest}
 			>
@@ -42,7 +42,7 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 			{isMobile && (
 				<div
 					data-slot="header-slot"
-					style={{ height: 'calc(2rem + env(safe-area-inset-top))' }}
+					style={{ height: 'calc(2rem + var(--safe-area-top))' }}
 				>
 					&nbsp;
 				</div>

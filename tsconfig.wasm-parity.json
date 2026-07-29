@@ -1,0 +1,5 @@
+{
+	"extends": "./tsconfig.json",
+	"include": ["frontend/src/wasm/wasm-bridge-parity.ts"],
+	"exclude": []
+}

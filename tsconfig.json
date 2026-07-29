@@ -23,9 +23,11 @@
 		/* Path mapping */
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./frontend/src/*"]
+			"@/*": ["./frontend/src/*"],
+			"wasm-bridge-engine": ["./frontend/src/wasm/wasm-bridge-stub.ts"]
 		}
 	},
+	"exclude": ["node_modules", "frontend/src/wasm/wasm-bridge-parity.ts"],
 	"include": ["./frontend/**/*.ts", "./frontend/**/*.tsx"],
 	"references": [{ "path": "./tsconfig.node.json" }]
 }

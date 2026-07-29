@@ -43,8 +43,14 @@ fn cleanup_orphaned_directories() {
 pub fn run() {
     let builder = tauri::Builder::default().plugin(tauri_plugin_store::Builder::new().build());
 
+    // Flatpak ships immutable app files and updates via `flatpak update`, so the
+    // in-app updater is skipped there. FLATPAK_ID is only set inside the sandbox.
     #[cfg(desktop)]
-    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    let builder = if std::env::var_os("FLATPAK_ID").is_none() {
+        builder.plugin(tauri_plugin_updater::Builder::new().build())
+    } else {
+        builder
+    };
 
     #[cfg(desktop)]
     let builder = if std::env::var("ALT_SENDME_ALLOW_MULTI_INSTANCE").unwrap_or_default() == "1" {

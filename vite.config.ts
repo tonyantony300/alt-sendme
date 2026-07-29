@@ -16,6 +16,11 @@ export default defineConfig(({ mode }) => {
 			alias: {
 				'@': path.resolve(__dirname, './frontend/src'),
 				'lottie-web': 'lottie-web/build/player/lottie_light',
+				// Web-only engine: the desktop build resolves it to a stub so it
+				// never pulls in the web-only frontend/src/wasm/pkg.
+				'wasm-bridge-engine': isWeb
+					? path.resolve(__dirname, './frontend/src/wasm/pkg/wasm_bridge.js')
+					: path.resolve(__dirname, './frontend/src/wasm/wasm-bridge-stub.ts'),
 			},
 		},
 		define: {
@@ -24,6 +29,10 @@ export default defineConfig(({ mode }) => {
 			),
 			'import.meta.env.TAURI_PLATFORM': JSON.stringify(
 				process.env.TAURI_ENV_PLATFORM ?? ''
+			),
+			// Set to 'true' by the Flatpak build so the frontend hides the updater.
+			'import.meta.env.VITE_IS_FLATPAK': JSON.stringify(
+				process.env.VITE_IS_FLATPAK ?? ''
 			),
 		},
 		// 1. prevent vite from obscuring rust errors

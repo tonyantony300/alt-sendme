@@ -33,3 +33,6 @@ export const IS_DESKTOP =
 	IS_TAURI && !IS_MOBILE && (IS_MACOS || IS_WINDOWS || IS_LINUX)
 /** Persistent pairing node (host/join/invite) — desktop apps and Android. */
 export const IS_PAIRING_CAPABLE = IS_DESKTOP || IS_ANDROID
+
+// Set by the Flatpak build; the in-app updater is disabled there (OS handles it).
+export const IS_FLATPAK = IS_TAURI && import.meta.env.VITE_IS_FLATPAK === 'true'

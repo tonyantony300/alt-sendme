@@ -53,6 +53,11 @@ pub(crate) async fn export_to_tree<R: Runtime>(
 }
 
 #[command]
+pub(crate) async fn get_window_insets<R: Runtime>(app: AppHandle<R>) -> Result<WindowInsets> {
+    app.native_utils().get_window_insets()
+}
+
+#[command]
 pub(crate) async fn open_download_folder<R: Runtime>(
     app: AppHandle<R>,
     tree_uri: String,

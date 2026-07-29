@@ -1,0 +1,53 @@
+id: net.dashbeam.DashBeam
+runtime: org.gnome.Platform
+runtime-version: '49'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node22
+command: dashbeam
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --filesystem=xdg-download:create
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.Notifications
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node22/bin
+  env:
+    CARGO_HOME: /run/build/dashbeam/cargo
+
+modules:
+  - name: dashbeam
+    buildsystem: simple
+    sources:
+      - type: git
+        url: https://github.com/tonyantony300/dashbeam.git
+        # Must point at a release tag whose tree contains this flatpak/ dir.
+        # Set `commit` to the exact commit that tag v0.6.2 resolves to.
+        tag: v0.6.2
+        commit: 84595357aeb5ff3fab9667cec47fcd82537817bd
+      - cargo-sources.json
+      - node-sources.json
+      - type: archive
+        url: https://registry.npmjs.org/pnpm/-/pnpm-10.12.1.tgz
+        sha256: 889bac470ec93ccc3764488a19d6ba8f9c648ad5e50a9a6e4be3768a5de387a3
+        dest: flatpak-node/pnpm
+        strip-components: 1
+    build-options:
+      env:
+        VITE_IS_FLATPAK: 'true'
+    build-commands:
+      - node flatpak-node/pnpm/bin/pnpm.cjs install --offline --frozen-lockfile
+      - node flatpak-node/pnpm/bin/pnpm.cjs run build
+      - node flatpak-node/pnpm/bin/pnpm.cjs exec tauri build --no-bundle -c src-tauri/tauri.linux-flatpak.conf.json -- --no-default-features --features custom-protocol,default-tls,dialog-xdg-portal
+      - install -Dm755 src-tauri/target/release/DashBeam /app/bin/dashbeam
+      - install -Dm644 flatpak/net.dashbeam.DashBeam.desktop /app/share/applications/net.dashbeam.DashBeam.desktop
+      - install -Dm644 flatpak/net.dashbeam.DashBeam.metainfo.xml /app/share/metainfo/net.dashbeam.DashBeam.metainfo.xml
+      - install -Dm644 flatpak/icons/128x128.png /app/share/icons/hicolor/128x128/apps/net.dashbeam.DashBeam.png
+      - install -Dm644 flatpak/icons/512x512.png /app/share/icons/hicolor/512x512/apps/net.dashbeam.DashBeam.png

@@ -1,4 +1,4 @@
-package com.altsendme.plugin.native_utils
+package com.dashbeam.plugin.native_utils
 
 import android.app.Activity
 import android.content.ContentResolver
@@ -133,6 +133,17 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
                 invoke.reject(e.message ?: "SAF permission denied")
             } catch (e: Exception) {
                 invoke.reject(e.message ?: "Failed to export to selected folder")
+            }
+        }
+    }
+
+    @Command
+    fun get_window_insets(invoke: Invoke) {
+        activity.runOnUiThread {
+            try {
+                invoke.resolveObject(activity.readWindowInsets())
+            } catch (e: Exception) {
+                invoke.reject(e.message ?: "Failed to read window insets")
             }
         }
     }

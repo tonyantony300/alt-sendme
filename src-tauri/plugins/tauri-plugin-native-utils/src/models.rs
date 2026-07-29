@@ -39,6 +39,16 @@ pub struct ExportToTreeConflict {
     pub resolved: String,
 }
 
+/// System bar and display cutout insets, in CSS pixels.
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WindowInsets {
+    pub top: f64,
+    pub right: f64,
+    pub bottom: f64,
+    pub left: f64,
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportToTreeResult {

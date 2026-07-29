@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.altsendme.plugin.native_utils"
+    namespace = "com.dashbeam.plugin.native_utils"
     compileSdk = 36
 
     defaultConfig {

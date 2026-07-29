@@ -20,6 +20,7 @@ export default {
 				'refactor',
 				'revert',
 				'style',
+				'release',
 				'test',
 			],
 		],

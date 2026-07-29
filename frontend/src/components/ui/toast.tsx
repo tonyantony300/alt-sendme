@@ -59,8 +59,8 @@ function Toasts({ position = 'bottom-right' }: { position: ToastPosition }) {
 				className={cn(
 					'fixed z-100 mx-auto flex w-[calc(100%-var(--toast-inset)*2)] max-w-90 [--toast-inset:--spacing(4)] sm:[--toast-inset:--spacing(8)]',
 					// Vertical positioning
-					'data-[position*=top]:top-(--toast-inset)',
-					'data-[position*=bottom]:bottom-(--toast-inset)',
+					'data-[position*=top]:top-[calc(var(--toast-inset)+var(--safe-area-top))]',
+					'data-[position*=bottom]:bottom-[calc(var(--toast-inset)+var(--safe-area-bottom))]',
 					// Horizontal positioning
 					'data-[position*=left]:left-(--toast-inset)',
 					'data-[position*=right]:right-(--toast-inset)',

@@ -16,13 +16,32 @@
       <Component Id="ContextMenuRegistryFiles"
                  Guid="3C4F8A2B-7D19-4E5F-8B3A-C6D0E2F14975">
         <RegistryKey Root="HKLM"
-                     Key="Software\n0des\AltSendme"
+                     Key="Software\n0des\DashBeam"
                      Action="createAndRemoveOnUninstall">
           <RegistryValue Name="ContextMenuCleanup"
                          Type="integer"
                          Value="1"
                          KeyPath="yes"/>
         </RegistryKey>
+
+        <!-- Pre-rename marker key from AltSendme MSI builds (install + uninstall) -->
+        <RemoveRegistryKey Root="HKLM"
+                           Key="Software\n0des\AltSendme"
+                           Action="removeOnInstall"/>
+        <RemoveRegistryKey Root="HKLM"
+                           Key="Software\n0des\AltSendme"
+                           Action="removeOnUninstall"/>
+
+        <!-- Drop pre-rename Explorer verbs on upgrade so MSI does not leave dual entries -->
+        <RemoveRegistryKey Root="HKLM"
+                           Key="SOFTWARE\Classes\*\shell\Send with AltSendme"
+                           Action="removeOnInstall"/>
+        <RemoveRegistryKey Root="HKLM"
+                           Key="SOFTWARE\Classes\Directory\shell\Send with AltSendme"
+                           Action="removeOnInstall"/>
+        <RemoveRegistryKey Root="HKLM"
+                           Key="SOFTWARE\Classes\Directory\Background\shell\Send with AltSendme"
+                           Action="removeOnInstall"/>
 
         <!-- Machine-wide leftovers from current and pre-rename MSI builds -->
         <RemoveRegistryKey Root="HKLM"

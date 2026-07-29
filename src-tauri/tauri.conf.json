@@ -2,8 +2,8 @@
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "DashBeam",
 	"mainBinaryName": "DashBeam",
-	"version": "0.6.0",
-	"identifier": "com.altsendme.desktop",
+	"version": "0.6.2",
+	"identifier": "com.dashbeam.desktop",
 	"build": {
 		"frontendDist": "../frontend/dist",
 		"devUrl": "http://localhost:1420",

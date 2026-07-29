@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::sync::RwLock;
+use std::sync::{Mutex, RwLock};
 
 use anyhow::Context;
 use data_encoding::HEXLOWER;
@@ -62,13 +62,25 @@ impl DeviceIdentity {
 
 pub struct PairedDeviceStore {
     path: PathBuf,
+    /// Serializes all read-modify-write cycles so concurrent callers don't
+    /// race on the shared `.tmp` rename path.
+    file_lock: Mutex<()>,
 }
 
 impl PairedDeviceStore {
     pub fn new(data_dir: &Path) -> Self {
         Self {
             path: data_dir.join("paired-devices.json"),
+            file_lock: Mutex::new(()),
         }
+    }
+
+    /// The guard protects no in-memory state, so poisoning would only turn a
+    /// one-off panic into a permanently unusable store.
+    fn lock_file(&self) -> std::sync::MutexGuard<'_, ()> {
+        self.file_lock
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
     pub fn list(&self) -> anyhow::Result<Vec<PairedDevice>> {
@@ -85,7 +97,7 @@ impl PairedDeviceStore {
     }
 
     pub fn remember(&self, device: PairedDevice) -> anyhow::Result<PairedDevice> {
-
+        let _guard = self.lock_file();
         let mut file = self.read_file()?;
         let id = device.endpoint_id.to_lowercase();
         if let Some(existing) = file
@@ -114,6 +126,7 @@ impl PairedDeviceStore {
 
     pub fn rename(&self, endpoint_id: &str, display_name: &str) -> anyhow::Result<PairedDevice> {
         let normalized = normalize_display_name(display_name).map_err(anyhow::Error::msg)?;
+        let _guard = self.lock_file();
         let mut file = self.read_file()?;
         let id = endpoint_id.to_lowercase();
         let existing = file
@@ -128,7 +141,7 @@ impl PairedDeviceStore {
     }
 
     pub fn forget(&self, endpoint_id: &str) -> anyhow::Result<()> {
-
+        let _guard = self.lock_file();
         let mut file = self.read_file()?;
         let id = endpoint_id.to_lowercase();
         file.devices
@@ -138,7 +151,7 @@ impl PairedDeviceStore {
     }
 
     pub fn touch(&self, endpoint_id: &str, last_seen_at: u64) -> anyhow::Result<()> {
-
+        let _guard = self.lock_file();
         let mut file = self.read_file()?;
         let id = endpoint_id.to_lowercase();
         if let Some(existing) = file
@@ -153,7 +166,7 @@ impl PairedDeviceStore {
     }
 
     pub fn mark_unpaired_remotely(&self, endpoint_id: &str) -> anyhow::Result<Option<PairedDevice>> {
-
+        let _guard = self.lock_file();
         let mut file = self.read_file()?;
         let id = endpoint_id.to_lowercase();
         let saved = if let Some(existing) = file
@@ -173,6 +186,7 @@ impl PairedDeviceStore {
     }
 
     pub fn mark_stale_after_local_identity_rotation(&self) -> anyhow::Result<usize> {
+        let _guard = self.lock_file();
         let mut file = self.read_file()?;
         let mut updated = 0usize;
         for device in &mut file.devices {

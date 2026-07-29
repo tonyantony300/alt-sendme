@@ -35,7 +35,7 @@ const CONTACTS = [
 	{
 		link: WEBSITE_LINK,
 		icon: <GlobeIcon />,
-		'aria-label': 'Alt SendMe website',
+		'aria-label': 'DashBeam website',
 	},
 ]
 
@@ -50,9 +50,9 @@ export function AppFooter() {
 			className="w-full min-h-10 items-center flex bg-background/50 border-t border-border backdrop-blur-md"
 			style={{
 				paddingTop: '0.5rem',
-				paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
-				paddingLeft: 'calc(1rem + env(safe-area-inset-left))',
-				paddingRight: 'calc(1rem + env(safe-area-inset-right))',
+				paddingBottom: 'calc(0.5rem + var(--safe-area-bottom))',
+				paddingLeft: 'calc(1rem + var(--safe-area-left))',
+				paddingRight: 'calc(1rem + var(--safe-area-right))',
 			}}
 		>
 			<div className="space-x-2 flex-1 w-full flex items-center">

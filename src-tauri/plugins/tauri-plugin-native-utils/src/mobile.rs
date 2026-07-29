@@ -16,7 +16,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
     api: PluginApi<R, C>,
 ) -> crate::Result<NativeUtils<R>> {
     #[cfg(target_os = "android")]
-    let handle = api.register_android_plugin("com.altsendme.plugin.native_utils", "NativeUtils")?;
+    let handle = api.register_android_plugin("com.dashbeam.plugin.native_utils", "NativeUtils")?;
     #[cfg(target_os = "ios")]
     let handle = api.register_ios_plugin(init_plugin_native_utils)?;
     Ok(NativeUtils(handle))
@@ -69,6 +69,14 @@ impl<R: Runtime> NativeUtils<R> {
     pub fn export_to_tree(&self, args: ExportToTreeArgs) -> crate::Result<ExportToTreeResult> {
         self.0
             .run_mobile_plugin("export_to_tree", args)
+            .map_err(Into::into)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn get_window_insets(&self) -> crate::Result<WindowInsets> {
+        self.0
+            .run_mobile_plugin("get_window_insets", ())
             .map_err(Into::into)
     }
 }
