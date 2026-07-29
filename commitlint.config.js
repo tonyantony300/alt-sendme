@@ -22,7 +22,7 @@ export default {
 				'style',
 			'release',
 			'test',
-		],
+			],
 		],
 	},
 	ignores: [
