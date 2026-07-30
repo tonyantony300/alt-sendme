@@ -178,13 +178,18 @@ pub async fn verify_discovery(
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
 
-    let endpoint = crate::tls_config::with_system_ca(Endpoint::builder(presets::Minimal))
-        .secret_key(secret_key)
-        .relay_mode(RelayMode::Default)
-        .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
-        .bind()
-        .await
-        .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
+    // Custom discovery always needs OS trust for private-CA pkarr HTTPS.
+    // DotTolerant wrapping also covers the default n0 relay probe path on Windows.
+    let endpoint = crate::tls_config::with_system_ca_if_custom(
+        Endpoint::builder(presets::Minimal),
+        true,
+    )
+    .secret_key(secret_key)
+    .relay_mode(RelayMode::Default)
+    .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
+    .bind()
+    .await
+    .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
 
     let started = Instant::now();
 

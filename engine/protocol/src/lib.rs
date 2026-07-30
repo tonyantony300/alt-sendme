@@ -32,7 +32,7 @@ pub use discovery::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use discovery::verify_discovery;
-pub use tls_config::with_system_ca;
+pub use tls_config::{uses_custom_infra, with_system_ca_if_custom};
 pub use control::{read_message, write_message};
 pub use send::{run_share_on_endpoint, run_share_session, MetadataProtocol, ShareSessionOutcome, METADATA_ALPN};
 pub use types::*;
