@@ -29,7 +29,7 @@ export const useThemeStore = create<IThemeStore>()(
 		}),
 		{
 			name: 'active-theme',
-			version: 2,
+			version: 3,
 			// storage: createJSONStorage(() => sessionStorage),
 			partialize: (state) =>
 				Object.fromEntries(
@@ -37,8 +37,20 @@ export const useThemeStore = create<IThemeStore>()(
 				),
 			migrate: (persistedState) => {
 				const state = (persistedState ?? {}) as PersistedThemeState
+				const removed = new Set(['ocean', 'forest', 'high-contrast'])
+				if (state.activeTheme && removed.has(state.activeTheme as string)) {
+					return { activeTheme: 'light' as const }
+				}
 				if (IS_WEB && state.activeTheme === 'auto') {
 					return { activeTheme: 'light' as const }
+				}
+				if (
+					state.activeTheme &&
+					!(APP_THEMES as readonly string[]).includes(state.activeTheme)
+				) {
+					return {
+						activeTheme: (IS_WEB ? 'light' : 'auto') as AppTheme,
+					}
 				}
 				return state
 			},

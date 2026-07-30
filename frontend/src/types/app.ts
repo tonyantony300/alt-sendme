@@ -4,9 +4,20 @@ export type AppTheme =
 	| 'dark'
 	| 'midnight'
 	| 'paper'
-	| 'ocean'
-	| 'forest'
-	| 'high-contrast'
+	| 'nord'
+	| 'cupcake'
+	| 'corporate'
+	| 'winter'
+	| 'caramellatte'
+	| 'silk'
+	| 'dim'
+	| 'night'
+	| 'sunset'
+	| 'abyss'
+	| 'coffee'
+	| 'dracula'
+	| 'business'
+	| 'synthwave'
 
 export const APP_THEMES: AppTheme[] = [
 	'auto',
@@ -14,17 +25,39 @@ export const APP_THEMES: AppTheme[] = [
 	'dark',
 	'midnight',
 	'paper',
-	'ocean',
-	'forest',
-	'high-contrast',
+	'nord',
+	'cupcake',
+	'corporate',
+	'winter',
+	'caramellatte',
+	'silk',
+	'dim',
+	'night',
+	'sunset',
+	'abyss',
+	'coffee',
+	'dracula',
+	'business',
+	'synthwave',
 ]
 
 export const NAMED_THEMES = [
 	'midnight',
 	'paper',
-	'ocean',
-	'forest',
-	'high-contrast',
+	'nord',
+	'cupcake',
+	'corporate',
+	'winter',
+	'caramellatte',
+	'silk',
+	'dim',
+	'night',
+	'sunset',
+	'abyss',
+	'coffee',
+	'dracula',
+	'business',
+	'synthwave',
 ] as const satisfies readonly AppTheme[]
 
 export type NamedTheme = (typeof NAMED_THEMES)[number]
@@ -33,8 +66,14 @@ export type NamedTheme = (typeof NAMED_THEMES)[number]
 export const DARK_BASE_THEMES = new Set<AppTheme>([
 	'dark',
 	'midnight',
-	'ocean',
-	'high-contrast',
+	'dim',
+	'night',
+	'sunset',
+	'abyss',
+	'coffee',
+	'dracula',
+	'business',
+	'synthwave',
 ])
 
 export const THEME_LABELS: Record<AppTheme, string> = {
@@ -43,9 +82,20 @@ export const THEME_LABELS: Record<AppTheme, string> = {
 	dark: 'Dark',
 	midnight: 'Midnight',
 	paper: 'Paper',
-	ocean: 'Ocean',
-	forest: 'Forest',
-	'high-contrast': 'High Contrast',
+	nord: 'Nord',
+	cupcake: 'Cupcake',
+	corporate: 'Corporate',
+	winter: 'Winter',
+	caramellatte: 'Caramel Latte',
+	silk: 'Silk',
+	dim: 'Dim',
+	night: 'Night',
+	sunset: 'Sunset',
+	abyss: 'Abyss',
+	coffee: 'Coffee',
+	dracula: 'Dracula',
+	business: 'Business',
+	synthwave: 'Synthwave',
 }
 
 export function isNamedTheme(theme: AppTheme): theme is NamedTheme {

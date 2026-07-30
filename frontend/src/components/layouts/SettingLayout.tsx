@@ -11,7 +11,7 @@ export function SettingLayout() {
 	return (
 		<SidebarProvider className={IS_WEB ? 'h-full min-h-0' : undefined}>
 			<SettingSidebar />
-			<SidebarInset className="px-4 pb-12 pt-2 overflow-y-auto">
+			<SidebarInset className="px-4 pb-12 pt-4 overflow-y-auto">
 				<motion.div
 					key={location.pathname}
 					className="flex flex-col gap-4 outline-none"

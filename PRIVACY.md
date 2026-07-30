@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last Updated:** Jul 21 - 2026
+**Last Updated:** Jul 30 - 2026
 
 DashBeam is designed with privacy and security as core principles. This privacy policy explains how the application handles your data and what information may be visible to third parties.
 
@@ -26,8 +26,29 @@ DashBeam stores the following data locally on your device:
 - **Secret Keys**: On desktop, your device's Iroh secret key is stored in the OS credential store (macOS Keychain, Windows Credential Manager, Linux Secret Service) under the `alt-sendme` service name. Public device metadata (display name, endpoint ID) is stored in the app data directory. During active transfers, temporary files are stored in your system's temp directory.
 - **Paired devices**: When you pair devices, DashBeam stores the remote device's endpoint ID and display name locally. Paired invites deliver the same one-time blob ticket as manual sharing; tickets are not reused across shares.
 - **Downloaded Files**: Files you receive are saved to a location you choose
+- **Debug Logs**: Only when you explicitly enable **Debug logging** (see below). Off by default.
 
 This data never leaves your device unless you explicitly share it (e.g., by sharing a transfer ticket).
+
+## Debug Logging (Diagnostics)
+
+DashBeam includes an **opt-in** debug mode to help diagnose bug reports. It is **off by default**, must be turned on manually in **Settings → General**, and only takes effect after you restart the app.
+
+**This is not telemetry.** Nothing is transmitted, uploaded, or sent to us automatically. Logs are written to a file on your device and stay there.
+
+**What is recorded while it is on:**
+- Connection diagnostics: local and remote IP addresses and ports, NAT traversal attempts, whether a connection is direct or relayed
+- Relay and discovery server URLs you are configured to use
+- Your device's endpoint ID (public key), device name, type, and OS
+- Application version, and transfer start/failure events
+- Pairing activity: when a pairing code is opened, join attempts, invites sent and accepted or declined, and devices you unpair
+- **Names of files and folders you share**, and paths referenced by error messages
+
+**Your control:**
+- It is off unless you turn it on, and turning it off stops collection after the next restart
+- Logs are size-capped and old sessions are pruned automatically
+- Turning debug logging off deletes the captured logs straight away; **Clear logs** does the same at any time
+- **Save diagnostics…** writes a single file for you to review. Sharing it with us is entirely your decision. We recommend opening and reading it first, as it contains the network and device details listed above
 
 ## Network Connections and Third-Party Services
 
@@ -100,6 +121,7 @@ You maintain full control over:
 - Whether to use relay servers (can be disabled)
 - Whether to use custom relay servers
 - Whether to use a custom self-hosted discovery server
+- Whether to enable debug logging, and whether to share a diagnostics file
 - Local data storage (can be cleared by uninstalling the application)
 
 ## Data Retention
@@ -107,6 +129,7 @@ You maintain full control over:
 - **Secret Keys**: Stored locally until you delete the application or clear application data
 - **Temporary Transfer Files**: Automatically cleaned up when transfers complete or the application closes
 - **Downloaded Files**: Remain on your device until you delete them
+- **Debug Logs**: Only created while debug logging is on; size-capped, pruned automatically, and deleted at the next launch after you turn it off
 
 ## Third-Party Services
 

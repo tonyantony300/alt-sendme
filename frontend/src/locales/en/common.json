@@ -268,6 +268,19 @@
 					"label": "Show broadcast toggle while sharing",
 					"description": "Display a broadcast switch on the sharing screen so multiple receivers can download the same files at once."
 				}
+			},
+			"debugMode": {
+				"label": "Debug logging",
+				"description": "Record detailed diagnostics about transfers, connections, relays and pairing so you can attach them to a bug report. Off by default, and switches itself off after 7 days.",
+				"restartTitle": "Restart required",
+				"restartDescription": "Restart DashBeam for this change to take effect.",
+				"pendingOn": "Debug logging starts after you restart DashBeam.",
+				"pendingOff": "Debug logging stops after you restart DashBeam.",
+				"save": "Save diagnostics…",
+				"savedTitle": "Diagnostics saved",
+				"savedDescription": "Attach this file to your bug report. Review it first, because it includes IP addresses, device IDs, your device name, and names of files you shared.",
+				"clear": "Clear logs",
+				"clearedTitle": "Logs cleared"
 			}
 		},
 		"devices": {
