@@ -136,6 +136,8 @@ src-tauri/gen/*
 docs/*
 !docs/readme/
 !docs/readme/**
+# User-facing; linked from README and the bug report template
+!docs/troubleshooting.md
 
 .github-reference/
 .github-reference-readest/

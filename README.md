@@ -117,6 +117,8 @@ The easiest way to get started is by downloading one of the following versions f
 
 More options at [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) or in [Downloads](https://www.dashbeam.net/en/downloads) page.
 
+Running into problems? See [Troubleshooting](docs/troubleshooting.md) for common issues and how to collect logs.
+
 
 
 ## Partners
