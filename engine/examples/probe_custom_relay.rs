@@ -1,4 +1,4 @@
-//! Probe a custom HTTPS relay using OS CA trust (`CaTlsConfig::system`).
+//! Probe a custom HTTPS relay using OS CA trust (DotTolerant system verifier).
 //!
 //! Usage:
 //!   cargo run --example probe_custom_relay --manifest-path engine/Cargo.toml -- \

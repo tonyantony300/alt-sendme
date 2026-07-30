@@ -175,12 +175,14 @@ async fn probe_relay_mode(relay_mode: RelayModeOption) -> Result<Option<String>,
     }
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
-    let endpoint = crate::tls_config::with_system_ca(Endpoint::builder(presets::Minimal))
-        .secret_key(secret_key)
-        .relay_mode(relay_mode.into())
-        .bind()
-        .await
-        .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
+    let custom_infra = matches!(relay_mode, RelayModeOption::Custom { .. });
+    let endpoint =
+        crate::tls_config::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
+            .secret_key(secret_key)
+            .relay_mode(relay_mode.into())
+            .bind()
+            .await
+            .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
 
     let online_result = timeout(RELAY_PROBE_TIMEOUT, endpoint.online()).await;
 
@@ -338,13 +340,15 @@ pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse
     }
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
+    let custom_infra = matches!(relay_mode, RelayModeOption::Custom { .. });
 
-    let endpoint = crate::tls_config::with_system_ca(Endpoint::builder(presets::Minimal))
-        .secret_key(secret_key)
-        .relay_mode(relay_mode.into())
-        .bind()
-        .await
-        .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
+    let endpoint =
+        crate::tls_config::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
+            .secret_key(secret_key)
+            .relay_mode(relay_mode.into())
+            .bind()
+            .await
+            .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
 
     let started = Instant::now();
 

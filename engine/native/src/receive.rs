@@ -39,10 +39,13 @@ pub async fn download(
     let addr = ticket.addr().clone();
     let secret_key = get_or_create_secret()?;
 
-    let mut builder = protocol::with_system_ca(Endpoint::builder(presets::Minimal))
-        .alpns(vec![])
-        .secret_key(secret_key)
-        .relay_mode(options.relay_mode.clone().into());
+    let custom_infra =
+        protocol::uses_custom_infra(&options.discovery_mode, &options.relay_mode);
+    let mut builder =
+        protocol::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
+            .alpns(vec![])
+            .secret_key(secret_key)
+            .relay_mode(options.relay_mode.clone().into());
 
     if ticket.addr().relay_urls().count() == 0 && ticket.addr().ip_addrs().count() == 0 {
         builder = match &options.discovery_mode {
