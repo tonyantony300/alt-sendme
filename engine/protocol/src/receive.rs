@@ -264,11 +264,13 @@ pub async fn fetch_metadata(
         DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
         DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
     };
-    let mut builder = crate::tls_config::with_system_ca(builder)
-    // METADATA_ALPN only to indicate a metadata fetch
-    .alpns(vec![METADATA_ALPN.to_vec()])
-    .secret_key(secret_key)
-    .relay_mode(options.relay_mode.into());
+    let custom_infra =
+        crate::tls_config::uses_custom_infra(&discovery_mode, &options.relay_mode);
+    let mut builder = crate::tls_config::with_system_ca_if_custom(builder, custom_infra)
+        // METADATA_ALPN only to indicate a metadata fetch
+        .alpns(vec![METADATA_ALPN.to_vec()])
+        .secret_key(secret_key)
+        .relay_mode(options.relay_mode.into());
 
     #[cfg(not(target_arch = "wasm32"))]
     {

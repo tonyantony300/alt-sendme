@@ -45,10 +45,12 @@ pub async fn start_share_items(
         DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
         DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
     };
-    let mut builder = protocol::with_system_ca(builder)
-    .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
-    .secret_key(secret_key)
-    .relay_mode(relay_mode.clone());
+    let custom_infra =
+        protocol::uses_custom_infra(&options.discovery_mode, &options.relay_mode);
+    let mut builder = protocol::with_system_ca_if_custom(builder, custom_infra)
+        .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
+        .secret_key(secret_key)
+        .relay_mode(relay_mode.clone());
 
     match &options.discovery_mode {
         // Self-hosted discovery: publish our home relay to the custom pkarr relay so

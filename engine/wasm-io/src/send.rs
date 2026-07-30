@@ -1,6 +1,6 @@
 use protocol::{
-    get_or_create_secret, run_share_session, with_system_ca, AddrInfoOptions, AppHandle,
-    FileMetadata, SendOptions, METADATA_ALPN,
+    get_or_create_secret, run_share_session, uses_custom_infra, with_system_ca_if_custom,
+    AddrInfoOptions, AppHandle, FileMetadata, SendOptions, METADATA_ALPN,
 };
 use iroh::endpoint::presets;
 use iroh::{endpoint::RelayMode, Endpoint};
@@ -25,11 +25,13 @@ pub async fn start_share_bytes(
     let relay_mode: RelayMode = options.relay_mode.clone().into();
     let ticket_type = AddrInfoOptions::Relay;
 
-    let builder = with_system_ca(
+    let custom_infra = uses_custom_infra(&options.discovery_mode, &options.relay_mode);
+    let builder = with_system_ca_if_custom(
         Endpoint::builder(presets::N0)
             .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
             .secret_key(secret_key)
             .relay_mode(relay_mode.clone()),
+        custom_infra,
     );
 
     let (progress_tx, progress_rx) = mpsc::channel(64);
@@ -88,11 +90,13 @@ pub async fn start_share_items_bytes(
     let relay_mode: RelayMode = options.relay_mode.clone().into();
     let ticket_type = AddrInfoOptions::Relay;
 
-    let builder = with_system_ca(
+    let custom_infra = uses_custom_infra(&options.discovery_mode, &options.relay_mode);
+    let builder = with_system_ca_if_custom(
         Endpoint::builder(presets::N0)
             .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
             .secret_key(secret_key)
             .relay_mode(relay_mode.clone()),
+        custom_infra,
     );
 
     let (progress_tx, progress_rx) = mpsc::channel(64);

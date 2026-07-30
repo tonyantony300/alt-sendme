@@ -1203,21 +1203,27 @@ async fn build_runtime(
     // endpoint id) and resolve (to reach them). Custom mode uses a self-hosted
     // pkarr relay via HTTPS; optional dns_origin also enables real-DNS resolve.
     // Default keeps iroh's n0 discovery.
+    //
+    // OS CA trust only for custom discovery/relay — n0 trailing-dot hostnames
+    // break Windows CERT_CHAIN_POLICY_SSL literal name matching.
+    let custom_infra = matches!(discovery_mode, DiscoveryModeOption::Custom { .. })
+        || matches!(relay_mode, RelayMode::Custom(_));
     let builder = match &discovery_mode {
         DiscoveryModeOption::Custom {
             pkarr_relay_url,
             dns_origin,
         } => {
-            let mut builder = protocol::with_system_ca(Endpoint::builder(presets::Minimal))
-                .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
-                .address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()));
+            let mut builder =
+                protocol::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
+                    .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
+                    .address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()));
             if let Some(origin) = dns_origin {
                 builder = builder.address_lookup(DnsAddressLookup::builder(origin.clone()));
             }
             builder
         }
         DiscoveryModeOption::Default => {
-            protocol::with_system_ca(Endpoint::builder(presets::N0))
+            protocol::with_system_ca_if_custom(Endpoint::builder(presets::N0), custom_infra)
                 .address_lookup(PkarrPublisher::n0_dns())
         }
     };
