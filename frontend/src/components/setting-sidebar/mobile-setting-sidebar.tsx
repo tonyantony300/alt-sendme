@@ -44,8 +44,7 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 					data-slot="header-slot"
 					aria-hidden
 					style={{
-						height:
-							'calc(0.625rem + 2rem + 0.625rem + var(--safe-area-top))',
+						height: 'calc(0.625rem + 2rem + 0.625rem + var(--safe-area-top))',
 					}}
 				/>
 			)}

@@ -38,10 +38,7 @@ export const useThemeStore = create<IThemeStore>()(
 			migrate: (persistedState) => {
 				const state = (persistedState ?? {}) as PersistedThemeState
 				const removed = new Set(['ocean', 'forest', 'high-contrast'])
-				if (
-					state.activeTheme &&
-					removed.has(state.activeTheme as string)
-				) {
+				if (state.activeTheme && removed.has(state.activeTheme as string)) {
 					return { activeTheme: 'light' as const }
 				}
 				if (IS_WEB && state.activeTheme === 'auto') {
