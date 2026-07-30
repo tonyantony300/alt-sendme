@@ -39,13 +39,15 @@ const MobileSettingSidebar: FC<MobileSettingSidebarProps> = ({
 				</Button>
 				<div className="text-lg font-medium">{rest.children}</div>
 			</header>
-			{isMobile && (
+			{isMobile && !IS_WEB && (
 				<div
 					data-slot="header-slot"
-					style={{ height: 'calc(2rem + var(--safe-area-top))' }}
-				>
-					&nbsp;
-				</div>
+					aria-hidden
+					style={{
+						height:
+							'calc(0.625rem + 2rem + 0.625rem + var(--safe-area-top))',
+					}}
+				/>
 			)}
 		</>
 	)
