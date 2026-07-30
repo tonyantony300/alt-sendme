@@ -26,6 +26,7 @@ Nothing appears when you launch it, or it closes immediately.
 the system tray, launching again just focuses the existing window instead of opening a
 new one. Check your tray or menu bar first.
 
+
 **Windows.** Unsigned builds trigger SmartScreen on first run. Choose
 **More info → Run anyway**, or verify your download against the checksums on the
 [releases page](https://github.com/tonyantony300/dashbeam/releases) first.

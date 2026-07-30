@@ -54,6 +54,7 @@ in [collecting logs](https://github.com/tonyantony300/dashbeam/blob/main/docs/tr
 Please open the file and check it before attaching. It includes IP addresses, device
 identifiers, your device name, and names of files you shared.
 
+
 <details>
 <summary>dashbeam.log</summary>
 
