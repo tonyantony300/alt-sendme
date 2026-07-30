@@ -386,6 +386,22 @@ function pickPathsInBrowser(
 	})
 }
 
+/**
+ * Native "save as" picker. Web has no equivalent that returns a writable path, and the
+ * only caller (debug mode) is Tauri-gated, so it resolves to null there.
+ */
+export async function saveDialog(options: {
+	defaultPath?: string
+	filters?: { name: string; extensions: string[] }[]
+}): Promise<string | null> {
+	if (IS_TAURI) {
+		const { save } = await import('@tauri-apps/plugin-dialog')
+		return save(options)
+	}
+
+	return null
+}
+
 export async function downloadDir(): Promise<string> {
 	if (IS_TAURI) {
 		const { downloadDir: tauriDownloadDir } = await import(

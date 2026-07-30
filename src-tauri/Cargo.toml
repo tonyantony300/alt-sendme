@@ -36,6 +36,9 @@ iroh-blobs = { version = "0.103" }
 engine = { path = "../engine" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# Used only for `non_blocking`: keeps debug-mode file writes off the transfer
+# threads so logging cannot perturb hole-punch timing.
+tracing-appender = "0.2"
 walkdir = "2.4"
 tauri-plugin-store = "2.4.2"
 tauri-plugin-notification = "2.3.3"

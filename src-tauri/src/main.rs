@@ -2,27 +2,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
-        )
-        .with_target(true)
-        .with_thread_ids(true)
-        .with_line_number(true)
-        .init();
-
+    // Must be set before Tauri builds the webview, so it stays here rather than moving
+    // into the shared setup hook.
     #[cfg(target_os = "linux")]
     if std::env::var("APPIMAGE").is_ok() {
         std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-        tracing::debug!("AppImage detected: Disabling DMABUF for stability.");
     }
 
-    tracing::info!(
-        "Starting DashBeam application v{}",
-        alt_sendme_lib::get_app_version()
-    );
-
-    // Delegate all Tauri setup and running logic to the shared library entry point.
+    // Logging is initialised inside `run()`'s setup hook, where the log directory is
+    // known. Doing it there rather than here is what gives Android a subscriber at all —
+    // the mobile entry point never goes through this file.
     alt_sendme_lib::run();
 }

@@ -730,6 +730,10 @@ impl NodeService {
     }
 
     pub async fn forget_paired(&self, endpoint_id: &str) -> anyhow::Result<()> {
+        debug!(
+            target: "dashbeam::_events::pairing::forget",
+            remote = %endpoint_id,
+        );
 
         let stored_relay = self
             .paired_store
@@ -793,6 +797,10 @@ impl NodeService {
     }
 
     pub async fn start_pairing_host(&self, ttl_secs: Option<u64>) -> anyhow::Result<String> {
+        debug!(
+            target: "dashbeam::_events::pairing::host_open",
+            ttl_secs = ?ttl_secs,
+        );
 
         self.stop_pairing_host().await;
 
@@ -838,8 +846,19 @@ impl NodeService {
     }
 
     pub async fn join_pairing(&self, ticket_str: &str) -> anyhow::Result<()> {
-        let ticket = protocol::PairingTicket::decode(ticket_str)?;
+        let ticket = protocol::PairingTicket::decode(ticket_str).inspect_err(|error| {
+            debug!(
+                target: "dashbeam::_events::pairing::join_failed",
+                stage = "decode_ticket",
+                %error,
+            );
+        })?;
         let remote = EndpointId::from_str(&ticket.endpoint_id)?;
+        debug!(
+            target: "dashbeam::_events::pairing::join_attempt",
+            remote = %remote.fmt_short(),
+            has_relay = ticket.relay_url.is_some(),
+        );
 
         let host_relay_url = ticket.relay_url.clone();
         let mut addr = EndpointAddr::from(remote);
@@ -939,6 +958,12 @@ impl NodeService {
         total_size: u64,
     ) -> anyhow::Result<bool> {
         let remote = EndpointId::from_str(remote_endpoint_id)?;
+        debug!(
+            target: "dashbeam::_events::pairing::invite_sent",
+            remote = %remote.fmt_short(),
+            file_count,
+            total_size,
+        );
         let access = self.access.read().await;
         let in_allowlist = access.allowed.contains(&remote);
         drop(access);
@@ -1041,6 +1066,11 @@ impl NodeService {
         accepted: bool,
     ) -> anyhow::Result<()> {
         let remote = EndpointId::from_str(remote_endpoint_id)?;
+        debug!(
+            target: "dashbeam::_events::pairing::invite_response",
+            remote = %remote.fmt_short(),
+            accepted,
+        );
         let response = if accepted {
             InviteResponse::Accepted
         } else {
