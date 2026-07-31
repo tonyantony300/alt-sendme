@@ -5,7 +5,8 @@
 mod common;
 
 use common::TestNode;
-use engine::Discoverability;
+use engine::{Discoverability, DiscoveryModeOption};
+use iroh::endpoint::RelayMode;
 use std::time::Duration;
 
 const PRESENCE_DEADLINE: Duration = Duration::from_secs(60);
@@ -204,6 +205,66 @@ async fn paired_only_transition_does_not_rebuild_the_network() {
     node.set_discoverability(Discoverability::Everyone).await;
     assert_eq!(node.discoverability().await, Discoverability::Everyone);
     assert!(node.is_network_ready());
+}
+
+/// Regression coverage for the concurrency fix: `set_discoverability` and
+/// `reconfigure_network` both close and rebuild `runtime`/`lan_discovery`,
+/// and before `network_transition` serialized them, two overlapping calls
+/// could interleave their close/build steps (the second closing the endpoint
+/// the first just built) and race which one's post-rebuild decision — start
+/// discovery, clear the registry — actually stuck.
+///
+/// Firing both concurrently via `tokio::join!` genuinely interleaves their
+/// polling (each has many `.await` points), so this exercises real
+/// contention on `network_transition`, not just sequential calls. There's no
+/// deterministic "winner" between two truly concurrent calls — the
+/// assertions below only check the invariant the review demanded: whatever
+/// the final state is, it's internally consistent and the node is still
+/// usable afterward, not wedged or torn between two half-applied rebuilds.
+#[tokio::test]
+async fn concurrent_discoverability_toggle_and_reconfigure_settle_consistently() {
+    let node = common::spawn_node("solo").await;
+    common::wait_until("network ready after start", NETWORK_READY_DEADLINE, || {
+        node.is_network_ready()
+    })
+    .await;
+
+    let toggle = node.set_discoverability(Discoverability::Off);
+    let reconfigure = node.reconfigure_network(RelayMode::Disabled, DiscoveryModeOption::Default);
+    let (_, reconfigure_result) = tokio::join!(toggle, reconfigure);
+    reconfigure_result
+        .expect("reconfigure must not error just because it raced a discoverability change");
+
+    common::wait_until(
+        "network ready after the concurrent transitions settle",
+        NETWORK_READY_DEADLINE,
+        || node.is_network_ready(),
+    )
+    .await;
+
+    // Internal consistency: if discoverability landed on Off, the registry
+    // must actually be empty (not left populated by a competing rebuild that
+    // started discovery after the clear — the exact staleness bug this fix
+    // closes).
+    if node.discoverability().await == Discoverability::Off {
+        assert!(
+            node.list_nearby().await.is_empty(),
+            "Off must mean an empty nearby list, even after a race"
+        );
+    }
+
+    // The node must still be fully functional afterward — a wedged endpoint
+    // or a doubly-built one would typically show up as this hanging or
+    // erroring.
+    node.reconfigure_network(RelayMode::Default, DiscoveryModeOption::Default)
+        .await
+        .expect("node must still be reconfigurable after the race");
+    common::wait_until(
+        "network ready after the follow-up reconfigure",
+        NETWORK_READY_DEADLINE,
+        || node.is_network_ready(),
+    )
+    .await;
 }
 
 /// Real multicast — opt-in, see `two_nodes_discover_each_other_over_mdns`.

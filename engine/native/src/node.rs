@@ -601,6 +601,14 @@ pub struct NodeService {
     /// `None` when discovery isn't running: `Discoverability::Off`, or the
     /// mDNS pump failed to start (no multicast, VPN, isolated guest network).
     lan_discovery: Mutex<Option<LanDiscoveryHandle>>,
+    /// Serializes `reconfigure_network`, `set_discoverability`, and
+    /// `shutdown` — all of them tear down and/or rebuild `runtime` and
+    /// `lan_discovery`. Held for the whole decide-then-rebuild-then-settle
+    /// sequence in each, not just the rebuild itself, so a decision made
+    /// while holding it (e.g. "did this transition cross the `Off`
+    /// boundary?") can't go stale before its consequence (starting
+    /// discovery, clearing the registry) runs.
+    network_transition: Mutex<()>,
 }
 
 impl NodeService {
@@ -705,10 +713,17 @@ impl NodeService {
             discovery_mode: Mutex::new(discovery_mode),
             nearby,
             lan_discovery: Mutex::new(lan_discovery),
+            network_transition: Mutex::new(()),
         })
     }
 
     pub async fn shutdown(&self) -> anyhow::Result<()> {
+        // Same lock `reconfigure_network`/`set_discoverability` hold for their
+        // whole transition — without it, a shutdown racing an in-flight
+        // rebuild could close the endpoint the rebuild just built, or the
+        // rebuild could resurrect a `lan_discovery` handle after shutdown
+        // just stopped it.
+        let _guard = self.network_transition.lock().await;
 
         self.stop_pairing_host().await;
         self.stop_lan_discovery().await;
@@ -729,6 +744,8 @@ impl NodeService {
         relay_mode: RelayMode,
         discovery_mode: DiscoveryModeOption,
     ) -> anyhow::Result<()> {
+        let _guard = self.network_transition.lock().await;
+
         {
             let current_relay = self.relay_mode.lock().await;
             let current_discovery = self.discovery_mode.lock().await;
@@ -754,6 +771,14 @@ impl NodeService {
     /// construction, so a lightweight stop/start toggle on the same endpoint
     /// cannot actually stop the broadcast and would leak one live mDNS actor
     /// (plus its multicast socket) per toggle.
+    ///
+    /// Callers must already hold `self.network_transition` for their entire
+    /// decide-then-rebuild-then-settle sequence — this method assumes it, it
+    /// doesn't acquire it itself. Without that, two overlapping rebuilds can
+    /// interleave their close/build steps (the second closing the endpoint
+    /// the first just built) and whichever caller's post-rebuild decision
+    /// (start discovery, clear the registry) runs last wins arbitrarily
+    /// instead of reflecting its own transition.
     async fn rebuild_network(
         &self,
         relay_mode: RelayMode,
@@ -1128,7 +1153,20 @@ impl NodeService {
     /// way to actually stop (or resume) the mDNS advertisement is to close
     /// the endpoint the old `MdnsAddressLookup` clone was registered on. See
     /// `rebuild_network`.
+    ///
+    /// The whole decide-then-rebuild-then-clear sequence runs under
+    /// `network_transition`, held from before `previous`/`now_off` are read
+    /// to after the trailing clear. Without that, a second call (another
+    /// `set_discoverability`, or a concurrent `reconfigure_network`) could
+    /// run its own rebuild in the gap — `now_off`, captured before the lock
+    /// existed, would then no longer describe the state by the time this
+    /// call's clear-or-not decision executed, e.g. wiping a registry a
+    /// competing transition had just repopulated. Holding the lock for the
+    /// full sequence means no such gap exists: whichever call is currently
+    /// inside it is the only one touching `runtime` or `lan_discovery`.
     pub async fn set_discoverability(&self, setting: Discoverability) {
+        let _guard = self.network_transition.lock().await;
+
         let previous = {
             let mut access = self.access.write().await;
             let previous = access.discoverability;
@@ -1152,9 +1190,13 @@ impl NodeService {
         }
 
         if now_off {
-            // `rebuild_network` stops the old consumer task and waits for it
-            // before returning, so nothing can repopulate the list after
-            // this clear — no in-flight event can race it.
+            // Still holding `network_transition`, so no other transition can
+            // have run between `rebuild_network` returning and this clear —
+            // `now_off` is still accurate. Note this doesn't make the
+            // consumer-task shutdown inside `rebuild_network` itself
+            // instantaneous (`abort()` only requests cancellation, landing at
+            // the task's next await point); it only guarantees nothing *else*
+            // in this process can race the clear.
             self.nearby.lock().await.clear();
         }
     }
@@ -1202,9 +1244,13 @@ struct LanDiscoveryHandle {
 }
 
 impl LanDiscoveryHandle {
-    /// Stops the consumer first so no event already pulled off the channel
-    /// (or still buffered on it) can repopulate `nearby` after a caller
-    /// clears it, then stops the pump.
+    /// Aborts the consumer, then the pump. `abort()` only *requests*
+    /// cancellation — the task actually stops at its next await point (e.g.
+    /// mid-`nearby.lock().await` or `rx.recv().await`), not synchronously
+    /// here. Aborting the consumer first, before the pump, still narrows the
+    /// window: nothing enqueues a *new* event once the pump is stopped, and
+    /// in practice the consumer's own abort lands well before the endpoint
+    /// rebuild that follows this call completes.
     fn shutdown(self) {
         self.consumer.abort();
         self.pump.shutdown();
