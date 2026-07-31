@@ -187,6 +187,10 @@ const PAIR_SETTLE_DEADLINE: Duration = Duration::from_secs(30);
 /// bind real endpoints. Keeps its temp data dir alive for the node's lifetime.
 pub struct TestNode {
     pub service: NodeService,
+    /// The emitter this node was started with, so tests can assert on
+    /// events (`events.has_event(...)`) without threading their own emitter
+    /// through separately.
+    pub events: Arc<MockEventEmitter>,
     _dir: tempfile::TempDir,
 }
 
@@ -223,7 +227,7 @@ pub async fn spawn_node(display_name: &str) -> TestNode {
             dir.path(),
             RelayMode::Default,
             DiscoveryModeOption::Default,
-            Some(emitter),
+            Some(emitter.clone()),
         ),
     )
     .await
@@ -233,7 +237,11 @@ pub async fn spawn_node(display_name: &str) -> TestNode {
         .set_device_display_name(display_name)
         .expect("set display name");
 
-    TestNode { service, _dir: dir }
+    TestNode {
+        service,
+        events: emitter,
+        _dir: dir,
+    }
 }
 
 /// Start a node for lan-discovery E2E tests. `Discoverability` defaults to
@@ -250,7 +258,7 @@ pub async fn spawn_node_with_lan_discovery(display_name: &str) -> TestNode {
             dir.path(),
             RelayMode::Disabled,
             DiscoveryModeOption::Default,
-            Some(emitter),
+            Some(emitter.clone()),
         ),
     )
     .await
@@ -260,7 +268,11 @@ pub async fn spawn_node_with_lan_discovery(display_name: &str) -> TestNode {
         .set_device_display_name(display_name)
         .expect("set display name");
 
-    TestNode { service, _dir: dir }
+    TestNode {
+        service,
+        events: emitter,
+        _dir: dir,
+    }
 }
 
 /// Polls `node`'s Nearby list every 500ms until `endpoint_id` shows up **and**

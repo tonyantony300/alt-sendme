@@ -48,10 +48,20 @@ pub fn allows_unpaired_control(setting: Discoverability) -> bool {
 /// at all, and this decides what may be sent across it. Pairing votes,
 /// recognition, and forget all presuppose an established relationship, so an
 /// unpaired peer sending one is either buggy or hostile — drop the connection.
+///
+/// `InviteResponse` is allowed too: a nearby invite's sender has no
+/// `PairedDevice` record for the receiver either, so the receiver's
+/// accept/decline necessarily arrives over an unpaired connection. The
+/// message-level allowance only says the *shape* is legitimate — the caller
+/// still must not act on an `InviteResponse` from an unpaired peer unless it
+/// matches an outstanding nearby invite that peer was actually sent, or any
+/// unpaired stranger could spoof an acceptance.
 pub fn unpaired_message_allowed(msg: &ControlMessage) -> bool {
     matches!(
         msg,
-        ControlMessage::WhoAreYou | ControlMessage::Invite { .. }
+        ControlMessage::WhoAreYou
+            | ControlMessage::Invite { .. }
+            | ControlMessage::InviteResponse { .. }
     )
 }
 
@@ -93,13 +103,21 @@ mod tests {
     }
 
     #[test]
-    fn unpaired_peers_may_only_probe_and_invite() {
+    fn unpaired_peers_may_probe_invite_and_respond_to_an_invite() {
         assert!(unpaired_message_allowed(&ControlMessage::WhoAreYou));
         assert!(unpaired_message_allowed(&ControlMessage::Invite {
             blob_ticket: "t".to_string(),
             file_count: 1,
             total_size: 10,
             sender_name: "s".to_string(),
+        }));
+        assert!(unpaired_message_allowed(&ControlMessage::InviteResponse {
+            session_id: String::new(),
+            response: crate::control::InviteResponse::Accepted,
+        }));
+        assert!(unpaired_message_allowed(&ControlMessage::InviteResponse {
+            session_id: String::new(),
+            response: crate::control::InviteResponse::Declined,
         }));
     }
 

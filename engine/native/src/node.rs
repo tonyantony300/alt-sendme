@@ -90,6 +90,13 @@ struct ControlCtx {
     home_relay_url: Arc<std::sync::RwLock<Option<String>>>,
     presence: Arc<std::sync::RwLock<HashMap<String, bool>>>,
     paired_connections: Arc<PairedConnectionManager>,
+    /// Endpoint ids this node has sent a nearby invite to and not yet seen a
+    /// response for. Consulted when an *unpaired* peer sends an
+    /// `InviteResponse` — only acted on if it's in here, so an arbitrary
+    /// unpaired stranger can't spoof an acceptance for an invite it never
+    /// received. See `NodeService::invite_nearby_device` (adds) and
+    /// `ControlProtocol::handle_paired_control_message` (consumes).
+    pending_nearby_invites: Arc<RwLock<HashSet<String>>>,
 }
 
 #[derive(Clone)]
@@ -448,7 +455,7 @@ impl ControlProtocol {
             }
 
             let unpaired_now = self
-                .handle_paired_control_message(&remote, &keying, msg)
+                .handle_paired_control_message(&remote, &keying, msg, peer_is_paired)
                 .await;
             if unpaired_now {
                 // Close so the sender's delivery wait resolves promptly.
@@ -473,6 +480,7 @@ impl ControlProtocol {
         remote: &EndpointId,
         keying: &[u8],
         msg: ControlMessage,
+        peer_is_paired: bool,
     ) -> bool {
         match msg {
             ControlMessage::Invite {
@@ -492,6 +500,27 @@ impl ControlProtocol {
                 );
             }
             ControlMessage::InviteResponse { response, .. } => {
+                // A paired peer's response always corresponds to something we
+                // sent (`invite_paired_device` requires the target to already
+                // be in our allowlist). An unpaired peer has no such
+                // guarantee — anyone could dial in and claim to be answering
+                // an invite — so only act on it if it matches a nearby
+                // invite this node actually sent.
+                if !peer_is_paired {
+                    let was_pending = self
+                        .ctx
+                        .pending_nearby_invites
+                        .write()
+                        .await
+                        .remove(&remote.to_string());
+                    if !was_pending {
+                        tracing::debug!(
+                            "ignoring InviteResponse from unpaired {remote} with no outstanding nearby invite"
+                        );
+                        return false;
+                    }
+                }
+
                 let response_str = match response {
                     InviteResponse::Accepted => "accepted",
                     InviteResponse::Declined => "declined",
@@ -620,6 +649,11 @@ pub struct NodeService {
     /// this call — the receiver may not download until well after the invite
     /// is delivered. Kept for the node's lifetime; dropped on `shutdown`.
     nearby_shares: Mutex<Vec<SendResult>>,
+    /// Endpoint ids this node has sent a nearby invite to and not yet seen a
+    /// response for. See `ControlCtx::pending_nearby_invites` for why this
+    /// exists — the same set, shared with `ControlProtocol` via `ControlCtx`
+    /// so the receiving side of the control connection can consult it.
+    pending_nearby_invites: Arc<RwLock<HashSet<String>>>,
     /// Serializes `reconfigure_network`, `set_discoverability`, and
     /// `shutdown` — all of them tear down and/or rebuild `runtime` and
     /// `lan_discovery`. Held for the whole decide-then-rebuild-then-settle
@@ -673,6 +707,8 @@ impl NodeService {
         let network_ready = Arc::new(AtomicBool::new(false));
         let presence = Arc::new(std::sync::RwLock::new(HashMap::new()));
         let blocked: Arc<RwLock<HashSet<String>>> = Arc::new(RwLock::new(HashSet::new()));
+        let pending_nearby_invites: Arc<RwLock<HashSet<String>>> =
+            Arc::new(RwLock::new(HashSet::new()));
 
         let paired_connections = Arc::new(PairedConnectionManager::new(
             identity.clone(),
@@ -686,6 +722,7 @@ impl NodeService {
             paired_store.clone(),
             access.clone(),
             blocked.clone(),
+            pending_nearby_invites.clone(),
             pairing_host_persistent.clone(),
             app_handle.clone(),
             presence.clone(),
@@ -737,6 +774,7 @@ impl NodeService {
             network_transition: Mutex::new(()),
             blocked,
             nearby_shares: Mutex::new(Vec::new()),
+            pending_nearby_invites,
         })
     }
 
@@ -832,6 +870,7 @@ impl NodeService {
             self.paired_store.clone(),
             self.access.clone(),
             self.blocked.clone(),
+            self.pending_nearby_invites.clone(),
             self.pairing_host_persistent.clone(),
             self.app_handle.clone(),
             self.presence.clone(),
@@ -1053,6 +1092,15 @@ impl NodeService {
             .await?;
         anyhow::ensure!(delivered, "device is not reachable");
 
+        // Record this as an outstanding nearby invite so a later
+        // `InviteResponse` from this (still unpaired, from our side) peer is
+        // recognized as a real answer rather than an unsolicited claim from
+        // an arbitrary unpaired stranger.
+        self.pending_nearby_invites
+            .write()
+            .await
+            .insert(endpoint_id.to_string());
+
         Ok(())
     }
 
@@ -1222,8 +1270,19 @@ impl NodeService {
             let _ = handle.emit_event("device-paired");
         }
 
+        // The pairing above is already durable and the UI has already been
+        // told about it — notifying the sender is a courtesy on top, not a
+        // condition of acceptance succeeding. If the sender has gone away
+        // (network blip, closed app) since sending the invite, that must not
+        // undo — or report as failed — an accept that already happened.
         // We just met this peer — never a cached session to wait on.
-        self.deliver_invite_response(endpoint_id, true, false).await
+        if let Err(err) = self.deliver_invite_response(endpoint_id, true, false).await {
+            tracing::debug!(
+                "accepted nearby invite from {endpoint_id} but could not notify the sender: {err:#}"
+            );
+        }
+
+        Ok(())
     }
 
     pub async fn decline_nearby_invite(
@@ -1307,7 +1366,20 @@ impl NodeService {
         write_message(&mut send, &message)
             .await
             .context("write InviteResponse message")?;
-        let _ = send.finish();
+
+        // As with `deliver_invite`: when this is a freshly dialed connection
+        // (no cached session — always true for a nearby accept/decline, and
+        // possible for the paired path too), `conn` is the *only* handle to
+        // it. Returning immediately would drop that handle — and iroh closes
+        // the connection when its last handle drops — racing the still
+        // in-flight write against the receiver ever calling `accept_bi()`.
+        // Hold it open in the background long enough for that race to
+        // resolve in the write's favor; the caller doesn't need to wait for
+        // it.
+        drop(send);
+        tokio::spawn(async move {
+            let _ = tokio::time::timeout(Duration::from_secs(5), conn.closed()).await;
+        });
 
         Ok(())
     }
@@ -1378,6 +1450,18 @@ impl NodeService {
     /// Devices currently seen on the local network but not yet paired.
     pub async fn list_nearby(&self) -> Vec<NearbyDevice> {
         self.nearby.lock().await.list()
+    }
+
+    /// Test-only: seeds the Nearby registry as if a real mDNS sighting had
+    /// just come in, without needing actual multicast. `NearbyRegistry` is
+    /// pure state (see its module docs) so this is exactly what
+    /// `spawn_lan_event_loop` does on `LanEvent::Appeared` — it just skips
+    /// the socket. Lets integration tests exercise `invite_nearby_device`'s
+    /// "device must be on the local network" precondition deterministically
+    /// on CI runners that block multicast.
+    #[doc(hidden)]
+    pub async fn inject_nearby_device_for_tests(&self, endpoint_id: &str) {
+        self.nearby.lock().await.observe(endpoint_id, false);
     }
 
     /// Dial a peer's control ALPN and ask who it is. Used for devices found on
@@ -1679,6 +1763,7 @@ async fn build_runtime(
     paired_store: Arc<PairedDeviceStore>,
     access: Arc<RwLock<AccessState>>,
     blocked: Arc<RwLock<HashSet<String>>>,
+    pending_nearby_invites: Arc<RwLock<HashSet<String>>>,
     pairing_host_persistent: Arc<AtomicBool>,
     app_handle: AppHandle,
     presence: Arc<std::sync::RwLock<HashMap<String, bool>>>,
@@ -1744,6 +1829,7 @@ async fn build_runtime(
             home_relay_url: home_relay_url.clone(),
             presence,
             paired_connections,
+            pending_nearby_invites,
         },
     };
 

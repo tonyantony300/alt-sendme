@@ -305,18 +305,19 @@ async fn discoverability_off_stops_mdns_advertising() {
     );
 }
 
-// The three tests below need `invite_nearby_device`'s precondition —
-// `endpoint_id` actually present in the caller's Nearby list — satisfied for
-// real, which means real mDNS multicast between `alice` and `bob`. Same
-// opt-in reasoning as `two_nodes_discover_each_other_over_mdns`: CI runners
-// frequently block multicast, so these are excluded from the default run.
-// `cargo test --manifest-path engine/Cargo.toml --test test_nearby -- --ignored --test-threads=1`
+// The tests below exercise `invite_nearby_device`'s precondition —
+// `endpoint_id` actually present in the caller's Nearby list — via
+// `inject_nearby_device_for_tests` rather than real mDNS multicast, so they
+// run in the default suite on any CI runner (unlike
+// `two_nodes_discover_each_other_over_mdns`, which stays opt-in above).
+// `NearbyRegistry` is pure state (see its module docs), so seeding it this
+// way exercises exactly the same code `invite_nearby_device` checks against
+// — only the socket is skipped.
 
 #[tokio::test]
-#[ignore = "requires multicast on the local network"]
 async fn accepting_a_nearby_invite_promotes_the_sender_to_paired() {
-    let alice = common::spawn_node_with_lan_discovery("alice").await;
-    let bob = common::spawn_node_with_lan_discovery("bob").await;
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
     bob.set_discoverability(Discoverability::Everyone).await;
 
     assert!(
@@ -324,9 +325,9 @@ async fn accepting_a_nearby_invite_promotes_the_sender_to_paired() {
         "precondition: bob knows nobody"
     );
 
-    common::wait_for_nearby(&alice, &bob.endpoint_id(), Duration::from_secs(20))
-        .await
-        .expect("alice should discover bob before inviting");
+    alice
+        .inject_nearby_device_for_tests(&bob.endpoint_id())
+        .await;
 
     let file = common::temp_file_with_contents("hello nearby").await;
     alice
@@ -341,18 +342,34 @@ async fn accepting_a_nearby_invite_promotes_the_sender_to_paired() {
     let paired = bob.list_paired().unwrap();
     assert_eq!(paired.len(), 1, "accepting must create a paired record");
     assert_eq!(paired[0].endpoint_id, alice.endpoint_id());
+
+    // The sender must observe the acceptance too — reusing the same
+    // `paired-invite-response` event an already-paired device's accept
+    // emits, per `emit_paired_invite_response`. Delivery is a fire-and-forget
+    // dial from bob's side, so poll rather than assert immediately.
+    common::wait_until(
+        "alice to observe bob's acceptance",
+        Duration::from_secs(15),
+        || alice.events.has_event("paired-invite-response"),
+    )
+    .await;
+    let responses = alice.events.events_with_name("paired-invite-response");
+    assert_eq!(responses.len(), 1);
+    let payload: serde_json::Value =
+        serde_json::from_str(responses[0].payload.as_deref().unwrap()).unwrap();
+    assert_eq!(payload["endpoint_id"], bob.endpoint_id());
+    assert_eq!(payload["response"], "accepted");
 }
 
 #[tokio::test]
-#[ignore = "requires multicast on the local network"]
 async fn declining_a_nearby_invite_leaves_the_sender_unpaired() {
-    let alice = common::spawn_node_with_lan_discovery("alice").await;
-    let bob = common::spawn_node_with_lan_discovery("bob").await;
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
     bob.set_discoverability(Discoverability::Everyone).await;
 
-    common::wait_for_nearby(&alice, &bob.endpoint_id(), Duration::from_secs(20))
-        .await
-        .expect("alice should discover bob before inviting");
+    alice
+        .inject_nearby_device_for_tests(&bob.endpoint_id())
+        .await;
 
     let file = common::temp_file_with_contents("nope").await;
     alice
@@ -368,18 +385,33 @@ async fn declining_a_nearby_invite_leaves_the_sender_unpaired() {
         bob.list_paired().unwrap().is_empty(),
         "declining must not pair"
     );
+
+    // Sender-side observation of a decline, same event as an accept — see
+    // the acceptance test above for why this is polled rather than asserted
+    // immediately.
+    common::wait_until(
+        "alice to observe bob's decline",
+        Duration::from_secs(15),
+        || alice.events.has_event("paired-invite-response"),
+    )
+    .await;
+    let responses = alice.events.events_with_name("paired-invite-response");
+    assert_eq!(responses.len(), 1);
+    let payload: serde_json::Value =
+        serde_json::from_str(responses[0].payload.as_deref().unwrap()).unwrap();
+    assert_eq!(payload["endpoint_id"], bob.endpoint_id());
+    assert_eq!(payload["response"], "declined");
 }
 
 #[tokio::test]
-#[ignore = "requires multicast on the local network"]
 async fn a_promoted_device_leaves_the_nearby_list() {
-    let alice = common::spawn_node_with_lan_discovery("alice").await;
-    let bob = common::spawn_node_with_lan_discovery("bob").await;
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
     bob.set_discoverability(Discoverability::Everyone).await;
 
-    common::wait_for_nearby(&alice, &bob.endpoint_id(), Duration::from_secs(20))
-        .await
-        .expect("alice should discover bob before inviting");
+    alice
+        .inject_nearby_device_for_tests(&bob.endpoint_id())
+        .await;
 
     let file = common::temp_file_with_contents("x").await;
     alice
@@ -396,5 +428,68 @@ async fn a_promoted_device_leaves_the_nearby_list() {
             .iter()
             .any(|d| d.endpoint_id == alice.endpoint_id()),
         "a paired device must not also appear under Nearby"
+    );
+}
+
+/// Regression coverage for the fix where `accept_nearby_invite` could return
+/// `Err` after already having committed the pairing: the accept notification
+/// back to the (now possibly gone) sender is best-effort, not a condition of
+/// success, because the durable side effects (paired record, allowlist entry,
+/// `device-paired` event) already happened before it's attempted.
+#[tokio::test]
+async fn accept_nearby_invite_succeeds_even_if_the_sender_is_unreachable() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    alice
+        .inject_nearby_device_for_tests(&bob.endpoint_id())
+        .await;
+
+    let file = common::temp_file_with_contents("hello").await;
+    alice
+        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+        .await
+        .expect("invite should be delivered");
+
+    // The sender vanishes before bob gets around to accepting.
+    alice.shutdown().await.expect("alice shutdown");
+
+    bob.accept_nearby_invite(&alice.endpoint_id())
+        .await
+        .expect("accept must succeed even though the sender can no longer be notified");
+
+    let paired = bob.list_paired().unwrap();
+    assert_eq!(paired.len(), 1, "the pairing must still be committed");
+    assert_eq!(paired[0].endpoint_id, alice.endpoint_id());
+}
+
+/// Defence-in-depth coverage: an unpaired peer can now send `InviteResponse`
+/// (policy change so a nearby sender can learn of accept/decline), but the
+/// receiving node must only act on one that matches a nearby invite it
+/// actually sent — otherwise any unpaired stranger could spoof an acceptance
+/// notification for an invite that was never sent.
+#[tokio::test]
+async fn unsolicited_invite_response_from_an_unpaired_peer_is_ignored() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    // alice must accept bob's unpaired connection at the handshake gate to
+    // reach the point where the message-level check under test applies.
+    alice.set_discoverability(Discoverability::Everyone).await;
+
+    // Bob never received an invite from alice — `decline_nearby_invite` is
+    // just the public entry point that sends a raw `InviteResponse` without
+    // requiring any prior relationship, used here to simulate a peer sending
+    // one unprompted.
+    bob.decline_nearby_invite(&alice.endpoint_id(), false)
+        .await
+        .expect("sending the message itself must still succeed");
+
+    // Give any (incorrect) processing a moment to happen, then confirm it
+    // didn't.
+    tokio::time::sleep(Duration::from_secs(2)).await;
+    assert!(
+        !alice.events.has_event("paired-invite-response"),
+        "alice never sent bob a nearby invite, so this response must be ignored"
     );
 }
