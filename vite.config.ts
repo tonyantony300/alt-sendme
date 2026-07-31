@@ -30,7 +30,6 @@ export default defineConfig(({ mode }) => {
 			'import.meta.env.TAURI_PLATFORM': JSON.stringify(
 				process.env.TAURI_ENV_PLATFORM ?? ''
 			),
-			// Set to 'true' by the Flatpak build so the frontend hides the updater.
 			'import.meta.env.VITE_IS_FLATPAK': JSON.stringify(
 				process.env.VITE_IS_FLATPAK ?? ''
 			),
