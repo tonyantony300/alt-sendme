@@ -26,6 +26,7 @@ import { getPairedSendCounts } from '@/lib/paired-send-counts'
 import { deviceTypeIcon } from '@/lib/device-icon'
 import { copyTextToClipboard } from '@/lib/utils'
 import { DevicePairingStatus } from '../../pairing/DevicePairingStatus'
+import { NearbyDevices } from '../../pairing/NearbyDevices'
 import { PairedDevicesSearchField } from '../../pairing/PairedDevicesSearchField'
 
 function PairJoinModal({
@@ -575,6 +576,8 @@ export function DevicesSettings() {
 							)}
 						</FramePanel>
 					</Frame>
+
+					<NearbyDevices />
 
 					<PairJoinModal
 						open={joinOpen}

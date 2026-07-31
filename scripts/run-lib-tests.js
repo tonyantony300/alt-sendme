@@ -3,7 +3,10 @@ import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const outputDir = 'tmp/lib-test-dist'
-const testDir = join(outputDir, 'frontend/src/lib')
+const testDirs = [
+	join(outputDir, 'frontend/src/lib'),
+	join(outputDir, 'frontend/src/store'),
+]
 const tscBin = join('node_modules', 'typescript', 'bin', 'tsc')
 
 function collectTestFiles(directory) {
@@ -31,9 +34,11 @@ function run(command, args) {
 rmSync(outputDir, { recursive: true, force: true })
 run(process.execPath, [tscBin, '-p', 'tsconfig.lib-test.json'])
 
-const testFiles = existsSync(testDir) ? collectTestFiles(testDir) : []
+const testFiles = testDirs
+	.filter((testDir) => existsSync(testDir))
+	.flatMap((testDir) => collectTestFiles(testDir))
 if (testFiles.length === 0) {
-	console.error(`No lib tests found in ${testDir}`)
+	console.error(`No lib tests found in ${testDirs.join(', ')}`)
 	process.exit(1)
 }
 

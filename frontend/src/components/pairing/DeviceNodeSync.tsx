@@ -3,7 +3,7 @@ import { listen } from '@/lib/platform-api'
 import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import { getRelayConfigArg } from '@/lib/relay'
 import { getDiscoveryConfigArg } from '@/lib/discovery'
-import { reconfigureNodeRelay } from '@/lib/pairing-api'
+import { isKnownPairedEndpoint, reconfigureNodeRelay } from '@/lib/pairing-api'
 import type {
 	PairedInvitePayload,
 	PairedInviteResponsePayload,
@@ -68,6 +68,14 @@ export function DeviceNodeSync() {
 						const payload = JSON.parse(
 							String(event.payload)
 						) as PairedInvitePayload
+						// Same event carries both paired and Nearby invites (see
+						// `emit_paired_invite_received`) — an unpaired sender's
+						// invite belongs to `NearbyInviteDialog`, which shows the
+						// fingerprint confirmation this dialog doesn't have.
+						const { devices } = usePairingDataStore.getState()
+						if (!isKnownPairedEndpoint(devices, payload.remote_endpoint_id)) {
+							return
+						}
 						setInvite(payload)
 					} catch {
 						// Ignore malformed invite payloads

@@ -137,6 +137,14 @@
 			"saveTo": "Save to",
 			"changeFolder": "Change folder"
 		},
+		"receiveFromNearbyTitle": "Incoming file from a nearby device",
+		"receiveFromNearbyDescription": "{{sender}} (unverified) wants to send you {{count}} file(s) ({{size}}).",
+		"receiveFromNearbyDescriptionNoSize": "{{sender}} (unverified) wants to send you {{count}} file(s).",
+		"nearbyInvite": {
+			"unverifiedSender": "Unverified — not yet paired with this device",
+			"fingerprintLabel": "Verification code",
+			"fingerprintHint": "Check that this code matches what {{sender}} sees on their screen before accepting."
+		},
 		"receiveBusyTitle": "Download already in progress",
 		"receiveBusyDescription": "Wait for the current download to finish before accepting another file.",
 		"openReceiveTabHint": "Open the Receive tab once, then try again.",
@@ -333,7 +341,20 @@
 			"statusRePairRequired": "Re-pair required",
 			"unpairedHint": "This device removed the pairing. Remove it from your list.",
 			"deviceUnpairedToast": "{{name}} unpaired this device",
-			"copied": "Pairing code copied"
+			"copied": "Pairing code copied",
+			"nearby": {
+				"heading": "Nearby",
+				"hint": "Devices on your local network that aren't paired yet.",
+				"empty": "No devices found nearby.",
+				"unverified": "Unverified",
+				"send": "Send",
+				"sending": "Sending…",
+				"inviteSent": "Invite sent",
+				"inviteFailed": "Couldn't reach this device",
+				"unavailableTitle": "Nearby is unavailable",
+				"discoverabilityPairedOnlyHint": "Nearby devices can see that this device exists, but not its name.",
+				"discoverabilityOffHint": "This device won't appear on the local network. You can still find and send to others."
+			}
 		},
 		"network": {
 			"relay": {

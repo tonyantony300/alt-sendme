@@ -177,6 +177,35 @@ export async function respondPairedInvite(
 	})
 }
 
+export type Discoverability = 'everyone' | 'paired-only' | 'off'
+
+export async function getDiscoverability(): Promise<Discoverability> {
+	if (!pairingCapable()) return 'off'
+	return invoke<Discoverability>('get_discoverability')
+}
+
+/**
+ * Mints a fresh blob ticket from `paths` and delivers it to a device found on
+ * the local network — unlike `invitePairedDevice`, Nearby has no existing
+ * ticket to reuse (see `NodeService::invite_nearby_device`).
+ */
+export async function sendToNearby(
+	endpointId: string,
+	paths: string[]
+): Promise<void> {
+	if (!pairingCapable()) return
+	await invoke('send_to_nearby', { endpointId, paths })
+}
+
+export async function respondNearbyInvite(
+	endpointId: string,
+	accept: boolean,
+	block = false
+): Promise<void> {
+	if (!pairingCapable()) return
+	await invoke('respond_nearby_invite', { endpointId, accept, block })
+}
+
 export function formatOsLabel(os: string | undefined | null): string {
 	switch ((os ?? '').toLowerCase()) {
 		case 'macos':
@@ -248,6 +277,20 @@ export function isPairedDeviceActive(
 	device: Pick<PairedDevice, 'pairing_status'>
 ): boolean {
 	return (device.pairing_status ?? 'active') === 'active'
+}
+
+/**
+ * True when `endpointId` already has a paired-device record. Nearby invites
+ * from an already-paired sender route to the normal paired-invite dialog
+ * instead of the Nearby fingerprint-confirmation one — see
+ * `NearbyInviteDialog` and `DeviceNodeSync`.
+ */
+export function isKnownPairedEndpoint(
+	devices: Pick<PairedDevice, 'endpoint_id'>[],
+	endpointId: string
+): boolean {
+	const id = endpointId.toLowerCase()
+	return devices.some((device) => device.endpoint_id.toLowerCase() === id)
 }
 
 /** 0 = online+active, 1 = offline+active, 2 = unpaired */
