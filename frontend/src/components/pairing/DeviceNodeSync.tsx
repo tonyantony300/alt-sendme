@@ -12,6 +12,7 @@ import { usePairedInviteStore } from '@/store/paired-invite-store'
 import {
 	usePairingDataStore,
 	preloadPairingData,
+	pairingDataHydrated,
 } from '@/store/pairing-data-store'
 import { ensureNodeCapabilityLifecycle } from '@/store/node-capability-store'
 import { useNodeCapability } from '@/hooks/useNodeCapability'
@@ -64,22 +65,29 @@ export function DeviceNodeSync() {
 			const inviteUnlisten = await listen(
 				'paired-invite-received',
 				(event: { payload: unknown }) => {
+					let payload: PairedInvitePayload
 					try {
-						const payload = JSON.parse(
-							String(event.payload)
-						) as PairedInvitePayload
+						payload = JSON.parse(String(event.payload)) as PairedInvitePayload
+					} catch {
+						// Ignore malformed invite payloads
+						return
+					}
+					void (async () => {
 						// Same event carries both paired and Nearby invites (see
 						// `emit_paired_invite_received`) — an unpaired sender's
 						// invite belongs to `NearbyInviteDialog`, which shows the
-						// fingerprint confirmation this dialog doesn't have.
+						// fingerprint confirmation this dialog doesn't have. `devices`
+						// starts empty on cold start, so wait for it to hydrate before
+						// deciding — otherwise a genuinely paired sender's invite would
+						// briefly look unpaired and get misrouted there.
+						await pairingDataHydrated()
+						if (disposed) return
 						const { devices } = usePairingDataStore.getState()
 						if (!isKnownPairedEndpoint(devices, payload.remote_endpoint_id)) {
 							return
 						}
 						setInvite(payload)
-					} catch {
-						// Ignore malformed invite payloads
-					}
+					})()
 				}
 			)
 			if (disposed) {

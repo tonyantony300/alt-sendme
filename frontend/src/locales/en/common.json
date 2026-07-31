@@ -143,7 +143,8 @@
 		"nearbyInvite": {
 			"unverifiedSender": "Unverified — not yet paired with this device",
 			"fingerprintLabel": "Verification code",
-			"fingerprintHint": "Check that this code matches what {{sender}} sees on their screen before accepting."
+			"fingerprintHint": "Check that this code matches what {{sender}} sees on their screen before accepting.",
+			"fingerprintUnavailable": "Couldn't compute a verification code for this device, so it can't be confirmed safely. Decline and ask the sender to try again."
 		},
 		"receiveBusyTitle": "Download already in progress",
 		"receiveBusyDescription": "Wait for the current download to finish before accepting another file.",

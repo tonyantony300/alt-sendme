@@ -10,7 +10,10 @@ import {
 	respondNearbyInvite,
 	type PairedInvitePayload,
 } from '@/lib/pairing-api'
-import { usePairingDataStore } from '@/store/pairing-data-store'
+import {
+	pairingDataHydrated,
+	usePairingDataStore,
+} from '@/store/pairing-data-store'
 import { useReceiverActionsStore } from '@/store/receiver-actions-store'
 import {
 	AlertDialog,
@@ -51,18 +54,26 @@ export function NearbyInviteDialog() {
 			const stop = await listen(
 				'paired-invite-received',
 				(event: { payload: unknown }) => {
+					let payload: PairedInvitePayload
 					try {
-						const payload = JSON.parse(
-							String(event.payload)
-						) as PairedInvitePayload
+						payload = JSON.parse(String(event.payload)) as PairedInvitePayload
+					} catch {
+						// Ignore malformed invite payloads
+						return
+					}
+					void (async () => {
+						// `devices` starts empty on cold start — wait for it to
+						// hydrate before deciding, otherwise an invite from an
+						// already-paired sender can arrive first and get shown
+						// here as "unverified" instead of in `PairedInviteDialog`.
+						await pairingDataHydrated()
+						if (disposed) return
 						const { devices } = usePairingDataStore.getState()
 						if (isKnownPairedEndpoint(devices, payload.remote_endpoint_id)) {
 							return
 						}
 						setInvite(payload)
-					} catch {
-						// Ignore malformed invite payloads
-					}
+					})()
 				}
 			)
 			if (disposed) {
@@ -89,14 +100,26 @@ export function NearbyInviteDialog() {
 	}
 
 	const decline = () => {
-		if (!invite) return
-		setInvite(null)
-		notifyInviteResponse(invite.remote_endpoint_id, false)
+		// AlertDialogClose's own `onClick` and the dialog's `onOpenChange` both
+		// fire from a single close click — read-and-clear atomically via the
+		// state updater (no store to re-read from `getState()` here, unlike
+		// `PairedInviteDialog`) so the second call is a no-op instead of
+		// double-sending the decline.
+		setInvite((current) => {
+			if (!current) return current
+			notifyInviteResponse(current.remote_endpoint_id, false)
+			return null
+		})
 	}
 
 	const accept = async () => {
 		const current = invite
 		if (!current) return
+		// The verification code is the whole point of this dialog — never
+		// accept on its behalf if it couldn't be computed (malformed endpoint
+		// id). The button below is disabled for the same reason; this is the
+		// belt-and-suspenders check in case it's ever reached anyway.
+		if (!shortFingerprint(current.remote_endpoint_id)) return
 		if (!acceptPairedInvite) {
 			toastManager.add({
 				title: t('common:errors.receiveFailed'),
@@ -121,6 +144,7 @@ export function NearbyInviteDialog() {
 	const fingerprint = invite
 		? shortFingerprint(invite.remote_endpoint_id)
 		: null
+	const canAccept = invite != null && fingerprint != null
 
 	return (
 		<AlertDialog
@@ -165,6 +189,10 @@ export function NearbyInviteDialog() {
 								})}
 							</p>
 						</div>
+					) : invite ? (
+						<p className="text-xs text-destructive">
+							{t('common:receiver.nearbyInvite.fingerprintUnavailable')}
+						</p>
 					) : null}
 				</div>
 				<AlertDialogFooter>
@@ -176,7 +204,7 @@ export function NearbyInviteDialog() {
 						}
 						onClick={decline}
 					/>
-					<Button size="sm" onClick={() => void accept()}>
+					<Button size="sm" disabled={!canAccept} onClick={() => void accept()}>
 						{t('common:receiver.acceptInvite')}
 					</Button>
 				</AlertDialogFooter>

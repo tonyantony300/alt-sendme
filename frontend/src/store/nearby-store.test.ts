@@ -46,3 +46,17 @@ test('devices are ordered identified-first, then by name', () => {
 	const names = store.devices().map((d) => d.displayName)
 	assert.deepEqual(names, ['Adam', 'Zoe', null])
 })
+
+test('setUnavailable records a reason', () => {
+	const store = createNearbyStore()
+	assert.equal(store.unavailableReason(), null)
+	store.setUnavailable('mDNS unavailable')
+	assert.equal(store.unavailableReason(), 'mDNS unavailable')
+})
+
+test('setUnavailable can be cleared back to null', () => {
+	const store = createNearbyStore()
+	store.setUnavailable('mDNS unavailable')
+	store.setUnavailable(null)
+	assert.equal(store.unavailableReason(), null)
+})
