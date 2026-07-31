@@ -184,11 +184,37 @@ export async function getDiscoverability(): Promise<Discoverability> {
 	return invoke<Discoverability>('get_discoverability')
 }
 
+/**
+ * IPC seam: the key MUST be the Rust parameter name of `set_discoverability`
+ * in `src-tauri/src/commands.rs` (`setting: Discoverability`). Tauri matches
+ * invoke payload keys to command parameters by name, so a mismatch fails at
+ * runtime with "missing required key" — never rename one side alone.
+ */
+type SetDiscoverabilityArgs = {
+	setting: Discoverability
+}
+
 export async function setDiscoverability(
 	value: Discoverability
 ): Promise<void> {
 	if (!pairingCapable()) return
-	await invoke('set_discoverability', { value })
+	const args: SetDiscoverabilityArgs = { setting: value }
+	await invoke('set_discoverability', args)
+}
+
+export interface NearbyStatus {
+	/**
+	 * Why LAN discovery is unavailable (the mDNS pump failed to start), or
+	 * null when it is running or deliberately off. Queryable because the
+	 * `nearby-unavailable` event can fire during node init, before any
+	 * frontend listener exists.
+	 */
+	reason: string | null
+}
+
+export async function getNearbyStatus(): Promise<NearbyStatus> {
+	if (!pairingCapable()) return { reason: null }
+	return invoke<NearbyStatus>('nearby_status')
 }
 
 /**

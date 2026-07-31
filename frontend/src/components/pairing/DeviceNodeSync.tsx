@@ -3,7 +3,12 @@ import { listen } from '@/lib/platform-api'
 import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import { getRelayConfigArg } from '@/lib/relay'
 import { getDiscoveryConfigArg } from '@/lib/discovery'
-import { isKnownPairedEndpoint, reconfigureNodeRelay } from '@/lib/pairing-api'
+import {
+	isKnownPairedEndpoint,
+	reconfigureNodeRelay,
+	setDiscoverability,
+} from '@/lib/pairing-api'
+import { useAppSettingStore } from '@/store/app-setting'
 import type {
 	PairedInvitePayload,
 	PairedInviteResponsePayload,
@@ -50,6 +55,15 @@ export function DeviceNodeSync() {
 			// Allow a later retry if the first sync failed (e.g. node still settling).
 			didSyncRelay.current = false
 			console.warn('Failed to sync node relay on startup:', error)
+		})
+		// The node already applied the persisted discoverability at startup
+		// (`init_node_service` reads this store's file before discovery
+		// starts); re-applying here is a safety net for the case where that
+		// read failed, mirroring how the relay settings sync above.
+		void setDiscoverability(
+			useAppSettingStore.getState().discoverability
+		).catch((error) => {
+			console.warn('Failed to sync discoverability on startup:', error)
 		})
 	}, [isNodeReady])
 

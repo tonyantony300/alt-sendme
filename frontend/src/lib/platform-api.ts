@@ -250,6 +250,8 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 		case 'list_nearby':
 			// Browsers have no multicast; Nearby is native-only.
 			return [] as unknown as T
+		case 'nearby_status':
+			return { reason: null } as unknown as T
 		case 'get_discoverability':
 			return 'off' as unknown as T
 		case 'set_discoverability':

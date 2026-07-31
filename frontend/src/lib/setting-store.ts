@@ -22,6 +22,7 @@ export const defaultAppSettings: AppSettingsState = {
 	pkarrRelayUrl: '',
 	dnsOrigin: '',
 	showBroadcastToggle: false,
+	discoverability: 'everyone',
 }
 
 const webSettingStorage: StateStorage = {

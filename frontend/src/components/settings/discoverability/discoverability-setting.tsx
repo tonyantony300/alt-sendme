@@ -7,6 +7,7 @@ import {
 	setDiscoverability,
 	type Discoverability,
 } from '@/lib/pairing-api'
+import { useAppSettingStore } from '@/store/app-setting'
 import { Frame, FrameDescription, FramePanel, FrameTitle } from '../../ui/frame'
 import { RadioGroup, RadioGroupItem } from '../../ui/radio-group'
 import { toastManager } from '../../ui/toast'
@@ -69,11 +70,15 @@ export function DiscoverabilitySetting() {
 
 	const handleChange = async (newValue: string) => {
 		const nextValue = newValue as Discoverability
+		if (nextValue === value) return
 		setValue(nextValue)
 		setIsSaving(true)
 
 		try {
 			await setDiscoverability(nextValue)
+			// Persist only what the node actually accepted, so the value
+			// re-applied on next startup never diverges from reality.
+			useAppSettingStore.getState().setDiscoverability(nextValue)
 		} catch (error) {
 			console.error('Failed to set discoverability:', error)
 			toastManager.add({
@@ -113,15 +118,21 @@ export function DiscoverabilitySetting() {
 					</div>
 				) : (
 					<RadioGroup value={value} onValueChange={handleChange}>
+						{/* A label wrapping the radio makes the whole row one native
+						    activation target, so `onValueChange` above is the single
+						    trigger path — no parallel onClick that would double-fire. */}
 						{DISCOVERABILITY_OPTIONS.map((option) => (
-							<button
+							<label
 								key={option.value}
-								type="button"
-								onClick={() => void handleChange(option.value)}
+								htmlFor={`discoverability-${option.value}`}
 								className="flex cursor-pointer items-start gap-3 text-left"
-								disabled={isSaving}
 							>
-								<RadioGroupItem value={option.value} className="mt-0.5" />
+								<RadioGroupItem
+									id={`discoverability-${option.value}`}
+									value={option.value}
+									className="mt-0.5"
+									disabled={isSaving}
+								/>
 								<div>
 									<div className="text-sm font-medium">
 										{t(option.labelKey)}
@@ -130,7 +141,7 @@ export function DiscoverabilitySetting() {
 										{t(option.descKey)}
 									</div>
 								</div>
-							</button>
+							</label>
 						))}
 					</RadioGroup>
 				)}

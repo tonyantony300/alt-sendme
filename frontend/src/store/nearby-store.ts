@@ -62,7 +62,13 @@ export function createNearbyStore(): NearbyStoreApi {
 		if (!IS_PAIRING_CAPABLE) return
 		const { invoke } = await import('../lib/platform-api.js')
 		const list = await invoke<NearbyDevice[]>('list_nearby')
+		// The `nearby-unavailable` event fires during node init — before this
+		// store has any listener — so the reason is (re)queried on every
+		// hydrate. This also *clears* a stale reason once discovery recovers
+		// (e.g. after a network rebuild brought mDNS back up).
+		const status = await invoke<{ reason: string | null }>('nearby_status')
 		devices = [...list].sort(compareNearbyDevices)
+		unavailableReason = status.reason
 	}
 
 	return {
@@ -104,7 +110,10 @@ export const useNearbyStore = create<NearbyState>((set) => {
 		hydrate: async () => {
 			try {
 				await core.hydrate()
-				set({ devices: core.devices() })
+				set({
+					devices: core.devices(),
+					unavailableReason: core.unavailableReason(),
+				})
 			} catch (error) {
 				console.error('Failed to hydrate nearby devices:', error)
 			}
@@ -153,7 +162,12 @@ export async function startNearbyListeners(): Promise<() => void> {
 	unlistenFns.push(
 		await listen('nearby-device-found', (event: { payload: unknown }) => {
 			const payload = parseNearbyPayload<NearbyEventPayload>(event.payload)
-			if (payload?.endpointId) void refreshOne(payload.endpointId)
+			if (payload?.endpointId) {
+				// A sighting proves discovery is working — drop any stale
+				// unavailable banner it may have raised before recovering.
+				useNearbyStore.getState().setUnavailable(null)
+				void refreshOne(payload.endpointId)
+			}
 		})
 	)
 	unlistenFns.push(

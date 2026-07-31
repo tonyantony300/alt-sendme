@@ -23,6 +23,14 @@ export type AppSettingsState = {
 	pkarrRelayUrl: string
 	dnsOrigin: string
 	showBroadcastToggle: boolean
+	/**
+	 * Nearby/LAN discoverability. Mirrors the engine's `Discoverability` —
+	 * persisted here (like the relay settings) so it survives restarts;
+	 * `init_node_service` reads this store's file before the node starts so an
+	 * `Off` choice never registers mDNS even briefly, and `DeviceNodeSync`
+	 * re-applies it once the node is ready as a safety net.
+	 */
+	discoverability: 'everyone' | 'paired-only' | 'off'
 }
 
 export type AppSettingsActions = {
@@ -43,6 +51,7 @@ export type AppSettingsActions = {
 	setPkarrRelayUrl: (value: string) => void
 	setDnsOrigin: (value: string) => void
 	setShowBroadcastToggle: (value: boolean) => void
+	setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') => void
 }
 
 export type AppSettings = AppSettingsState & AppSettingsActions
@@ -77,6 +86,8 @@ export const useAppSettingStore = create<AppSettings>()(
 			setDnsOrigin: (value: string) => set({ dnsOrigin: value }),
 			setShowBroadcastToggle: (value: boolean) =>
 				set({ showBroadcastToggle: value }),
+			setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') =>
+				set({ discoverability: value }),
 		}),
 		{
 			name: AppSettingsKey,
