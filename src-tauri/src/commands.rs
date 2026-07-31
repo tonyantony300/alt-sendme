@@ -4,8 +4,9 @@ use engine::{
     build_discovery_mode, download, fetch_metadata, get_relay_status as engine_get_relay_status,
     resolve_relay_mode_with_fallback, start_share_items,
     verify_discovery as engine_verify_discovery, verify_relays as engine_verify_relays,
-    AddrInfoOptions, AppHandle, DeviceInfo, EventEmitter, FileMetadata, FilePreviewItem,
-    NodeService, PairedDevice, PairedDeviceInfo, ReceiveOptions, SendOptions,
+    AddrInfoOptions, AppHandle, DeviceInfo, Discoverability, EventEmitter, FileMetadata,
+    FilePreviewItem, NearbyDevice, NodeService, PairedDevice, PairedDeviceInfo, ReceiveOptions,
+    SendOptions,
 };
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -1272,6 +1273,82 @@ pub async fn respond_paired_invite(
         .map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn list_nearby(state: State<'_, AppStateMutex>) -> Result<Vec<NearbyDevice>, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    Ok(node.list_nearby().await)
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn get_discoverability(
+    state: State<'_, AppStateMutex>,
+) -> Result<Discoverability, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    Ok(node.discoverability().await)
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn set_discoverability(
+    setting: Discoverability,
+    state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    node.set_discoverability(setting).await;
+
+    Ok(())
+}
+
+/// Sends to a device found on the local network. Mints a normal blob ticket and
+/// delivers it as an invite over the control ALPN — the same path a paired
+/// device uses. The receiver's confirmation is what promotes the peer to paired.
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn send_to_nearby(
+    endpoint_id: String,
+    paths: Vec<String>,
+    state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    node.invite_nearby_device(&endpoint_id, paths)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn respond_nearby_invite(
+    endpoint_id: String,
+    accept: bool,
+    block: bool,
+    state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    let result = if accept {
+        node.accept_nearby_invite(&endpoint_id).await
+    } else {
+        node.decline_nearby_invite(&endpoint_id, block).await
+    };
+    result.map_err(|e| e.to_string())
 }
 
 #[cfg(test)]

@@ -132,6 +132,16 @@ pub fn run() {
             invite_paired_device,
             #[cfg(any(desktop, target_os = "android"))]
             respond_paired_invite,
+            #[cfg(any(desktop, target_os = "android"))]
+            list_nearby,
+            #[cfg(any(desktop, target_os = "android"))]
+            get_discoverability,
+            #[cfg(any(desktop, target_os = "android"))]
+            set_discoverability,
+            #[cfg(any(desktop, target_os = "android"))]
+            send_to_nearby,
+            #[cfg(any(desktop, target_os = "android"))]
+            respond_nearby_invite,
         ])
         .setup(|app| {
             init_logging(app.handle());
