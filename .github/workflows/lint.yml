@@ -58,10 +58,10 @@ jobs:
           CHANGED=$(git diff --name-only "$BASE"...HEAD)
           fail() { echo "::error::$1"; exit 1; }
           if echo "$CHANGED" | grep -q '^src-tauri/Cargo\.lock$'; then
-            echo "$CHANGED" | grep -q '^src-tauri/Cargo\.toml$' || fail "src-tauri/Cargo.lock was modified but src-tauri/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- src-tauri/Cargo.lock"
+            echo "$CHANGED" | grep -qE '^(src-tauri/Cargo\.toml|engine/Cargo\.toml|engine/[^/]+/Cargo\.toml)$' || fail "src-tauri/Cargo.lock was modified but no src-tauri/Cargo.toml or engine/**/Cargo.toml manifest changed (src-tauri path-depends on the engine workspace). Only change Cargo.lock when you add/update dependencies in one of those manifests. To discard: git checkout origin/main -- src-tauri/Cargo.lock"
           fi
           if echo "$CHANGED" | grep -q '^engine/Cargo\.lock$'; then
-            echo "$CHANGED" | grep -q '^engine/Cargo\.toml$' || fail "engine/Cargo.lock was modified but engine/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- engine/Cargo.lock"
+            echo "$CHANGED" | grep -qE '^(engine/Cargo\.toml|engine/[^/]+/Cargo\.toml)$' || fail "engine/Cargo.lock was modified but no engine/Cargo.toml or engine/*/Cargo.toml workspace-member manifest changed. Only change Cargo.lock when you add/update dependencies in one of those manifests. To discard: git checkout origin/main -- engine/Cargo.lock"
           fi
           if echo "$CHANGED" | grep -q '^pnpm-lock\.yaml$'; then
             echo "$CHANGED" | grep -q '^package\.json$' || fail "pnpm-lock.yaml was modified but package.json was not. Only change pnpm-lock.yaml when you add/update dependencies in package.json. To discard: git checkout origin/main -- pnpm-lock.yaml"
