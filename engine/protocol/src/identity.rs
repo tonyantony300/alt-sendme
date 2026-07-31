@@ -428,8 +428,11 @@ mod fingerprint_tests {
 
     #[test]
     fn distinct_keys_give_distinct_fingerprints() {
+        // Vary an EARLY byte. The fingerprint is the first 60 bits of a
+        // 256-bit key, so keys differing only in a late byte collide by
+        // construction — that is inherent to truncation, not a defect.
         let a = "00".repeat(32);
-        let b = format!("{}01", "00".repeat(31));
+        let b = format!("01{}", "00".repeat(31));
         assert_ne!(short_fingerprint(&a), short_fingerprint(&b));
     }
 
