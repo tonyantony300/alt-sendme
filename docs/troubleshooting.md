@@ -189,10 +189,10 @@ works only when devices can broadcast to each other on the same subnet.
   managed Wi-Fi systems often filter mDNS packets as a matter of policy. Check with your
   network administrator, or try a different network to confirm that's the cause.
 
-**If this is your network, you can still transfer files normally.** Use one-time **Manual
-transfer** with a ticket instead—neither side needs local discovery. Paired devices (after
-an initial setup elsewhere on a working network) will also continue to work, because they
-use a direct connection or relay and don't depend on multicast.
+**If this is your network, you can still transfer files normally.** Use a manual ticket
+instead—ticket transfers connect directly (or via relay) and don't need mDNS. Paired
+devices (after an initial setup elsewhere on a working network) will also continue to
+work, because they use a direct connection or relay and don't depend on multicast.
 
 You can control whether your device appears to others on the local network via
 **Settings → Network → Your discoverability** (Everyone / Paired only / Off). Changing
