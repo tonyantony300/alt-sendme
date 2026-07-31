@@ -258,6 +258,9 @@ impl ControlProtocol {
                         }
                     }
                 }
+                ControlMessage::WhoAreYou | ControlMessage::Identity { .. } => {
+                    // Discovery messages; ignore on paired connections
+                }
             }
 
             if remote_info.is_some() && remote_vote == Some(RememberVote::Remember) {

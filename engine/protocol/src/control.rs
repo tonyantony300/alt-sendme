@@ -37,6 +37,21 @@ pub enum ControlMessage {
     Forget {
         signature: String,
     },
+    /// Asks an unpaired peer discovered on the local network to identify itself.
+    /// mDNS advertises only node ids and addresses, so this probe is the only
+    /// source of a human-readable name.
+    WhoAreYou,
+    /// Reply to `WhoAreYou`. Deliberately unsigned and self-reported — the trust
+    /// anchor is the connection's public-key binding, shown to the user as
+    /// `short_fingerprint`, not anything asserted in this payload.
+    Identity {
+        endpoint_id: String,
+        display_name: String,
+        device_type: String,
+        /// Optional for parity with `PairingInfo`.
+        #[serde(default)]
+        os: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -160,4 +175,74 @@ pub async fn read_message(
     let mut body = vec![0u8; len];
     recv.read_exact(&mut body).await?;
     Ok(serde_json::from_slice(&body)?)
+}
+
+#[cfg(test)]
+mod nearby_message_tests {
+    use super::{read_message, write_message, ControlMessage};
+
+    #[tokio::test]
+    async fn who_are_you_round_trips() {
+        let (mut client, mut server) = tokio::io::duplex(1024);
+        write_message(&mut client, &ControlMessage::WhoAreYou)
+            .await
+            .unwrap();
+        let got = read_message(&mut server).await.unwrap();
+        assert!(matches!(got, ControlMessage::WhoAreYou));
+    }
+
+    #[tokio::test]
+    async fn identity_round_trips_with_all_fields() {
+        let (mut client, mut server) = tokio::io::duplex(4096);
+        let sent = ControlMessage::Identity {
+            endpoint_id: "aa".repeat(32),
+            display_name: "Tony's MacBook".to_string(),
+            device_type: "laptop".to_string(),
+            os: "macos".to_string(),
+        };
+        write_message(&mut client, &sent).await.unwrap();
+        match read_message(&mut server).await.unwrap() {
+            ControlMessage::Identity {
+                endpoint_id,
+                display_name,
+                device_type,
+                os,
+            } => {
+                assert_eq!(endpoint_id, "aa".repeat(32));
+                assert_eq!(display_name, "Tony's MacBook");
+                assert_eq!(device_type, "laptop");
+                assert_eq!(os, "macos");
+            }
+            other => panic!("expected Identity, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn tags_are_kebab_case() {
+        let who = serde_json::to_value(ControlMessage::WhoAreYou).unwrap();
+        assert_eq!(who["type"], "who-are-you");
+
+        let identity = serde_json::to_value(ControlMessage::Identity {
+            endpoint_id: "bb".repeat(32),
+            display_name: "n".to_string(),
+            device_type: "desktop".to_string(),
+            os: "linux".to_string(),
+        })
+        .unwrap();
+        assert_eq!(identity["type"], "identity");
+    }
+
+    #[test]
+    fn identity_os_defaults_when_absent() {
+        let json = serde_json::json!({
+            "type": "identity",
+            "endpoint_id": "cc".repeat(32),
+            "display_name": "n",
+            "device_type": "phone",
+        });
+        match serde_json::from_value::<ControlMessage>(json).unwrap() {
+            ControlMessage::Identity { os, .. } => assert_eq!(os, ""),
+            other => panic!("expected Identity, got {other:?}"),
+        }
+    }
 }
