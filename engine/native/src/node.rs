@@ -600,7 +600,7 @@ pub struct NodeService {
     nearby: Arc<Mutex<NearbyRegistry>>,
     /// `None` when discovery isn't running: `Discoverability::Off`, or the
     /// mDNS pump failed to start (no multicast, VPN, isolated guest network).
-    lan_discovery: Mutex<Option<LanDiscovery>>,
+    lan_discovery: Mutex<Option<LanDiscoveryHandle>>,
 }
 
 impl NodeService {
@@ -711,9 +711,7 @@ impl NodeService {
     pub async fn shutdown(&self) -> anyhow::Result<()> {
 
         self.stop_pairing_host().await;
-        if let Some(discovery) = self.lan_discovery.lock().await.take() {
-            discovery.shutdown();
-        }
+        self.stop_lan_discovery().await;
         if let Some(handle) = self.connections_supervisor.lock().await.take() {
             handle.abort();
 
@@ -741,12 +739,40 @@ impl NodeService {
             }
         }
 
+        self.rebuild_network(relay_mode, discovery_mode).await
+    }
+
+    /// Closes the current endpoint and router and rebuilds them, then
+    /// restarts LAN discovery on the new endpoint per the current
+    /// `Discoverability` setting. Shared by `reconfigure_network` (relay or
+    /// discovery-mode changes) and `set_discoverability` transitions across
+    /// the `Off` boundary.
+    ///
+    /// The rebuild is the only reliable way to stop mDNS advertising: iroh
+    /// 1.0.3 has no API to unregister an address-lookup service from a live
+    /// endpoint, and `MdnsAddressLookup`'s `advertise` flag is fixed at
+    /// construction, so a lightweight stop/start toggle on the same endpoint
+    /// cannot actually stop the broadcast and would leak one live mDNS actor
+    /// (plus its multicast socket) per toggle.
+    async fn rebuild_network(
+        &self,
+        relay_mode: RelayMode,
+        discovery_mode: DiscoveryModeOption,
+    ) -> anyhow::Result<()> {
         self.stop_pairing_host().await;
 
         self.network_ready.store(false, Ordering::SeqCst);
         if let Some(handle) = &self.app_handle {
             let _ = handle.emit_event("device-node-network-warming");
         }
+
+        // Stop the old consumer + pump before the endpoint they're bound to
+        // is closed below. Aborting drops our `MdnsAddressLookup` clone; the
+        // endpoint's own registered clone drops with it once the old
+        // `Endpoint`'s last handle goes away (when `*runtime = new_runtime`
+        // replaces it), letting the old actor and its multicast socket
+        // actually die instead of leaking.
+        self.stop_lan_discovery().await;
 
         let mut runtime = self.runtime.lock().await;
         runtime.router.shutdown().await?;
@@ -766,12 +792,34 @@ impl NodeService {
         )
         .await?;
 
+        let endpoint = new_runtime.endpoint.clone();
         *runtime = new_runtime;
+        drop(runtime);
+
         self.paired_connections.refresh().await;
         *self.relay_mode.lock().await = relay_mode;
         *self.discovery_mode.lock().await = discovery_mode;
 
+        if should_publish_mdns(self.access.read().await.discoverability) {
+            let discovery = start_lan_discovery(
+                &endpoint,
+                self.nearby.clone(),
+                self.access.clone(),
+                self.paired_connections.clone(),
+                self.runtime.clone(),
+                self.app_handle.clone(),
+            );
+            *self.lan_discovery.lock().await = discovery;
+        }
+
         Ok(())
+    }
+
+    /// Stops the LAN-discovery consumer task and its mDNS pump, if running.
+    async fn stop_lan_discovery(&self) {
+        if let Some(handle) = self.lan_discovery.lock().await.take() {
+            handle.shutdown();
+        }
     }
 
     pub fn is_network_ready(&self) -> bool {
@@ -1069,10 +1117,17 @@ impl NodeService {
         Ok(())
     }
 
-    /// Stops discovery and clears the Nearby list on a move to `Off`; starts
-    /// discovery on a move away from `Off`. Any other transition (e.g.
-    /// `Everyone` <-> `PairedOnly`) leaves discovery running untouched — both
-    /// still publish over mDNS, they only differ in who gets an identity reply.
+    /// Rebuilds the network and clears the Nearby list on a move to `Off`;
+    /// rebuilds it again (this time starting discovery) on a move away from
+    /// `Off`. Any other transition (e.g. `Everyone` <-> `PairedOnly`) touches
+    /// neither — both still publish over mDNS, they only differ in who gets
+    /// an identity reply.
+    ///
+    /// A rebuild, not a lightweight toggle: iroh 1.0.3 has no API to
+    /// unregister an address-lookup service from a live endpoint, so the only
+    /// way to actually stop (or resume) the mDNS advertisement is to close
+    /// the endpoint the old `MdnsAddressLookup` clone was registered on. See
+    /// `rebuild_network`.
     pub async fn set_discoverability(&self, setting: Discoverability) {
         let previous = {
             let mut access = self.access.write().await;
@@ -1081,25 +1136,26 @@ impl NodeService {
             previous
         };
 
-        if matches!(setting, Discoverability::Off) {
-            if let Some(discovery) = self.lan_discovery.lock().await.take() {
-                discovery.shutdown();
-            }
+        let now_off = matches!(setting, Discoverability::Off);
+        if now_off == matches!(previous, Discoverability::Off) {
+            return;
+        }
+
+        let (relay_mode, discovery_mode) = {
+            (
+                self.relay_mode.lock().await.clone(),
+                self.discovery_mode.lock().await.clone(),
+            )
+        };
+        if let Err(err) = self.rebuild_network(relay_mode, discovery_mode).await {
+            tracing::debug!("network rebuild for discoverability change failed: {err:#}");
+        }
+
+        if now_off {
+            // `rebuild_network` stops the old consumer task and waits for it
+            // before returning, so nothing can repopulate the list after
+            // this clear — no in-flight event can race it.
             self.nearby.lock().await.clear();
-        } else if matches!(previous, Discoverability::Off) {
-            let endpoint = {
-                let runtime = self.runtime.lock().await;
-                runtime.endpoint.clone()
-            };
-            let discovery = start_lan_discovery(
-                &endpoint,
-                self.nearby.clone(),
-                self.access.clone(),
-                self.paired_connections.clone(),
-                self.runtime.clone(),
-                self.app_handle.clone(),
-            );
-            *self.lan_discovery.lock().await = discovery;
         }
     }
 
@@ -1134,6 +1190,27 @@ fn load_allowed_from_store(paired_store: &PairedDeviceStore) -> anyhow::Result<H
     Ok(allowed)
 }
 
+/// Bundles the mDNS pump (`LanDiscovery`) with its consumer task so both are
+/// torn down together. iroh 1.0.3 has no API to unregister an address-lookup
+/// service from a live endpoint and `MdnsAddressLookup`'s `advertise` flag is
+/// fixed at construction, so this only ever gets a clean shutdown by closing
+/// the endpoint the pump's `MdnsAddressLookup` clone is registered on — see
+/// `NodeService::rebuild_network`.
+struct LanDiscoveryHandle {
+    pump: LanDiscovery,
+    consumer: JoinHandle<()>,
+}
+
+impl LanDiscoveryHandle {
+    /// Stops the consumer first so no event already pulled off the channel
+    /// (or still buffered on it) can repopulate `nearby` after a caller
+    /// clears it, then stops the pump.
+    fn shutdown(self) {
+        self.consumer.abort();
+        self.pump.shutdown();
+    }
+}
+
 /// Starts the mDNS pump and its consumer loop, wiring sightings into `nearby`
 /// and identity probes into the discovery/identified events.
 ///
@@ -1148,12 +1225,13 @@ fn start_lan_discovery(
     paired_connections: Arc<PairedConnectionManager>,
     runtime: Arc<Mutex<NodeRuntime>>,
     app_handle: AppHandle,
-) -> Option<LanDiscovery> {
+) -> Option<LanDiscoveryHandle> {
     let (tx, rx) = mpsc::unbounded_channel();
     match LanDiscovery::start(endpoint, tx) {
-        Ok(discovery) => {
-            spawn_lan_event_loop(rx, nearby, access, paired_connections, runtime, app_handle);
-            Some(discovery)
+        Ok(pump) => {
+            let consumer =
+                spawn_lan_event_loop(rx, nearby, access, paired_connections, runtime, app_handle);
+            Some(LanDiscoveryHandle { pump, consumer })
         }
         Err(err) => {
             tracing::debug!("mDNS discovery unavailable: {err:#}");
@@ -1173,7 +1251,7 @@ fn spawn_lan_event_loop(
     paired_connections: Arc<PairedConnectionManager>,
     runtime: Arc<Mutex<NodeRuntime>>,
     app_handle: AppHandle,
-) {
+) -> JoinHandle<()> {
     tokio::spawn(async move {
         while let Some(event) = rx.recv().await {
             match event {
@@ -1206,7 +1284,7 @@ fn spawn_lan_event_loop(
                 }
             }
         }
-    });
+    })
 }
 
 /// Runs `probe_identity_via` in the background and feeds a successful reply
@@ -1221,11 +1299,20 @@ fn spawn_identity_probe(
     tokio::spawn(async move {
         match probe_identity_via(&runtime, &endpoint_id).await {
             Ok(info) => {
+                // `ControlMessage::Identity.os` is `#[serde(default)]`, so an
+                // old-build peer's reply deserializes to `""` rather than
+                // being absent — normalize that to "unknown" here, at the
+                // probe-to-registry boundary, rather than storing `Some("")`.
+                let os = if info.os.is_empty() {
+                    None
+                } else {
+                    Some(info.os)
+                };
                 let updated = nearby.lock().await.set_identity(
                     &endpoint_id,
                     info.display_name,
                     info.device_type,
-                    info.os,
+                    os,
                 );
                 if updated {
                     emit_nearby(&app_handle, "nearby-device-identified", &endpoint_id);

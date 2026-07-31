@@ -9,6 +9,7 @@ use engine::Discoverability;
 use std::time::Duration;
 
 const PRESENCE_DEADLINE: Duration = Duration::from_secs(60);
+const NETWORK_READY_DEADLINE: Duration = Duration::from_secs(30);
 
 /// `node`'s view of whether `endpoint_id` is currently online. Used to detect
 /// whether a probe connection clobbered the paired peer's real session.
@@ -139,4 +140,106 @@ async fn two_nodes_discover_each_other_over_mdns() {
     assert!(found.identified, "probe should have resolved the name");
     assert_eq!(found.display_name.as_deref(), Some("bob"));
     assert_eq!(found.fingerprint.len(), 14);
+}
+
+/// Regression coverage for the endpoint-rebuild fix: `Discoverability`
+/// transitions across the `Off` boundary go through the same machinery as
+/// `reconfigure_network` (close the endpoint, rebuild it, restart discovery
+/// if applicable) rather than a lightweight toggle, because iroh 1.0.3 has no
+/// way to unregister an address-lookup service or flip `advertise` on a live
+/// `MdnsAddressLookup`. This doesn't need real multicast: it only exercises
+/// that the rebuild completes and the node comes back online each time,
+/// repeated to catch a stall or leak that only shows up on a second cycle.
+#[tokio::test]
+async fn discoverability_off_then_on_rebuilds_the_endpoint_repeatedly() {
+    let node = common::spawn_node("solo").await;
+    common::wait_until("network ready after start", NETWORK_READY_DEADLINE, || {
+        node.is_network_ready()
+    })
+    .await;
+
+    for _ in 0..2 {
+        node.set_discoverability(Discoverability::Off).await;
+        assert_eq!(node.discoverability().await, Discoverability::Off);
+        assert!(
+            node.list_nearby().await.is_empty(),
+            "moving to Off must clear the nearby list"
+        );
+        common::wait_until(
+            "network ready after moving to Off",
+            NETWORK_READY_DEADLINE,
+            || node.is_network_ready(),
+        )
+        .await;
+
+        node.set_discoverability(Discoverability::Everyone).await;
+        assert_eq!(node.discoverability().await, Discoverability::Everyone);
+        common::wait_until(
+            "network ready after leaving Off",
+            NETWORK_READY_DEADLINE,
+            || node.is_network_ready(),
+        )
+        .await;
+    }
+}
+
+/// `Everyone` <-> `PairedOnly` must not touch mDNS state at all — no rebuild,
+/// no network-warming blip.
+#[tokio::test]
+async fn paired_only_transition_does_not_rebuild_the_network() {
+    let node = common::spawn_node("solo").await;
+    common::wait_until("network ready after start", NETWORK_READY_DEADLINE, || {
+        node.is_network_ready()
+    })
+    .await;
+
+    node.set_discoverability(Discoverability::PairedOnly).await;
+    assert_eq!(node.discoverability().await, Discoverability::PairedOnly);
+    // Rebuilding briefly flips network_ready to false; since neither side of
+    // this transition is Off, it must never have happened. No wait here is
+    // deliberate: `set_discoverability` is awaited to completion above, and
+    // if it had rebuilt the network this flag would already be false.
+    assert!(node.is_network_ready());
+
+    node.set_discoverability(Discoverability::Everyone).await;
+    assert_eq!(node.discoverability().await, Discoverability::Everyone);
+    assert!(node.is_network_ready());
+}
+
+/// Real multicast — opt-in, see `two_nodes_discover_each_other_over_mdns`.
+///
+/// Regression test for the Critical finding: previously `Off` only aborted
+/// the local consumer task and left the registered `MdnsAddressLookup`
+/// advertising forever (its `advertise` flag is fixed at construction and
+/// iroh 1.0.3 has no way to unregister it), so a peer that turned
+/// discoverability off never actually stopped being visible over mDNS. This
+/// asserts the peer that goes `Off` actually disappears from the other
+/// side's Nearby list, not just that our own list clears locally.
+#[tokio::test]
+#[ignore = "requires multicast on the local network"]
+async fn discoverability_off_stops_mdns_advertising() {
+    let alice = common::spawn_node_with_lan_discovery("alice").await;
+    let bob = common::spawn_node_with_lan_discovery("bob").await;
+
+    common::wait_for_nearby(
+        &bob,
+        &alice.endpoint_id(),
+        std::time::Duration::from_secs(20),
+    )
+    .await
+    .expect("bob should discover alice before the Off toggle");
+
+    alice.set_discoverability(Discoverability::Off).await;
+
+    let vanished = common::wait_until_absent(
+        &bob,
+        &alice.endpoint_id(),
+        std::time::Duration::from_secs(60),
+    )
+    .await;
+    assert!(
+        vanished,
+        "alice must actually stop advertising once Off — bob should stop seeing her, \
+         not just have her own local list clear"
+    );
 }

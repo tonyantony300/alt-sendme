@@ -76,19 +76,23 @@ impl NearbyRegistry {
 
     /// Returns `false` if the peer is not tracked, which happens when it expires
     /// while its probe is still in flight.
+    ///
+    /// `os` is `None` for "unknown" (the caller's job to decide that — see
+    /// `ControlMessage::Identity`'s `#[serde(default)]` `os: String`, where an
+    /// old-build peer's reply deserializes to `""`, not this `None`).
     pub fn set_identity(
         &mut self,
         endpoint_id: &str,
         display_name: String,
         device_type: String,
-        os: String,
+        os: Option<String>,
     ) -> bool {
         let Some(device) = self.devices.get_mut(endpoint_id) else {
             return false;
         };
         device.display_name = Some(display_name);
         device.device_type = Some(device_type);
-        device.os = Some(os);
+        device.os = os;
         device.identified = true;
         true
     }
@@ -160,7 +164,7 @@ mod tests {
             &id("dd"),
             "Tony's MacBook".to_string(),
             "laptop".to_string(),
-            "macos".to_string(),
+            Some("macos".to_string()),
         ));
 
         let listed = reg.list();
@@ -177,9 +181,28 @@ mod tests {
             &id("ee"),
             "Ghost".to_string(),
             "laptop".to_string(),
-            "linux".to_string(),
+            Some("linux".to_string()),
         ));
         assert!(reg.list().is_empty());
+    }
+
+    #[test]
+    fn set_identity_with_none_os_leaves_it_unset() {
+        // The caller's job (see `node::spawn_identity_probe`) is to normalize
+        // an old-build peer's empty-string reply to `None` before calling
+        // here — this only proves the registry stores whatever it's given.
+        let mut reg = NearbyRegistry::new();
+        reg.observe(&id("11"), false);
+        assert!(reg.set_identity(
+            &id("11"),
+            "Old Build".to_string(),
+            "laptop".to_string(),
+            None,
+        ));
+
+        let listed = reg.list();
+        assert!(listed[0].identified);
+        assert_eq!(listed[0].os, None);
     }
 
     #[test]

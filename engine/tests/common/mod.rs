@@ -267,6 +267,30 @@ pub async fn wait_for_nearby(
     }
 }
 
+/// Polls `node`'s Nearby list every 500ms until `endpoint_id` is no longer
+/// present, or `deadline` elapses. Returns whether it actually disappeared —
+/// used to confirm a peer really stopped advertising (mDNS sends an explicit
+/// "goodbye" when the last `MdnsAddressLookup` clone for it drops, so this
+/// resolves in seconds, not a slow TTL expiry).
+pub async fn wait_until_absent(node: &TestNode, endpoint_id: &str, deadline: Duration) -> bool {
+    let end = tokio::time::Instant::now() + deadline;
+    loop {
+        let present = node
+            .service
+            .list_nearby()
+            .await
+            .into_iter()
+            .any(|d| d.endpoint_id.eq_ignore_ascii_case(endpoint_id));
+        if !present {
+            return true;
+        }
+        if tokio::time::Instant::now() >= end {
+            return false;
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
+}
+
 /// Two nodes already paired with each other.
 pub async fn spawn_paired_nodes() -> (TestNode, TestNode) {
     let host = spawn_node("alice").await;
