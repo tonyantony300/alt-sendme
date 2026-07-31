@@ -24,26 +24,9 @@ protocol = { path = "protocol", package = "sendme-protocol" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 native = { path = "native", package = "sendme-native" }
-clap = { version = "4.4.10", features = ["derive"] }
-console = "0.15.7"
-crossterm = { version = "0.29.0", features = [
-  "event-stream",
-  "osc52",
-], optional = true }
-indicatif = "0.17.7"
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
-irpc = "0.17.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-io = { path = "wasm-io", package = "sendme-wasm-io" }
-
-[target.'cfg(unix)'.dependencies]
-libc = { version = "0.2.174", optional = true }
-
-[target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59.0", features = [
-  "Win32_System_Console",
-], optional = true }
 
 [dev-dependencies]
 duct = "0.13.6"
@@ -55,10 +38,6 @@ tokio = { version = "1.34.0", features = ["full"] }
 iroh = { version = "1.0.3", features = ["platform-verifier"] }
 iroh-blobs = { version = "0.103" }
 data-encoding = "2.8.0"
-
-[features]
-clipboard = ["dep:crossterm", "dep:windows-sys", "dep:libc"]
-default = ["clipboard"]
 
 [profile.release]
 panic = "abort"
