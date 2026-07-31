@@ -1,10 +1,5 @@
 name: Flatpak lint
 
-# Lints the Flathub packaging (manifest + metainfo) on PRs, no full build.
-# Manifest errors block the PR. The AppStream check stays report-only until
-# dashbeam.net serves the screenshots; drop its `|| true` afterward to make it
-# blocking too.
-
 on:
   push:
     branches:
@@ -44,16 +39,12 @@ jobs:
           test -f flatpak/net.dashbeam.DashBeam.yml
           test -f flatpak/net.dashbeam.DashBeam.metainfo.xml
 
-          # Manifest lint blocks the PR on structural errors. Mount read-write so
-          # the linter can create its .flatpak-builder cache; :ro makes it crash.
           { echo '### Manifest'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           docker run --rm -v "$PWD":/w -w /w "$img" \
             manifest flatpak/net.dashbeam.DashBeam.yml 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-          # AppStream lint is report-only until dashbeam.net serves the
-          # screenshots; drop the `|| true` afterward to make it blocking too.
           { echo '### AppStream metainfo'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           docker run --rm -v "$PWD":/w:ro -w /w "$img" \
-            appstream flatpak/net.dashbeam.DashBeam.metainfo.xml 2>&1 | tee -a "$GITHUB_STEP_SUMMARY" || true
+            appstream flatpak/net.dashbeam.DashBeam.metainfo.xml 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"

@@ -28,8 +28,6 @@ modules:
     sources:
       - type: git
         url: https://github.com/tonyantony300/dashbeam.git
-        # Must point at a release tag whose tree contains this flatpak/ dir.
-        # commit must be the exact SHA that tag v0.6.2 resolves to.
         tag: v0.6.2
         commit: c24a704d6f7efd20beadd8707fac3e44e9a9cc5d
       - cargo-sources.json
