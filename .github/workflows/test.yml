@@ -37,8 +37,15 @@ jobs:
       # iOS targets live here rather than in rust-toolchain.toml so Linux and
       # F-Droid builds don't pull an Apple std they can never use.
       - uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
-        with:
-          targets: aarch64-apple-ios
+      # Must be a separate step, not the action's `targets:` input. The action
+      # installs "1.91.0" while rust-toolchain.toml pins "1.91", and rustup
+      # treats those as distinct toolchains -- so `targets:` lands on one and
+      # cargo resolves the other. Running rustup inside the repo resolves the
+      # toolchain file, adding the target where cargo will actually look.
+      # publish.yml only avoids this because its targets are the host triple,
+      # which every toolchain ships by default.
+      - name: Add iOS target to the toolchain cargo will use
+        run: rustup target add aarch64-apple-ios
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'

@@ -57,11 +57,16 @@ jobs:
           BASE="${{ github.event.pull_request.base.sha }}"
           CHANGED=$(git diff --name-only "$BASE"...HEAD)
           fail() { echo "::error::$1"; exit 1; }
+          # src-tauri depends on ../engine by path, so an engine manifest change
+          # legitimately rewrites src-tauri/Cargo.lock -- and that lock *must*
+          # follow, or --locked builds fail on entries no longer in the graph.
           if echo "$CHANGED" | grep -q '^src-tauri/Cargo\.lock$'; then
-            echo "$CHANGED" | grep -q '^src-tauri/Cargo\.toml$' || fail "src-tauri/Cargo.lock was modified but src-tauri/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- src-tauri/Cargo.lock"
+            echo "$CHANGED" | grep -qE '^(src-tauri|engine|engine/protocol|engine/native|engine/wasm-io)/Cargo\.toml$' || fail "src-tauri/Cargo.lock was modified but no Cargo.toml it depends on was. Only change Cargo.lock when you add/update dependencies in a manifest. To discard: git checkout origin/main -- src-tauri/Cargo.lock"
           fi
+          # Likewise, engine/Cargo.lock covers the whole engine workspace, so any
+          # member manifest can legitimately move it.
           if echo "$CHANGED" | grep -q '^engine/Cargo\.lock$'; then
-            echo "$CHANGED" | grep -q '^engine/Cargo\.toml$' || fail "engine/Cargo.lock was modified but engine/Cargo.toml was not. Only change Cargo.lock when you add/update dependencies in Cargo.toml. To discard: git checkout origin/main -- engine/Cargo.lock"
+            echo "$CHANGED" | grep -qE '^engine/(protocol/|native/|wasm-io/)?Cargo\.toml$' || fail "engine/Cargo.lock was modified but no engine workspace Cargo.toml was. Only change Cargo.lock when you add/update dependencies in a manifest. To discard: git checkout origin/main -- engine/Cargo.lock"
           fi
           if echo "$CHANGED" | grep -q '^pnpm-lock\.yaml$'; then
             echo "$CHANGED" | grep -q '^package\.json$' || fail "pnpm-lock.yaml was modified but package.json was not. Only change pnpm-lock.yaml when you add/update dependencies in package.json. To discard: git checkout origin/main -- pnpm-lock.yaml"
