@@ -27,3 +27,25 @@ jobs:
       - name: Run engine E2E tests
         run: cargo test --manifest-path engine/Cargo.toml -- --test-threads=1
         timeout-minutes: 10
+
+  ios-build:
+    name: iOS Build Check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Pin encodes toolchain 1.91.0, matching rust-toolchain.toml.
+      # iOS targets live here rather than in rust-toolchain.toml so Linux and
+      # F-Droid builds don't pull an Apple std they can never use.
+      - uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
+        with:
+          targets: aarch64-apple-ios
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: ios-build
+      # The app is a staticlib on iOS, so --lib is the whole compile surface
+      # that matters here. This is what guards against a dependency landing in
+      # the tree that cannot cross-compile to aarch64-apple-ios.
+      - name: Build Rust for aarch64-apple-ios
+        run: cargo build --manifest-path src-tauri/Cargo.toml --target aarch64-apple-ios --lib
+        timeout-minutes: 45
