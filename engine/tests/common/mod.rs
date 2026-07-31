@@ -1,6 +1,8 @@
 #![allow(dead_code, unused_imports)]
 
-use engine::{DeviceInfo, Discoverability, DiscoveryModeOption, EventEmitter, NodeService};
+use engine::{
+    DeviceInfo, Discoverability, DiscoveryModeOption, EventEmitter, NearbyDevice, NodeService,
+};
 use iroh::endpoint::RelayMode;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -207,6 +209,62 @@ pub async fn spawn_node(display_name: &str) -> TestNode {
         .expect("set display name");
 
     TestNode { service, _dir: dir }
+}
+
+/// Start a node for lan-discovery E2E tests. `Discoverability` defaults to
+/// `Everyone`, so mDNS starts automatically as part of `NodeService::start`.
+/// Relay is disabled so the two nodes can only reach each other via addresses
+/// mDNS supplies, making the test a real check of the LAN-discovery pipeline
+/// instead of a fallback through n0's public discovery infrastructure.
+pub async fn spawn_node_with_lan_discovery(display_name: &str) -> TestNode {
+    let dir = tempfile::tempdir().expect("node temp dir");
+    let emitter = MockEventEmitter::new();
+    let service = tokio::time::timeout(
+        NODE_START_TIMEOUT,
+        NodeService::start(
+            dir.path(),
+            RelayMode::Disabled,
+            DiscoveryModeOption::Default,
+            Some(emitter),
+        ),
+    )
+    .await
+    .expect("node start timed out")
+    .expect("node start failed");
+    service
+        .set_device_display_name(display_name)
+        .expect("set display name");
+
+    TestNode { service, _dir: dir }
+}
+
+/// Polls `node`'s Nearby list every 500ms until `endpoint_id` shows up **and**
+/// its identity probe has completed, or `deadline` elapses. Waiting for
+/// `identified` (rather than returning on first sighting) avoids a race
+/// against the background probe task — the caller gets a stable result to
+/// assert against either way, since whatever was last observed (possibly
+/// `None`) is returned on timeout too.
+pub async fn wait_for_nearby(
+    node: &TestNode,
+    endpoint_id: &str,
+    deadline: Duration,
+) -> Option<NearbyDevice> {
+    let end = tokio::time::Instant::now() + deadline;
+    loop {
+        let found = node
+            .service
+            .list_nearby()
+            .await
+            .into_iter()
+            .find(|d| d.endpoint_id.eq_ignore_ascii_case(endpoint_id));
+        if matches!(&found, Some(device) if device.identified) {
+            return found;
+        }
+        if tokio::time::Instant::now() >= end {
+            return found;
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
 }
 
 /// Two nodes already paired with each other.

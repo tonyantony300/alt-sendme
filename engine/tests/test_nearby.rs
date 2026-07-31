@@ -118,3 +118,25 @@ async fn paired_peer_probe_refused_under_off_does_not_kill_session() {
         "a refused probe must not tear down the paired peer's session"
     );
 }
+
+/// Real multicast. CI runners frequently block it, so this is opt-in:
+/// `cargo test --manifest-path engine/Cargo.toml --test test_nearby -- --ignored --test-threads=1`
+#[tokio::test]
+#[ignore = "requires multicast on the local network"]
+async fn two_nodes_discover_each_other_over_mdns() {
+    let alice = common::spawn_node_with_lan_discovery("alice").await;
+    let bob = common::spawn_node_with_lan_discovery("bob").await;
+
+    let found = common::wait_for_nearby(
+        &alice,
+        &bob.endpoint_id(),
+        std::time::Duration::from_secs(20),
+    )
+    .await
+    .expect("bob should appear in alice's nearby list");
+
+    assert_eq!(found.endpoint_id, bob.endpoint_id());
+    assert!(found.identified, "probe should have resolved the name");
+    assert_eq!(found.display_name.as_deref(), Some("bob"));
+    assert_eq!(found.fingerprint.len(), 14);
+}

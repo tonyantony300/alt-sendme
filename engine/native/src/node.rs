@@ -15,18 +15,20 @@ use iroh::address_lookup::dns::DnsAddressLookup;
 use iroh::EndpointId;
 use protocol::{
     allows_unpaired_control, apply_options, export_connection_keying_material, read_message,
-    should_answer_identity, sign_challenge, unpaired_message_allowed, verify_challenge,
-    write_message, AddrInfoOptions, AppHandle, ControlMessage, Discoverability,
+    should_answer_identity, should_publish_mdns, sign_challenge, unpaired_message_allowed,
+    verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, Discoverability,
     DiscoveryModeOption, InviteResponse, PairedDevice, PairingStatus, RememberVote, CONTROL_ALPN,
     PRESENCE_CONNECT_TIMEOUT_SECS,
 };
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{mpsc, Mutex, RwLock};
 use tokio::task::JoinHandle;
 use tracing::debug;
 
 use crate::device_identity::{
     load_or_create_identity, DeviceIdentity, DeviceInfo, PairedDeviceInfo, PairedDeviceStore,
 };
+use crate::lan_discovery::{LanDiscovery, LanEvent};
+use crate::nearby::{NearbyDevice, NearbyRegistry, ObserveOutcome};
 use crate::paired_connections::{invite_wait_timeout, PairedConnectionManager};
 use crate::pairing_util::{build_control_connect_addr, set_presence};
 use crate::runtime::NodeRuntime;
@@ -593,6 +595,12 @@ pub struct NodeService {
     pub(crate) app_handle: AppHandle,
     relay_mode: Mutex<RelayMode>,
     discovery_mode: Mutex<DiscoveryModeOption>,
+    /// Devices seen on the local network but not yet paired. Fed by
+    /// `lan_discovery`'s mDNS pump; see `spawn_lan_event_loop`.
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    /// `None` when discovery isn't running: `Discoverability::Off`, or the
+    /// mDNS pump failed to start (no multicast, VPN, isolated guest network).
+    lan_discovery: Mutex<Option<LanDiscovery>>,
 }
 
 impl NodeService {
@@ -662,6 +670,24 @@ impl NodeService {
         paired_connections.attach_runtime(runtime.clone());
         let connections_supervisor = paired_connections.start();
 
+        let nearby = Arc::new(Mutex::new(NearbyRegistry::new()));
+        let lan_discovery = if should_publish_mdns(access.read().await.discoverability) {
+            let endpoint = {
+                let runtime = runtime.lock().await;
+                runtime.endpoint.clone()
+            };
+            start_lan_discovery(
+                &endpoint,
+                nearby.clone(),
+                access.clone(),
+                paired_connections.clone(),
+                runtime.clone(),
+                app_handle.clone(),
+            )
+        } else {
+            None
+        };
+
         Ok(Self {
             runtime,
             identity,
@@ -677,12 +703,17 @@ impl NodeService {
             app_handle,
             relay_mode: Mutex::new(relay_mode),
             discovery_mode: Mutex::new(discovery_mode),
+            nearby,
+            lan_discovery: Mutex::new(lan_discovery),
         })
     }
 
     pub async fn shutdown(&self) -> anyhow::Result<()> {
 
         self.stop_pairing_host().await;
+        if let Some(discovery) = self.lan_discovery.lock().await.take() {
+            discovery.shutdown();
+        }
         if let Some(handle) = self.connections_supervisor.lock().await.take() {
             handle.abort();
 
@@ -1038,48 +1069,53 @@ impl NodeService {
         Ok(())
     }
 
+    /// Stops discovery and clears the Nearby list on a move to `Off`; starts
+    /// discovery on a move away from `Off`. Any other transition (e.g.
+    /// `Everyone` <-> `PairedOnly`) leaves discovery running untouched — both
+    /// still publish over mDNS, they only differ in who gets an identity reply.
     pub async fn set_discoverability(&self, setting: Discoverability) {
-        self.access.write().await.discoverability = setting;
+        let previous = {
+            let mut access = self.access.write().await;
+            let previous = access.discoverability;
+            access.discoverability = setting;
+            previous
+        };
+
+        if matches!(setting, Discoverability::Off) {
+            if let Some(discovery) = self.lan_discovery.lock().await.take() {
+                discovery.shutdown();
+            }
+            self.nearby.lock().await.clear();
+        } else if matches!(previous, Discoverability::Off) {
+            let endpoint = {
+                let runtime = self.runtime.lock().await;
+                runtime.endpoint.clone()
+            };
+            let discovery = start_lan_discovery(
+                &endpoint,
+                self.nearby.clone(),
+                self.access.clone(),
+                self.paired_connections.clone(),
+                self.runtime.clone(),
+                self.app_handle.clone(),
+            );
+            *self.lan_discovery.lock().await = discovery;
+        }
     }
 
     pub async fn discoverability(&self) -> Discoverability {
         self.access.read().await.discoverability
     }
 
+    /// Devices currently seen on the local network but not yet paired.
+    pub async fn list_nearby(&self) -> Vec<NearbyDevice> {
+        self.nearby.lock().await.list()
+    }
+
     /// Dial a peer's control ALPN and ask who it is. Used for devices found on
     /// the local network, where mDNS supplies a node id and nothing else.
     pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {
-        let remote: EndpointId = endpoint_id.parse()?;
-        let endpoint = {
-            let runtime = self.runtime.lock().await;
-            runtime.endpoint.clone()
-        };
-        let conn = tokio::time::timeout(
-            Duration::from_secs(5),
-            endpoint.connect(remote, CONTROL_ALPN),
-        )
-        .await
-        .context("identity probe timed out")??;
-
-        let (mut send, mut recv) = conn.open_bi().await?;
-        write_message(&mut send, &ControlMessage::WhoAreYou).await?;
-        match tokio::time::timeout(Duration::from_secs(5), read_message(&mut recv))
-            .await
-            .context("identity reply timed out")??
-        {
-            ControlMessage::Identity {
-                endpoint_id,
-                display_name,
-                device_type,
-                os,
-            } => Ok(DeviceInfo {
-                endpoint_id,
-                display_name,
-                device_type,
-                os,
-            }),
-            other => anyhow::bail!("unexpected reply to WhoAreYou: {other:?}"),
-        }
+        probe_identity_via(&self.runtime, endpoint_id).await
     }
 }
 
@@ -1096,6 +1132,183 @@ fn load_allowed_from_store(paired_store: &PairedDeviceStore) -> anyhow::Result<H
     }
 
     Ok(allowed)
+}
+
+/// Starts the mDNS pump and its consumer loop, wiring sightings into `nearby`
+/// and identity probes into the discovery/identified events.
+///
+/// Failure is **not** fatal: no multicast, an active VPN, or an isolated guest
+/// network all produce an error here, and the app must keep working with
+/// pairing codes and relays. Mirrors how `node_init_error` treats a failed
+/// `NodeService`.
+fn start_lan_discovery(
+    endpoint: &Endpoint,
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    access: Arc<RwLock<AccessState>>,
+    paired_connections: Arc<PairedConnectionManager>,
+    runtime: Arc<Mutex<NodeRuntime>>,
+    app_handle: AppHandle,
+) -> Option<LanDiscovery> {
+    let (tx, rx) = mpsc::unbounded_channel();
+    match LanDiscovery::start(endpoint, tx) {
+        Ok(discovery) => {
+            spawn_lan_event_loop(rx, nearby, access, paired_connections, runtime, app_handle);
+            Some(discovery)
+        }
+        Err(err) => {
+            tracing::debug!("mDNS discovery unavailable: {err:#}");
+            emit_nearby_reason(&app_handle, "nearby-unavailable", &err.to_string());
+            None
+        }
+    }
+}
+
+/// Consumes `LanEvent`s and turns them into `NearbyRegistry` updates and UI
+/// events. All policy decisions about what a sighting means live here —
+/// `lan_discovery` itself only knows how to talk to multicast.
+fn spawn_lan_event_loop(
+    mut rx: mpsc::UnboundedReceiver<LanEvent>,
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    access: Arc<RwLock<AccessState>>,
+    paired_connections: Arc<PairedConnectionManager>,
+    runtime: Arc<Mutex<NodeRuntime>>,
+    app_handle: AppHandle,
+) {
+    tokio::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                LanEvent::Appeared { endpoint_id } => {
+                    let is_paired = is_paired_endpoint(&access, &endpoint_id).await;
+                    let outcome = nearby.lock().await.observe(&endpoint_id, is_paired);
+                    match outcome {
+                        ObserveOutcome::ProbeNeeded => {
+                            emit_nearby(&app_handle, "nearby-device-found", &endpoint_id);
+                            spawn_identity_probe(
+                                endpoint_id,
+                                runtime.clone(),
+                                nearby.clone(),
+                                app_handle.clone(),
+                            );
+                        }
+                        ObserveOutcome::Paired => {
+                            // Strongest possible signal that a known device
+                            // just came online — retry presence now instead
+                            // of waiting out its exponential backoff.
+                            paired_connections.nudge_reconnect(&endpoint_id).await;
+                        }
+                        ObserveOutcome::Known | ObserveOutcome::Invalid => {}
+                    }
+                }
+                LanEvent::Vanished { endpoint_id } => {
+                    if nearby.lock().await.expire(&endpoint_id) {
+                        emit_nearby(&app_handle, "nearby-device-lost", &endpoint_id);
+                    }
+                }
+            }
+        }
+    });
+}
+
+/// Runs `probe_identity_via` in the background and feeds a successful reply
+/// back into the registry. Old build peers or a declined probe leave the
+/// device listed but unidentified, so the user can still send to it.
+fn spawn_identity_probe(
+    endpoint_id: String,
+    runtime: Arc<Mutex<NodeRuntime>>,
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    app_handle: AppHandle,
+) {
+    tokio::spawn(async move {
+        match probe_identity_via(&runtime, &endpoint_id).await {
+            Ok(info) => {
+                let updated = nearby.lock().await.set_identity(
+                    &endpoint_id,
+                    info.display_name,
+                    info.device_type,
+                    info.os,
+                );
+                if updated {
+                    emit_nearby(&app_handle, "nearby-device-identified", &endpoint_id);
+                }
+            }
+            Err(err) => {
+                tracing::debug!("identity probe for {endpoint_id} failed: {err:#}");
+            }
+        }
+    });
+}
+
+/// Whether `endpoint_id` is already in the paired allowlist. Nearby ignores
+/// paired peers entirely — normal presence tracking applies to them instead.
+async fn is_paired_endpoint(access: &Arc<RwLock<AccessState>>, endpoint_id: &str) -> bool {
+    match EndpointId::from_str(endpoint_id) {
+        Ok(id) => access.read().await.allowed.contains(&id),
+        Err(_) => false,
+    }
+}
+
+/// Dial a peer's control ALPN and ask who it is. Shared by `NodeService::probe_identity`
+/// (a caller already holding a `NodeService`) and the Nearby identity probe
+/// (a background task that only has the `runtime` handle).
+async fn probe_identity_via(
+    runtime: &Arc<Mutex<NodeRuntime>>,
+    endpoint_id: &str,
+) -> anyhow::Result<DeviceInfo> {
+    let remote: EndpointId = endpoint_id.parse()?;
+    let endpoint = {
+        let runtime = runtime.lock().await;
+        runtime.endpoint.clone()
+    };
+    let conn = tokio::time::timeout(
+        Duration::from_secs(5),
+        endpoint.connect(remote, CONTROL_ALPN),
+    )
+    .await
+    .context("identity probe timed out")??;
+
+    let (mut send, mut recv) = conn.open_bi().await?;
+    write_message(&mut send, &ControlMessage::WhoAreYou).await?;
+    match tokio::time::timeout(Duration::from_secs(5), read_message(&mut recv))
+        .await
+        .context("identity reply timed out")??
+    {
+        ControlMessage::Identity {
+            endpoint_id,
+            display_name,
+            device_type,
+            os,
+        } => Ok(DeviceInfo {
+            endpoint_id,
+            display_name,
+            device_type,
+            os,
+        }),
+        other => anyhow::bail!("unexpected reply to WhoAreYou: {other:?}"),
+    }
+}
+
+/// Emits a Nearby event carrying just the endpoint id, matching what the
+/// frontend needs to look up the affected row in its own Nearby list.
+fn emit_nearby(app_handle: &AppHandle, event: &str, endpoint_id: &str) {
+    emit_nearby_payload(
+        app_handle,
+        event,
+        serde_json::json!({ "endpointId": endpoint_id }),
+    );
+}
+
+/// Emits a Nearby event carrying a free-form reason, used for `nearby-unavailable`.
+fn emit_nearby_reason(app_handle: &AppHandle, event: &str, reason: &str) {
+    emit_nearby_payload(app_handle, event, serde_json::json!({ "reason": reason }));
+}
+
+fn emit_nearby_payload(app_handle: &AppHandle, event: &str, payload: serde_json::Value) {
+    let Some(handle) = app_handle.as_ref() else {
+        return;
+    };
+    if let Err(err) = handle.emit_event_with_payload(event, &payload.to_string()) {
+        tracing::debug!("emit {event} failed: {err}");
+    }
 }
 
 async fn send_forget_to_peer(

@@ -121,6 +121,29 @@ impl PairedConnectionManager {
 
     }
 
+    /// Resets a paired device's reconnect backoff and connects immediately.
+    ///
+    /// Used when mDNS reports the device just appeared on the local network —
+    /// the strongest possible signal that presence should be re-checked now
+    /// instead of waiting out an exponential backoff that may be minutes long.
+    /// A no-op if the device isn't connectable (e.g. remotely unpaired).
+    pub async fn nudge_reconnect(&self, endpoint_id: &str) {
+        let key = endpoint_id.to_lowercase();
+        let Ok(Some(device)) = self.paired_store.get(endpoint_id) else {
+            return;
+        };
+        if !device.pairing_status.is_connectable() {
+            return;
+        }
+
+        let mut tasks = self.tasks.lock().await;
+        if let Some(handle) = tasks.remove(&key) {
+            handle.abort();
+        }
+        let handle = self.spawn_connect_task(device);
+        tasks.insert(key, handle);
+    }
+
     pub async fn forget(&self, endpoint_id: &str) {
         let key = endpoint_id.to_lowercase();
 
