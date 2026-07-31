@@ -304,3 +304,97 @@ async fn discoverability_off_stops_mdns_advertising() {
          not just have her own local list clear"
     );
 }
+
+// The three tests below need `invite_nearby_device`'s precondition —
+// `endpoint_id` actually present in the caller's Nearby list — satisfied for
+// real, which means real mDNS multicast between `alice` and `bob`. Same
+// opt-in reasoning as `two_nodes_discover_each_other_over_mdns`: CI runners
+// frequently block multicast, so these are excluded from the default run.
+// `cargo test --manifest-path engine/Cargo.toml --test test_nearby -- --ignored --test-threads=1`
+
+#[tokio::test]
+#[ignore = "requires multicast on the local network"]
+async fn accepting_a_nearby_invite_promotes_the_sender_to_paired() {
+    let alice = common::spawn_node_with_lan_discovery("alice").await;
+    let bob = common::spawn_node_with_lan_discovery("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    assert!(
+        bob.list_paired().unwrap().is_empty(),
+        "precondition: bob knows nobody"
+    );
+
+    common::wait_for_nearby(&alice, &bob.endpoint_id(), Duration::from_secs(20))
+        .await
+        .expect("alice should discover bob before inviting");
+
+    let file = common::temp_file_with_contents("hello nearby").await;
+    alice
+        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+        .await
+        .expect("invite should be delivered");
+
+    bob.accept_nearby_invite(&alice.endpoint_id())
+        .await
+        .expect("accept should succeed");
+
+    let paired = bob.list_paired().unwrap();
+    assert_eq!(paired.len(), 1, "accepting must create a paired record");
+    assert_eq!(paired[0].endpoint_id, alice.endpoint_id());
+}
+
+#[tokio::test]
+#[ignore = "requires multicast on the local network"]
+async fn declining_a_nearby_invite_leaves_the_sender_unpaired() {
+    let alice = common::spawn_node_with_lan_discovery("alice").await;
+    let bob = common::spawn_node_with_lan_discovery("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    common::wait_for_nearby(&alice, &bob.endpoint_id(), Duration::from_secs(20))
+        .await
+        .expect("alice should discover bob before inviting");
+
+    let file = common::temp_file_with_contents("nope").await;
+    alice
+        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+        .await
+        .expect("invite should be delivered");
+
+    bob.decline_nearby_invite(&alice.endpoint_id(), false)
+        .await
+        .expect("decline should succeed");
+
+    assert!(
+        bob.list_paired().unwrap().is_empty(),
+        "declining must not pair"
+    );
+}
+
+#[tokio::test]
+#[ignore = "requires multicast on the local network"]
+async fn a_promoted_device_leaves_the_nearby_list() {
+    let alice = common::spawn_node_with_lan_discovery("alice").await;
+    let bob = common::spawn_node_with_lan_discovery("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    common::wait_for_nearby(&alice, &bob.endpoint_id(), Duration::from_secs(20))
+        .await
+        .expect("alice should discover bob before inviting");
+
+    let file = common::temp_file_with_contents("x").await;
+    alice
+        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+        .await
+        .unwrap();
+    bob.accept_nearby_invite(&alice.endpoint_id())
+        .await
+        .unwrap();
+
+    assert!(
+        !bob.list_nearby()
+            .await
+            .iter()
+            .any(|d| d.endpoint_id == alice.endpoint_id()),
+        "a paired device must not also appear under Nearby"
+    );
+}

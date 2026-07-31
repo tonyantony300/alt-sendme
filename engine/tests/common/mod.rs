@@ -142,6 +142,31 @@ impl TestFixture {
     }
 }
 
+/// A temp file with fixed contents, for tests that need a real path to feed
+/// into a send/share call. Keeps its temp dir alive for as long as the value
+/// lives.
+pub struct TempFileWithContents {
+    _dir: tempfile::TempDir,
+    path: PathBuf,
+}
+
+impl TempFileWithContents {
+    pub fn path_string(&self) -> String {
+        self.path.to_string_lossy().into_owned()
+    }
+}
+
+/// Creates a temp file containing `contents`, returning a handle whose
+/// `path_string()` is suitable for passing straight into a send/share call.
+pub async fn temp_file_with_contents(contents: &str) -> TempFileWithContents {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let path = dir.path().join("nearby-invite.txt");
+    tokio::fs::write(&path, contents)
+        .await
+        .expect("write temp file");
+    TempFileWithContents { _dir: dir, path }
+}
+
 /// Poll `check` every 500ms until it returns true or `deadline` elapses.
 pub async fn wait_until(what: &str, deadline: std::time::Duration, check: impl Fn() -> bool) {
     let end = tokio::time::Instant::now() + deadline;

@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -17,8 +17,8 @@ use protocol::{
     allows_unpaired_control, apply_options, export_connection_keying_material, read_message,
     should_answer_identity, should_publish_mdns, sign_challenge, unpaired_message_allowed,
     verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, Discoverability,
-    DiscoveryModeOption, InviteResponse, PairedDevice, PairingStatus, RememberVote, CONTROL_ALPN,
-    PRESENCE_CONNECT_TIMEOUT_SECS,
+    DiscoveryModeOption, InviteResponse, PairedDevice, PairingStatus, RememberVote, SendOptions,
+    CONTROL_ALPN, PRESENCE_CONNECT_TIMEOUT_SECS,
 };
 use tokio::sync::{mpsc, Mutex, RwLock};
 use tokio::task::JoinHandle;
@@ -32,6 +32,8 @@ use crate::nearby::{NearbyDevice, NearbyRegistry, ObserveOutcome};
 use crate::paired_connections::{invite_wait_timeout, PairedConnectionManager};
 use crate::pairing_util::{build_control_connect_addr, set_presence};
 use crate::runtime::NodeRuntime;
+use crate::send::start_share_items;
+use crate::types::SendResult;
 
 #[derive(Debug)]
 pub(crate) struct AccessState {
@@ -43,6 +45,7 @@ pub(crate) struct AccessState {
 #[derive(Debug)]
 struct PairedOnlyHook {
     access: Arc<RwLock<AccessState>>,
+    blocked: Arc<RwLock<HashSet<String>>>,
 }
 
 impl EndpointHooks for PairedOnlyHook {
@@ -56,6 +59,12 @@ impl EndpointHooks for PairedOnlyHook {
             return AfterHandshakeOutcome::accept();
         }
         let remote = conn.remote_id();
+        if self.blocked.read().await.contains(&remote.to_string()) {
+            return AfterHandshakeOutcome::Reject {
+                error_code: 403u32.into(),
+                reason: b"blocked peer".to_vec(),
+            };
+        }
         let access = self.access.read().await;
         let allowed = access.allowed.contains(&remote);
         if access.pairing_host_open || allowed || allows_unpaired_control(access.discoverability) {
@@ -601,6 +610,16 @@ pub struct NodeService {
     /// `None` when discovery isn't running: `Discoverability::Off`, or the
     /// mDNS pump failed to start (no multicast, VPN, isolated guest network).
     lan_discovery: Mutex<Option<LanDiscoveryHandle>>,
+    /// Peers a local user explicitly declined-and-blocked from a nearby
+    /// invite. Consulted by `PairedOnlyHook::after_handshake`, ahead of the
+    /// `Discoverability` check, so a blocked peer is rejected at the QUIC
+    /// handshake — before it can send anything at all.
+    blocked: Arc<RwLock<HashSet<String>>>,
+    /// Ephemeral shares started by `invite_nearby_device`. Each holds the
+    /// `Router`/endpoint that actually serves the blob, so it must outlive
+    /// this call — the receiver may not download until well after the invite
+    /// is delivered. Kept for the node's lifetime; dropped on `shutdown`.
+    nearby_shares: Mutex<Vec<SendResult>>,
     /// Serializes `reconfigure_network`, `set_discoverability`, and
     /// `shutdown` — all of them tear down and/or rebuild `runtime` and
     /// `lan_discovery`. Held for the whole decide-then-rebuild-then-settle
@@ -653,6 +672,7 @@ impl NodeService {
         let pairing_host_persistent = Arc::new(AtomicBool::new(false));
         let network_ready = Arc::new(AtomicBool::new(false));
         let presence = Arc::new(std::sync::RwLock::new(HashMap::new()));
+        let blocked: Arc<RwLock<HashSet<String>>> = Arc::new(RwLock::new(HashSet::new()));
 
         let paired_connections = Arc::new(PairedConnectionManager::new(
             identity.clone(),
@@ -665,6 +685,7 @@ impl NodeService {
             identity.clone(),
             paired_store.clone(),
             access.clone(),
+            blocked.clone(),
             pairing_host_persistent.clone(),
             app_handle.clone(),
             presence.clone(),
@@ -714,6 +735,8 @@ impl NodeService {
             nearby,
             lan_discovery: Mutex::new(lan_discovery),
             network_transition: Mutex::new(()),
+            blocked,
+            nearby_shares: Mutex::new(Vec::new()),
         })
     }
 
@@ -732,6 +755,7 @@ impl NodeService {
 
         }
         self.paired_connections.shutdown().await;
+        self.nearby_shares.lock().await.clear();
         let runtime = self.runtime.lock().await;
         runtime.router.shutdown().await?;
         runtime.endpoint.close().await;
@@ -807,6 +831,7 @@ impl NodeService {
             self.identity.clone(),
             self.paired_store.clone(),
             self.access.clone(),
+            self.blocked.clone(),
             self.pairing_host_persistent.clone(),
             self.app_handle.clone(),
             self.presence.clone(),
@@ -979,20 +1004,89 @@ impl NodeService {
             anyhow::bail!("unknown paired device");
         }
 
+        self.deliver_invite(remote_endpoint_id, blob_ticket, file_count, total_size, true)
+            .await
+    }
+
+    /// Sends to a device found on the local network. Mints a normal blob
+    /// ticket with the same ephemeral-share machinery any other send uses,
+    /// then delivers it through [`Self::deliver_invite`] — byte-for-byte the
+    /// same `ControlMessage::Invite` a paired device sends. The only
+    /// difference is the receiver has no `PairedDevice` record yet, so its UI
+    /// shows the sender's fingerprint for confirmation instead of treating
+    /// this as routine.
+    pub async fn invite_nearby_device(
+        &self,
+        endpoint_id: &str,
+        paths: Vec<String>,
+    ) -> anyhow::Result<()> {
+        anyhow::ensure!(
+            self.nearby
+                .lock()
+                .await
+                .list()
+                .iter()
+                .any(|d| d.endpoint_id == endpoint_id),
+            "device is not on the local network"
+        );
+        anyhow::ensure!(!paths.is_empty(), "no paths provided for sharing");
+
+        let path_bufs: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
+        let file_count = path_bufs.len() as u32;
+        let result = start_share_items(path_bufs, SendOptions::default(), &self.app_handle, None)
+            .await
+            .context("mint blob ticket for nearby invite")?;
+        let ticket = result.ticket.clone();
+        let total_size = result.size;
+
+        // The invite hands out a ticket good for a download that may happen
+        // well after this call returns — the share (and the ephemeral
+        // endpoint/router serving it) must outlive this function, so it's
+        // kept here rather than dropped at the end of the block.
+        self.nearby_shares.lock().await.push(result);
+
+        // A device we've never talked to has no cached `paired_connections`
+        // session and never will — skip straight to a fresh dial rather than
+        // waiting out `invite_wait_timeout`.
+        let delivered = self
+            .deliver_invite(endpoint_id, &ticket, file_count, total_size, false)
+            .await?;
+        anyhow::ensure!(delivered, "device is not reachable");
+
+        Ok(())
+    }
+
+    /// Connects to `remote_endpoint_id` and delivers a single `Invite`
+    /// message. Shared by [`Self::invite_paired_device`] and
+    /// [`Self::invite_nearby_device`] — same wire message either way; only
+    /// the precondition each checks beforehand differs. `use_cached_session`
+    /// controls whether a `paired_connections` session is worth checking
+    /// first: a paired device usually keeps one open, but a peer we're
+    /// inviting for the first time never has one.
+    async fn deliver_invite(
+        &self,
+        remote_endpoint_id: &str,
+        blob_ticket: &str,
+        file_count: u32,
+        total_size: u64,
+        use_cached_session: bool,
+    ) -> anyhow::Result<bool> {
+        let remote = EndpointId::from_str(remote_endpoint_id)?;
         let stored_relay = self
             .paired_store
             .get(remote_endpoint_id)?
             .and_then(|d| d.relay_url);
 
-        let conn = match self
-            .paired_connections
-            .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
-            .await
-        {
-            Some(conn) => {
+        let cached = if use_cached_session {
+            self.paired_connections
+                .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
+                .await
+        } else {
+            None
+        };
 
-                conn
-            }
+        let conn = match cached {
+            Some(conn) => conn,
             None => {
                 let endpoint = {
                     let runtime = self.runtime.lock().await;
@@ -1011,15 +1105,17 @@ impl NodeService {
                 .await;
                 match connect {
                     Ok(Ok(conn)) => {
-                        let now = protocol::identity::unix_now_ms();
-                        let _ = self.paired_store.touch(remote_endpoint_id, now);
-                        set_presence(
-                            &self.presence,
-                            &self.app_handle,
-                            &self.paired_store,
-                            remote_endpoint_id,
-                            true,
-                        );
+                        if use_cached_session {
+                            let now = protocol::identity::unix_now_ms();
+                            let _ = self.paired_store.touch(remote_endpoint_id, now);
+                            set_presence(
+                                &self.presence,
+                                &self.app_handle,
+                                &self.paired_store,
+                                remote_endpoint_id,
+                                true,
+                            );
+                        }
                         conn
                     }
                     Ok(Err(_err)) => {
@@ -1077,11 +1173,6 @@ impl NodeService {
             remote = %remote.fmt_short(),
             accepted,
         );
-        let response = if accepted {
-            InviteResponse::Accepted
-        } else {
-            InviteResponse::Declined
-        };
         let access = self.access.read().await;
         let in_allowlist = access.allowed.contains(&remote);
         drop(access);
@@ -1090,16 +1181,95 @@ impl NodeService {
             anyhow::bail!("unknown paired device");
         }
 
+        self.deliver_invite_response(remote_endpoint_id, accepted, true)
+            .await
+    }
+
+    /// Accepting is what creates the trust relationship. The user has
+    /// compared the fingerprint on screen; recording the peer as paired is
+    /// the durable consequence of that decision. Delegates the actual
+    /// accept notification to [`Self::deliver_invite_response`] — the same
+    /// message an already-paired device's accept sends.
+    pub async fn accept_nearby_invite(&self, endpoint_id: &str) -> anyhow::Result<()> {
+        let info = self
+            .probe_identity(endpoint_id)
+            .await
+            .unwrap_or_else(|_| DeviceInfo {
+                endpoint_id: endpoint_id.to_string(),
+                display_name: endpoint_id.chars().take(8).collect(),
+                device_type: protocol::identity::default_device_type(),
+                os: String::new(),
+            });
+
+        let now = protocol::identity::unix_now_ms();
+        self.paired_store.remember(PairedDevice {
+            endpoint_id: info.endpoint_id.clone(),
+            display_name: info.display_name,
+            device_type: info.device_type,
+            os: info.os,
+            paired_at: now,
+            last_seen_at: now,
+            relay_url: None,
+            pairing_status: PairingStatus::default(),
+        })?;
+
+        // Now that a paired record exists, it must not also show under Nearby.
+        self.nearby.lock().await.expire(endpoint_id);
+        self.access.write().await.allowed.insert(endpoint_id.parse()?);
+        self.paired_connections.refresh().await;
+
+        if let Some(handle) = &self.app_handle {
+            let _ = handle.emit_event("device-paired");
+        }
+
+        // We just met this peer — never a cached session to wait on.
+        self.deliver_invite_response(endpoint_id, true, false).await
+    }
+
+    pub async fn decline_nearby_invite(
+        &self,
+        endpoint_id: &str,
+        block: bool,
+    ) -> anyhow::Result<()> {
+        if block {
+            self.nearby.lock().await.expire(endpoint_id);
+            self.blocked.write().await.insert(endpoint_id.to_string());
+        }
+        self.deliver_invite_response(endpoint_id, false, false)
+            .await
+    }
+
+    /// Connects to `remote_endpoint_id` and delivers an `InviteResponse`.
+    /// Shared by [`Self::respond_paired_invite`], [`Self::accept_nearby_invite`],
+    /// and [`Self::decline_nearby_invite`] — see [`Self::deliver_invite`] for
+    /// why `use_cached_session` exists.
+    async fn deliver_invite_response(
+        &self,
+        remote_endpoint_id: &str,
+        accepted: bool,
+        use_cached_session: bool,
+    ) -> anyhow::Result<()> {
+        let remote = EndpointId::from_str(remote_endpoint_id)?;
+        let response = if accepted {
+            InviteResponse::Accepted
+        } else {
+            InviteResponse::Declined
+        };
+
         let stored_relay = self
             .paired_store
             .get(remote_endpoint_id)?
             .and_then(|d| d.relay_url);
 
-        let conn = match self
-            .paired_connections
-            .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
-            .await
-        {
+        let cached = if use_cached_session {
+            self.paired_connections
+                .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
+                .await
+        } else {
+            None
+        };
+
+        let conn = match cached {
             Some(conn) => conn,
             None => {
                 let endpoint = {
@@ -1508,6 +1678,7 @@ async fn build_runtime(
     identity: Arc<DeviceIdentity>,
     paired_store: Arc<PairedDeviceStore>,
     access: Arc<RwLock<AccessState>>,
+    blocked: Arc<RwLock<HashSet<String>>>,
     pairing_host_persistent: Arc<AtomicBool>,
     app_handle: AppHandle,
     presence: Arc<std::sync::RwLock<HashMap<String, bool>>>,
@@ -1519,6 +1690,7 @@ async fn build_runtime(
 
     let hook = PairedOnlyHook {
         access: access.clone(),
+        blocked,
     };
 
     // The control endpoint must both publish (so paired peers can find us by
