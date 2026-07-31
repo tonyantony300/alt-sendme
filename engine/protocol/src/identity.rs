@@ -179,8 +179,32 @@ fn android_getprop(key: &str) -> Option<String> {
     }
 }
 
+/// Classify an Android device from `ro.build.characteristics`.
+///
+/// The property holds a comma-separated tag list (e.g. `nosdcard,tablet`) whose
+/// order is not guaranteed, so match whole tags rather than a substring.
+pub fn device_type_from_android_characteristics(characteristics: &str) -> Option<&'static str> {
+    characteristics
+        .split(',')
+        .any(|tag| tag.trim().eq_ignore_ascii_case("tablet"))
+        .then_some("tablet")
+}
+
+#[cfg(target_os = "android")]
+fn android_default_device_type() -> String {
+    android_getprop("ro.build.characteristics")
+        .as_deref()
+        .and_then(device_type_from_android_characteristics)
+        .unwrap_or("phone")
+        .to_string()
+}
+
 pub fn default_device_type() -> String {
-    if cfg!(any(target_os = "ios", target_os = "android")) {
+    #[cfg(target_os = "android")]
+    return android_default_device_type();
+
+    #[cfg(not(target_os = "android"))]
+    if cfg!(target_os = "ios") {
         "phone".to_string()
     } else if cfg!(target_os = "macos") {
         detect_macos_device_type().unwrap_or_else(|| "laptop".to_string())
@@ -357,7 +381,8 @@ fn windows_has_system_battery() -> Option<bool> {
 #[cfg(test)]
 mod tests {
     use super::{
-        device_type_from_chassis, device_type_from_mac_model, is_placeholder_display_name,
+        device_type_from_android_characteristics, device_type_from_chassis,
+        device_type_from_mac_model, is_placeholder_display_name,
     };
 
     #[test]
@@ -383,6 +408,39 @@ mod tests {
         assert_eq!(device_type_from_mac_model("MacPro7,1"), Some("desktop"));
         assert_eq!(device_type_from_mac_model("Mac13,1"), None); // ambiguous; needs battery
         assert_eq!(device_type_from_mac_model("Mac14,7"), None);
+    }
+
+    #[test]
+    fn android_characteristics_detect_tablets() {
+        // `ro.build.characteristics` is a comma-separated list; order is not guaranteed.
+        assert_eq!(
+            device_type_from_android_characteristics("tablet"),
+            Some("tablet")
+        );
+        assert_eq!(
+            device_type_from_android_characteristics("nosdcard,tablet"),
+            Some("tablet")
+        );
+        assert_eq!(
+            device_type_from_android_characteristics("tablet,nosdcard"),
+            Some("tablet")
+        );
+        assert_eq!(
+            device_type_from_android_characteristics(" Tablet "),
+            Some("tablet")
+        );
+    }
+
+    #[test]
+    fn android_characteristics_ignore_non_tablets() {
+        assert_eq!(device_type_from_android_characteristics("default"), None);
+        assert_eq!(device_type_from_android_characteristics("nosdcard"), None);
+        assert_eq!(device_type_from_android_characteristics(""), None);
+        // Must not match on a substring of an unrelated token.
+        assert_eq!(
+            device_type_from_android_characteristics("tablethood"),
+            None
+        );
     }
 
     #[test]

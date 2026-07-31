@@ -16,10 +16,13 @@ export type CopyProgress = {
 }
 
 export class FileSelectedHandler {
-	private channelId: string
+	private channelId: number
 	private active = true
 
-	constructor(channelId: string) {
+	// Must stay numeric: the native side parses this into an i64 (`AsyncJob`
+	// in the plugin's models.rs, `CancelJobArgs.channelId: Long` in Kotlin).
+	// Stringifying it makes serde reject the payload before the command runs.
+	constructor(channelId: number) {
 		this.channelId = channelId
 	}
 
@@ -114,7 +117,7 @@ export async function selectSendDocument(
 		}
 	)
 	if (!response) return null
-	return new FileSelectedHandler(String(channel.id))
+	return new FileSelectedHandler(channel.id)
 }
 
 export async function selectSendFolder(
@@ -143,7 +146,7 @@ export async function selectSendFolder(
 		}
 	)
 	if (!response) return null
-	return new FileSelectedHandler(String(channel.id))
+	return new FileSelectedHandler(channel.id)
 }
 
 export async function consumeShareIntent(
@@ -162,7 +165,7 @@ export async function consumeShareIntent(
 		{ channel }
 	)
 	if (!response) return null
-	return new FileSelectedHandler(String(channel.id))
+	return new FileSelectedHandler(channel.id)
 }
 
 /** Fired when a share arrives while the app is already open. */

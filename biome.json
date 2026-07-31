@@ -60,6 +60,12 @@
 	},
 	"overrides": [
 		{
+			"includes": ["flatpak/cargo-sources.json", "flatpak/node-sources.json"],
+			"formatter": {
+				"enabled": false
+			}
+		},
+		{
 			"includes": ["frontend/src/wasm/pkg/wasm_bridge.d.ts"],
 			"formatter": {
 				"enabled": false
