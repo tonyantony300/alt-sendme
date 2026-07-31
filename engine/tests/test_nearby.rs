@@ -359,6 +359,61 @@ async fn accepting_a_nearby_invite_promotes_the_sender_to_paired() {
         serde_json::from_str(responses[0].payload.as_deref().unwrap()).unwrap();
     assert_eq!(payload["endpoint_id"], bob.endpoint_id());
     assert_eq!(payload["response"], "accepted");
+
+    // Pairing must be mutual: without the sender also committing a paired
+    // record for the responder, the responder's persistent presence
+    // connection back to the sender gets rejected (their `Recognition` isn't
+    // allowed from a peer that still considers them unpaired), so presence
+    // would never establish in that direction.
+    common::wait_until(
+        "alice to also record bob as paired (mutual nearby pairing)",
+        Duration::from_secs(15),
+        || {
+            alice
+                .list_paired()
+                .unwrap()
+                .iter()
+                .any(|d| d.endpoint_id == bob.endpoint_id())
+        },
+    )
+    .await;
+    let alice_paired = alice.list_paired().unwrap();
+    assert_eq!(
+        alice_paired.len(),
+        1,
+        "the sender must also record the responder as paired"
+    );
+    assert_eq!(alice_paired[0].endpoint_id, bob.endpoint_id());
+
+    // A promoted device must not also appear under the sender's own Nearby
+    // list, mirroring the receiver-side check in
+    // `a_promoted_device_leaves_the_nearby_list`.
+    assert!(
+        !alice
+            .list_nearby()
+            .await
+            .iter()
+            .any(|d| d.endpoint_id == bob.endpoint_id()),
+        "a promoted device must not also appear under the sender's Nearby list"
+    );
+
+    // Presence must actually establish in both directions, not just the
+    // paired records existing — each side's `paired_connections` needs to
+    // dial the other and have it accepted.
+    common::wait_until(
+        "alice to see bob online after mutual nearby pairing",
+        PRESENCE_DEADLINE,
+        || is_online(&alice, &bob.endpoint_id()),
+    )
+    .await;
+    common::wait_until(
+        "bob to see alice online after mutual nearby pairing",
+        PRESENCE_DEADLINE,
+        || is_online(&bob, &alice.endpoint_id()),
+    )
+    .await;
+    assert_stays_online(&alice, &bob.endpoint_id(), Duration::from_secs(3)).await;
+    assert_stays_online(&bob, &alice.endpoint_id(), Duration::from_secs(3)).await;
 }
 
 #[tokio::test]
@@ -401,6 +456,13 @@ async fn declining_a_nearby_invite_leaves_the_sender_unpaired() {
         serde_json::from_str(responses[0].payload.as_deref().unwrap()).unwrap();
     assert_eq!(payload["endpoint_id"], bob.endpoint_id());
     assert_eq!(payload["response"], "declined");
+
+    // A decline must stay toast-only on the sender's side too — mutual
+    // pairing only commits on an accept.
+    assert!(
+        alice.list_paired().unwrap().is_empty(),
+        "declining must not pair the sender either"
+    );
 }
 
 #[tokio::test]
