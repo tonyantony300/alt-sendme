@@ -138,6 +138,9 @@ docs/*
 !docs/readme/**
 # User-facing; linked from README and the bug report template
 !docs/troubleshooting.md
+# Handed to an outside contributor picking up the iOS port, so it has to
+# travel with the branch rather than stay local like the other docs.
+!docs/ios-handoff.md
 
 .github-reference/
 .github-reference-readest/
