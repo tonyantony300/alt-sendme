@@ -1,8 +1,10 @@
 #![allow(dead_code, unused_imports)]
 
-use engine::EventEmitter;
+use engine::{DeviceInfo, Discoverability, DiscoveryModeOption, EventEmitter, NodeService};
+use iroh::endpoint::RelayMode;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub struct MockEvent {
@@ -148,4 +150,108 @@ pub async fn wait_until(what: &str, deadline: std::time::Duration, check: impl F
         );
         tokio::time::sleep(std::time::Duration::from_millis(500)).await;
     }
+}
+
+const NODE_START_TIMEOUT: Duration = Duration::from_secs(60);
+const PAIR_JOIN_DEADLINE: Duration = Duration::from_secs(90);
+const PAIR_SETTLE_DEADLINE: Duration = Duration::from_secs(30);
+
+/// A running [`NodeService`] with a fixed display name, for E2E tests that
+/// bind real endpoints. Keeps its temp data dir alive for the node's lifetime.
+pub struct TestNode {
+    pub service: NodeService,
+    _dir: tempfile::TempDir,
+}
+
+impl TestNode {
+    pub fn endpoint_id(&self) -> String {
+        self.service.device_info().endpoint_id
+    }
+
+    pub fn set_discoverability(&self, setting: Discoverability) {
+        self.service.set_discoverability(setting);
+    }
+
+    pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {
+        self.service.probe_identity(endpoint_id).await
+    }
+}
+
+impl std::ops::Deref for TestNode {
+    type Target = NodeService;
+
+    fn deref(&self) -> &NodeService {
+        &self.service
+    }
+}
+
+/// Start a node with a fixed display name (mirrors `start_node` in
+/// `test_pairing_e2e.rs`, generalized so other E2E suites can share it).
+pub async fn spawn_node(display_name: &str) -> TestNode {
+    let dir = tempfile::tempdir().expect("node temp dir");
+    let emitter = MockEventEmitter::new();
+    let service = tokio::time::timeout(
+        NODE_START_TIMEOUT,
+        NodeService::start(
+            dir.path(),
+            RelayMode::Default,
+            DiscoveryModeOption::Default,
+            Some(emitter),
+        ),
+    )
+    .await
+    .expect("node start timed out")
+    .expect("node start failed");
+    service
+        .set_device_display_name(display_name)
+        .expect("set display name");
+
+    TestNode { service, _dir: dir }
+}
+
+/// Two nodes already paired with each other.
+pub async fn spawn_paired_nodes() -> (TestNode, TestNode) {
+    let host = spawn_node("alice").await;
+    let joiner = spawn_node("bob").await;
+
+    let ticket = host
+        .start_pairing_host(Some(300))
+        .await
+        .expect("open pairing window");
+
+    let end = tokio::time::Instant::now() + PAIR_JOIN_DEADLINE;
+    loop {
+        match tokio::time::timeout(Duration::from_secs(30), joiner.join_pairing(&ticket)).await {
+            Ok(Ok(())) => break,
+            Ok(Err(err)) => {
+                assert!(
+                    tokio::time::Instant::now() < end,
+                    "join_pairing did not succeed within {PAIR_JOIN_DEADLINE:?}: {err:#}"
+                );
+            }
+            Err(_) => {
+                assert!(
+                    tokio::time::Instant::now() < end,
+                    "join_pairing did not succeed within {PAIR_JOIN_DEADLINE:?}: last attempt hung"
+                );
+            }
+        }
+        tokio::time::sleep(Duration::from_secs(2)).await;
+    }
+
+    // The host finishes its side of the handshake asynchronously.
+    let joiner_id = joiner.endpoint_id();
+    wait_until(
+        "host to store the joiner as paired",
+        PAIR_SETTLE_DEADLINE,
+        || {
+            host.list_paired()
+                .expect("list_paired")
+                .into_iter()
+                .any(|d| d.endpoint_id.eq_ignore_ascii_case(&joiner_id))
+        },
+    )
+    .await;
+
+    (host, joiner)
 }

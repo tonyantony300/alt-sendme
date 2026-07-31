@@ -14,9 +14,10 @@ use iroh::address_lookup::pkarr::{PkarrPublisher, PkarrResolver};
 use iroh::address_lookup::dns::DnsAddressLookup;
 use iroh::EndpointId;
 use protocol::{
-    apply_options, export_connection_keying_material, read_message, sign_challenge,
-    verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, DiscoveryModeOption,
-    InviteResponse, PairedDevice, PairingStatus, RememberVote, CONTROL_ALPN,
+    allows_unpaired_control, apply_options, export_connection_keying_material, read_message,
+    should_answer_identity, sign_challenge, unpaired_message_allowed, verify_challenge,
+    write_message, AddrInfoOptions, AppHandle, ControlMessage, Discoverability,
+    DiscoveryModeOption, InviteResponse, PairedDevice, PairingStatus, RememberVote, CONTROL_ALPN,
     PRESENCE_CONNECT_TIMEOUT_SECS,
 };
 use tokio::sync::{Mutex, RwLock};
@@ -34,6 +35,7 @@ use crate::runtime::NodeRuntime;
 pub(crate) struct AccessState {
     pub(crate) allowed: HashSet<EndpointId>,
     pub(crate) pairing_host_open: bool,
+    pub(crate) discoverability: Discoverability,
 }
 
 #[derive(Debug)]
@@ -54,7 +56,7 @@ impl EndpointHooks for PairedOnlyHook {
         let remote = conn.remote_id();
         let access = self.access.read().await;
         let allowed = access.allowed.contains(&remote);
-        if access.pairing_host_open || allowed {
+        if access.pairing_host_open || allowed || allows_unpaired_control(access.discoverability) {
 
             return AfterHandshakeOutcome::accept();
         }
@@ -98,12 +100,15 @@ impl ControlProtocol {
 
         if allowed {
 
-            return self.handle_paired_peer_connection(conn).await;
+            return self.handle_control_session(conn, true).await;
         }
 
         if !pairing_host_open {
-
-            return Ok(());
+            // Not paired and no pairing window is open: the only way we got
+            // this far is the handshake gate accepting us under
+            // `Discoverability::Everyone`. Serve the reduced unpaired
+            // message set (identity probes, unpaired invites).
+            return self.handle_control_session(conn, false).await;
         }
 
         let keying = export_connection_keying_material(&conn).context("export keying material")?;
@@ -346,28 +351,41 @@ impl ControlProtocol {
         Ok(())
     }
 
-    async fn handle_paired_peer_connection(&self, conn: Connection) -> anyhow::Result<()> {
+    /// Serves an accepted control connection's message loop. `peer_is_paired`
+    /// distinguishes an established relationship (any message type, tracked
+    /// in `paired_connections` for reuse) from a peer the handshake gate let
+    /// through only because we're discoverable — an unpaired peer may probe
+    /// our identity or send an unpaired invite, and nothing else.
+    async fn handle_control_session(
+        &self,
+        conn: Connection,
+        peer_is_paired: bool,
+    ) -> anyhow::Result<()> {
         let remote = conn.remote_id();
         let endpoint_id = remote.to_string();
 
-        self.ctx
-            .paired_connections
-            .register_inbound(&endpoint_id, conn.clone())
-            .await;
+        if peer_is_paired {
+            self.ctx
+                .paired_connections
+                .register_inbound(&endpoint_id, conn.clone())
+                .await;
+        }
 
         let keying = match export_connection_keying_material(&conn) {
             Ok(keying) => keying,
             Err(err) => {
-                self.ctx
-                    .paired_connections
-                    .unregister_inbound(&endpoint_id)
-                    .await;
-                return Err(err).context("export keying material for paired session");
+                if peer_is_paired {
+                    self.ctx
+                        .paired_connections
+                        .unregister_inbound(&endpoint_id)
+                        .await;
+                }
+                return Err(err).context("export keying material for control session");
             }
         };
 
         loop {
-            let (_send, mut recv) = match conn.accept_bi().await {
+            let (mut send, mut recv) = match conn.accept_bi().await {
                 Ok(streams) => {
 
                     streams
@@ -386,20 +404,49 @@ impl ControlProtocol {
                 }
             };
 
-            let unpaired = self
+            // The handshake gate decided whether to accept the connection at
+            // all; this decides what may travel across it. An unpaired peer
+            // sending a relationship message is buggy or hostile either way.
+            if !peer_is_paired && !unpaired_message_allowed(&msg) {
+                conn.close(403u32.into(), b"not permitted for unpaired peer");
+                break;
+            }
+
+            if let ControlMessage::WhoAreYou = msg {
+                let setting = self.ctx.access.read().await.discoverability;
+                if !should_answer_identity(setting, peer_is_paired) {
+                    conn.close(403u32.into(), b"not discoverable");
+                    break;
+                }
+                let info = DeviceInfo::from(self.ctx.identity.as_ref());
+                let reply = ControlMessage::Identity {
+                    endpoint_id: info.endpoint_id,
+                    display_name: info.display_name,
+                    device_type: info.device_type,
+                    os: info.os,
+                };
+                if let Err(err) = write_message(&mut send, &reply).await {
+                    tracing::debug!("identity reply failed: {err:#}");
+                }
+                continue;
+            }
+
+            let unpaired_now = self
                 .handle_paired_control_message(&remote, &keying, msg)
                 .await;
-            if unpaired {
+            if unpaired_now {
                 // Close so the sender's delivery wait resolves promptly.
                 conn.close(0u32.into(), b"unpaired");
                 break;
             }
         }
 
-        self.ctx
-            .paired_connections
-            .unregister_inbound(&endpoint_id)
-            .await;
+        if peer_is_paired {
+            self.ctx
+                .paired_connections
+                .unregister_inbound(&endpoint_id)
+                .await;
+        }
 
         Ok(())
     }
@@ -579,6 +626,7 @@ impl NodeService {
         let access = Arc::new(RwLock::new(AccessState {
             allowed: allowed.clone(),
             pairing_host_open: false,
+            discoverability: Discoverability::default(),
         }));
         let pairing_host_open = Arc::new(AtomicBool::new(false));
         let pairing_host_persistent = Arc::new(AtomicBool::new(false));
@@ -983,6 +1031,53 @@ impl NodeService {
         let _ = send.finish();
 
         Ok(())
+    }
+
+    pub fn set_discoverability(&self, setting: Discoverability) {
+        let access = self.access.clone();
+        tokio::spawn(async move {
+            access.write().await.discoverability = setting;
+        });
+    }
+
+    pub async fn discoverability(&self) -> Discoverability {
+        self.access.read().await.discoverability
+    }
+
+    /// Dial a peer's control ALPN and ask who it is. Used for devices found on
+    /// the local network, where mDNS supplies a node id and nothing else.
+    pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {
+        let remote: EndpointId = endpoint_id.parse()?;
+        let endpoint = {
+            let runtime = self.runtime.lock().await;
+            runtime.endpoint.clone()
+        };
+        let conn = tokio::time::timeout(
+            Duration::from_secs(5),
+            endpoint.connect(remote, CONTROL_ALPN),
+        )
+        .await
+        .context("identity probe timed out")??;
+
+        let (mut send, mut recv) = conn.open_bi().await?;
+        write_message(&mut send, &ControlMessage::WhoAreYou).await?;
+        match tokio::time::timeout(Duration::from_secs(5), read_message(&mut recv))
+            .await
+            .context("identity reply timed out")??
+        {
+            ControlMessage::Identity {
+                endpoint_id,
+                display_name,
+                device_type,
+                os,
+            } => Ok(DeviceInfo {
+                endpoint_id,
+                display_name,
+                device_type,
+                os,
+            }),
+            other => anyhow::bail!("unexpected reply to WhoAreYou: {other:?}"),
+        }
     }
 }
 

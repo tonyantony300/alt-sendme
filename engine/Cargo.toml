@@ -46,6 +46,7 @@ windows-sys = { version = "0.59.0", features = [
 ], optional = true }
 
 [dev-dependencies]
+anyhow = "1.0.75"
 duct = "0.13.6"
 nix = { version = "0.29", features = ["signal", "process"] }
 rand = "0.10"
