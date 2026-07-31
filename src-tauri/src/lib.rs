@@ -135,6 +135,8 @@ pub fn run() {
             #[cfg(any(desktop, target_os = "android"))]
             list_nearby,
             #[cfg(any(desktop, target_os = "android"))]
+            nearby_status,
+            #[cfg(any(desktop, target_os = "android"))]
             get_discoverability,
             #[cfg(any(desktop, target_os = "android"))]
             set_discoverability,

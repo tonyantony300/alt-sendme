@@ -8,6 +8,7 @@ pub mod node;
 pub mod paired_connections;
 mod pairing_host;
 pub mod pairing_util;
+mod rate_limit;
 pub mod receive;
 pub mod runtime;
 pub mod secret_store;

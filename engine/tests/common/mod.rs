@@ -200,7 +200,10 @@ impl TestNode {
     }
 
     pub async fn set_discoverability(&self, setting: Discoverability) {
-        self.service.set_discoverability(setting).await;
+        self.service
+            .set_discoverability(setting)
+            .await
+            .expect("set_discoverability");
     }
 
     pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {
@@ -227,6 +230,7 @@ pub async fn spawn_node(display_name: &str) -> TestNode {
             dir.path(),
             RelayMode::Default,
             DiscoveryModeOption::Default,
+            Discoverability::default(),
             Some(emitter.clone()),
         ),
     )
@@ -258,6 +262,7 @@ pub async fn spawn_node_with_lan_discovery(display_name: &str) -> TestNode {
             dir.path(),
             RelayMode::Disabled,
             DiscoveryModeOption::Default,
+            Discoverability::default(),
             Some(emitter.clone()),
         ),
     )

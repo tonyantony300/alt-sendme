@@ -38,6 +38,14 @@ pub fn should_publish_mdns(setting: Discoverability) -> bool {
 /// Whether to accept an inbound control connection from a peer we have not
 /// paired with. Only `Everyone` does — under the other settings we would refuse
 /// to answer anyway, so the connection has no legitimate purpose.
+///
+/// This setting check is necessary but not sufficient: `Everyone` is a *local
+/// network* affordance, yet the endpoint is reachable from the whole internet
+/// via the relay. The native accept gate (`node::PairedOnlyHook`) therefore
+/// additionally requires an unpaired connection to present a direct (non-relay)
+/// path, and unpaired messages are rate-limited per endpoint id
+/// (`native::rate_limit`). Paired peers are exempt from both — their presence
+/// connections legitimately run relay-only.
 pub fn allows_unpaired_control(setting: Discoverability) -> bool {
     matches!(setting, Discoverability::Everyone)
 }

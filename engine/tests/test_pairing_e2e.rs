@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use common::{wait_until, MockEventEmitter};
 use engine::identity_store::identity_key_path;
-use engine::{DiscoveryModeOption, NodeService, PairingStatus};
+use engine::{Discoverability, DiscoveryModeOption, NodeService, PairingStatus};
 use iroh::endpoint::RelayMode;
 use iroh::SecretKey;
 
@@ -28,6 +28,7 @@ async fn start_node(data_dir: &Path, emitter: std::sync::Arc<MockEventEmitter>) 
             data_dir,
             RelayMode::Default,
             DiscoveryModeOption::Default,
+            Discoverability::default(),
             Some(emitter),
         ),
     )

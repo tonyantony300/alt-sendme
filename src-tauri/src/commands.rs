@@ -952,6 +952,40 @@ pub async fn verify_discovery(
     engine_verify_discovery(discovery).await
 }
 
+/// Extracts the persisted `discoverability` value from the raw contents of
+/// tauri-plugin-store's `settings.json` — the same file the frontend's
+/// `useAppSettingStore` writes (a zustand `persist` envelope, JSON-stringified
+/// under the `app_settings` key). `None` when the file, key, or field is
+/// missing or malformed; callers fall back to the default.
+#[cfg(any(desktop, target_os = "android", test))]
+fn parse_persisted_discoverability(raw: &str) -> Option<Discoverability> {
+    let file: serde_json::Value = serde_json::from_str(raw).ok()?;
+    let envelope: serde_json::Value =
+        serde_json::from_str(file.get("app_settings")?.as_str()?).ok()?;
+    serde_json::from_value(envelope.get("state")?.get("discoverability")?.clone()).ok()
+}
+
+/// Reads the user's persisted discoverability choice so it reaches
+/// `NodeService::start` *before* LAN discovery starts — an `Off`-persisted
+/// start must never register mDNS at all, not even for the moment it takes
+/// the webview to load and sync settings (`DeviceNodeSync` re-applies it
+/// then, as a safety net, the same way relay settings are re-applied).
+///
+/// A deliberate raw read of the store file rather than `StoreExt::store`:
+/// loading the store Rust-side would register it without the frontend's
+/// `LazyStore` options (defaults, autoSave), and the plugin silently reuses
+/// the first-registered instance.
+#[cfg(any(desktop, target_os = "android"))]
+fn load_persisted_discoverability(app_handle: &tauri::AppHandle) -> Discoverability {
+    let Ok(data_dir) = app_handle.path().app_data_dir() else {
+        return Discoverability::default();
+    };
+    let Ok(raw) = std::fs::read_to_string(data_dir.join("settings.json")) else {
+        return Discoverability::default();
+    };
+    parse_persisted_discoverability(&raw).unwrap_or_default()
+}
+
 #[cfg(any(desktop, target_os = "android"))]
 pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), String> {
     let data_dir = app_handle
@@ -962,14 +996,21 @@ pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), Strin
     let (relay_mode, _) = resolve_relay_mode_with_fallback(None).await?;
     let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
     let discovery_mode = build_discovery_mode(None)?;
+    let discoverability = load_persisted_discoverability(&app_handle);
 
     let emitter = Arc::new(TauriEventEmitter {
         app_handle: app_handle.clone(),
     });
     let boxed_handle: AppHandle = Some(emitter);
-    let node = NodeService::start(&data_dir, relay_mode, discovery_mode, boxed_handle)
-        .await
-        .map_err(|e| format!("Failed to start device node: {e}"))?;
+    let node = NodeService::start(
+        &data_dir,
+        relay_mode,
+        discovery_mode,
+        discoverability,
+        boxed_handle,
+    )
+    .await
+    .map_err(|e| format!("Failed to start device node: {e}"))?;
     let state = app_handle.state::<AppStateMutex>();
     let mut guard = state.lock().await;
     guard.node = Some(Arc::new(node));
@@ -1297,6 +1338,9 @@ pub async fn get_discoverability(
     Ok(node.discoverability().await)
 }
 
+/// The frontend seam is `setDiscoverability` in
+/// `frontend/src/lib/pairing-api.ts` — its invoke payload key must match this
+/// command's `setting` parameter name.
 #[cfg(any(desktop, target_os = "android"))]
 #[tauri::command]
 pub async fn set_discoverability(
@@ -1307,9 +1351,39 @@ pub async fn set_discoverability(
         let guard = state.lock().await;
         require_node_arc(&guard)?
     };
-    node.set_discoverability(setting).await;
+    node.set_discoverability(setting).await.map_err(|error| {
+        tracing::error!(
+            target: "dashbeam::_events::nearby::set_discoverability_failed",
+            ?setting,
+            %error,
+        );
+        format!("Failed to update discoverability: {error}")
+    })?;
 
     Ok(())
+}
+
+#[derive(serde::Serialize)]
+pub struct NearbyStatusResponse {
+    /// Why LAN discovery is unavailable (mDNS pump failed to start), or
+    /// `None` when it's running or deliberately off. Queryable because the
+    /// `nearby-unavailable` event can fire during node init, before the
+    /// frontend has any listener registered.
+    pub reason: Option<String>,
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn nearby_status(
+    state: State<'_, AppStateMutex>,
+) -> Result<NearbyStatusResponse, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    Ok(NearbyStatusResponse {
+        reason: node.nearby_unavailable_reason(),
+    })
 }
 
 /// Sends to a device found on the local network. Mints a normal blob ticket and
@@ -1367,6 +1441,37 @@ mod tests {
         std::env::temp_dir().join(format!("{}-{}-{}.txt", name_prefix, std::process::id(), ts))
     }
 
+    /// Locks the persisted-settings seam: the raw `settings.json` layout this
+    /// parses is written by the frontend's `useAppSettingStore` (zustand
+    /// `persist` envelope, stringified under `app_settings`).
+    #[test]
+    fn parse_persisted_discoverability_reads_the_zustand_envelope() {
+        let envelope = serde_json::json!({ "state": { "discoverability": "off", "darkMode": true }, "version": 0 });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(
+            parse_persisted_discoverability(&file),
+            Some(Discoverability::Off)
+        );
+
+        let envelope = serde_json::json!({ "state": { "discoverability": "paired-only" } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(
+            parse_persisted_discoverability(&file),
+            Some(Discoverability::PairedOnly)
+        );
+    }
+
+    #[test]
+    fn parse_persisted_discoverability_tolerates_missing_or_malformed_data() {
+        assert_eq!(parse_persisted_discoverability("not json"), None);
+        assert_eq!(parse_persisted_discoverability("{}"), None);
+        let file = serde_json::json!({ "app_settings": "{\"state\":{}}" }).to_string();
+        assert_eq!(parse_persisted_discoverability(&file), None);
+        let envelope = serde_json::json!({ "state": { "discoverability": "bogus" } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_discoverability(&file), None);
+    }
+
     #[tokio::test]
     async fn fetch_ticket_metadata_command_e2e() {
         let temp_path = unique_temp_file("sendme-tauri-meta");
@@ -1399,7 +1504,7 @@ mod tests {
         .await
         .expect("start_share should succeed");
 
-        let fetched = fetch_ticket_metadata(share.ticket.clone(), None)
+        let fetched = fetch_ticket_metadata(share.ticket.clone(), None, None)
             .await
             .expect("fetch_ticket_metadata command should succeed");
 

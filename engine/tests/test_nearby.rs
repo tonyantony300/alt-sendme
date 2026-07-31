@@ -54,6 +54,28 @@ async fn unpaired_peer_can_probe_identity_when_discoverable_to_everyone() {
     assert_eq!(identity.display_name, "bob");
 }
 
+/// Unpaired control traffic is rate-limited per endpoint id (see
+/// `native/src/rate_limit.rs`: burst of 8 messages, one token refilled every
+/// 2 seconds): a stranger probing in a tight loop runs out of tokens and has
+/// its connection closed instead of being served indefinitely.
+#[tokio::test]
+async fn unpaired_probe_loop_is_rate_limited() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    // Well past the burst allowance. Localhost probes complete in far under
+    // the 2s-per-token refill interval, so the loop must outrun the refill.
+    let mut denied = false;
+    for _ in 0..20 {
+        if alice.probe_identity(&bob.endpoint_id()).await.is_err() {
+            denied = true;
+            break;
+        }
+    }
+    assert!(denied, "a probe loop must eventually be rate-limited");
+}
+
 #[tokio::test]
 async fn unpaired_peer_is_refused_when_paired_only() {
     let alice = common::spawn_node("alice").await;
