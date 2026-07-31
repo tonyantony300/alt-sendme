@@ -247,6 +247,17 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 		case 'stop_pairing_host':
 		case 'reconfigure_node_relay':
 			return undefined as T
+		case 'list_nearby':
+			// Browsers have no multicast; Nearby is native-only.
+			return [] as unknown as T
+		case 'get_discoverability':
+			return 'off' as unknown as T
+		case 'set_discoverability':
+			return undefined as unknown as T
+		case 'send_to_nearby':
+			throw new WebPreviewError('send_to_nearby')
+		case 'respond_nearby_invite':
+			throw new WebPreviewError('respond_nearby_invite')
 		case 'toggle_context_menu':
 		case 'plugin:native-utils|select_send_document':
 		case 'plugin:native-utils|select_send_folder':
