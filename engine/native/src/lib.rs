@@ -5,6 +5,7 @@ pub mod import;
 pub mod nearby;
 pub mod node;
 pub mod paired_connections;
+mod pairing_host;
 pub mod pairing_util;
 pub mod receive;
 pub mod runtime;
