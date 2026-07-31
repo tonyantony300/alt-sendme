@@ -1,3 +1,6 @@
+# Dependabot version updates disabled.
+# Rename this file to dependabot.yml to re-enable.
+
 version: 2
 updates:
   - package-ecosystem: "cargo"
