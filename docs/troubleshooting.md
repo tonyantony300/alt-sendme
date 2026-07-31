@@ -8,6 +8,7 @@ causes first.
 - [I can't connect to the other device](#i-cant-connect-to-the-other-device)
 - [A transfer stalls or fails partway](#a-transfer-stalls-or-fails-partway)
 - [A paired device shows as Offline](#a-paired-device-shows-as-offline)
+- [The Nearby list is empty](#the-nearby-list-is-empty)
 - [I can't find the files I received](#i-cant-find-the-files-i-received)
 - [Updates don't install](#updates-dont-install)
 - [Collecting logs](#collecting-logs)
@@ -166,6 +167,37 @@ each other on the new configuration. The devices stay listed either way.
 
 Pairing codes expire after a short window. If a code stops working, generate a fresh one
 with **Show pairing code**.
+
+---
+
+## The Nearby list is empty
+
+The **Nearby** section in **Settings → Devices** shows either "No devices found nearby" or
+"Nearby is unavailable", even though you have other DashBeam devices on the same network.
+
+**Your network blocks multicast or mDNS.** Local discovery depends on
+[mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) (also called Bonjour on macOS), which
+works only when devices can broadcast to each other on the same subnet.
+
+- **Tunnel-all VPNs hide the LAN.** If either device is connected to a VPN that routes
+  *all* traffic through the tunnel, it can't see or be seen on the local network, even if
+  both devices are on the same Wi-Fi. Disconnect the VPN, or configure it to split-tunnel
+  local subnets.
+- **Guest Wi-Fi often blocks peer-to-peer.** Many access points prevent devices on a guest
+  network from seeing each other. Connect both devices to the main (non-guest) Wi-Fi instead.
+- **Some corporate and managed networks block multicast.** Universities, offices, and
+  managed Wi-Fi systems often filter mDNS packets as a matter of policy. Check with your
+  network administrator, or try a different network to confirm that's the cause.
+
+**If this is your network, you can still transfer files normally.** Use one-time **Manual
+transfer** with a ticket instead—neither side needs local discovery. Paired devices (after
+an initial setup elsewhere on a working network) will also continue to work, because they
+use a direct connection or relay and don't depend on multicast.
+
+You can control whether your device appears to others on the local network via
+**Settings → Network → Your discoverability** (Everyone / Paired only / Off). Changing
+this setting won't solve the Nearby list being empty if multicast is blocked; it only
+hides your device from those who *can* see the network.
 
 ---
 
