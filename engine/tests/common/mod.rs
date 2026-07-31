@@ -168,8 +168,8 @@ impl TestNode {
         self.service.device_info().endpoint_id
     }
 
-    pub fn set_discoverability(&self, setting: Discoverability) {
-        self.service.set_discoverability(setting);
+    pub async fn set_discoverability(&self, setting: Discoverability) {
+        self.service.set_discoverability(setting).await;
     }
 
     pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {

@@ -352,10 +352,18 @@ impl ControlProtocol {
     }
 
     /// Serves an accepted control connection's message loop. `peer_is_paired`
-    /// distinguishes an established relationship (any message type, tracked
-    /// in `paired_connections` for reuse) from a peer the handshake gate let
+    /// distinguishes an established relationship (tracked in
+    /// `paired_connections` for reuse) from a peer the handshake gate let
     /// through only because we're discoverable — an unpaired peer may probe
     /// our identity or send an unpaired invite, and nothing else.
+    ///
+    /// Registration with `paired_connections` is deliberately lazy: a paired
+    /// peer can still open a short-lived, probe-only connection (e.g. our own
+    /// `probe_identity`, dialed against someone we already know), and that
+    /// must never clobber the session entry the peer's real persistent
+    /// control connection occupies. Only a message that implies an ongoing
+    /// relationship (anything but `WhoAreYou`) marks this connection as the
+    /// one to register — and only that connection gets unregistered again.
     async fn handle_control_session(
         &self,
         conn: Connection,
@@ -363,26 +371,10 @@ impl ControlProtocol {
     ) -> anyhow::Result<()> {
         let remote = conn.remote_id();
         let endpoint_id = remote.to_string();
+        let mut registered = false;
 
-        if peer_is_paired {
-            self.ctx
-                .paired_connections
-                .register_inbound(&endpoint_id, conn.clone())
-                .await;
-        }
-
-        let keying = match export_connection_keying_material(&conn) {
-            Ok(keying) => keying,
-            Err(err) => {
-                if peer_is_paired {
-                    self.ctx
-                        .paired_connections
-                        .unregister_inbound(&endpoint_id)
-                        .await;
-                }
-                return Err(err).context("export keying material for control session");
-            }
-        };
+        let keying = export_connection_keying_material(&conn)
+            .context("export keying material for control session")?;
 
         loop {
             let (mut send, mut recv) = match conn.accept_bi().await {
@@ -415,8 +407,13 @@ impl ControlProtocol {
             if let ControlMessage::WhoAreYou = msg {
                 let setting = self.ctx.access.read().await.discoverability;
                 if !should_answer_identity(setting, peer_is_paired) {
-                    conn.close(403u32.into(), b"not discoverable");
-                    break;
+                    if !peer_is_paired {
+                        conn.close(403u32.into(), b"not discoverable");
+                        break;
+                    }
+                    // A paired peer's session must survive a refused probe —
+                    // ignore it and keep serving this connection.
+                    continue;
                 }
                 let info = DeviceInfo::from(self.ctx.identity.as_ref());
                 let reply = ControlMessage::Identity {
@@ -431,6 +428,14 @@ impl ControlProtocol {
                 continue;
             }
 
+            if peer_is_paired && !registered {
+                self.ctx
+                    .paired_connections
+                    .register_inbound(&endpoint_id, conn.clone())
+                    .await;
+                registered = true;
+            }
+
             let unpaired_now = self
                 .handle_paired_control_message(&remote, &keying, msg)
                 .await;
@@ -441,7 +446,7 @@ impl ControlProtocol {
             }
         }
 
-        if peer_is_paired {
+        if registered {
             self.ctx
                 .paired_connections
                 .unregister_inbound(&endpoint_id)
@@ -1033,11 +1038,8 @@ impl NodeService {
         Ok(())
     }
 
-    pub fn set_discoverability(&self, setting: Discoverability) {
-        let access = self.access.clone();
-        tokio::spawn(async move {
-            access.write().await.discoverability = setting;
-        });
+    pub async fn set_discoverability(&self, setting: Discoverability) {
+        self.access.write().await.discoverability = setting;
     }
 
     pub async fn discoverability(&self) -> Discoverability {
