@@ -184,6 +184,13 @@ export async function getDiscoverability(): Promise<Discoverability> {
 	return invoke<Discoverability>('get_discoverability')
 }
 
+export async function setDiscoverability(
+	value: Discoverability
+): Promise<void> {
+	if (!pairingCapable()) return
+	await invoke('set_discoverability', { value })
+}
+
 /**
  * Mints a fresh blob ticket from `paths` and delivers it to a device found on
  * the local network — unlike `invitePairedDevice`, Nearby has no existing

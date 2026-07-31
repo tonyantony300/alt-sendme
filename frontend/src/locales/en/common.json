@@ -354,7 +354,15 @@
 				"inviteFailed": "Couldn't reach this device",
 				"unavailableTitle": "Nearby is unavailable",
 				"discoverabilityPairedOnlyHint": "Nearby devices can see that this device exists, but not its name.",
-				"discoverabilityOffHint": "This device won't appear on the local network. You can still find and send to others."
+				"discoverabilityOffHint": "This device won't appear on the local network. You can still find and send to others.",
+				"discoverabilityTitle": "Your discoverability",
+				"discoverabilityDescription": "Control how other devices on your local network can find this device.",
+				"discoverabilityEveryone": "Everyone",
+				"discoverabilityEveryoneDesc": "Your device and its name are visible to all nearby devices on the local network.",
+				"discoverabilityPairedOnly": "Paired only",
+				"discoverabilityPairedOnlyDesc": "Nearby devices can see that this device exists, but not its name.",
+				"discoverabilityOff": "Off",
+				"discoverabilityOffDesc": "This device won't appear on the local network. You can still find and send to others."
 			}
 		},
 		"network": {
