@@ -1,8 +1,22 @@
 {
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "sendme:ios",
-	"description": "enables receive links on iOS",
+	"description": "enables permissions for sendme on iOS",
 	"platforms": ["iOS"],
 	"windows": ["main"],
-	"permissions": ["core:default", "deep-link:default"]
+	"permissions": [
+		"core:default",
+		"core:webview:allow-set-webview-zoom",
+		"core:window:allow-set-theme",
+		"core:window:allow-set-focus",
+		"os:default",
+		"opener:default",
+		"dialog:default",
+		"dialog:allow-open",
+		"dialog:allow-save",
+		"store:default",
+		"native-utils:default",
+		"notification:default",
+		"deep-link:default"
+	]
 }

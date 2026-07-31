@@ -106,37 +106,37 @@ pub fn run() {
             set_debug_logging,
             export_debug_bundle,
             clear_debug_logs,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             get_node_status,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             reconfigure_node_relay,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             get_device_info,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             set_device_display_name,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             get_pairing_ticket,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             start_pairing_host,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             stop_pairing_host,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             join_pairing,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             list_paired_devices,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             forget_paired_device,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             rename_paired_device,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             invite_paired_device,
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             respond_paired_invite,
         ])
         .setup(|app| {
             init_logging(app.handle());
             setup_common(app);
-            #[cfg(any(desktop, target_os = "android"))]
+            #[cfg(any(desktop, mobile))]
             {
                 let handle = app.handle().clone();
                 tauri::async_runtime::block_on(async move {
@@ -189,7 +189,7 @@ pub fn run() {
         .expect("error while running tauri application")
         .run(|app, event| {
             if matches!(event, RunEvent::Exit) {
-                #[cfg(any(desktop, target_os = "android"))]
+                #[cfg(any(desktop, mobile))]
                 {
                     let state = app.state::<state::AppStateMutex>();
                     tauri::async_runtime::block_on(async move {

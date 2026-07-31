@@ -1,0 +1,22 @@
+{
+	"$schema": "https://schema.tauri.app/config/2",
+	"identifier": "com.dashbeam.ios",
+	"app": {
+		"macOSPrivateApi": false,
+		"windows": [
+			{
+				"label": "main",
+				"title": "DashBeam"
+			}
+		]
+	},
+	"plugins": {
+		"updater": null
+	},
+	"bundle": {
+		"createUpdaterArtifacts": false,
+		"iOS": {
+			"minimumSystemVersion": "17.0"
+		}
+	}
+}

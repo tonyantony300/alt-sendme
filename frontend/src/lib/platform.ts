@@ -31,7 +31,7 @@ export const IS_WINDOWS = IS_TAURI && platform.includes('windows')
 export const IS_LINUX = IS_TAURI && platform.includes('linux')
 export const IS_DESKTOP =
 	IS_TAURI && !IS_MOBILE && (IS_MACOS || IS_WINDOWS || IS_LINUX)
-/** Persistent pairing node (host/join/invite) — desktop apps and Android. */
-export const IS_PAIRING_CAPABLE = IS_DESKTOP || IS_ANDROID
+/** Persistent pairing node (host/join/invite) — desktop apps and mobile. */
+export const IS_PAIRING_CAPABLE = IS_DESKTOP || IS_MOBILE
 
 export const IS_FLATPAK = IS_TAURI && import.meta.env.VITE_IS_FLATPAK === 'true'
