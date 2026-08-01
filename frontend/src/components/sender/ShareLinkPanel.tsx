@@ -79,6 +79,10 @@ export function ShareLinkPanel({
 		? clampedProgress || defaultProgress
 		: null
 
+	const receiveLink = ticket
+		? buildReceiveLink(ticket, IS_WEB ? window.location.origin : undefined)
+		: ''
+
 	return (
 		<div className="flex flex-col gap-5 px-3 pt-3 sm:gap-4 sm:px-0 sm:pt-0">
 			<SharingActiveHeader
@@ -108,17 +112,12 @@ export function ShareLinkPanel({
 					<div className="w-full space-y-3 mt-2 sm:mt-0">
 						<div className="flex justify-center">
 							<div className="p-3 bg-white rounded-xl shadow-sm">
-								<QRCode
-									value={buildReceiveLink(
-										ticket,
-										IS_WEB ? window.location.origin : undefined
-									)}
-									size={160}
-								/>
+								<QRCode value={receiveLink} size={160} />
 							</div>
 						</div>
 						<TicketDisplay
 							ticket={ticket}
+							receiveLink={receiveLink}
 							copySuccess={copySuccess}
 							onCopyTicket={onCopyTicket}
 							isBroadcastMode={isBroadcastMode}
@@ -158,6 +157,7 @@ export function ShareLinkPanel({
 
 interface TicketDisplayProps {
 	ticket: string
+	receiveLink: string
 	copySuccess: boolean
 	onCopyTicket: () => Promise<void>
 	isBroadcastMode: boolean
@@ -166,6 +166,7 @@ interface TicketDisplayProps {
 
 function TicketDisplay({
 	ticket,
+	receiveLink,
 	copySuccess,
 	onCopyTicket,
 	isBroadcastMode,
@@ -217,10 +218,7 @@ function TicketDisplay({
 					(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1))))
 
 	const shareTicket = async () => {
-		const url = buildReceiveLink(
-			ticket,
-			IS_WEB ? window.location.origin : undefined
-		)
+		const url = receiveLink
 		try {
 			if (canNativeShare) {
 				await navigator.share({ url })
