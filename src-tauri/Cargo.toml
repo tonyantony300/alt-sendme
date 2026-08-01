@@ -53,10 +53,22 @@ custom-protocol = ["tauri/custom-protocol"]
 # GTK dialogs by default; the Flatpak build swaps in dialog-xdg-portal.
 dialog-gtk3 = ["tauri-plugin-dialog/gtk3"]
 dialog-xdg-portal = ["tauri-plugin-dialog/xdg-portal"]
+# Flatpak-only: autostart through the XDG Background portal, since the
+# autostart plugin would write a .desktop file the host never reads.
+# `ashpd` is a Linux-only target dependency, so the module this enables is
+# additionally gated on `target_os = "linux"`.
+autostart-portal = ["dep:ashpd"]
 linux-gstreamer = ["dep:gstreamer", "dep:gstreamer-app", "dep:gstreamer-video"]
 cargo-clippy = []
 
 [target.'cfg(target_os = "linux")'.dependencies]
+# Deliberately 0.11, not the newer 0.13: `rfd` (via tauri-plugin-dialog's
+# xdg-portal feature, which the Flatpak build enables) already pulls ashpd
+# 0.11 in, so this reuses that copy instead of vendoring a second one.
+# The backend is spelled out because ashpd `compile_error!`s if both its
+# async-std and tokio features end up enabled; tauri-plugin-dialog selects
+# `rfd/tokio`, so tokio is the one that must match.
+ashpd = { version = "0.11", optional = true, default-features = false, features = ["tokio"] }
 gstreamer = { version = "0.23", optional = true }
 gstreamer-app = { version = "0.23", optional = true }
 gstreamer-video = { version = "0.23", optional = true }

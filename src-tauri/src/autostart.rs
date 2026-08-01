@@ -34,7 +34,7 @@ pub fn is_enabled(app: &AppHandle) -> Result<Option<bool>, String> {
 }
 
 pub fn set(app: &AppHandle, enabled: bool) -> Result<bool, String> {
-    #[cfg(feature = "autostart-portal")]
+    #[cfg(all(target_os = "linux", feature = "autostart-portal"))]
     if is_flatpak() {
         return crate::autostart_portal::set(enabled);
     }

@@ -2,6 +2,10 @@
 
 #[cfg(desktop)]
 mod autostart;
+// `ashpd` is declared under `[target.'cfg(target_os = "linux")'.dependencies]`,
+// so this module can only compile on Linux even when the feature is enabled.
+#[cfg(all(desktop, target_os = "linux", feature = "autostart-portal"))]
+mod autostart_portal;
 mod commands;
 mod features;
 mod logging;
