@@ -22,6 +22,9 @@ pub fn is_active() -> bool {
     TRAY_ACTIVE.load(Ordering::Relaxed)
 }
 
+/// Only the Windows/Linux close handler consults this — macOS hides on close
+/// unconditionally (platform convention), so on macOS it would be dead code.
+#[cfg(not(target_os = "macos"))]
 pub fn background_on_close() -> bool {
     BACKGROUND_ON_CLOSE.load(Ordering::Relaxed)
 }
