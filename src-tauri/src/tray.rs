@@ -166,15 +166,25 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             }
         });
 
+    // macOS: dedicated monochrome ring template (transparent, no square fill).
+    // Other platforms: colour app icon.
+    #[cfg(target_os = "macos")]
+    let tray_icon_resource = "icons/tray-template.png";
+    #[cfg(not(target_os = "macos"))]
+    let tray_icon_resource = "icons/128x128.png";
+
     let icon = match app
         .path()
-        .resolve("icons/128x128.png", BaseDirectory::Resource)
+        .resolve(tray_icon_resource, BaseDirectory::Resource)
         .ok()
         .and_then(|p| tauri::image::Image::from_path(&p).ok())
     {
         Some(img) => img,
         None => {
-            tracing::warn!("Could not load 128x128 tray icon, falling back to default window icon");
+            tracing::warn!(
+                resource = tray_icon_resource,
+                "Could not load tray icon, falling back to default window icon"
+            );
             app.default_window_icon().cloned().ok_or_else(|| {
                 tauri::Error::InvalidIcon(std::io::Error::new(
                     std::io::ErrorKind::NotFound,
@@ -187,12 +197,7 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     builder = builder.icon(icon);
     // macOS menu bar items must be NSImage templates: the system renders them
     // as a mask so they invert against light/dark menu bars and stay legible
-    // under Reduce Transparency. Without this the full-colour app icon is
-    // pasted into the menu bar as-is.
-    //
-    // TODO(design): the source asset is still `icons/128x128.png`, a colour
-    // icon. Templating makes it behave correctly, but a purpose-drawn
-    // monochrome (alpha-only) asset would look considerably better.
+    // under Reduce Transparency.
     #[cfg(target_os = "macos")]
     {
         builder = builder.icon_as_template(true);
