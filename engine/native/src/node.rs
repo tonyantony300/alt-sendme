@@ -338,6 +338,10 @@ impl ControlProtocol {
                                 &remote.to_string(),
                                 false
                             );
+                            self.ctx
+                                .paired_connections
+                                .forget(&remote.to_string())
+                                .await;
                             let payload = serde_json::json!({
                                 "endpoint_id": device.endpoint_id,
                                 "display_name": device.display_name,
@@ -888,6 +892,7 @@ impl NodeService {
         let paired_connections = Arc::new(PairedConnectionManager::new(
             identity.clone(),
             paired_store.clone(),
+            access.clone(),
             presence.clone(),
             app_handle.clone(),
         ));
@@ -1153,6 +1158,29 @@ impl NodeService {
             .paired_store
             .get(endpoint_id)?
             .and_then(|d| d.relay_url);
+
+        // Prefer the live presence link so Forget arrives before we tear it
+        // down. A post-teardown redial is best-effort and must not block the
+        // Devices UI on connect timeout when the peer is already gone.
+        let delivered = if let Some(conn) = self.paired_connections.live_session(endpoint_id).await
+        {
+            send_forget_on_connection(&self.identity, &conn)
+                .await
+                .is_ok()
+        } else {
+            false
+        };
+        if !delivered {
+            let runtime = self.runtime.clone();
+            let identity = self.identity.clone();
+            let notify_id = endpoint_id.to_string();
+            tokio::spawn(async move {
+                let _ =
+                    send_forget_to_peer(&runtime, &identity, &notify_id, stored_relay.as_deref())
+                        .await;
+            });
+        }
+
         if let Ok(id) = EndpointId::from_str(endpoint_id) {
             self.access.write().await.allowed.remove(&id);
 
@@ -1174,18 +1202,6 @@ impl NodeService {
             let _ = handle.emit_event_with_payload("device-unpaired", &payload.to_string());
         }
 
-        let runtime = self.runtime.clone();
-        let identity = self.identity.clone();
-        let endpoint_id = endpoint_id.to_string();
-        tokio::spawn(async move {
-            let _ = send_forget_to_peer(
-                &runtime,
-                &identity,
-                &endpoint_id,
-                stored_relay.as_deref(),
-            )
-            .await;
-        });
         Ok(())
     }
 
@@ -1784,6 +1800,26 @@ impl NodeService {
             .await;
     }
 
+    /// Test-only: drop a peer locally without sending `Forget`. Simulates a
+    /// missed unpair notify (fire-and-forget dial failed) so the remaining
+    /// side can prove it still detects remote unpair from the close reason.
+    #[doc(hidden)]
+    pub async fn forget_paired_silently_for_tests(&self, endpoint_id: &str) -> anyhow::Result<()> {
+        if let Ok(id) = EndpointId::from_str(endpoint_id) {
+            self.access.write().await.allowed.remove(&id);
+        }
+        self.paired_store.forget(endpoint_id)?;
+        self.paired_connections.forget(endpoint_id).await;
+        set_presence(
+            &self.presence,
+            &self.app_handle,
+            &self.paired_store,
+            endpoint_id,
+            false,
+        );
+        Ok(())
+    }
+
     /// Dial a peer's control ALPN and ask who it is. Used for devices found on
     /// the local network, where mDNS supplies a node id and nothing else.
     pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {
@@ -2095,7 +2131,14 @@ async fn send_forget_to_peer(
         }
     };
 
-    let keying = export_connection_keying_material(&conn)?;
+    send_forget_on_connection(identity, &conn).await
+}
+
+async fn send_forget_on_connection(
+    identity: &DeviceIdentity,
+    conn: &iroh::endpoint::Connection,
+) -> anyhow::Result<()> {
+    let keying = export_connection_keying_material(conn)?;
     let (mut send, _recv) = conn.open_bi().await.context("forget open bi")?;
     let forget = ControlMessage::Forget {
         signature: sign_challenge(&identity.secret_key, &keying),
