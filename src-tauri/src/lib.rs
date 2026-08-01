@@ -156,6 +156,18 @@ pub fn run() {
             tray::set_background_on_close(commands::load_persisted_minimize_to_tray(
                 &app.handle().clone(),
             ));
+            #[cfg(desktop)]
+            {
+                // The window is configured `visible: false` so an autostart
+                // launch never flashes. Show it here — ahead of node init,
+                // which blocks on relay resolution — so a slow network never
+                // delays the window.
+                if !wants_hidden_launch(std::env::args().skip(1)) {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                    }
+                }
+            }
             #[cfg(any(desktop, target_os = "android"))]
             {
                 let handle = app.handle().clone();
@@ -185,21 +197,47 @@ pub fn run() {
                     "System tray unavailable; app will continue without tray icon"
                 );
             }
+            #[cfg(desktop)]
+            {
+                // Autostart asked for a hidden window, but without a tray icon
+                // there is no way back to the app. Show it rather than leave a
+                // running process the user cannot reach.
+                if wants_hidden_launch(std::env::args().skip(1)) && !tray::is_active() {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                    }
+                }
+            }
             Ok(())
         });
 
     #[cfg(desktop)]
     let builder = builder.on_window_event(|window, event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-            #[cfg(not(target_os = "macos"))]
-            if !tray::is_active() {
-                return;
+            // macOS: closing a window never quits the app. Platform
+            // convention, and not something the user setting overrides.
+            #[cfg(target_os = "macos")]
+            {
+                api.prevent_close();
+                if let Err(e) = window.hide() {
+                    tracing::warn!(error = %e, "failed to hide window");
+                }
             }
 
-            api.prevent_close();
-            tracing::debug!("App closed to system tray");
-            if let Err(e) = window.hide() {
-                tracing::warn!(error = %e, "failed to hide window");
+            // Windows/Linux: hide only when there is a tray icon to get back
+            // from AND the user wants background running. Otherwise fall
+            // through to a real close, which triggers RunEvent::Exit and
+            // shuts the node down.
+            #[cfg(not(target_os = "macos"))]
+            {
+                if !tray::is_active() || !tray::background_on_close() {
+                    return;
+                }
+                api.prevent_close();
+                tracing::debug!("App closed to system tray");
+                if let Err(e) = window.hide() {
+                    tracing::warn!(error = %e, "failed to hide window");
+                }
             }
         }
     });
@@ -232,6 +270,14 @@ pub fn run() {
 
 fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
     args.into_iter().find(|arg| !arg.starts_with('-'))
+}
+
+/// True when the process was launched by autostart and should not show a
+/// window. Exact match only, so a future `--hidden-something` cannot silently
+/// trigger it.
+#[cfg(desktop)]
+fn wants_hidden_launch(args: impl IntoIterator<Item = String>) -> bool {
+    args.into_iter().any(|arg| arg == "--hidden")
 }
 
 fn app_state_initial() -> AppState {
@@ -280,5 +326,43 @@ fn setup_common(app: &tauri::App) {
     #[cfg(target_os = "windows")]
     if let Some(window) = app.handle().get_webview_window("main") {
         platform::windows::window::adjust_initial_window_size(&window);
+    }
+}
+
+#[cfg(all(test, desktop))]
+mod hidden_launch_tests {
+    use super::wants_hidden_launch;
+
+    fn args(items: &[&str]) -> Vec<String> {
+        items.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn detects_the_hidden_flag() {
+        assert!(wants_hidden_launch(args(&["--hidden"])));
+    }
+
+    #[test]
+    fn ignores_an_absent_flag() {
+        assert!(!wants_hidden_launch(args(&[])));
+        assert!(!wants_hidden_launch(args(&["/Users/me/file.txt"])));
+    }
+
+    #[test]
+    fn coexists_with_a_launch_intent_path() {
+        // Autostart passes --hidden; a file association passes a path. Both
+        // can arrive together, and neither may shadow the other.
+        let both = args(&["--hidden", "/Users/me/file.txt"]);
+        assert!(wants_hidden_launch(both.clone()));
+        assert_eq!(
+            super::first_non_flag_arg(both),
+            Some("/Users/me/file.txt".to_string())
+        );
+    }
+
+    #[test]
+    fn does_not_match_partial_flags() {
+        assert!(!wants_hidden_launch(args(&["--hidden-extra"])));
+        assert!(!wants_hidden_launch(args(&["hidden"])));
     }
 }

@@ -14,6 +14,7 @@
 		"windows": [
 			{
 				"label": "main",
+				"visible": false,
 				"title": "DashBeam",
 				"width": 1024,
 				"height": 680,
