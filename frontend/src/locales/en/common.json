@@ -291,6 +291,11 @@
 					"description": "Display a broadcast switch on the sharing screen so multiple receivers can download the same files at once."
 				}
 			},
+			"notifications": {
+				"title": "Notifications",
+				"label": "Show system notifications",
+				"description": "Get notified about pair requests, incoming files, and completed downloads when DashBeam isn't in front of you"
+			},
 			"debugMode": {
 				"label": "Debug logging",
 				"description": "Record detailed diagnostics about transfers, connections, relays and pairing so you can attach them to a bug report. Off by default, and switches itself off after 7 days.",
