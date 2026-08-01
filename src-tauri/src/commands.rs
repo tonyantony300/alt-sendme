@@ -1477,6 +1477,69 @@ pub async fn respond_nearby_invite(
     result.map_err(|e| e.to_string())
 }
 
+/// Show a desktop notification that stays as long as the OS allows.
+///
+/// The Tauri notification plugin always uses the default timeout (often a
+/// couple of seconds) and does not expose a timeout API. Invite toasts need
+/// to be readable/actionable, so desktop goes through notify-rust with
+/// `Timeout::Never` (Linux: until dismissed; Windows: longest toast; macOS
+/// ignores timeout — banner length is system-controlled).
+#[cfg(desktop)]
+#[tauri::command]
+pub fn show_system_notification(
+    app: tauri::AppHandle,
+    title: String,
+    body: Option<String>,
+    icon: Option<String>,
+) -> Result<(), String> {
+    let mut notification = notify_rust::Notification::new();
+    let app_name = app
+        .config()
+        .product_name
+        .clone()
+        .unwrap_or_else(|| "DashBeam".into());
+    notification.appname(&app_name);
+    notification.summary(&title);
+    if let Some(body) = body.as_deref() {
+        notification.body(body);
+    }
+    if let Some(icon) = icon.as_deref() {
+        notification.icon(icon);
+    } else {
+        notification.auto_icon();
+    }
+    notification.timeout(notify_rust::Timeout::Never);
+
+    #[cfg(windows)]
+    {
+        let exe = tauri::utils::platform::current_exe().map_err(|e| e.to_string())?;
+        let exe_dir = exe
+            .parent()
+            .ok_or_else(|| "failed to get exe directory".to_string())?;
+        let curr_dir = exe_dir.display().to_string();
+        let sep = std::path::MAIN_SEPARATOR;
+        // AppUserModelID only when installed — matching tauri-plugin-notification.
+        if !(curr_dir.ends_with(&format!("{sep}target{sep}debug"))
+            || curr_dir.ends_with(&format!("{sep}target{sep}release")))
+        {
+            notification.app_id(&app.config().identifier);
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let identifier = app.config().identifier.clone();
+        let _ = notify_rust::set_application(if tauri::is_dev() {
+            "com.apple.Terminal"
+        } else {
+            &identifier
+        });
+    }
+
+    notification.show().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// Mirror the frontend's "keep running in the background" switch into the
 /// process-wide flag the window-close handler reads.
 #[cfg(desktop)]

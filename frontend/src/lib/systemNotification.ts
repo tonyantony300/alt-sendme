@@ -5,7 +5,8 @@ import {
 	type Options as NotificationOptions,
 } from '@tauri-apps/plugin-notification'
 import { resolveResource } from '@tauri-apps/api/path'
-import { IS_TAURI, IS_WINDOWS, IS_ANDROID } from './platform'
+import { IS_TAURI, IS_WINDOWS, IS_ANDROID, IS_DESKTOP } from './platform'
+import { invoke } from './platform-api'
 import { useAppSettingStore } from '../store/app-setting'
 import { shouldNotify } from './notification-gate'
 
@@ -130,7 +131,18 @@ export async function sendSystemNotification(
 		}
 
 		const icon = await getNotificationIconPath()
-		sendNotification(icon ? { ...options, icon } : options)
+		// Desktop: plugin uses the OS default timeout (often ~2s). Our command
+		// sets Timeout::Never (Linux until dismissed; Windows longest toast).
+		// Android keeps the plugin path.
+		if (IS_DESKTOP) {
+			await invoke('show_system_notification', {
+				title: options.title,
+				body: options.body,
+				icon,
+			})
+		} else {
+			sendNotification(icon ? { ...options, icon } : options)
+		}
 		return true
 	} catch (error) {
 		console.error('Failed to send system notification:', error)

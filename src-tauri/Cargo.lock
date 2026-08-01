@@ -1477,6 +1477,7 @@ dependencies = [
  "iroh-blobs",
  "mime_guess",
  "n0-watcher",
+ "notify-rust",
  "objc",
  "reqwest",
  "serde",

@@ -277,6 +277,7 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return false as T
 		case 'set_background_on_close':
 		case 'set_tray_labels':
+		case 'show_system_notification':
 			return undefined as unknown as T
 		default:
 			console.warn(`[web] unhandled invoke: ${cmd}`)

@@ -114,6 +114,8 @@ pub fn run() {
             #[cfg(desktop)]
             focus_main_window,
             #[cfg(desktop)]
+            show_system_notification,
+            #[cfg(desktop)]
             set_background_on_close,
             #[cfg(desktop)]
             set_tray_labels,

@@ -73,6 +73,11 @@ gstreamer = { version = "0.23", optional = true }
 gstreamer-app = { version = "0.23", optional = true }
 gstreamer-video = { version = "0.23", optional = true }
 
+# Already pulled by tauri-plugin-notification; direct dep so we can set
+# timeout (the plugin does not expose it).
+[target.'cfg(any(target_os = "linux", target_os = "macos", windows))'.dependencies]
+notify-rust = "4.18"
+
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"
 dunce = "1.0"
