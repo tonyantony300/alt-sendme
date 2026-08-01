@@ -1,6 +1,6 @@
 use tauri::{AppHandle, Manager};
 
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use tauri::{
     menu::{Menu, MenuItem},
@@ -101,8 +101,16 @@ pub struct TrayHandles {
     pub open: MenuItem<tauri::Wry>,
     pub quit: MenuItem<tauri::Wry>,
     pub labels: std::sync::Mutex<TrayLabels>,
-    /// Last known counts, so a label change can re-render without re-querying.
-    pub counts: std::sync::Mutex<(usize, usize)>,
+    /// Last known `(generation, online, total)`, so a label change can
+    /// re-render without re-querying. The generation is stored alongside the
+    /// counts, under the same lock, so a stale refresh can never overwrite a
+    /// fresher one that already landed — see `refresh_presence`.
+    pub counts: std::sync::Mutex<(u64, usize, usize)>,
+    /// Source of monotonically increasing generation numbers handed out to
+    /// each `refresh_presence` call, in the order it was *requested* rather
+    /// than the order it *completes* (refreshes race on a blocking file
+    /// read and can finish out of order).
+    pub next_generation: AtomicU64,
 }
 
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
@@ -182,7 +190,8 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
         open,
         quit,
         labels: std::sync::Mutex::new(labels),
-        counts: std::sync::Mutex::new((0, 0)),
+        counts: std::sync::Mutex::new((0, 0, 0)),
+        next_generation: AtomicU64::new(0),
     });
     TRAY_ACTIVE.store(true, Ordering::Relaxed);
     Ok(())
@@ -191,7 +200,7 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
 /// Re-render the status item and tooltip from the cached counts + labels.
 fn render(handles: &TrayHandles) {
     let labels = handles.labels.lock().expect("tray labels lock").clone();
-    let (online, total) = *handles.counts.lock().expect("tray counts lock");
+    let (_generation, online, total) = *handles.counts.lock().expect("tray counts lock");
     let status = format_presence(&labels, online, total);
     let _ = handles.status.set_text(&status);
     let _ = handles.open.set_text(&labels.open);
@@ -211,10 +220,47 @@ pub fn apply_labels(app: &AppHandle, labels: TrayLabels) {
     render(&handles);
 }
 
+/// Write `(generation, online, total)` into `current` unless a newer
+/// generation already landed there. Returns whether the write happened.
+///
+/// Pure and free of any Tauri/async types so the ordering guarantee that
+/// `refresh_presence` relies on — a stale, late-finishing refresh must never
+/// clobber a fresher one — is unit-testable on its own.
+fn apply_if_newer(
+    current: &mut (u64, usize, usize),
+    generation: u64,
+    online: usize,
+    total: usize,
+) -> bool {
+    if generation <= current.0 {
+        return false;
+    }
+    *current = (generation, online, total);
+    true
+}
+
 /// Recompute presence from the node and re-render. Cheap enough to call on
 /// every presence event — `list_paired` is a store read, not a network call.
+///
+/// Each call spawns an independent task, and that task does a *blocking*
+/// file read (`paired-devices.json`) off the async executor to get the
+/// counts. Tasks can therefore finish in a different order than the events
+/// that triggered them arrived in. A monotonic generation number is handed
+/// out synchronously, in call order, before the task is spawned; the task
+/// only writes `counts` if its generation is still the newest one seen,
+/// checked and written atomically under the `counts` lock via
+/// `apply_if_newer`. This guarantees the tray always ends up reflecting the
+/// most recently *requested* refresh, regardless of completion order —
+/// while a stale completion is dropped, the newest request is always the
+/// one that (eventually) writes, so it is never the one left out.
 pub fn refresh_presence(app: &AppHandle) {
     let app = app.clone();
+    let Some(handles) = app.try_state::<TrayHandles>() else {
+        return;
+    };
+    let generation = handles.next_generation.fetch_add(1, Ordering::Relaxed) + 1;
+    drop(handles);
+
     tauri::async_runtime::spawn(async move {
         let node = {
             let state = app.state::<crate::state::AppStateMutex>();
@@ -224,15 +270,60 @@ pub fn refresh_presence(app: &AppHandle) {
         let Some(node) = node else {
             return;
         };
-        let Ok(counts) = node.presence_summary() else {
+        let Ok((online, total)) = node.presence_summary() else {
             return;
         };
         let Some(handles) = app.try_state::<TrayHandles>() else {
             return;
         };
-        *handles.counts.lock().expect("tray counts lock") = counts;
-        render(&handles);
+        let wrote = {
+            let mut counts = handles.counts.lock().expect("tray counts lock");
+            apply_if_newer(&mut counts, generation, online, total)
+        };
+        if wrote {
+            render(&handles);
+        }
     });
+}
+
+#[cfg(test)]
+mod refresh_ordering_tests {
+    use super::apply_if_newer;
+
+    #[test]
+    fn later_request_wins_even_when_it_finishes_first() {
+        let mut counts = (0, 0, 0);
+        // Generation 2 (the later request) finishes first...
+        assert!(apply_if_newer(&mut counts, 2, 2, 3));
+        assert_eq!(counts, (2, 2, 3));
+        // ...generation 1 (the earlier request) finishes after, and must
+        // not clobber the fresher value it lost the race to.
+        assert!(!apply_if_newer(&mut counts, 1, 0, 1));
+        assert_eq!(counts, (2, 2, 3));
+    }
+
+    #[test]
+    fn stale_generation_is_dropped_not_applied() {
+        let mut counts = (5, 1, 3);
+        assert!(!apply_if_newer(&mut counts, 3, 9, 9));
+        assert_eq!(counts, (5, 1, 3));
+    }
+
+    #[test]
+    fn equal_generation_is_not_treated_as_newer() {
+        let mut counts = (4, 1, 1);
+        assert!(!apply_if_newer(&mut counts, 4, 9, 9));
+        assert_eq!(counts, (4, 1, 1));
+    }
+
+    #[test]
+    fn strictly_increasing_generations_each_apply() {
+        let mut counts = (0, 0, 0);
+        for gen in 1..=5u64 {
+            assert!(apply_if_newer(&mut counts, gen, gen as usize, 5));
+        }
+        assert_eq!(counts, (5, 5, 5));
+    }
 }
 
 #[cfg(test)]
