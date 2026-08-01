@@ -50,6 +50,31 @@ pub async fn set(app: &AppHandle, enabled: bool) -> Result<bool, String> {
     } else {
         manager.disable()
     };
-    result.map_err(|e| e.to_string())?;
-    manager.is_enabled().map_err(|e| e.to_string())
+    match result {
+        Ok(()) => manager.is_enabled().map_err(|e| e.to_string()),
+        Err(error) => {
+            // The OS may already be in the requested state, in which case the
+            // "failure" is a no-op. Windows is the case that matters:
+            // `auto-launch`'s `disable()` calls `RegKey::delete_value`, which
+            // errors when the value is absent — so turning autostart off after
+            // the user removed the entry via Task Manager would report failure,
+            // the UI would revert the switch to ON, and the toggle would lie
+            // about an OS state that is genuinely OFF. (macOS and Linux guard
+            // with `if file.exists()` and are already idempotent.)
+            //
+            // Only trust a re-query that actually matches the request; anything
+            // else is a real failure and must surface.
+            match manager.is_enabled() {
+                Ok(actual) if actual == enabled => {
+                    tracing::debug!(
+                        enabled,
+                        %error,
+                        "autostart change reported an error but the OS is already in the requested state"
+                    );
+                    Ok(actual)
+                }
+                _ => Err(error.to_string()),
+            }
+        }
+    }
 }
