@@ -186,6 +186,16 @@ pub fn run() {
                 // launch never flashes. Show it here — ahead of node init,
                 // which blocks on relay resolution — so a slow network never
                 // delays the window.
+                //
+                // Android has no equivalent show step and would stay invisible
+                // forever. It is safe only because `tauri.android.conf.json`
+                // redeclares the whole `app.windows` array, and Tauri merges
+                // platform configs with RFC 7396 JSON Merge Patch, which
+                // *replaces* arrays rather than merging their members — so the
+                // global `visible: false` never reaches Android. That block
+                // looks redundant; it is load-bearing and must not be removed.
+                // (Tauri's config structs are `deny_unknown_fields` strict
+                // JSON, so the note cannot live in the file itself.)
                 if !wants_hidden_launch(std::env::args().skip(1)) {
                     if let Some(window) = app.get_webview_window("main") {
                         if let Err(error) = window.show() {
