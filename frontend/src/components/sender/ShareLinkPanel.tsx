@@ -1,5 +1,6 @@
 import { CheckCircle, Copy, MonitorSmartphone, Share2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import QRCode from 'react-qr-code'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { IS_MOBILE, IS_WEB } from '../../lib/platform'
 import { buildReceiveLink } from '../../lib/receive-link'
@@ -105,6 +106,17 @@ export function ShareLinkPanel({
 
 				{!isTransporting && ticket && (
 					<div className="w-full space-y-3 mt-2 sm:mt-0">
+						<div className="flex justify-center">
+							<div className="p-3 bg-white rounded-xl shadow-sm">
+								<QRCode
+									value={buildReceiveLink(
+										ticket,
+										IS_WEB ? window.location.origin : undefined
+									)}
+									size={160}
+								/>
+							</div>
+						</div>
 						<TicketDisplay
 							ticket={ticket}
 							copySuccess={copySuccess}
