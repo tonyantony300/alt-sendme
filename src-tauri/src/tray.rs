@@ -1,12 +1,16 @@
 use tauri::{AppHandle, Manager};
 
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Mutex;
 
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     path::BaseDirectory,
-    tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+use tauri::menu::ContextMenu;
 
 // to show confirmation dialog box for quit event from tray
 // use tauri_plugin_dialog::DialogExt;
@@ -43,6 +47,8 @@ pub struct TrayLabels {
     pub no_devices: String,
     /// Template with `{{online}}` and `{{total}}` placeholders.
     pub devices_online: String,
+    /// Template with `{{name}}` for each online device row.
+    pub device_online: String,
 }
 
 impl Default for TrayLabels {
@@ -52,6 +58,7 @@ impl Default for TrayLabels {
             quit: "Quit".to_string(),
             no_devices: "No paired devices".to_string(),
             devices_online: "{{online}} of {{total}} devices online".to_string(),
+            device_online: "{{name}} - Online".to_string(),
         }
     }
 }
@@ -64,6 +71,39 @@ pub fn format_presence(labels: &TrayLabels, online: usize, total: usize) -> Stri
         .devices_online
         .replace("{{online}}", &online.to_string())
         .replace("{{total}}", &total.to_string())
+}
+
+/// Soft cap for the name portion of a tray row. Display names may be up to 64
+/// chars; native menus do not wrap, so without truncation a long name makes
+/// the whole menu as wide as the string. Keep enough room for " - Online".
+const TRAY_DEVICE_NAME_MAX_CHARS: usize = 36;
+
+fn truncate_device_name(name: &str) -> String {
+    let count = name.chars().count();
+    if count <= TRAY_DEVICE_NAME_MAX_CHARS {
+        return name.to_string();
+    }
+    let keep = TRAY_DEVICE_NAME_MAX_CHARS.saturating_sub(1);
+    let mut out: String = name.chars().take(keep).collect();
+    out.push('…');
+    out
+}
+
+fn format_device_online_row(labels: &TrayLabels, name: &str) -> String {
+    labels
+        .device_online
+        .replace("{{name}}", &truncate_device_name(name))
+}
+
+/// Active+online display names, sorted case-insensitively.
+fn sorted_online_names(devices: &[engine::PairedDeviceInfo]) -> Vec<String> {
+    let mut names: Vec<String> = devices
+        .iter()
+        .filter(|d| d.pairing_status.is_active() && d.online)
+        .map(|d| d.display_name.clone())
+        .collect();
+    names.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+    names
 }
 
 /// Return true if window was shown (or attempted) successfully, false otherwise.
@@ -96,19 +136,29 @@ pub fn open_and_focus(app: &AppHandle) -> bool {
     false
 }
 
+#[derive(Clone, Default)]
+struct PresenceState {
+    generation: u64,
+    online: usize,
+    total: usize,
+    online_names: Vec<String>,
+}
+
 /// Everything needed to mutate the tray after it is built. Managed in Tauri
 /// state because `setup_tray` returns before any presence event arrives.
 pub struct TrayHandles {
     pub tray: tauri::tray::TrayIcon,
+    pub menu: Menu<tauri::Wry>,
     pub status: MenuItem<tauri::Wry>,
+    /// Disabled per-device rows currently in the menu (between status and separator).
+    pub device_items: Mutex<Vec<MenuItem<tauri::Wry>>>,
     pub open: MenuItem<tauri::Wry>,
     pub quit: MenuItem<tauri::Wry>,
-    pub labels: std::sync::Mutex<TrayLabels>,
-    /// Last known `(generation, online, total)`, so a label change can
-    /// re-render without re-querying. The generation is stored alongside the
-    /// counts, under the same lock, so a stale refresh can never overwrite a
-    /// fresher one that already landed — see `refresh_presence`.
-    pub counts: std::sync::Mutex<(u64, usize, usize)>,
+    pub labels: Mutex<TrayLabels>,
+    /// Last known presence snapshot. Generation is stored alongside the
+    /// counts under the same lock so a stale refresh can never overwrite a
+    /// fresher one — see `refresh_presence`.
+    presence: Mutex<PresenceState>,
     /// Source of monotonically increasing generation numbers handed out to
     /// each `refresh_presence` call, in the order it was *requested* rather
     /// than the order it *completes* (refreshes race on a blocking file
@@ -116,55 +166,106 @@ pub struct TrayHandles {
     pub next_generation: AtomicU64,
 }
 
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+fn popup_tray_menu(app: &AppHandle, menu: &Menu<tauri::Wry>) {
+    let Some(window) = app.get_webview_window("main").or_else(|| {
+        app.webview_windows()
+            .into_iter()
+            .next()
+            .map(|(_, window)| window)
+    }) else {
+        tracing::warn!("No window available to anchor tray menu");
+        return;
+    };
+    if let Err(error) = menu.popup(window.as_ref().window()) {
+        tracing::warn!("Failed to show tray menu: {error}");
+    }
+}
+
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let labels = TrayLabels::default();
     // Disabled: a status readout, not an action.
     let status = MenuItem::with_id(app, "status", &labels.no_devices, false, None::<&str>)?;
+    let separator = PredefinedMenuItem::separator(app)?;
     let open = MenuItem::with_id(app, "open", &labels.open, true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", &labels.quit, true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&status, &open, &quit])?;
+    let menu = Menu::with_items(app, &[&status, &separator, &open, &quit])?;
 
+    // macOS/Windows: attach the menu so the platform places it correctly
+    // (under the status item / TPM_BOTTOMALIGN above the tray icon).
+    // Linux: left-click menu attach is unsupported — pop manually.
+    #[cfg(any(target_os = "macos", target_os = "windows"))]
     let mut builder = TrayIconBuilder::new()
         .menu(&menu)
-        .show_menu_on_left_click(false)
+        .show_menu_on_left_click(true)
         .tooltip("DashBeam")
-        .on_menu_event(move |app, event| match event.id().as_ref() {
-            "open" => {
-                open_and_focus(app);
-            }
-            "quit" => {
-                tracing::info!("Quit requested from tray");
-
-                // If a confirmation dialog should be shown before quit:
-                // ----------------------------------------------
-                // let handle = app.clone();
-                // handle
-                //     .dialog()
-                //     .message("Are you sure you want to quit DashBeam?")
-                //     .title("Confirm exit")
-                //     .buttons(tauri_plugin_dialog::MessageDialogButtons::OkCancel)
-                //     .kind(tauri_plugin_dialog::MessageDialogKind::Warning)
-                //     .show(move |proceed| {
-                //         if proceed {
-                //             handle.exit(0);
-                //         }
-                //     });
-                // ----------------------------------------------
-
-                app.exit(0);
-            }
-            _ => {}
-        })
         .on_tray_icon_event(move |tray, event| {
+            // Right-click shows/focuses the window. tray-icon 0.21 still opens
+            // the attached menu on right-click as well; left-click is menu-only.
             if let TrayIconEvent::Click {
-                button: MouseButton::Left,
+                button: MouseButton::Right,
+                button_state: MouseButtonState::Up,
                 ..
             } = event
             {
-                let app = tray.app_handle();
-                let _ = open_and_focus(&app);
+                let _ = open_and_focus(tray.app_handle());
             }
         });
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    let mut builder = {
+        let menu_for_click = menu.clone();
+        TrayIconBuilder::new()
+            .tooltip("DashBeam")
+            .on_tray_icon_event(move |tray, event| {
+                let TrayIconEvent::Click {
+                    button,
+                    button_state: MouseButtonState::Up,
+                    ..
+                } = event
+                else {
+                    return;
+                };
+                let app = tray.app_handle();
+                match button {
+                    MouseButton::Left => popup_tray_menu(app, &menu_for_click),
+                    MouseButton::Right => {
+                        let _ = open_and_focus(app);
+                    }
+                    _ => {}
+                }
+            })
+    };
+
+    builder = builder.on_menu_event(move |app, event| match event.id().as_ref() {
+        "open" => {
+            open_and_focus(app);
+        }
+        "quit" => {
+            tracing::info!("Quit requested from tray");
+
+            // If a confirmation dialog should be shown before quit:
+            // ----------------------------------------------
+            // let handle = app.clone();
+            // handle
+            //     .dialog()
+            //     .message("Are you sure you want to quit DashBeam?")
+            //     .title("Confirm exit")
+            //     .buttons(tauri_plugin_dialog::MessageDialogButtons::OkCancel)
+            //     .kind(tauri_plugin_dialog::MessageDialogKind::Warning)
+            //     .show(move |proceed| {
+            //         if proceed {
+            //             handle.exit(0);
+            //         }
+            //     });
+            // ----------------------------------------------
+
+            app.exit(0);
+        }
+        // Online device rows are enabled for appearance only.
+        id if id.starts_with("tray-online-") => {}
+        _ => {}
+    });
 
     // macOS: dedicated monochrome ring template (transparent, no square fill).
     // Other platforms: colour app icon.
@@ -206,28 +307,54 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
 
     app.manage(TrayHandles {
         tray,
+        menu,
         status,
+        device_items: Mutex::new(Vec::new()),
         open,
         quit,
-        labels: std::sync::Mutex::new(labels),
-        counts: std::sync::Mutex::new((0, 0, 0)),
+        labels: Mutex::new(labels),
+        presence: Mutex::new(PresenceState::default()),
         next_generation: AtomicU64::new(0),
     });
     TRAY_ACTIVE.store(true, Ordering::Relaxed);
     Ok(())
 }
 
-/// Re-render the status item and tooltip from the cached counts + labels.
-fn render(handles: &TrayHandles) {
+/// Re-render summary, online-device rows, Open/Quit labels, and tooltip.
+fn render(app: &AppHandle, handles: &TrayHandles) {
     let labels = handles.labels.lock().expect("tray labels lock").clone();
-    let (_generation, online, total) = *handles.counts.lock().expect("tray counts lock");
-    let status = format_presence(&labels, online, total);
+    let presence = handles.presence.lock().expect("tray presence lock").clone();
+    let status = format_presence(&labels, presence.online, presence.total);
     let _ = handles.status.set_text(&status);
     let _ = handles.open.set_text(&labels.open);
     let _ = handles.quit.set_text(&labels.quit);
     let _ = handles
         .tray
-        .set_tooltip(Some(format!("DashBeam — {status}")));
+        .set_tooltip(Some(format!("DashBeam - {status}")));
+
+    let mut device_items = handles.device_items.lock().expect("tray device items lock");
+    for item in device_items.drain(..) {
+        let _ = handles.menu.remove(&item);
+    }
+    for (index, name) in presence.online_names.iter().enumerate() {
+        let id = format!("tray-online-{index}");
+        let title = format_device_online_row(&labels, name);
+        // Enabled so the row isn't greyed out; clicks are ignored in on_menu_event.
+        match MenuItem::with_id(app, &id, &title, true, None::<&str>) {
+            Ok(item) => {
+                // After status (0); each insert shifts later items down.
+                if let Err(error) = handles.menu.insert(&item, 1 + index) {
+                    tracing::warn!(%error, "Failed to insert tray device row");
+                    break;
+                }
+                device_items.push(item);
+            }
+            Err(error) => {
+                tracing::warn!(%error, "Failed to create tray device row");
+                break;
+            }
+        }
+    }
 }
 
 /// Swap in translated strings; called by the frontend on mount and whenever
@@ -237,25 +364,29 @@ pub fn apply_labels(app: &AppHandle, labels: TrayLabels) {
         return;
     };
     *handles.labels.lock().expect("tray labels lock") = labels;
-    render(&handles);
+    render(app, &handles);
 }
 
-/// Write `(generation, online, total)` into `current` unless a newer
-/// generation already landed there. Returns whether the write happened.
+/// Write a presence snapshot into `current` unless a newer generation already
+/// landed there. Returns whether the write happened.
 ///
 /// Pure and free of any Tauri/async types so the ordering guarantee that
 /// `refresh_presence` relies on — a stale, late-finishing refresh must never
 /// clobber a fresher one — is unit-testable on its own.
 fn apply_if_newer(
-    current: &mut (u64, usize, usize),
+    current: &mut PresenceState,
     generation: u64,
     online: usize,
     total: usize,
+    online_names: Vec<String>,
 ) -> bool {
-    if generation <= current.0 {
+    if generation <= current.generation {
         return false;
     }
-    *current = (generation, online, total);
+    current.generation = generation;
+    current.online = online;
+    current.total = total;
+    current.online_names = online_names;
     true
 }
 
@@ -267,8 +398,8 @@ fn apply_if_newer(
 /// counts. Tasks can therefore finish in a different order than the events
 /// that triggered them arrived in. A monotonic generation number is handed
 /// out synchronously, in call order, before the task is spawned; the task
-/// only writes `counts` if its generation is still the newest one seen,
-/// checked and written atomically under the `counts` lock via
+/// only writes presence if its generation is still the newest one seen,
+/// checked and written atomically under the `presence` lock via
 /// `apply_if_newer`. This guarantees the tray always ends up reflecting the
 /// most recently *requested* refresh, regardless of completion order —
 /// while a stale completion is dropped, the newest request is always the
@@ -290,59 +421,95 @@ pub fn refresh_presence(app: &AppHandle) {
         let Some(node) = node else {
             return;
         };
-        let Ok((online, total)) = node.presence_summary() else {
+        let Ok(devices) = node.list_paired() else {
             return;
         };
+        let online_names = sorted_online_names(&devices);
+        let online = online_names.len();
+        let total = devices
+            .iter()
+            .filter(|d| d.pairing_status.is_active())
+            .count();
         let Some(handles) = app.try_state::<TrayHandles>() else {
             return;
         };
         let wrote = {
-            let mut counts = handles.counts.lock().expect("tray counts lock");
-            apply_if_newer(&mut counts, generation, online, total)
+            let mut presence = handles.presence.lock().expect("tray presence lock");
+            apply_if_newer(&mut presence, generation, online, total, online_names)
         };
         if wrote {
-            render(&handles);
+            render(&app, &handles);
         }
     });
 }
 
 #[cfg(test)]
 mod refresh_ordering_tests {
-    use super::apply_if_newer;
+    use super::{apply_if_newer, PresenceState};
 
     #[test]
     fn later_request_wins_even_when_it_finishes_first() {
-        let mut counts = (0, 0, 0);
+        let mut presence = PresenceState::default();
         // Generation 2 (the later request) finishes first...
-        assert!(apply_if_newer(&mut counts, 2, 2, 3));
-        assert_eq!(counts, (2, 2, 3));
+        assert!(apply_if_newer(
+            &mut presence,
+            2,
+            2,
+            3,
+            vec!["A".into(), "B".into()]
+        ));
+        assert_eq!(presence.generation, 2);
+        assert_eq!(presence.online_names, vec!["A", "B"]);
         // ...generation 1 (the earlier request) finishes after, and must
         // not clobber the fresher value it lost the race to.
-        assert!(!apply_if_newer(&mut counts, 1, 0, 1));
-        assert_eq!(counts, (2, 2, 3));
+        assert!(!apply_if_newer(&mut presence, 1, 0, 1, vec!["Z".into()]));
+        assert_eq!(presence.online_names, vec!["A", "B"]);
     }
 
     #[test]
     fn stale_generation_is_dropped_not_applied() {
-        let mut counts = (5, 1, 3);
-        assert!(!apply_if_newer(&mut counts, 3, 9, 9));
-        assert_eq!(counts, (5, 1, 3));
+        let mut presence = PresenceState {
+            generation: 5,
+            online: 1,
+            total: 3,
+            online_names: vec!["Keep".into()],
+        };
+        assert!(!apply_if_newer(
+            &mut presence,
+            3,
+            9,
+            9,
+            vec!["Stale".into()]
+        ));
+        assert_eq!(presence.online_names, vec!["Keep"]);
     }
 
     #[test]
     fn equal_generation_is_not_treated_as_newer() {
-        let mut counts = (4, 1, 1);
-        assert!(!apply_if_newer(&mut counts, 4, 9, 9));
-        assert_eq!(counts, (4, 1, 1));
+        let mut presence = PresenceState {
+            generation: 4,
+            online: 1,
+            total: 1,
+            online_names: vec!["Keep".into()],
+        };
+        assert!(!apply_if_newer(&mut presence, 4, 9, 9, vec!["Nope".into()]));
+        assert_eq!(presence.online_names, vec!["Keep"]);
     }
 
     #[test]
     fn strictly_increasing_generations_each_apply() {
-        let mut counts = (0, 0, 0);
+        let mut presence = PresenceState::default();
         for gen in 1..=5u64 {
-            assert!(apply_if_newer(&mut counts, gen, gen as usize, 5));
+            assert!(apply_if_newer(
+                &mut presence,
+                gen,
+                gen as usize,
+                5,
+                vec![format!("d{gen}")]
+            ));
         }
-        assert_eq!(counts, (5, 5, 5));
+        assert_eq!(presence.generation, 5);
+        assert_eq!(presence.online_names, vec!["d5"]);
     }
 }
 
@@ -356,6 +523,7 @@ mod presence_label_tests {
             quit: "Quit".to_string(),
             no_devices: "No paired devices".to_string(),
             devices_online: "{{online}} of {{total}} devices online".to_string(),
+            device_online: "{{name}} - Online".to_string(),
         }
     }
 
@@ -374,5 +542,79 @@ mod presence_label_tests {
         let mut l = labels();
         l.devices_online = "{{online}}/{{total}} ({{bogus}})".to_string();
         assert_eq!(format_presence(&l, 1, 4), "1/4 ({{bogus}})");
+    }
+}
+
+#[cfg(test)]
+mod device_row_label_tests {
+    use super::{
+        format_device_online_row, truncate_device_name, TrayLabels, TRAY_DEVICE_NAME_MAX_CHARS,
+    };
+
+    fn labels() -> TrayLabels {
+        TrayLabels::default()
+    }
+
+    #[test]
+    fn formats_name_with_online_suffix() {
+        assert_eq!(
+            format_device_online_row(&labels(), "Pixel 8"),
+            "Pixel 8 - Online"
+        );
+    }
+
+    #[test]
+    fn truncates_long_names_but_keeps_online_suffix() {
+        let long = "A".repeat(64);
+        let label = format_device_online_row(&labels(), &long);
+        assert!(label.ends_with(" - Online"));
+        assert!(label.contains('…'));
+        let name_part = label.strip_suffix(" - Online").unwrap();
+        assert_eq!(name_part.chars().count(), TRAY_DEVICE_NAME_MAX_CHARS);
+    }
+
+    #[test]
+    fn truncate_leaves_short_names_alone() {
+        assert_eq!(truncate_device_name("MacBook"), "MacBook");
+    }
+}
+
+#[cfg(test)]
+mod online_names_tests {
+    use super::sorted_online_names;
+    use engine::{PairedDeviceInfo, PairingStatus};
+
+    fn device(name: &str, online: bool, status: PairingStatus) -> PairedDeviceInfo {
+        PairedDeviceInfo {
+            endpoint_id: name.to_string(),
+            display_name: name.to_string(),
+            device_type: "laptop".to_string(),
+            os: "macos".to_string(),
+            paired_at: 0,
+            last_seen_at: 0,
+            relay_url: None,
+            pairing_status: status,
+            online,
+        }
+    }
+
+    #[test]
+    fn lists_only_active_online_sorted_case_insensitively() {
+        let devices = vec![
+            device("zeta", true, PairingStatus::Active),
+            device("Alpha", true, PairingStatus::Active),
+            device("offline", false, PairingStatus::Active),
+            device("gone", true, PairingStatus::UnpairedRemotely),
+        ];
+        assert_eq!(
+            sorted_online_names(&devices),
+            vec!["Alpha".to_string(), "zeta".to_string()]
+        );
+    }
+
+    #[test]
+    fn empty_when_nobody_is_online() {
+        let devices = vec![device("only-offline", false, PairingStatus::Active)];
+        assert!(sorted_online_names(&devices).is_empty());
     }
 }

@@ -23,6 +23,7 @@ export function useTrayLabels(): void {
 				quit: t('settings.general.systembar.trayQuit'),
 				no_devices: t('settings.general.systembar.trayNoDevices'),
 				devices_online: t('settings.general.systembar.trayDevicesOnline'),
+				device_online: t('settings.general.systembar.trayDeviceOnline'),
 			},
 		}).catch(() => {
 			// Tray may have failed to build; English defaults stay.

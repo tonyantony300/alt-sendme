@@ -26,6 +26,7 @@ import {
 } from '../ui/alert-dialog'
 import { Button } from '../ui/button'
 import { toastManager } from '../ui/toast'
+import { VerificationCode } from './VerificationCode'
 
 /**
  * The receiver's prompt for an invite from a device that isn't paired yet.
@@ -177,22 +178,16 @@ export function NearbyInviteDialog() {
 					<p className="text-xs font-medium text-muted-foreground">
 						{t('common:receiver.nearbyInvite.unverifiedSender')}
 					</p>
-					{fingerprint ? (
-						<div className="space-y-1 rounded-md border bg-muted/30 px-3 py-2">
-							<p className="text-xs font-medium text-muted-foreground">
-								{t('common:receiver.nearbyInvite.fingerprintLabel')}
-							</p>
-							<p className="font-mono text-sm tracking-wide">{fingerprint}</p>
-							<p className="text-xs text-muted-foreground">
-								{t('common:receiver.nearbyInvite.fingerprintHint', {
-									sender: invite?.sender_name ?? '',
-								})}
-							</p>
-						</div>
-					) : invite ? (
-						<p className="text-xs text-destructive">
-							{t('common:receiver.nearbyInvite.fingerprintUnavailable')}
-						</p>
+					{invite ? (
+						<VerificationCode
+							code={fingerprint}
+							hint={t('common:receiver.nearbyInvite.fingerprintHint', {
+								sender: invite.sender_name,
+							})}
+							unavailable={t(
+								'common:receiver.nearbyInvite.fingerprintUnavailable'
+							)}
+						/>
 					) : null}
 				</div>
 				<AlertDialogFooter>

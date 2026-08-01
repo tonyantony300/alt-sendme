@@ -19,6 +19,7 @@ import {
 	isWebPreviewError,
 } from '@/lib/web-preview-error'
 import { useNearbyStore } from '@/store/nearby-store'
+import { useNearbyVerificationStore } from '@/store/nearby-verification-store'
 import { toastManager } from '../components/ui/toast'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import { getDiscoveryConfigArg } from '../lib/discovery'
@@ -1045,6 +1046,13 @@ export function useSender(): UseSenderReturn {
 					description: t('common:sender.pairedDevices.inviteSentDesc'),
 					type: 'success',
 				})
+				// The receiver is now looking at this device's verification code
+				// and being asked to check it against our screen — so show it.
+				// Only on confirmed delivery: a code for an invite that never
+				// arrived is worse than none.
+				useNearbyVerificationStore
+					.getState()
+					.show({ endpointId, name: nearbyName })
 				return true
 			}
 			setInviteStatus(endpointId, 'failed')

@@ -10,9 +10,9 @@ export function SettingNetworkPage() {
 			<MobileSettingSidebar>
 				{t('settings.navItems.infra')}
 			</MobileSettingSidebar>
+			<DiscoverabilitySetting />
 			<RelaySettings />
 			<DiscoverySettings />
-			<DiscoverabilitySetting />
 		</>
 	)
 }

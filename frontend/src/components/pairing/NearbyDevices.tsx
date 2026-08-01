@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useTranslation } from '@/i18n'
 import { deviceTypeIcon } from '@/lib/device-icon'
+import { shortFingerprint } from '@/lib/fingerprint'
 import {
 	type Discoverability,
 	formatDeviceTypeLabel,
@@ -15,6 +16,8 @@ import {
 	startNearbyListeners,
 	useNearbyStore,
 } from '@/store/nearby-store'
+import { usePairingDataStore } from '@/store/pairing-data-store'
+import { useNearbyVerificationStore } from '@/store/nearby-verification-store'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Frame, FrameDescription, FramePanel, FrameTitle } from '../ui/frame'
@@ -34,6 +37,11 @@ function truncatedEndpointId(endpointId: string): string {
 export function NearbyDevices() {
 	const { t } = useTranslation()
 	const devices = useNearbyStore((s) => s.devices)
+	const thisEndpointId = usePairingDataStore((s) => s.thisDevice?.endpoint_id)
+	const showVerification = useNearbyVerificationStore((s) => s.show)
+	const thisFingerprint = thisEndpointId
+		? shortFingerprint(thisEndpointId)
+		: null
 	const unavailableReason = useNearbyStore((s) => s.unavailableReason)
 	const hydrate = useNearbyStore((s) => s.hydrate)
 	const [discoverability, setDiscoverability] =
@@ -131,6 +139,17 @@ export function NearbyDevices() {
 				title: t('common:settings.devices.nearby.pairSent'),
 				type: 'success',
 			})
+			// Only once the request actually reached them — a code shown for a
+			// request that never arrived is worse than none. Nearby devices are
+			// unpaired by construction (the engine expires a peer from Nearby
+			// the moment it is paired), so no extra check is needed here.
+			showVerification({
+				endpointId: device.endpointId,
+				name:
+					device.identified && device.displayName
+						? device.displayName
+						: truncatedEndpointId(device.endpointId),
+			})
 		} catch (error) {
 			console.error('Failed to request nearby pair:', error)
 			setPairState((prev) => ({ ...prev, [device.endpointId]: 'failed' }))
@@ -162,7 +181,25 @@ export function NearbyDevices() {
 		<Frame>
 			<FramePanel className="flex flex-col gap-4">
 				<div className="space-y-1">
-					<FrameTitle>{t('common:settings.devices.nearby.heading')}</FrameTitle>
+					<div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+						<FrameTitle>
+							{t('common:settings.devices.nearby.heading')}
+						</FrameTitle>
+						{/* Your own code, shown where first-contact actually happens.
+						    The receiver's nearby-invite dialog displays this same
+						    value for the sender and asks the user to check it
+						    against the sender's screen — without this it was
+						    computed nowhere in the sending app, so the comparison
+						    the dialog asks for could not be performed at all. */}
+						{thisFingerprint ? (
+							<span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+								{t('common:settings.devices.verificationCode')}
+								<span className="font-mono tracking-wide text-foreground">
+									{thisFingerprint}
+								</span>
+							</span>
+						) : null}
+					</div>
 					<FrameDescription>
 						{t('common:settings.devices.nearby.hint')}
 					</FrameDescription>

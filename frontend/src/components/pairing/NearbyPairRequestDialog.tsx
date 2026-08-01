@@ -6,6 +6,7 @@ import {
 	respondNearbyInvite,
 } from '@/lib/pairing-api'
 import { IS_PAIRING_CAPABLE } from '@/lib/platform'
+import { shortFingerprint } from '@/lib/fingerprint'
 import { listen } from '@/lib/platform-api'
 import {
 	pairingDataHydrated,
@@ -21,6 +22,7 @@ import {
 	AlertDialogTitle,
 } from '../ui/alert-dialog'
 import { Button } from '../ui/button'
+import { VerificationCode } from './VerificationCode'
 
 export type NearbyPairRequestPayload = {
 	remote_endpoint_id: string
@@ -107,6 +109,12 @@ export function NearbyPairRequestDialog() {
 	const typeLabel = request
 		? formatDeviceTypeLabel(request.device_type)
 		: ''
+	// Pairing grants persistent access, so it warrants at least the same
+	// confirmation a one-off file invite already gets. Display only: Accept
+	// stays enabled, matching this dialog's existing behaviour.
+	const fingerprint = request
+		? shortFingerprint(request.remote_endpoint_id)
+		: null
 
 	return (
 		<AlertDialog
@@ -133,6 +141,17 @@ export function NearbyPairRequestDialog() {
 							: ''}
 					</AlertDialogDescription>
 				</AlertDialogHeader>
+				<div className="px-6 pb-4">
+					<VerificationCode
+						code={fingerprint}
+						hint={t('common:receiver.nearbyInvite.fingerprintHint', {
+							sender: request?.sender_name ?? '',
+						})}
+						unavailable={t(
+							'common:receiver.nearbyInvite.fingerprintUnavailable'
+						)}
+					/>
+				</div>
 				<AlertDialogFooter>
 					<AlertDialogClose
 						render={

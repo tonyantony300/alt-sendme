@@ -275,6 +275,7 @@
 				"trayQuit": "Quit",
 				"trayNoDevices": "No paired devices",
 				"trayDevicesOnline": "{{online}} of {{total}} devices online",
+				"trayDeviceOnline": "{{name}} - Online",
 				"showProgressOnIcon": {
 					"label": "Show transfer progress on app icon",
 					"description": "Using a progress bar overlay on the app icon to indicate transfer progress"
@@ -319,6 +320,8 @@
 			"relayChangePairedHint": "Paired devices stay listed. Paired send may not work until both devices can reach each other on the new network setup.",
 			"thisDevice": "This device",
 			"thisDeviceHint": "Name shown to devices you pair with. OS and device type are detected automatically.",
+			"verificationCode": "Verification code",
+			"verificationCodeHint": "Read this out when someone confirms it's you before accepting.",
 			"deviceName": "Device name",
 			"deviceNamePlaceholder": "e.g. Tony’s MacBook",
 			"rename": "Rename",
@@ -515,6 +518,15 @@
 			"lanNote": "On the same local network, relays are skipped entirely.",
 			"encryptedNote": "Transfers are always end-to-end encrypted, so relays never see your files.",
 			"disabledNote": "Relays are off. Direct connections only, so transfers may fail across strict firewalls or NATs."
+		}
+	},
+	"pairing": {
+		"verification": {
+			"title": "Confirm it's you",
+			"description": "Waiting for {{name}} to accept.",
+			"hint": "Read this code to {{name}} — they'll compare it before accepting.",
+			"unavailable": "Couldn't compute a verification code for this device. {{name}} won't be able to confirm it's you.",
+			"close": "Close"
 		}
 	}
 }
