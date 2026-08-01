@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { buildInviteNotification } from './invite-notification.js'
+import {
+	buildInviteNotification,
+	MAX_PEER_NAME_LENGTH,
+} from './invite-notification.js'
 
 // Echoes the key plus its interpolations so assertions read as data, not prose.
 const t = (key: string, options?: Record<string, unknown>) =>
@@ -125,6 +128,45 @@ describe('buildInviteNotification', () => {
 		assert.equal(
 			result?.title,
 			'common:notifications.inviteTitle(sender=common:sender.pairedDevices.unknownPeer)'
+		)
+	})
+
+	it('truncates an over-long attacker-controlled sender name', () => {
+		// An unpaired LAN peer picks its own display name. Left uncapped it
+		// pushes the "nearby" qualifier out of the OS banner, making a
+		// stranger's invite read exactly like a paired device's.
+		const hostile = 'A'.repeat(120)
+		const result = buildInviteNotification(
+			'invite-nearby',
+			{
+				blob_ticket: 't',
+				file_count: 1,
+				total_size: 0,
+				sender_name: hostile,
+				remote_endpoint_id: 'abc',
+			},
+			deps
+		)
+		const sender = result?.title.replace(
+			/^common:notifications\.nearbyInviteTitle\(sender=(.*)\)$/,
+			'$1'
+		)
+		assert.ok(sender)
+		assert.equal(sender.length, MAX_PEER_NAME_LENGTH)
+		assert.ok(sender.endsWith('…'))
+		assert.equal(sender, `${'A'.repeat(MAX_PEER_NAME_LENGTH - 1)}…`)
+	})
+
+	it('leaves a name at exactly the cap untouched', () => {
+		const exact = 'B'.repeat(MAX_PEER_NAME_LENGTH)
+		const result = buildInviteNotification(
+			'pair-request',
+			{ remote_endpoint_id: 'abc', sender_name: exact },
+			deps
+		)
+		assert.equal(
+			result?.title,
+			`common:notifications.pairRequestTitle(sender=${exact})`
 		)
 	})
 

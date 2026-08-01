@@ -23,10 +23,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null
 }
 
+/**
+ * Longest peer name allowed into notification copy.
+ *
+ * Display names are chosen by the remote device, so an unpaired LAN peer
+ * controls this string outright. The only thing separating a stranger's
+ * banner from a trusted device's is the word "nearby" that follows the name;
+ * a long enough name pushes it past the OS truncation point and the two read
+ * identically. Capping keeps the qualifier on screen.
+ */
+export const MAX_PEER_NAME_LENGTH = 40
+
 function name(value: unknown, t: Translate): string {
-	return typeof value === 'string' && value.trim()
-		? value.trim()
-		: t(UNKNOWN_PEER)
+	if (typeof value !== 'string' || !value.trim()) return t(UNKNOWN_PEER)
+	const trimmed = value.trim()
+	return trimmed.length > MAX_PEER_NAME_LENGTH
+		? `${trimmed.slice(0, MAX_PEER_NAME_LENGTH - 1)}…`
+		: trimmed
 }
 
 /**
