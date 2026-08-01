@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -17,7 +17,7 @@ use protocol::{
     allows_unpaired_control, apply_options, export_connection_keying_material, read_message,
     should_answer_identity, should_publish_mdns, sign_challenge, unpaired_message_allowed,
     verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, Discoverability,
-    DiscoveryModeOption, InviteResponse, PairedDevice, PairingStatus, RememberVote, SendOptions,
+    DiscoveryModeOption, InviteResponse, PairedDevice, PairingStatus, RememberVote,
     CONTROL_ALPN, PRESENCE_CONNECT_TIMEOUT_SECS,
 };
 use tokio::sync::{mpsc, Mutex, RwLock};
@@ -33,8 +33,6 @@ use crate::paired_connections::{invite_wait_timeout, PairedConnectionManager};
 use crate::pairing_util::{build_control_connect_addr, set_presence};
 use crate::rate_limit::UnpairedRateLimiter;
 use crate::runtime::NodeRuntime;
-use crate::send::start_share_items;
-use crate::types::SendResult;
 
 #[derive(Debug)]
 pub(crate) struct AccessState {
@@ -795,11 +793,6 @@ pub struct NodeService {
     /// `Discoverability` check, so a blocked peer is rejected at the QUIC
     /// handshake — before it can send anything at all.
     blocked: Arc<RwLock<HashSet<String>>>,
-    /// Ephemeral shares started by `invite_nearby_device`. Each holds the
-    /// `Router`/endpoint that actually serves the blob, so it must outlive
-    /// this call — the receiver may not download until well after the invite
-    /// is delivered. Kept for the node's lifetime; dropped on `shutdown`.
-    nearby_shares: Mutex<Vec<SendResult>>,
     /// Endpoint ids this node has sent a nearby invite to and not yet seen a
     /// response for. See `ControlCtx::pending_nearby_invites` for why this
     /// exists — the same map, shared with `ControlProtocol` via `ControlCtx`
@@ -941,7 +934,6 @@ impl NodeService {
             unpaired_limiter,
             network_transition: Mutex::new(()),
             blocked,
-            nearby_shares: Mutex::new(Vec::new()),
             pending_nearby_invites,
         })
     }
@@ -961,7 +953,6 @@ impl NodeService {
 
         }
         self.paired_connections.shutdown().await;
-        self.nearby_shares.lock().await.clear();
         let runtime = self.runtime.lock().await;
         runtime.router.shutdown().await?;
         runtime.endpoint.close().await;
@@ -1222,18 +1213,18 @@ impl NodeService {
             .await
     }
 
-    /// Sends to a device found on the local network. Mints a normal blob
-    /// ticket with the same ephemeral-share machinery any other send uses,
-    /// then delivers it through [`Self::deliver_invite`] — byte-for-byte the
-    /// same `ControlMessage::Invite` a paired device sends. The only
-    /// difference is the receiver has no `PairedDevice` record yet, so its UI
-    /// shows the sender's fingerprint for confirmation instead of treating
-    /// this as routine.
+    /// Sends the caller's *already-minted* share ticket to a device found on
+    /// the local network — same wire `Invite` a paired device receives.
+    /// Reuses the active share rather than minting a second ephemeral one.
+    /// The receiver has no `PairedDevice` record yet, so its UI shows the
+    /// sender's fingerprint for confirmation instead of treating this as routine.
     pub async fn invite_nearby_device(
         &self,
         endpoint_id: &str,
-        paths: Vec<String>,
-    ) -> anyhow::Result<()> {
+        blob_ticket: &str,
+        file_count: u32,
+        total_size: u64,
+    ) -> anyhow::Result<bool> {
         let nearby_device = self
             .nearby
             .lock()
@@ -1242,29 +1233,17 @@ impl NodeService {
             .into_iter()
             .find(|d| d.endpoint_id == endpoint_id);
         anyhow::ensure!(nearby_device.is_some(), "device is not on the local network");
-        anyhow::ensure!(!paths.is_empty(), "no paths provided for sharing");
-
-        let path_bufs: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
-        let file_count = path_bufs.len() as u32;
-        let result = start_share_items(path_bufs, SendOptions::default(), &self.app_handle, None)
-            .await
-            .context("mint blob ticket for nearby invite")?;
-        let ticket = result.ticket.clone();
-        let total_size = result.size;
-
-        // The invite hands out a ticket good for a download that may happen
-        // well after this call returns — the share (and the ephemeral
-        // endpoint/router serving it) must outlive this function, so it's
-        // kept here rather than dropped at the end of the block.
-        self.nearby_shares.lock().await.push(result);
+        anyhow::ensure!(!blob_ticket.is_empty(), "no blob ticket provided");
 
         // A device we've never talked to has no cached `paired_connections`
         // session and never will — skip straight to a fresh dial rather than
         // waiting out `invite_wait_timeout`.
         let delivered = self
-            .deliver_invite(endpoint_id, &ticket, file_count, total_size, false)
+            .deliver_invite(endpoint_id, blob_ticket, file_count, total_size, false)
             .await?;
-        anyhow::ensure!(delivered, "device is not reachable");
+        if !delivered {
+            return Ok(false);
+        }
 
         // Record this as an outstanding nearby invite so a later
         // `InviteResponse` from this (still unpaired, from our side) peer is
@@ -1295,7 +1274,7 @@ impl NodeService {
             .await
             .insert(endpoint_id.to_string(), pending);
 
-        Ok(())
+        Ok(true)
     }
 
     /// Connects to `remote_endpoint_id` and delivers a single `Invite`

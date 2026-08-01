@@ -39,7 +39,7 @@
 		"startSharing": "Spustit sdílení",
 		"startingShare": "Spouštění sdílení...",
 		"stopSharing": "Zastavit sdílení",
-		"shareThisTicket": "Sdílejte tento ticket:",
+		"shareThisTicket": "Jednorázový share ticket",
 		"sendThisTicket": "Pošlete tento ticket osobě, která chce přijmout váš soubor",
 		"keepAppOpen": "Nechte tuto aplikaci otevřenou, dokud ostatní stahují vaše soubory",
 		"fileLabel": "Soubor:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Spárujte zařízení v Nastavení a pak se sem vraťte pro odesílání bez odkazu.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Zatím žádná spárovaná zařízení",
-				"hint": "Vyberte zařízení - přenos začne po přijetí.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Spárovat zařízení v Nastavení",
 				"nodeUnavailable": "Odesílání na zařízení není právě k dispozici. Stále můžete použít jednorázový přenos z jiné karty.",
 				"searchNoResults": "Žádná spárovaná zařízení neodpovídají hledání.",
 				"searchPlaceholder": "Hledat spárovaná zařízení",
-				"title": "Odeslat na spárované zařízení"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Odeslat na spárované zařízení",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Kdokoli s tímto odkazem může přijmout vaše soubory.",
 				"transferInProgress": "Probíhá přenos - otevřete jednorázový přenos pro podrobnosti.",

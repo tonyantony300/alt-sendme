@@ -39,7 +39,7 @@
 		"startSharing": "শেয়ার শুরু করুন",
 		"startingShare": "শেয়ার শুরু হচ্ছে...",
 		"stopSharing": "শেয়ার বন্ধ করুন",
-		"shareThisTicket": "এই টিকিটটি শেয়ার করুন:",
+		"shareThisTicket": "একবারের শেয়ার টিকিট",
 		"sendThisTicket": "যিনি আপনার ফাইল গ্রহণ করবেন তাকে এই টিকিটটি পাঠান",
 		"keepAppOpen": "অন্যরা ফাইল ডাউনলোড করার সময় এই অ্যাপটি খোলা রাখুন",
 		"fileLabel": "ফাইল:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "সেটিংসে ডিভাইস জোড়া দিন, তারপর লিংক ছাড়াই পাঠাতে এখানে ফিরে আসুন।",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "এখনও কোনো জোড়া ডিভাইস নেই",
-				"hint": "একটি ডিভাইস বেছে নিন - গ্রহণ করলে স্থানান্তর শুরু হবে।",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "সেটিংসে ডিভাইস জোড়া দিন",
 				"nodeUnavailable": "ডিভাইসে পাঠানো এখন উপলব্ধ নয়। আপনি অন্য ট্যাব থেকে এক-বারের স্থানান্তর এখনও ব্যবহার করতে পারেন।",
 				"searchNoResults": "আপনার অনুসন্ধানের সাথে কোনো জোড়া ডিভাইস মিলছে না।",
 				"searchPlaceholder": "জোড়া ডিভাইস অনুসন্ধান",
-				"title": "জোড়া ডিভাইসে পাঠান"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "জোড়া ডিভাইসে পাঠান",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "এই লিংক থাকলে যে কেউ আপনার ফাইল গ্রহণ করতে পারবে।",
 				"transferInProgress": "স্থানান্তর চলছে - বিস্তারিত দেখতে এক-বারের স্থানান্তর খুলুন।",

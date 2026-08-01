@@ -39,7 +39,7 @@
 		"startSharing": "Inizia Condivisione",
 		"startingShare": "Inizio Condivisione...",
 		"stopSharing": "Ferma Condivisione",
-		"shareThisTicket": "Condividi questo ticket:",
+		"shareThisTicket": "Ticket di condivisione monouso",
 		"sendThisTicket": "Invia questo ticket al destinatario del tuo file",
 		"keepAppOpen": "Mantieni questa app aperta mentre gli altri scaricano i tuoi file",
 		"fileLabel": "File:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Associa i dispositivi nelle Impostazioni, poi torna qui per inviare senza un link.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Nessun dispositivo associato",
-				"hint": "Scegli un dispositivo - il trasferimento inizia quando lo accetta.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Associa dispositivi nelle Impostazioni",
 				"nodeUnavailable": "L’invio al dispositivo non è disponibile al momento. Puoi comunque usare Trasferimento singolo nell’altra scheda.",
 				"searchNoResults": "Nessun dispositivo associato corrisponde alla ricerca.",
 				"searchPlaceholder": "Cerca dispositivi associati",
-				"title": "Invia a un dispositivo associato"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Invia a un dispositivo associato",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Chiunque abbia questo link può ricevere i tuoi file.",
 				"transferInProgress": "Trasferimento in corso - apri Trasferimento singolo per i dettagli.",

@@ -420,11 +420,11 @@ async fn accepting_a_nearby_invite_promotes_the_sender_to_paired() {
         .inject_nearby_device_for_tests(&bob.endpoint_id())
         .await;
 
-    let file = common::temp_file_with_contents("hello nearby").await;
-    alice
-        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+    let delivered = alice
+        .invite_nearby_device(&bob.endpoint_id(), "test-blob-ticket", 1, 12)
         .await
         .expect("invite should be delivered");
+    assert!(delivered, "invite must report delivered");
 
     bob.accept_nearby_invite(&alice.endpoint_id())
         .await
@@ -517,11 +517,11 @@ async fn declining_a_nearby_invite_leaves_the_sender_unpaired() {
         .inject_nearby_device_for_tests(&bob.endpoint_id())
         .await;
 
-    let file = common::temp_file_with_contents("nope").await;
-    alice
-        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+    let delivered = alice
+        .invite_nearby_device(&bob.endpoint_id(), "test-blob-ticket", 1, 4)
         .await
         .expect("invite should be delivered");
+    assert!(delivered);
 
     bob.decline_nearby_invite(&alice.endpoint_id(), false)
         .await
@@ -566,9 +566,8 @@ async fn a_promoted_device_leaves_the_nearby_list() {
         .inject_nearby_device_for_tests(&bob.endpoint_id())
         .await;
 
-    let file = common::temp_file_with_contents("x").await;
     alice
-        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+        .invite_nearby_device(&bob.endpoint_id(), "test-blob-ticket", 1, 1)
         .await
         .unwrap();
     bob.accept_nearby_invite(&alice.endpoint_id())
@@ -599,9 +598,8 @@ async fn accept_nearby_invite_succeeds_even_if_the_sender_is_unreachable() {
         .inject_nearby_device_for_tests(&bob.endpoint_id())
         .await;
 
-    let file = common::temp_file_with_contents("hello").await;
     alice
-        .invite_nearby_device(&bob.endpoint_id(), vec![file.path_string()])
+        .invite_nearby_device(&bob.endpoint_id(), "test-blob-ticket", 1, 5)
         .await
         .expect("invite should be delivered");
 

@@ -39,7 +39,7 @@
 		"startSharing": "Rozpocznij udostępnianie",
 		"startingShare": "Rozpoczynanie udostępniania...",
 		"stopSharing": "Zatrzymaj udostępnianie",
-		"shareThisTicket": "Udostępnij ten bilet:",
+		"shareThisTicket": "Jednorazowy bilet udostępniania",
 		"sendThisTicket": "Wyślij ten bilet osobie, która chce otrzymać Twój plik",
 		"keepAppOpen": "Pozostaw aplikację otwartą, dopóki inni pobierają Twoje pliki",
 		"fileLabel": "Plik:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Sparuj urządzenia w Ustawieniach, a następnie wróć tutaj, aby wysyłać bez linku.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Brak sparowanych urządzeń",
-				"hint": "Wybierz urządzenie - transfer rozpocznie się po akceptacji.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Sparuj urządzenia w Ustawieniach",
 				"nodeUnavailable": "Wysyłanie na urządzenie jest teraz niedostępne. Nadal możesz użyć transferu jednorazowego z innej karty.",
 				"searchNoResults": "Żadne sparowane urządzenia nie pasują do wyszukiwania.",
 				"searchPlaceholder": "Szukaj sparowanych urządzeń",
-				"title": "Wyślij do sparowanego urządzenia"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Wyślij do sparowanego urządzenia",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Każdy z tym linkiem może odebrać Twoje pliki.",
 				"transferInProgress": "Transfer w toku - otwórz transfer jednorazowy, aby zobaczyć szczegóły.",

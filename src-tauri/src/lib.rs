@@ -141,7 +141,7 @@ pub fn run() {
             #[cfg(any(desktop, target_os = "android"))]
             set_discoverability,
             #[cfg(any(desktop, target_os = "android"))]
-            send_to_nearby,
+            invite_nearby_device,
             #[cfg(any(desktop, target_os = "android"))]
             respond_nearby_invite,
         ])

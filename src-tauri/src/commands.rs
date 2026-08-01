@@ -1386,23 +1386,28 @@ pub async fn nearby_status(
     })
 }
 
-/// Sends to a device found on the local network. Mints a normal blob ticket and
-/// delivers it as an invite over the control ALPN — the same path a paired
-/// device uses. The receiver's confirmation is what promotes the peer to paired.
+/// Delivers the caller's active share ticket to a Nearby device over the
+/// control ALPN — same path as `invite_paired_device`. The receiver's
+/// fingerprint confirmation is what promotes the peer to paired.
 #[cfg(any(desktop, target_os = "android"))]
 #[tauri::command]
-pub async fn send_to_nearby(
+pub async fn invite_nearby_device(
     endpoint_id: String,
-    paths: Vec<String>,
+    blob_ticket: String,
+    file_count: u32,
+    total_size: u64,
     state: State<'_, AppStateMutex>,
-) -> Result<(), String> {
+) -> Result<InviteDelivered, String> {
     let node = {
         let guard = state.lock().await;
         require_node_arc(&guard)?
     };
-    node.invite_nearby_device(&endpoint_id, paths)
+    let delivered = node
+        .invite_nearby_device(&endpoint_id, &blob_ticket, file_count, total_size)
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+
+    Ok(InviteDelivered { delivered })
 }
 
 #[cfg(any(desktop, target_os = "android"))]

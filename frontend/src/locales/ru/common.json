@@ -39,7 +39,7 @@
 		"startSharing": "Начать Передачу",
 		"startingShare": "Запуск Передачи...",
 		"stopSharing": "Прекратить Передачу",
-		"shareThisTicket": "Поделиться этим тикетом:",
+		"shareThisTicket": "Одноразовый тикет",
 		"sendThisTicket": "Отправьте этот тикет человеку, который хочет получить ваш файл",
 		"keepAppOpen": "Не закрывайте приложение, пока остальные скачивают ваши файлы",
 		"fileLabel": "Файл:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Сопрягите устройства в Настройках, затем вернитесь сюда, чтобы отправлять без ссылки.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Пока нет сопряжённых устройств",
-				"hint": "Выберите устройство - передача начнётся после принятия.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Сопряжение устройств в Настройках",
 				"nodeUnavailable": "Отправка на устройство сейчас недоступна. Вы всё ещё можете использовать одноразовую передачу на другой вкладке.",
 				"searchNoResults": "Ни одно сопряжённое устройство не соответствует поиску.",
 				"searchPlaceholder": "Поиск сопряжённых устройств",
-				"title": "Отправить на сопряжённое устройство"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Отправить на сопряжённое устройство",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Любой, у кого есть эта ссылка, может получить ваши файлы.",
 				"transferInProgress": "Передача выполняется - откройте одноразовую передачу для подробностей.",

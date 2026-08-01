@@ -172,7 +172,8 @@ with **Show pairing code**.
 
 ## The Nearby list is empty
 
-The **Nearby** section in **Settings → Devices** shows either "No devices found nearby" or
+The **Nearby** section in **Settings → Devices** (and under **Send to a device** while
+sharing) shows either "No devices found nearby" / "No devices nearby" or
 "Nearby is unavailable", even though you have other DashBeam devices on the same network.
 
 **Your network blocks multicast or mDNS.** Local discovery depends on

@@ -39,7 +39,7 @@
 		"startSharing": "共有を開始",
 		"startingShare": "共有を開始しています...",
 		"stopSharing": "共有を停止",
-		"shareThisTicket": "このチケットを共有：",
+		"shareThisTicket": "ワンタイム共有チケット",
 		"sendThisTicket": "ファイルを受け取りたい相手にこのチケットを送信してください",
 		"keepAppOpen": "他の人があなたのファイルをダウンロードしている間、このアプリを開いたままにしてください",
 		"fileLabel": "ファイル：",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "設定でデバイスをペアリングしてから、ここに戻ってリンクなしで送信できます。",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "ペアリング済みデバイスがありません",
-				"hint": "デバイスを選択してください - 相手が承認すると転送が始まります。",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "設定でデバイスをペアリング",
 				"nodeUnavailable": "現在デバイス送信は利用できません。別のタブの「ワンタイム転送」は引き続きご利用いただけます。",
 				"searchNoResults": "検索条件に一致するペアリング済みデバイスがありません。",
 				"searchPlaceholder": "ペアリング済みデバイスを検索",
-				"title": "ペアリング済みデバイスに送信"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "ペアリング済みデバイスに送信",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "このリンクを知っている人なら誰でもファイルを受け取れます。",
 				"transferInProgress": "転送中 - 詳細は「ワンタイム転送」タブを開いてください。",

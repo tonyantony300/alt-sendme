@@ -39,7 +39,7 @@
 		"startSharing": "공유 시작",
 		"startingShare": "공유 시작 중...",
 		"stopSharing": "공유 중지",
-		"shareThisTicket": "이 티켓 공유:",
+		"shareThisTicket": "일회용 공유 티켓",
 		"sendThisTicket": "파일을 받고 싶은 사람에게 이 티켓을 보내주세요",
 		"keepAppOpen": "다른 사람이 파일을 다운로드하는 동안 이 앱을 열어두세요",
 		"fileLabel": "파일:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "설정에서 기기를 페어링한 후 여기로 돌아와 링크 없이 보내세요.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "아직 페어링된 기기가 없습니다",
-				"hint": "기기를 선택하세요 - 상대방이 수락하면 전송이 시작됩니다.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "설정에서 기기 페어링",
 				"nodeUnavailable": "지금은 기기 전송을 사용할 수 없습니다. 다른 탭의 일회성 전송은 계속 사용할 수 있습니다.",
 				"searchNoResults": "검색어와 일치하는 페어링된 기기가 없습니다.",
 				"searchPlaceholder": "페어링된 기기 검색",
-				"title": "페어링된 기기로 보내기"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "페어링된 기기로 보내기",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "이 링크를 아는 사람은 누구나 파일을 받을 수 있습니다.",
 				"transferInProgress": "전송 진행 중 - 자세한 내용은 일회성 전송 탭을 여세요.",

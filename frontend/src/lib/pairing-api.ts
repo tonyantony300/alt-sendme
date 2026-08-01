@@ -1,6 +1,6 @@
-import { invoke } from './platform-api'
-import { IS_PAIRING_CAPABLE } from './platform'
 import type { DiscoveryConfigArg } from './discovery-config'
+import { IS_PAIRING_CAPABLE } from './platform'
+import { invoke } from './platform-api'
 import type { RelayConfigArg } from './relay-config'
 
 export interface DeviceInfo {
@@ -218,16 +218,23 @@ export async function getNearbyStatus(): Promise<NearbyStatus> {
 }
 
 /**
- * Mints a fresh blob ticket from `paths` and delivers it to a device found on
- * the local network — unlike `invitePairedDevice`, Nearby has no existing
- * ticket to reuse (see `NodeService::invite_nearby_device`).
+ * Delivers the active share ticket to a Nearby (unpaired LAN) device.
+ * Same ticket reuse as `invitePairedDevice` — no separate share is minted.
  */
-export async function sendToNearby(
+export async function inviteNearbyDevice(
 	endpointId: string,
-	paths: string[]
-): Promise<void> {
-	if (!pairingCapable()) return
-	await invoke('send_to_nearby', { endpointId, paths })
+	blobTicket: string,
+	fileCount: number,
+	totalSize: number
+): Promise<boolean> {
+	if (!pairingCapable()) return false
+	const result = await invoke<InviteDelivered>('invite_nearby_device', {
+		endpointId,
+		blobTicket,
+		fileCount,
+		totalSize,
+	})
+	return result.delivered
 }
 
 export async function respondNearbyInvite(

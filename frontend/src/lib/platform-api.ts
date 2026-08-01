@@ -256,8 +256,8 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return 'off' as unknown as T
 		case 'set_discoverability':
 			return undefined as unknown as T
-		case 'send_to_nearby':
-			throw new WebPreviewError('send_to_nearby')
+		case 'invite_nearby_device':
+			throw new WebPreviewError('invite_nearby_device')
 		case 'respond_nearby_invite':
 			throw new WebPreviewError('respond_nearby_invite')
 		case 'toggle_context_menu':

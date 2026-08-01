@@ -39,7 +39,7 @@
 		"startSharing": "Freigabe starten",
 		"startingShare": "Freigabe wird gestartet...",
 		"stopSharing": "Freigabe beenden",
-		"shareThisTicket": "Dieses Ticket teilen:",
+		"shareThisTicket": "Einmaliges Share-Ticket",
 		"sendThisTicket": "Senden Sie dieses Ticket an die Person, die Ihre Datei empfangen möchte",
 		"keepAppOpen": "Lassen Sie diese App geöffnet, während andere Ihre Dateien herunterladen",
 		"fileLabel": "Datei:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Koppeln Sie Geräte in den Einstellungen und kehren Sie hierher zurück, um ohne Link zu senden.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Noch keine gekoppelten Geräte",
-				"hint": "Wählen Sie ein Gerät - die Übertragung startet, sobald es angenommen wird.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Geräte in Einstellungen koppeln",
 				"nodeUnavailable": "Senden an Geräte ist derzeit nicht verfügbar. Sie können weiterhin „Einmalige Übertragung“ im anderen Tab verwenden.",
 				"searchNoResults": "Keine gekoppelten Geräte entsprechen Ihrer Suche.",
 				"searchPlaceholder": "Gekoppelte Geräte suchen",
-				"title": "An gekoppeltes Gerät senden"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "An gekoppeltes Gerät senden",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Jeder mit diesem Link kann Ihre Dateien empfangen.",
 				"transferInProgress": "Übertragung läuft - öffnen Sie „Einmalige Übertragung“, um Details anzuzeigen.",

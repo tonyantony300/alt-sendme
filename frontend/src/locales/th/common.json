@@ -39,7 +39,7 @@
 		"startSharing": "เริ่มแชร์",
 		"startingShare": "กำลังเริ่มแชร์...",
 		"stopSharing": "หยุดแชร์",
-		"shareThisTicket": "แชร์ตั๋วนี้:",
+		"shareThisTicket": "ตั๋วแชร์แบบใช้ครั้งเดียว",
 		"sendThisTicket": "ส่งตั๋วนี้ให้กับคนที่ต้องการรับไฟล์ของคุณ",
 		"keepAppOpen": "เปิดแอปนี้ไว้ขณะที่คนอื่นกำลังดาวน์โหลดไฟล์ของคุณ",
 		"fileLabel": "ไฟล์:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "จับคู่อุปกรณ์ในการตั้งค่า แล้วกลับมาที่นี่เพื่อส่งโดยไม่ต้องใช้ลิงก์",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "ยังไม่มีอุปกรณ์ที่จับคู่",
-				"hint": "เลือกอุปกรณ์ - การถ่ายโอนจะเริ่มเมื่อพวกเขายอมรับ",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "จับคู่อุปกรณ์ในการตั้งค่า",
 				"nodeUnavailable": "การส่งผ่านอุปกรณ์ไม่พร้อมใช้งานในขณะนี้ คุณยังสามารถใช้การถ่ายโอนครั้งเดียวจากแท็บอื่นได้",
 				"searchNoResults": "ไม่มีอุปกรณ์ที่จับคู่ตรงกับการค้นหาของคุณ",
 				"searchPlaceholder": "ค้นหาอุปกรณ์ที่จับคู่",
-				"title": "ส่งไปยังอุปกรณ์ที่จับคู่แล้ว"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "ส่งไปยังอุปกรณ์ที่จับคู่แล้ว",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "ใครก็ตามที่มีลิงก์นี้สามารถรับไฟล์ของคุณได้",
 				"transferInProgress": "กำลังถ่ายโอน - เปิดการถ่ายโอนครั้งเดียวเพื่อดูรายละเอียด",

@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
 import { StopCircleIcon } from 'lucide-react'
-import { DragDrop } from './DragDrop'
-import { ShareActionCard } from './ShareActionCard'
-import { SharingActiveCard } from './SharingActiveCard'
+import { useEffect } from 'react'
+import { useSender } from '../../hooks/useSender'
+import { useTranslation } from '../../i18n/react-i18next-compat'
+import { useSenderStore } from '../../store/sender-store'
 import { TransferSuccessScreen } from '../common/TransferSuccessScreen'
 import {
 	AlertDialog,
@@ -13,10 +13,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '../ui/alert-dialog'
-import { useSender } from '../../hooks/useSender'
-import { useTranslation } from '../../i18n/react-i18next-compat'
 import { Button } from '../ui/button'
-import { useSenderStore } from '../../store/sender-store'
+import { DragDrop } from './DragDrop'
+import { ShareActionCard } from './ShareActionCard'
+import { SharingActiveCard } from './SharingActiveCard'
 
 interface SenderProps {
 	onTransferStateChange: (isSharing: boolean) => void
@@ -43,6 +43,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 		isNodeStatusPending,
 		pairedInviteStatus,
 		onInvitePairedDevice,
+		onInviteNearbyDevice,
 		handleFileSelect,
 		handleFilesSelect,
 		clearSelectedPath,
@@ -136,6 +137,7 @@ export function Sender({ onTransferStateChange }: SenderProps) {
 						isNodeStatusPending={isNodeStatusPending}
 						pairedInviteStatus={pairedInviteStatus}
 						onInvitePairedDevice={onInvitePairedDevice}
+						onInviteNearbyDevice={onInviteNearbyDevice}
 						onStartSharing={startSharing}
 						onStopSharing={stopSharing}
 						onCopyTicket={copyTicket}

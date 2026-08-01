@@ -39,7 +39,7 @@
 		"startSharing": "بدء المشاركة",
 		"startingShare": "بدء المشاركة...",
 		"stopSharing": "إيقاف المشاركة",
-		"shareThisTicket": "شارك هذه التذكرة:",
+		"shareThisTicket": "تذكرة مشاركة لمرة واحدة",
 		"sendThisTicket": "أرسل هذه التذكرة للشخص الذي يريد استقبال ملفك",
 		"keepAppOpen": "احتفظ بهذا التطبيق مفتوحاً بينما يقوم الآخرون بتنزيل ملفاتك",
 		"fileLabel": "الملف:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "اقترن الأجهزة في الإعدادات، ثم عد هنا للإرسال دون رابط.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "لا توجد أجهزة مقترنة بعد",
-				"hint": "اختر جهازاً - يبدأ النقل عند قبولهم.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "اقترن الأجهزة في الإعدادات",
 				"nodeUnavailable": "إرسال الأجهزة غير متاح حالياً. لا يزال بإمكانك استخدام النقل لمرة واحدة من التبويب الآخر.",
 				"searchNoResults": "لا توجد أجهزة مقترنة تطابق بحثك.",
 				"searchPlaceholder": "البحث في الأجهزة المقترنة",
-				"title": "إرسال إلى جهاز مقترن"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "إرسال إلى جهاز مقترن",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "يمكن لأي شخص لديه هذا الرابط استقبال ملفاتك.",
 				"transferInProgress": "النقل قيد التقدم - افتح النقل لمرة واحدة لعرض التفاصيل.",

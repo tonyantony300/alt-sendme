@@ -39,7 +39,7 @@
 		"startSharing": "Megosztás indítása",
 		"startingShare": "Megosztás folyamatban...",
 		"stopSharing": "Megosztás leállítása",
-		"shareThisTicket": "Ezt a jegyet add át:",
+		"shareThisTicket": "Egyszeri megosztási jegy",
 		"sendThisTicket": "A fogadófélnek ezt a jegyet add át",
 		"keepAppOpen": "Tartsd megnyitva ezt az ablakot, míg a többiek letölti a fájl(okat)",
 		"fileLabel": "Fájl:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Párosíts eszközöket a Beállításokban, majd térj vissza ide link nélküli küldéshez.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Még nincs párosított eszköz",
-				"hint": "Válassz eszközt - az átvitel elfogadáskor indul.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Eszközök párosítása a Beállításokban",
 				"nodeUnavailable": "Az eszközre küldés jelenleg nem elérhető. A másik lapon továbbra is használhatod az egyszeri átvitelt.",
 				"searchNoResults": "Egy párosított eszköz sem felel meg a keresésnek.",
 				"searchPlaceholder": "Párosított eszközök keresése",
-				"title": "Küldés párosított eszközre"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Küldés párosított eszközre",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Bárki, aki rendelkezik ezzel a linkkel, fogadhatja a fájljaidat.",
 				"transferInProgress": "Átvitel folyamatban - nyisd meg az egyszeri átvitelt a részletekért.",

@@ -39,7 +39,7 @@
 		"startSharing": "Почати передачу",
 		"startingShare": "Запуск передачі...",
 		"stopSharing": "Припинити передачу",
-		"shareThisTicket": "Поділитися цим тікетом:",
+		"shareThisTicket": "Одноразовий тікет",
 		"sendThisTicket": "Надішліть цей тікет людині, яка хоче отримати ваш файл",
 		"keepAppOpen": "Не закривайте програму, поки інші завантажують ваші файли",
 		"fileLabel": "Файл:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Спарте пристрої в Налаштуваннях, потім поверніться сюди, щоб надсилати без посилання.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Ще немає спарених пристроїв",
-				"hint": "Виберіть пристрій - передача розпочнеться після прийняття.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Спарити пристрої в Налаштуваннях",
 				"nodeUnavailable": "Надсилання на пристрій зараз недоступне. Ви все ще можете скористатися одноразовою передачею з іншої вкладки.",
 				"searchNoResults": "Жоден спарений пристрій не відповідає пошуку.",
 				"searchPlaceholder": "Пошук спарених пристроїв",
-				"title": "Надіслати на спарений пристрій"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Надіслати на спарений пристрій",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Будь-хто з цим посиланням може отримати ваші файли.",
 				"transferInProgress": "Передача триває - відкрийте одноразову передачу, щоб переглянути деталі.",

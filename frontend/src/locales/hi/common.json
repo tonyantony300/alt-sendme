@@ -39,7 +39,7 @@
 		"startSharing": "साझा करना शुरू करें",
 		"startingShare": "साझा करना शुरू हो रहा है...",
 		"stopSharing": "साझा करना रोकें",
-		"shareThisTicket": "यह टिकट साझा करें:",
+		"shareThisTicket": "एक बार का शेयर टिकट",
 		"sendThisTicket": "इस टिकट को उस व्यक्ति को भेजें जो आपकी फ़ाइल प्राप्त करना चाहता है",
 		"keepAppOpen": "जब तक अन्य लोग आपकी फ़ाइलें डाउनलोड कर रहे हों, ऐप खुला रखें",
 		"fileLabel": "फ़ाइल:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "सेटिंग्स में उपकरण जोड़ें, फिर लिंक के बिना भेजने के लिए यहाँ वापस आएँ।",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "अभी तक कोई जोड़ा उपकरण नहीं",
-				"hint": "एक उपकरण चुनें - स्वीकार करने पर स्थानांतरण शुरू होगा।",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "सेटिंग्स में उपकरण जोड़ें",
 				"nodeUnavailable": "उपकरण भेजना अभी उपलब्ध नहीं है। आप दूसरे टैब से एक-बार स्थानांतरण अभी भी उपयोग कर सकते हैं।",
 				"searchNoResults": "आपकी खोज से कोई जोड़ा उपकरण मेल नहीं खाता।",
 				"searchPlaceholder": "जोड़े गए उपकरण खोजें",
-				"title": "जोड़े गए उपकरण पर भेजें"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "जोड़े गए उपकरण पर भेजें",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "इस लिंक वाला कोई भी व्यक्ति आपकी फ़ाइलें प्राप्त कर सकता है।",
 				"transferInProgress": "स्थानांतरण जारी है - विवरण के लिए एक-बार स्थानांतरण खोलें।",

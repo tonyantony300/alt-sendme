@@ -39,7 +39,7 @@
 		"startSharing": "Paylaşımı Başlat",
 		"startingShare": "Paylaşım Başlatılıyor...",
 		"stopSharing": "Paylaşımı Durdur",
-		"shareThisTicket": "Bu anahtarı paylaş:",
+		"shareThisTicket": "Tek seferlik paylaşım anahtarı",
 		"sendThisTicket": "Bu anahtarı dosyanızı alacak kişiye gönderin",
 		"keepAppOpen": "Başkaları dosyalarınızı indirirken bu uygulamayı açık tutun",
 		"fileLabel": "Dosya:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Ayarlar'da cihazları eşleştirin, ardından bağlantı olmadan göndermek için buraya dönün.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Henüz eşleştirilmiş cihaz yok",
-				"hint": "Bir cihaz seçin - kabul edildiğinde aktarım başlar.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Ayarlar'da cihaz eşleştir",
 				"nodeUnavailable": "Cihaza gönderme şu anda kullanılamıyor. Diğer sekmeden tek seferlik aktarımı kullanabilirsiniz.",
 				"searchNoResults": "Aramanızla eşleşen eşleştirilmiş cihaz yok.",
 				"searchPlaceholder": "Eşleştirilmiş cihazlarda ara",
-				"title": "Eşleştirilmiş cihaza gönder"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Eşleştirilmiş cihaza gönder",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Bu bağlantıya sahip herkes dosyalarınızı alabilir.",
 				"transferInProgress": "Aktarım devam ediyor - ayrıntılar için tek seferlik aktarımı açın.",
