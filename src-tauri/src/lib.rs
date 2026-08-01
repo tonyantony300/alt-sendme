@@ -188,7 +188,9 @@ pub fn run() {
                 // delays the window.
                 if !wants_hidden_launch(std::env::args().skip(1)) {
                     if let Some(window) = app.get_webview_window("main") {
-                        let _ = window.show();
+                        if let Err(error) = window.show() {
+                            tracing::warn!(%error, "failed to show window on launch");
+                        }
                     }
                 }
             }
@@ -238,7 +240,14 @@ pub fn run() {
                 // running process the user cannot reach.
                 if wants_hidden_launch(std::env::args().skip(1)) && !tray::is_active() {
                     if let Some(window) = app.get_webview_window("main") {
-                        let _ = window.show();
+                        if let Err(error) = window.show() {
+                            // No tray and no window: the process is running but
+                            // completely unreachable. Worth a loud log line.
+                            tracing::warn!(
+                                %error,
+                                "failed to show window after tray setup failed; app may be unreachable"
+                            );
+                        }
                     }
                 }
             }
