@@ -1,5 +1,5 @@
 [package]
-name = "alt-sendme"
+name = "dashbeam"
 version = "0.6.2"
 description = "P2P file sharing with NAT hole punching"
 authors = ["Tony Antony"]
@@ -8,7 +8,7 @@ edition = "2021"
 rust-version = "1.91"
 
 [lib]
-name = "alt_sendme_lib"
+name = "dashbeam_lib"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [build-dependencies]

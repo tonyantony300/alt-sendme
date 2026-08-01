@@ -44,7 +44,7 @@ const MAX_ENABLED_AGE_SECS: u64 = 7 * 24 * 60 * 60;
 /// `protocol` and `sendme-native` builds lib `native`, and tracing targets follow the
 /// lib name.
 const DEBUG_FILTER: &str = "iroh::_events=debug,protocol=debug,native=debug,engine=debug,\
-     alt_sendme=debug,alt_sendme_lib=debug";
+     dashbeam=debug,dashbeam_lib=debug";
 
 /// Keeps the non-blocking writer's worker thread alive for the process lifetime.
 /// Dropping this silently discards buffered lines.

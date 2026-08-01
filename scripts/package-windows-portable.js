@@ -68,6 +68,7 @@ function archLabel(rustTarget) {
 /** Cargo package name → binary; Tauri may also rename via mainBinaryName / productName. */
 const EXE_CANDIDATES = [
 	`${PRODUCT_NAME}.exe`,
+	'dashbeam.exe',
 	'AltSendme.exe',
 	'alt-sendme.exe',
 ]

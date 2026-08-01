@@ -107,50 +107,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
-name = "alt-sendme"
-version = "0.6.2"
-dependencies = [
- "anyhow",
- "ashpd",
- "base64 0.22.1",
- "core-foundation 0.10.1",
- "core-graphics 0.24.0",
- "dunce",
- "engine",
- "gstreamer",
- "gstreamer-app",
- "gstreamer-video",
- "image",
- "iroh",
- "iroh-blobs",
- "mime_guess",
- "n0-watcher",
- "objc",
- "reqwest",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-autostart",
- "tauri-plugin-deep-link",
- "tauri-plugin-dialog",
- "tauri-plugin-native-utils",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "tauri-plugin-os",
- "tauri-plugin-single-instance",
- "tauri-plugin-store",
- "tauri-plugin-updater",
- "tokio",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "walkdir",
- "windows 0.58.0",
- "winreg 0.52.0",
-]
-
-[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1500,6 +1456,50 @@ dependencies = [
  "darling_core",
  "quote",
  "syn 2.0.118",
+]
+
+[[package]]
+name = "dashbeam"
+version = "0.6.2"
+dependencies = [
+ "anyhow",
+ "ashpd",
+ "base64 0.22.1",
+ "core-foundation 0.10.1",
+ "core-graphics 0.24.0",
+ "dunce",
+ "engine",
+ "gstreamer",
+ "gstreamer-app",
+ "gstreamer-video",
+ "image",
+ "iroh",
+ "iroh-blobs",
+ "mime_guess",
+ "n0-watcher",
+ "objc",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-autostart",
+ "tauri-plugin-deep-link",
+ "tauri-plugin-dialog",
+ "tauri-plugin-native-utils",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "tauri-plugin-os",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-store",
+ "tauri-plugin-updater",
+ "tokio",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "walkdir",
+ "windows 0.58.0",
+ "winreg 0.52.0",
 ]
 
 [[package]]
