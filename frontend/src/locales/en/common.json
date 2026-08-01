@@ -261,18 +261,23 @@
 				"description": "The app will automatically check for updates on startup"
 			},
 			"systembar": {
-				"title": "System Tray",
-				"minimizeToTray": {
-					"label": "Minimize to system tray",
-					"description": "When close dialog, minimize the app instead of terminate"
+				"title": "Startup & background",
+				"runOnSystemStartup": {
+					"label": "Start DashBeam when I sign in",
+					"description": "Launch in the background at login so paired devices can see you're online"
 				},
+				"runOnSystemStartupFailed": "Couldn't change the startup setting",
+				"minimizeToTray": {
+					"label": "Keep running in the background",
+					"description": "Closing the window keeps DashBeam running in the tray. Quit from the tray icon to stop it."
+				},
+				"trayOpen": "Open",
+				"trayQuit": "Quit",
+				"trayNoDevices": "No paired devices",
+				"trayDevicesOnline": "{{online}} of {{total}} devices online",
 				"showProgressOnIcon": {
 					"label": "Show transfer progress on app icon",
 					"description": "Using a progress bar overlay on the app icon to indicate transfer progress"
-				},
-				"runOnSystemStartup": {
-					"label": "Run on system startup",
-					"description": "Automatically launch the app when the system starts"
 				},
 				"contextMenu": {
 					"label": "Explorer context menu",

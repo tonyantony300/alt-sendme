@@ -271,6 +271,13 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return null as T
 		case 'is_windows_portable':
 			return false as T
+		case 'autostart_is_enabled':
+			return null as T
+		case 'autostart_set':
+			return false as T
+		case 'set_background_on_close':
+		case 'set_tray_labels':
+			return undefined as unknown as T
 		default:
 			console.warn(`[web] unhandled invoke: ${cmd}`)
 			throw new WebPreviewError()
