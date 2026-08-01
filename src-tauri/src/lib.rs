@@ -2,6 +2,7 @@
 
 mod commands;
 mod features;
+mod logging;
 mod platform;
 mod state;
 #[cfg(desktop)]
@@ -43,8 +44,7 @@ fn cleanup_orphaned_directories() {
 pub fn run() {
     let builder = tauri::Builder::default().plugin(tauri_plugin_store::Builder::new().build());
 
-    // Flatpak ships immutable app files and updates via `flatpak update`, so the
-    // in-app updater is skipped there. FLATPAK_ID is only set inside the sandbox.
+    // Skip in-app updater under Flatpak (`flatpak update` handles it).
     #[cfg(desktop)]
     let builder = if std::env::var_os("FLATPAK_ID").is_none() {
         builder.plugin(tauri_plugin_updater::Builder::new().build())
@@ -102,6 +102,10 @@ pub fn run() {
             get_relay_status,
             toggle_context_menu,
             is_windows_portable,
+            get_debug_logging,
+            set_debug_logging,
+            export_debug_bundle,
+            clear_debug_logs,
             #[cfg(any(desktop, target_os = "android"))]
             get_node_status,
             #[cfg(any(desktop, target_os = "android"))]
@@ -130,6 +134,7 @@ pub fn run() {
             respond_paired_invite,
         ])
         .setup(|app| {
+            init_logging(app.handle());
             setup_common(app);
             #[cfg(any(desktop, target_os = "android"))]
             {
@@ -215,6 +220,31 @@ fn app_state_initial() -> AppState {
         launch_intent,
         ..Default::default()
     }
+}
+
+/// Install the global tracing subscriber. Shared by the desktop binary and the mobile
+/// entry point — before this moved here, Android had no subscriber at all and every
+/// `tracing::` call there was a silent no-op.
+///
+/// Any failure degrades to stdout-only logging; it must never block startup.
+fn init_logging(app: &tauri::AppHandle) {
+    let config_dir = app.path().app_config_dir().ok();
+    let log_dir = app.path().app_log_dir().ok();
+
+    match (config_dir, log_dir) {
+        (Some(config_dir), Some(log_dir)) => logging::init(&config_dir, &log_dir),
+        _ => {
+            // Must still install *something*, or the process ends up with no subscriber
+            // and even stdout logging is lost.
+            eprintln!("could not resolve app directories; debug logging unavailable");
+            logging::init_stdout_only();
+        }
+    }
+
+    tracing::info!(
+        "Starting DashBeam application v{}",
+        version::get_app_version()
+    );
 }
 
 #[allow(unused_variables)]

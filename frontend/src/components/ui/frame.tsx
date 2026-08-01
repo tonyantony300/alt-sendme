@@ -32,7 +32,7 @@ function FramePanel({ className, ...props }: React.ComponentProps<'div'>) {
 function FrameHeader({ className, ...props }: React.ComponentProps<'header'>) {
 	return (
 		<header
-			className={cn('flex flex-col px-5 py-4', className)}
+			className={cn('flex flex-col px-5 pt-5 pb-3.5 sm:py-4', className)}
 			data-slot="frame-panel-header"
 			{...props}
 		/>

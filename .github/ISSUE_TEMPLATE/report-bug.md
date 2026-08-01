@@ -33,10 +33,10 @@ Please describe what's happening and what you would have expected instead.
 **If the problem involves sending or receiving files**, please also tell us:
 
 - The other device's platform and version:
-- Relay mode (Settings → Network → Relay servers) — Automatic, Custom, or Disabled:
+- Relay mode (Settings → Network → Relay servers), Automatic / Custom / Disabled:
 - Does **Test connection** succeed on both devices?
 
-**If the problem is visual** — a blank window, rendering glitches, missing UI — and
+**If the problem is visual** (a blank window, rendering glitches, missing UI) and
 you're on Linux:
 
 - Desktop environment, and Wayland or X11 (`echo $XDG_SESSION_TYPE`):
@@ -44,9 +44,16 @@ you're on Linux:
 
 ## Logs
 
-Logs make almost every report faster to resolve. See
-[collecting logs](https://github.com/tonyantony300/dashbeam/blob/main/docs/troubleshooting.md#collecting-logs)
-for the command to use on your platform, then paste the output or attach the file.
+Logs make almost every report faster to resolve.
+
+For transfer, connection, relay or pairing problems, the easiest way is **Settings →
+General → Debug logging**, then restart, reproduce, and **Save diagnostics…**. If the app
+won't open or shows a blank window, use the `RUST_LOG` commands instead. Both are covered
+in [collecting logs](https://github.com/tonyantony300/dashbeam/blob/main/docs/troubleshooting.md#collecting-logs).
+
+Please open the file and check it before attaching. It includes IP addresses, device
+identifiers, your device name, and names of files you shared.
+
 
 <details>
 <summary>dashbeam.log</summary>

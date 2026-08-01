@@ -15,8 +15,7 @@ import { isWindowsPortableBuild } from './use-windows-portable'
 type UpdateInfo = Awaited<ReturnType<typeof check>>
 
 async function checkForDesktopUpdate(): Promise<UpdateInfo> {
-	// Flatpak ships immutable app files and updates via `flatpak update`, so the
-	// updater plugin is never registered there and check() would throw.
+	// Flatpak builds omit the updater plugin.
 	if (IS_WEB || IS_FLATPAK) {
 		return null
 	}

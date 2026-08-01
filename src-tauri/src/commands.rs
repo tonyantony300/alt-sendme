@@ -157,7 +157,16 @@ pub async fn send_items(
         // Ephemeral share — relay settings apply per session (all platforms including Android).
         let result = start_share_items(path_bufs.clone(), options, &boxed_handle, Some(metadata))
             .await
-            .map_err(|e| format!("Failed to start sharing: {}", e))?;
+            .map_err(|error| {
+                // The send path had no failure logging, so sender-side bug reports
+                // showed connection setup and then nothing.
+                tracing::error!(
+                    target: "dashbeam::_events::transfer::send_failed",
+                    item_count = path_bufs.len(),
+                    %error,
+                );
+                format!("Failed to start sharing: {}", error)
+            })?;
         if let Some(payload) = relay_fallback_event_payload("send", fell_back_to_public) {
             // Surface the selected custom->public fallback once the share has
             // actually started with the resolved relay mode.
@@ -669,6 +678,180 @@ pub fn is_windows_portable() -> bool {
     crate::platform::windows::portable::is_portable()
 }
 
+/// State of the debug-logging toggle.
+///
+/// `enabled` is the persisted marker; `active_this_session` is whether the file sink was
+/// actually installed at launch. They disagree between toggling and restarting, which is
+/// what the UI's "restart required" hint keys off.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DebugLoggingState {
+    pub enabled: bool,
+    pub active_this_session: bool,
+    pub log_dir: Option<String>,
+}
+
+fn app_config_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .app_config_dir()
+        .map_err(|e| format!("Failed to resolve config dir: {e}"))
+}
+
+fn app_log_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .app_log_dir()
+        .map_err(|e| format!("Failed to resolve log dir: {e}"))
+}
+
+#[tauri::command]
+pub fn get_debug_logging(app: tauri::AppHandle) -> Result<DebugLoggingState, String> {
+    let config_dir = app_config_dir(&app)?;
+    Ok(DebugLoggingState {
+        enabled: crate::logging::is_enabled(&config_dir),
+        active_this_session: crate::logging::is_active(),
+        log_dir: app_log_dir(&app)
+            .ok()
+            .map(|p| p.to_string_lossy().into_owned()),
+    })
+}
+
+/// Takes effect on the next launch — the subscriber is never reconfigured while running.
+///
+/// Turning it off also purges immediately rather than waiting for a relaunch, so
+/// "off" means the logs are gone even if the app is never reopened.
+#[tauri::command]
+pub fn set_debug_logging(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    let config_dir = app_config_dir(&app)?;
+    crate::logging::set_enabled(&config_dir, enabled)
+        .map_err(|e| format!("Failed to update debug logging: {e}"))?;
+
+    if !enabled {
+        if let Ok(log_dir) = app_log_dir(&app) {
+            // Best-effort: the file for the current session may still be open on
+            // Windows, and startup pruning finishes the job either way.
+            let _ = crate::logging::clear(&log_dir);
+        }
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn clear_debug_logs(app: tauri::AppHandle) -> Result<(), String> {
+    let log_dir = app_log_dir(&app)?;
+    crate::logging::clear(&log_dir).map_err(|e| format!("Failed to clear logs: {e}"))
+}
+
+/// Largest bundle we will write. Comfortably under GitHub's attachment limit.
+const MAX_BUNDLE_BYTES: usize = 5 * 1024 * 1024;
+
+/// Write a metadata header plus captured logs to `dest_path`.
+///
+/// Everything is assembled here rather than in the frontend so the file is complete even
+/// if the UI is partly broken.
+#[tauri::command]
+pub async fn export_debug_bundle(
+    app: tauri::AppHandle,
+    dest_path: String,
+    relay: Option<RelayConfigArg>,
+    #[allow(unused_variables)] state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let log_dir = app_log_dir(&app)?;
+
+    let mut out = String::new();
+    out.push_str("DashBeam diagnostics\n");
+    out.push_str("====================\n\n");
+    out.push_str(&format!(
+        "App version: {}\n",
+        crate::version::get_app_version()
+    ));
+    // `std::env::consts::OS` alone gives "macos" with no version, which is not enough
+    // to triage platform-specific bugs.
+    out.push_str(&format!(
+        "OS: {} {} ({})\n",
+        tauri_plugin_os::platform(),
+        tauri_plugin_os::version(),
+        std::env::consts::ARCH
+    ));
+    out.push_str(&format!(
+        "Debug logging active this session: {}\n",
+        crate::logging::is_active()
+    ));
+
+    // Relay configuration is the first question for any connectivity report, and the
+    // frontend is the only place that knows what the user selected.
+    match relay.as_ref() {
+        Some(config) => {
+            out.push_str(&format!("Relay mode: {}\n", config.mode));
+            if !config.urls.iter().all(|u| u.trim().is_empty()) {
+                out.push_str(&format!("Relay URLs: {}\n", config.urls.join(", ")));
+            }
+            if let Some(fallback) = config.fallback.as_ref() {
+                out.push_str(&format!("Relay fallback: {fallback}\n"));
+            }
+            out.push_str(&format!(
+                "Relay auth token configured: {}\n",
+                config.auth_token.as_ref().is_some_and(|t| !t.is_empty())
+            ));
+        }
+        None => out.push_str("Relay mode: unknown (not reported by the UI)\n"),
+    }
+
+    match engine_get_relay_status(relay).await {
+        Ok(status) => out.push_str(&format!(
+            "Relay reachable: {} (kind={}, url={}, fell_back_to_public={})\n",
+            status.connected,
+            status.kind,
+            status.url.unwrap_or_else(|| "-".to_string()),
+            status.fell_back_to_public
+        )),
+        Err(error) => out.push_str(&format!("Relay status check failed: {error}\n")),
+    }
+
+    for (label, key) in [
+        ("Session type", "XDG_SESSION_TYPE"),
+        ("Wayland display", "WAYLAND_DISPLAY"),
+        ("AppImage", "APPIMAGE"),
+        ("Flatpak", "FLATPAK_ID"),
+    ] {
+        if let Ok(value) = std::env::var(key) {
+            out.push_str(&format!("{label}: {value}\n"));
+        }
+    }
+
+    #[cfg(any(desktop, target_os = "android"))]
+    {
+        let guard = state.lock().await;
+        match guard.node.as_ref() {
+            Some(node) => {
+                let info = node.device_info();
+                out.push_str(&format!("Device name: {}\n", info.display_name));
+                out.push_str(&format!("Device type: {}\n", info.device_type));
+                out.push_str(&format!("Device OS: {}\n", info.os));
+                out.push_str(&format!("Endpoint ID: {}\n", info.endpoint_id));
+            }
+            None => {
+                out.push_str("Device node: unavailable\n");
+                if let Some(error) = guard.node_init_error.as_ref() {
+                    out.push_str(&format!("Device node error: {error}\n"));
+                }
+            }
+        }
+    }
+
+    out.push_str("\n--- logs ---\n\n");
+    let remaining = MAX_BUNDLE_BYTES.saturating_sub(out.len());
+    match crate::logging::read_logs(&log_dir, remaining) {
+        Ok(logs) if logs.is_empty() => {
+            out.push_str("(no logs captured — enable debug mode and restart)\n");
+        }
+        Ok(logs) => out.push_str(&logs),
+        Err(error) => out.push_str(&format!("(failed to read logs: {error})\n")),
+    }
+
+    std::fs::write(&dest_path, out).map_err(|e| format!("Failed to write {dest_path}: {e}"))
+}
+
 /// Helper function to calculate total size of a file or directory
 fn get_total_size(path: &Path) -> Result<u64, String> {
     if path.is_file() {
@@ -845,6 +1028,16 @@ pub async fn reconfigure_node_relay(
     discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
 ) -> Result<(), String> {
+    // Captured before `relay` is consumed, so the log can say what was asked for.
+    let relay_mode_label = relay
+        .as_ref()
+        .map(|r| r.mode.clone())
+        .unwrap_or_else(|| "default".to_string());
+    let relay_urls_label = relay
+        .as_ref()
+        .map(|r| r.urls.join(", "))
+        .unwrap_or_default();
+
     let (relay_mode, _) = resolve_relay_mode_with_fallback(relay).await?;
     let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
     let discovery_mode = build_discovery_mode(discovery)?;
@@ -862,9 +1055,24 @@ pub async fn reconfigure_node_relay(
             .ok_or_else(|| "Device pairing is not available on this device.".to_string())?
     };
 
+    // Without this the log shows the endpoint suddenly re-homing with no explanation.
+    tracing::debug!(
+        target: "dashbeam::_events::relay::reconfigure",
+        mode = %relay_mode_label,
+        urls = %relay_urls_label,
+        "relay/discovery settings changed"
+    );
+
     node.reconfigure_network(relay_mode, discovery_mode)
         .await
-        .map_err(|e| format!("Failed to update device network settings: {e}"))?;
+        .map_err(|error| {
+            tracing::error!(
+                target: "dashbeam::_events::relay::reconfigure_failed",
+                mode = %relay_mode_label,
+                %error,
+            );
+            format!("Failed to update device network settings: {error}")
+        })?;
 
     Ok(())
 }
