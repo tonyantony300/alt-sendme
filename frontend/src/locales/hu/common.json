@@ -111,7 +111,7 @@
 				"searchPlaceholder": "Párosított eszközök keresése",
 				"title": "Send to a device",
 				"pairedSection": "Paired",
-				"nearbySection": "Nearby",
+				"nearbySection": "Nearby - Pair & Send",
 				"nearbyEmpty": "No devices nearby."
 			},
 			"devicesButton": "Send to a device",

@@ -113,7 +113,7 @@
 				"title": "Send to a device",
 				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"pairedSection": "Paired",
-				"nearbySection": "Nearby",
+				"nearbySection": "Nearby - Pair & Send",
 				"nearbyEmpty": "No devices nearby.",
 				"emptyTitle": "No paired devices yet",
 				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
@@ -320,8 +320,6 @@
 			"relayChangePairedHint": "Paired devices stay listed. Paired send may not work until both devices can reach each other on the new network setup.",
 			"thisDevice": "This device",
 			"thisDeviceHint": "Name shown to devices you pair with. OS and device type are detected automatically.",
-			"verificationCode": "Verification code",
-			"verificationCodeHint": "Read this out when someone confirms it's you before accepting.",
 			"deviceName": "Device name",
 			"deviceNamePlaceholder": "e.g. Tony’s MacBook",
 			"rename": "Rename",
@@ -524,7 +522,6 @@
 		"verification": {
 			"title": "Confirm it's you",
 			"description": "Waiting for {{name}} to accept.",
-			"hint": "Read this code to {{name}} — they'll compare it before accepting.",
 			"unavailable": "Couldn't compute a verification code for this device. {{name}} won't be able to confirm it's you.",
 			"close": "Close"
 		}

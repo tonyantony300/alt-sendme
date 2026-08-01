@@ -4,7 +4,7 @@ type VerificationCodeProps = {
 	/** `null` when the endpoint id was malformed and no code could be derived. */
 	code: string | null
 	/** Who to compare against, phrased for this side of the exchange. */
-	hint: string
+	hint?: string
 	/** Shown instead of the code when it could not be derived. */
 	unavailable: string
 }
@@ -34,7 +34,9 @@ export function VerificationCode({
 				{t('common:receiver.nearbyInvite.fingerprintLabel')}
 			</p>
 			<p className="font-mono text-sm tracking-wide">{code}</p>
-			<p className="text-xs text-muted-foreground">{hint}</p>
+			{hint ? (
+				<p className="text-xs text-muted-foreground">{hint}</p>
+			) : null}
 		</div>
 	)
 }

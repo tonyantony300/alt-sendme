@@ -117,9 +117,6 @@ export function NearbyVerificationDialog() {
 				<div className="px-6 pb-4">
 					<VerificationCode
 						code={code}
-						hint={t('common:pairing.verification.hint', {
-							name: target?.name ?? '',
-						})}
 						unavailable={t('common:pairing.verification.unavailable')}
 					/>
 				</div>
