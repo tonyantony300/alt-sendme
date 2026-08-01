@@ -23,6 +23,7 @@ import { useTransferTabStore } from '@/store/transfer-tab-store'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import { getRelayConfigArg } from '../lib/relay'
 import { getDiscoveryConfigArg } from '../lib/discovery'
+import { ticketFromReceiveLink } from '../lib/receive-link'
 import { sendSystemNotification } from '../lib/systemNotification'
 import type {
 	TicketPreviewMetadata,
@@ -540,7 +541,8 @@ export function useReceiver(): UseReceiverReturn {
 	}, [t, showAlert])
 
 	const handleTicketChange = useCallback((newTicket: string) => {
-		setTicket(newTicket)
+		const fromLink = ticketFromReceiveLink(newTicket)
+		setTicket(fromLink ?? newTicket)
 	}, [])
 
 	const handleBrowseFolder = useCallback(async () => {

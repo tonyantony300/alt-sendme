@@ -74,6 +74,7 @@
 		"showReceiveQr": "Show receive QR code",
 		"receiveQrTitle": "Receive QR",
 		"scanToReceive": "Scan to receive",
+		"shareMessageIntro": "Private transfer - Sent with DashBeam",
 		"description": "Description (optional)",
 		"broadcastMode": {
 			"index": "Broadcast",

@@ -9,7 +9,10 @@ import { useEffect, useRef, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import { IS_MOBILE, IS_WEB } from '../../lib/platform'
-import { buildReceiveLink } from '../../lib/receive-link'
+import {
+	buildReceiveLink,
+	formatReceiveShareMessage,
+} from '../../lib/receive-link'
 import { randomUUID, copyTextToClipboard } from '../../lib/utils'
 import { useAppSettingStore } from '../../store/app-setting'
 import type { TransferProgress } from '../../types/transfer'
@@ -227,11 +230,15 @@ function TicketDisplay({
 
 	const shareTicket = async () => {
 		const url = receiveLink
+		const intro = t('common:sender.shareMessageIntro')
+		const shareMessage = formatReceiveShareMessage(intro, url)
 		try {
 			if (canNativeShare) {
-				await navigator.share({ url })
+				// Keep `url` as its own field so the OS/share target can still
+				// render the receive-link preview; brand stays in title/text.
+				await navigator.share({ title: intro, text: intro, url })
 			} else {
-				await copyTextToClipboard(url)
+				await copyTextToClipboard(shareMessage)
 				setLinkCopySuccess(true)
 				if (linkCopyTimer.current) clearTimeout(linkCopyTimer.current)
 				linkCopyTimer.current = setTimeout(
