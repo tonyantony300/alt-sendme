@@ -31,6 +31,8 @@ export type AppSettingsState = {
 	 * re-applies it once the node is ready as a safety net.
 	 */
 	discoverability: 'everyone' | 'paired-only' | 'off'
+	/** One-shot: the post-pairing autostart prompt has been shown. */
+	autostartPromptSeen: boolean
 }
 
 export type AppSettingsActions = {
@@ -52,6 +54,7 @@ export type AppSettingsActions = {
 	setDnsOrigin: (value: string) => void
 	setShowBroadcastToggle: (value: boolean) => void
 	setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') => void
+	setAutostartPromptSeen: (value: boolean) => void
 }
 
 export type AppSettings = AppSettingsState & AppSettingsActions
@@ -88,6 +91,8 @@ export const useAppSettingStore = create<AppSettings>()(
 				set({ showBroadcastToggle: value }),
 			setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') =>
 				set({ discoverability: value }),
+			setAutostartPromptSeen: (value: boolean) =>
+				set({ autostartPromptSeen: value }),
 		}),
 		{
 			name: AppSettingsKey,

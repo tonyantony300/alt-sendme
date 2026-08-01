@@ -23,6 +23,7 @@ export const defaultAppSettings: AppSettingsState = {
 	dnsOrigin: '',
 	showBroadcastToggle: false,
 	discoverability: 'everyone',
+	autostartPromptSeen: false,
 }
 
 const webSettingStorage: StateStorage = {

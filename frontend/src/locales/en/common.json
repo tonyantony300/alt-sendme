@@ -305,6 +305,12 @@
 				"clearedTitle": "Logs cleared"
 			}
 		},
+		"autostartPrompt": {
+			"title": "Start DashBeam when you sign in?",
+			"description": "DashBeam needs to be running for {{name}} to see that you're online.",
+			"confirm": "Start at login",
+			"dismiss": "Not now"
+		},
 		"devices": {
 			"title": "Paired devices",
 			"description": "Pair your devices once, then send files without copying tickets.",
