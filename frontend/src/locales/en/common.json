@@ -479,6 +479,18 @@
 	"android": {
 		"preparingFile": "Preparing file..."
 	},
+	"notifications": {
+		"pairRequestTitle": "{{sender}} wants to pair",
+		"pairRequestBody": "Open DashBeam to accept or decline",
+		"inviteTitle": "{{sender}} is sending you files",
+		"nearbyInviteTitle": "{{sender}} nearby wants to send you files",
+		"inviteBody": "{{count}} files · {{size}}",
+		"inviteBodyNoSize": "{{count}} files",
+		"declinedTitle": "{{sender}} declined your files",
+		"declinedBody": "Nothing was sent",
+		"pairedTitle": "Device paired",
+		"pairedBody": "{{name}} is now paired"
+	},
 	"footer": {
 		"relay": {
 			"ariaLabel": "Relay connection status",
