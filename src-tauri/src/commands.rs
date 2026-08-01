@@ -1493,6 +1493,26 @@ pub fn set_tray_labels(app_handle: tauri::AppHandle, labels: crate::tray::TrayLa
     crate::tray::apply_labels(&app_handle, labels);
 }
 
+/// Whether the OS currently launches DashBeam at sign-in. The OS is the
+/// source of truth — a user who removed the login item outside the app must
+/// see the toggle turn itself off.
+/// `null` means the platform cannot be asked (Flatpak) — the caller keeps
+/// its cached value rather than prompting the user.
+#[cfg(desktop)]
+#[tauri::command]
+pub fn autostart_is_enabled(app_handle: tauri::AppHandle) -> Result<Option<bool>, String> {
+    crate::autostart::is_enabled(&app_handle)
+}
+
+/// Request an autostart change. Returns the state the OS ended up in, which
+/// may differ from `enabled` when the platform (or the user, via a portal
+/// dialog) refuses.
+#[cfg(desktop)]
+#[tauri::command]
+pub fn autostart_set(app_handle: tauri::AppHandle, enabled: bool) -> Result<bool, String> {
+    crate::autostart::set(&app_handle, enabled)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

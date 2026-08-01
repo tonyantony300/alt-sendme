@@ -1,5 +1,7 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
+#[cfg(desktop)]
+mod autostart;
 mod commands;
 mod features;
 mod logging;
@@ -57,10 +59,15 @@ pub fn run() {
         builder
     } else {
         builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
-                let _ = window.unminimize();
-                let _ = window.set_focus();
+            // A duplicate autostart trigger (e.g. a Linux autostart entry
+            // plus a systemd user unit) re-invokes an already-running
+            // instance with `--hidden`; do not force the window open then.
+            if !wants_hidden_launch(args.iter().cloned()) {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.unminimize();
+                    let _ = window.set_focus();
+                }
             }
             let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
             if let Some(path) = maybe_path {
@@ -73,6 +80,13 @@ pub fn run() {
             }
         }))
     };
+
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_autostart::init(
+        tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+        // Autostart launches must not pop a window; see `wants_hidden_launch`.
+        Some(vec!["--hidden"]),
+    ));
 
     let builder = builder
         .plugin(tauri_plugin_dialog::init())
@@ -99,6 +113,10 @@ pub fn run() {
             set_background_on_close,
             #[cfg(desktop)]
             set_tray_labels,
+            #[cfg(desktop)]
+            autostart_is_enabled,
+            #[cfg(desktop)]
+            autostart_set,
             check_launch_intent,
             fetch_ticket_metadata,
             verify_relays,
