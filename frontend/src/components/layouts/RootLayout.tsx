@@ -4,7 +4,6 @@ import { AppFooter } from '../AppFooter'
 import { TitleBar } from '../TitleBar'
 import { useTranslation } from '@/i18n'
 import { AppUpdater } from '../common/AppUpdater'
-import { AutostartPrompt } from '../pairing/AutostartPrompt'
 import { DeviceNodeSync } from '../pairing/DeviceNodeSync'
 import { NearbyInviteDialog } from '../pairing/NearbyInviteDialog'
 import { NearbyPairRequestDialog } from '../pairing/NearbyPairRequestDialog'
@@ -12,6 +11,7 @@ import { PairedInviteDialog } from '../pairing/PairedInviteDialog'
 import { ReceiverProvider } from '../receiver/ReceiverProvider'
 import { WindowsContextMenuSync } from '../settings/system-tray/context-menu-toggle'
 import { useIsWindowsPortable } from '@/hooks/use-windows-portable'
+import { useAutostartFirstRun } from '../../hooks/useAutostartFirstRun'
 import { useTrayLabels } from '../../hooks/useTrayLabels'
 import {
 	IS_ANDROID,
@@ -28,6 +28,7 @@ export function RootLayout() {
 	const { t } = useTranslation('common')
 	const { data: isWindowsPortable = false } = useIsWindowsPortable()
 	useTrayLabels()
+	useAutostartFirstRun()
 	return (
 		<ReceiverProvider>
 			{IS_TAURI && !IS_ANDROID && !isWindowsPortable && !IS_FLATPAK && (
@@ -38,7 +39,6 @@ export function RootLayout() {
 			{IS_PAIRING_CAPABLE && <PairedInviteDialog />}
 			{IS_PAIRING_CAPABLE && <NearbyInviteDialog />}
 			{IS_PAIRING_CAPABLE && <NearbyPairRequestDialog />}
-			{IS_PAIRING_CAPABLE && <AutostartPrompt />}
 			<main
 				className={
 					IS_WEB

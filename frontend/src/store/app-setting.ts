@@ -32,8 +32,14 @@ export type AppSettingsState = {
 	 * re-applies it once the node is ready as a safety net.
 	 */
 	discoverability: 'everyone' | 'paired-only' | 'off'
-	/** One-shot: the post-pairing autostart prompt has been shown. */
-	autostartPromptSeen: boolean
+	/**
+	 * One-shot: the first-run "enable autostart" step has already run.
+	 *
+	 * Records that we tried, not that it succeeded — a user who turns the
+	 * toggle off must never have it turned back on by a later launch, and a
+	 * platform that refused must not be re-asked on every startup.
+	 */
+	autostartInitialized: boolean
 }
 
 export type AppSettingsActions = {
@@ -55,7 +61,7 @@ export type AppSettingsActions = {
 	setDnsOrigin: (value: string) => void
 	setShowBroadcastToggle: (value: boolean) => void
 	setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') => void
-	setAutostartPromptSeen: (value: boolean) => void
+	setAutostartInitialized: (value: boolean) => void
 }
 
 export type AppSettings = AppSettingsState & AppSettingsActions
@@ -132,8 +138,8 @@ export const useAppSettingStore = create<AppSettings>()(
 				set({ showBroadcastToggle: value }),
 			setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') =>
 				set({ discoverability: value }),
-			setAutostartPromptSeen: (value: boolean) =>
-				set({ autostartPromptSeen: value }),
+			setAutostartInitialized: (value: boolean) =>
+				set({ autostartInitialized: value }),
 		}),
 		{
 			name: AppSettingsKey,
