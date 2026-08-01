@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} から {{count}} 件のファイル（{{size}}）が届きます。承認するとダウンロードが始まります。",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} から {{count}} 件のファイルが届きます。承認するとダウンロードが始まります。",
 		"receiveFromPairedTitle": "ペアリング済みデバイスからファイルが届きました",
-		"saveLocation": "保存先："
+		"saveLocation": "保存先：",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "転送の進行状況",
@@ -382,7 +387,14 @@
 			"thisDevice": "このデバイス",
 			"thisDeviceHint": "ペアリング相手に表示される名前です。OS とデバイスの種類は自動的に検出されます。",
 			"title": "ペアリング済みデバイス",
-			"unpairedHint": "このデバイスがペアリングを解除しました。一覧から削除してください。"
+			"unpairedHint": "このデバイスがペアリングを解除しました。一覧から削除してください。",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} хочет отправить вам {{count}} файл(ов) ({{size}}). Примите, чтобы начать загрузку.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} хочет отправить вам {{count}} файл(ов). Примите, чтобы начать загрузку.",
 		"receiveFromPairedTitle": "Входящий файл от сопряжённого устройства",
-		"saveLocation": "Место сохранения:"
+		"saveLocation": "Место сохранения:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Прогресс Передачи",
@@ -382,7 +387,14 @@
 			"thisDevice": "Это устройство",
 			"thisDeviceHint": "Имя, которое видят устройства, с которыми вы сопрягаетесь. ОС и тип устройства определяются автоматически.",
 			"title": "Сопряжённые устройства",
-			"unpairedHint": "Это устройство разорвало сопряжение. Удалите его из списка."
+			"unpairedHint": "Это устройство разорвало сопряжение. Удалите его из списка.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

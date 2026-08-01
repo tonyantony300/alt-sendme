@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} chce wysłać Ci {{count}} plik(ów) ({{size}}). Zaakceptuj, aby rozpocząć pobieranie.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} chce wysłać Ci {{count}} plik(ów). Zaakceptuj, aby rozpocząć pobieranie.",
 		"receiveFromPairedTitle": "Przychodzący plik ze sparowanego urządzenia",
-		"saveLocation": "Lokalizacja zapisu:"
+		"saveLocation": "Lokalizacja zapisu:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Postęp transferu",
@@ -382,7 +387,14 @@
 			"thisDevice": "To urządzenie",
 			"thisDeviceHint": "Nazwa widoczna dla urządzeń, z którymi się parujesz. System operacyjny i typ urządzenia są wykrywane automatycznie.",
 			"title": "Sparowane urządzenia",
-			"unpairedHint": "To urządzenie usunęło parowanie. Usuń je ze swojej listy."
+			"unpairedHint": "To urządzenie usunęło parowanie. Usuń je ze swojej listy.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

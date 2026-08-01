@@ -258,6 +258,8 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return undefined as unknown as T
 		case 'invite_nearby_device':
 			throw new WebPreviewError('invite_nearby_device')
+		case 'request_nearby_pair':
+			throw new WebPreviewError('request_nearby_pair')
 		case 'respond_nearby_invite':
 			throw new WebPreviewError('respond_nearby_invite')
 		case 'toggle_context_menu':

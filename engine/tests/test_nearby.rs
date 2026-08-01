@@ -644,3 +644,61 @@ async fn unsolicited_invite_response_from_an_unpaired_peer_is_ignored() {
         "alice never sent bob a nearby invite, so this response must be ignored"
     );
 }
+
+#[tokio::test]
+async fn accepting_a_nearby_pair_request_promotes_both_sides() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    alice
+        .inject_nearby_device_for_tests(&bob.endpoint_id())
+        .await;
+
+    let delivered = alice
+        .request_nearby_pair(&bob.endpoint_id())
+        .await
+        .expect("pair request should be delivered");
+    assert!(delivered, "pair request must report delivered");
+
+    common::wait_until(
+        "bob to observe alice's pair request",
+        Duration::from_secs(15),
+        || bob.events.has_event("nearby-pair-request-received"),
+    )
+    .await;
+    let requests = bob.events.events_with_name("nearby-pair-request-received");
+    assert_eq!(requests.len(), 1);
+    let payload: serde_json::Value =
+        serde_json::from_str(requests[0].payload.as_deref().unwrap()).unwrap();
+    assert_eq!(payload["remote_endpoint_id"], alice.endpoint_id());
+    assert_eq!(payload["sender_name"], "alice");
+
+    bob.accept_nearby_invite(&alice.endpoint_id())
+        .await
+        .expect("accept should succeed");
+
+    let paired = bob.list_paired().unwrap();
+    assert_eq!(paired.len(), 1);
+    assert_eq!(paired[0].endpoint_id, alice.endpoint_id());
+
+    common::wait_until(
+        "alice to observe bob's acceptance",
+        Duration::from_secs(15),
+        || alice.events.has_event("paired-invite-response"),
+    )
+    .await;
+
+    common::wait_until(
+        "alice to also record bob as paired",
+        Duration::from_secs(15),
+        || {
+            alice
+                .list_paired()
+                .unwrap()
+                .iter()
+                .any(|d| d.endpoint_id == bob.endpoint_id())
+        },
+    )
+    .await;
+}

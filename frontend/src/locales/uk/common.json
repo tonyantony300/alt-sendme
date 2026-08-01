@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} хоче надіслати вам {{count}} файл(ів) ({{size}}). Прийміть, щоб розпочати завантаження.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} хоче надіслати вам {{count}} файл(ів). Прийміть, щоб розпочати завантаження.",
 		"receiveFromPairedTitle": "Вхідний файл від спареного пристрою",
-		"saveLocation": "Місце збереження:"
+		"saveLocation": "Місце збереження:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Прогрес передачі",
@@ -382,7 +387,14 @@
 			"thisDevice": "Цей пристрій",
 			"thisDeviceHint": "Назва, яку бачать пристрої, з якими ви спарюєтесь. ОС і тип пристрою визначаються автоматично.",
 			"title": "Спарені пристрої",
-			"unpairedHint": "Цей пристрій роз’єднав спарювання. Видаліть його зі свого списку."
+			"unpairedHint": "Цей пристрій роз’єднав спарювання. Видаліть його зі свого списку.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

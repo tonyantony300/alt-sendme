@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} vil sende deg {{count}} fil(er) ({{size}}). Godta for å starte nedlastingen.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} vil sende deg {{count}} fil(er). Godta for å starte nedlastingen.",
 		"receiveFromPairedTitle": "Innkommende fil fra sammenkoblet enhet",
-		"saveLocation": "Lagringssted:"
+		"saveLocation": "Lagringssted:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Status",
@@ -382,7 +387,14 @@
 			"thisDevice": "Denne enheten",
 			"thisDeviceHint": "Navn som vises for enheter du kobler sammen med. OS og enhetstype oppdages automatisk.",
 			"title": "Sammenkoblede enheter",
-			"unpairedHint": "Denne enheten brøt sammenkoblingen. Fjern den fra listen din."
+			"unpairedHint": "Denne enheten brøt sammenkoblingen. Fjern den fra listen din.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

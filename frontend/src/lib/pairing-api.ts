@@ -237,6 +237,15 @@ export async function inviteNearbyDevice(
 	return result.delivered
 }
 
+/** Asks a Nearby LAN device to pair — no file ticket. */
+export async function requestNearbyPair(endpointId: string): Promise<boolean> {
+	if (!pairingCapable()) return false
+	const result = await invoke<InviteDelivered>('request_nearby_pair', {
+		endpointId,
+	})
+	return result.delivered
+}
+
 export async function respondNearbyInvite(
 	endpointId: string,
 	accept: boolean,

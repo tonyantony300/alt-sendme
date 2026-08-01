@@ -1410,6 +1410,26 @@ pub async fn invite_nearby_device(
     Ok(InviteDelivered { delivered })
 }
 
+/// Asks a Nearby device to pair (no file share). Receiver confirms on name /
+/// device type; accept reuses `respond_nearby_invite`.
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn request_nearby_pair(
+    endpoint_id: String,
+    state: State<'_, AppStateMutex>,
+) -> Result<InviteDelivered, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    let delivered = node
+        .request_nearby_pair(&endpoint_id)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(InviteDelivered { delivered })
+}
+
 #[cfg(any(desktop, target_os = "android"))]
 #[tauri::command]
 pub async fn respond_nearby_invite(

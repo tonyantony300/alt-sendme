@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} size {{count}} dosya göndermek istiyor ({{size}}). İndirmeyi başlatmak için kabul edin.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} size {{count}} dosya göndermek istiyor. İndirmeyi başlatmak için kabul edin.",
 		"receiveFromPairedTitle": "Eşleştirilmiş cihazdan gelen dosya",
-		"saveLocation": "Kayıt konumu:"
+		"saveLocation": "Kayıt konumu:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Transfer Süreci",
@@ -382,7 +387,14 @@
 			"thisDevice": "Bu cihaz",
 			"thisDeviceHint": "Eşleştirdiğiniz cihazlara gösterilen ad. İşletim sistemi ve cihaz türü otomatik algılanır.",
 			"title": "Eşleştirilmiş cihazlar",
-			"unpairedHint": "Bu cihaz eşleştirmeyi kaldırdı. Listenizden silin."
+			"unpairedHint": "Bu cihaz eşleştirmeyi kaldırdı. Listenizden silin.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

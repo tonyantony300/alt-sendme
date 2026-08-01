@@ -52,6 +52,16 @@ pub enum ControlMessage {
         #[serde(default)]
         os: String,
     },
+    /// Asks an unpaired LAN peer to become a paired contact (no file share).
+    /// Receiver UI confirms on display name + device type; accept replies with
+    /// `InviteResponse` and both sides commit `PairedDevice` records the same
+    /// way a nearby file-invite accept does.
+    PairRequest {
+        sender_name: String,
+        device_type: String,
+        #[serde(default)]
+        os: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

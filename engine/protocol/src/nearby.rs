@@ -70,6 +70,7 @@ pub fn unpaired_message_allowed(msg: &ControlMessage) -> bool {
         ControlMessage::WhoAreYou
             | ControlMessage::Invite { .. }
             | ControlMessage::InviteResponse { .. }
+            | ControlMessage::PairRequest { .. }
     )
 }
 
@@ -111,7 +112,7 @@ mod tests {
     }
 
     #[test]
-    fn unpaired_peers_may_probe_invite_and_respond_to_an_invite() {
+    fn unpaired_peers_may_probe_invite_pair_and_respond() {
         assert!(unpaired_message_allowed(&ControlMessage::WhoAreYou));
         assert!(unpaired_message_allowed(&ControlMessage::Invite {
             blob_ticket: "t".to_string(),
@@ -126,6 +127,11 @@ mod tests {
         assert!(unpaired_message_allowed(&ControlMessage::InviteResponse {
             session_id: String::new(),
             response: crate::control::InviteResponse::Declined,
+        }));
+        assert!(unpaired_message_allowed(&ControlMessage::PairRequest {
+            sender_name: "Alice".to_string(),
+            device_type: "laptop".to_string(),
+            os: "macos".to_string(),
         }));
     }
 

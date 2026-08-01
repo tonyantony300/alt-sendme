@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} ចង់ផ្ញើឯកសារ {{count}} ឯកសារ ({{size}}) មកអ្នក។ ទទួលយកដើម្បីចាប់ផ្តើមទាញយក។",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} ចង់ផ្ញើឯកសារ {{count}} ឯកសារ មកអ្នក។ ទទួលយកដើម្បីចាប់ផ្តើមទាញយក។",
 		"receiveFromPairedTitle": "ឯកសារពីឧបករណ៍ដែលបានផ្គុំគូ",
-		"saveLocation": "ទីតាំងរក្សាទុក៖"
+		"saveLocation": "ទីតាំងរក្សាទុក៖",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "វឌ្ឍនភាពនៃការផ្ទេរ",
@@ -382,7 +387,14 @@
 			"thisDevice": "ឧបករណ៍នេះ",
 			"thisDeviceHint": "ឈ្មោះដែលបង្ហាញទៅឧបករណ៍ដែលអ្នកផ្គុំគូជាមួយ។ ប្រព័ន្ធប្រតិបត្តិការ និងប្រភេទឧបករណ៍ត្រូវបានរកឃើញដោយស្វ័យប្រវត្តិ។",
 			"title": "ឧបករណ៍ដែលបានផ្គុំគូ",
-			"unpairedHint": "ឧបករណ៍នេះបានដោះផ្គុំគូ។ ដកវាចេញពីបញ្ជីរបស់អ្នក។"
+			"unpairedHint": "ឧបករណ៍នេះបានដោះផ្គុំគូ។ ដកវាចេញពីបញ្ជីរបស់អ្នក។",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

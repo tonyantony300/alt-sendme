@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} ต้องการส่ง {{count}} ไฟล์ ({{size}}) ให้คุณ ยอมรับเพื่อเริ่มดาวน์โหลด",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} ต้องการส่ง {{count}} ไฟล์ให้คุณ ยอมรับเพื่อเริ่มดาวน์โหลด",
 		"receiveFromPairedTitle": "ไฟล์จากอุปกรณ์ที่จับคู่แล้ว",
-		"saveLocation": "ตำแหน่งบันทึก:"
+		"saveLocation": "ตำแหน่งบันทึก:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "ความคืบหน้าการส่ง",
@@ -382,7 +387,14 @@
 			"thisDevice": "อุปกรณ์นี้",
 			"thisDeviceHint": "ชื่อที่แสดงต่ออุปกรณ์ที่คุณจับคู่ด้วย ระบบปฏิบัติการและประเภทอุปกรณ์จะตรวจจับโดยอัตโนมัติ",
 			"title": "อุปกรณ์ที่จับคู่แล้ว",
-			"unpairedHint": "อุปกรณ์นี้ยกเลิกการจับคู่แล้ว ลบออกจากรายการของคุณ"
+			"unpairedHint": "อุปกรณ์นี้ยกเลิกการจับคู่แล้ว ลบออกจากรายการของคุณ",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

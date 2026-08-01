@@ -352,8 +352,10 @@ impl ControlProtocol {
                         }
                     }
                 }
-                ControlMessage::WhoAreYou | ControlMessage::Identity { .. } => {
-                    // Discovery messages; ignore on paired connections
+                ControlMessage::WhoAreYou
+                | ControlMessage::Identity { .. }
+                | ControlMessage::PairRequest { .. } => {
+                    // Discovery / pair-request messages; ignore on pairing-host sessions
                 }
             }
 
@@ -586,6 +588,19 @@ impl ControlProtocol {
                     file_count,
                     total_size,
                     &sender_name,
+                );
+            }
+            ControlMessage::PairRequest {
+                sender_name,
+                device_type,
+                os,
+            } => {
+                crate::pairing_util::emit_nearby_pair_request(
+                    &self.ctx.app_handle,
+                    &remote.to_string(),
+                    &sender_name,
+                    &device_type,
+                    &os,
                 );
             }
             ControlMessage::InviteResponse { response, .. } => {
@@ -1277,6 +1292,48 @@ impl NodeService {
         Ok(true)
     }
 
+    /// Asks a Nearby (unpaired LAN) device to pair — no file ticket.
+    /// Receiver confirms on name/device type; accept reuses
+    /// [`Self::accept_nearby_invite`] + `InviteResponse` mutual pairing.
+    pub async fn request_nearby_pair(&self, endpoint_id: &str) -> anyhow::Result<bool> {
+        let nearby_device = self
+            .nearby
+            .lock()
+            .await
+            .list()
+            .into_iter()
+            .find(|d| d.endpoint_id == endpoint_id);
+        anyhow::ensure!(nearby_device.is_some(), "device is not on the local network");
+
+        let delivered = self.deliver_pair_request(endpoint_id).await?;
+        if !delivered {
+            return Ok(false);
+        }
+
+        let pending = match nearby_device.filter(|d| d.identified) {
+            Some(d) => PendingNearbyInvite {
+                display_name: d
+                    .display_name
+                    .unwrap_or_else(|| endpoint_id.chars().take(8).collect()),
+                device_type: d
+                    .device_type
+                    .unwrap_or_else(protocol::identity::default_device_type),
+                os: d.os.unwrap_or_default(),
+            },
+            None => PendingNearbyInvite {
+                display_name: endpoint_id.chars().take(8).collect(),
+                device_type: protocol::identity::default_device_type(),
+                os: String::new(),
+            },
+        };
+        self.pending_nearby_invites
+            .write()
+            .await
+            .insert(endpoint_id.to_string(), pending);
+
+        Ok(true)
+    }
+
     /// Connects to `remote_endpoint_id` and delivers a single `Invite`
     /// message. Shared by [`Self::invite_paired_device`] and
     /// [`Self::invite_nearby_device`] — same wire message either way; only
@@ -1377,6 +1434,52 @@ impl NodeService {
                 // Expected when the receiver keeps the session open while it
                 // downloads; the invite itself was already delivered.
                 Err(_) => {},
+            }
+        });
+
+        Ok(true)
+    }
+
+    async fn deliver_pair_request(&self, remote_endpoint_id: &str) -> anyhow::Result<bool> {
+        let remote = EndpointId::from_str(remote_endpoint_id)?;
+        let endpoint = {
+            let runtime = self.runtime.lock().await;
+            runtime.endpoint.clone()
+        };
+        let addr = build_control_connect_addr(&endpoint, remote, None);
+
+        let connect = tokio::time::timeout(
+            Duration::from_secs(PRESENCE_CONNECT_TIMEOUT_SECS),
+            endpoint.connect(addr, CONTROL_ALPN),
+        )
+        .await;
+        let conn = match connect {
+            Ok(Ok(conn)) => conn,
+            Ok(Err(_err)) => return Ok(false),
+            Err(_) => return Ok(false),
+        };
+
+        let (mut send, _recv) = match conn.open_bi().await {
+            Ok(streams) => streams,
+            Err(err) => {
+                return Err(err).context("open bi stream for pair request");
+            }
+        };
+
+        let request = ControlMessage::PairRequest {
+            sender_name: self.identity.display_name(),
+            device_type: self.identity.device_type(),
+            os: self.identity.os(),
+        };
+        if let Err(err) = write_message(&mut send, &request).await {
+            return Err(err).context("write PairRequest message");
+        }
+
+        drop(send);
+        tokio::spawn(async move {
+            match tokio::time::timeout(Duration::from_secs(15), conn.closed()).await {
+                Ok(_closed) => {}
+                Err(_) => {}
             }
         });
 

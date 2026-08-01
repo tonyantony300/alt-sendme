@@ -6,6 +6,7 @@ import { useTranslation } from '@/i18n'
 import { AppUpdater } from '../common/AppUpdater'
 import { DeviceNodeSync } from '../pairing/DeviceNodeSync'
 import { NearbyInviteDialog } from '../pairing/NearbyInviteDialog'
+import { NearbyPairRequestDialog } from '../pairing/NearbyPairRequestDialog'
 import { PairedInviteDialog } from '../pairing/PairedInviteDialog'
 import { ReceiverProvider } from '../receiver/ReceiverProvider'
 import { WindowsContextMenuSync } from '../settings/system-tray/context-menu-toggle'
@@ -33,6 +34,7 @@ export function RootLayout() {
 			{IS_PAIRING_CAPABLE && <DeviceNodeSync />}
 			{IS_PAIRING_CAPABLE && <PairedInviteDialog />}
 			{IS_PAIRING_CAPABLE && <NearbyInviteDialog />}
+			{IS_PAIRING_CAPABLE && <NearbyPairRequestDialog />}
 			<main
 				className={
 					IS_WEB

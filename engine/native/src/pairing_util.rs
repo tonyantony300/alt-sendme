@@ -50,6 +50,27 @@ pub fn emit_paired_invite_received(
     let _ = handle.emit_event_with_payload("paired-invite-received", &payload.to_string());
 }
 
+/// Emit `nearby-pair-request-received` when an unpaired peer asks to pair (no files).
+pub fn emit_nearby_pair_request(
+    app_handle: &AppHandle,
+    remote_endpoint_id: &str,
+    sender_name: &str,
+    device_type: &str,
+    os: &str,
+) {
+    let payload = serde_json::json!({
+        "remote_endpoint_id": remote_endpoint_id,
+        "sender_name": sender_name,
+        "device_type": device_type,
+        "os": os,
+    });
+
+    let Some(handle) = app_handle else {
+        return;
+    };
+    let _ = handle.emit_event_with_payload("nearby-pair-request-received", &payload.to_string());
+}
+
 /// Emit `paired-invite-response` so the sender UI can toast accept/decline.
 pub fn emit_paired_invite_response(
     app_handle: &AppHandle,

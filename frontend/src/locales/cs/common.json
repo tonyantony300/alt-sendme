@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} vám chce poslat {{count}} soubor(ů) ({{size}}). Přijměte a spusťte stahování.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} vám chce poslat {{count}} soubor(ů). Přijměte a spusťte stahování.",
 		"receiveFromPairedTitle": "Příchozí soubor ze spárovaného zařízení",
-		"saveLocation": "Umístění uložení:"
+		"saveLocation": "Umístění uložení:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Průběh přenosu",
@@ -382,7 +387,14 @@
 			"thisDevice": "Toto zařízení",
 			"thisDeviceHint": "Název zobrazený zařízením, se kterými se párujete. OS a typ zařízení se detekují automaticky.",
 			"title": "Spárovaná zařízení",
-			"unpairedHint": "Toto zařízení zrušilo párování. Odeberte ho ze seznamu."
+			"unpairedHint": "Toto zařízení zrušilo párování. Odeberte ho ze seznamu.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

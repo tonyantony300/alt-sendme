@@ -143,6 +143,8 @@ pub fn run() {
             #[cfg(any(desktop, target_os = "android"))]
             invite_nearby_device,
             #[cfg(any(desktop, target_os = "android"))]
+            request_nearby_pair,
+            #[cfg(any(desktop, target_os = "android"))]
             respond_nearby_invite,
         ])
         .setup(|app| {

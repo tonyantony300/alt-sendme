@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} sizga {{count}} ta fayl ({{size}}) yubormoqchi. Yuklab olishni boshlash uchun qabul qiling.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} sizga {{count}} ta fayl yubormoqchi. Yuklab olishni boshlash uchun qabul qiling.",
 		"receiveFromPairedTitle": "Juftlangan qurilmadan kiruvchi fayl",
-		"saveLocation": "Saqlash joyi:"
+		"saveLocation": "Saqlash joyi:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Uzatish jarayoni",
@@ -382,7 +387,14 @@
 			"thisDevice": "Bu qurilma",
 			"thisDeviceHint": "Juftlagan qurilmalaringizga ko'rsatiladigan nom. OS va qurilma turi avtomatik aniqlanadi.",
 			"title": "Juftlangan qurilmalar",
-			"unpairedHint": "Bu qurilma juftlikni bekor qildi. Ro'yxatdan olib tashlang."
+			"unpairedHint": "Bu qurilma juftlikni bekor qildi. Ro'yxatdan olib tashlang.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

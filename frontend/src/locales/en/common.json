@@ -149,6 +149,11 @@
 			"fingerprintHint": "Check that this code matches what {{sender}} sees on their screen before accepting.",
 			"fingerprintUnavailable": "Couldn't compute a verification code for this device, so it can't be confirmed safely. Decline and ask the sender to try again."
 		},
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		},
 		"receiveBusyTitle": "Download already in progress",
 		"receiveBusyDescription": "Wait for the current download to finish before accepting another file.",
 		"openReceiveTabHint": "Open the Receive tab once, then try again.",
@@ -348,9 +353,13 @@
 			"copied": "Pairing code copied",
 			"nearby": {
 				"heading": "Nearby",
-				"hint": "Devices on your local network that aren't paired yet. To send files, start a share and use Send to a device.",
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
 				"empty": "No devices found nearby.",
 				"unverified": "Unverified",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request",
 				"inviteFailed": "Couldn't reach this device",
 				"unavailableTitle": "Nearby is unavailable",
 				"discoverabilityPairedOnlyHint": "Nearby devices can see that this device exists, but not its name.",

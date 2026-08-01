@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} आपको {{count}} फ़ाइल(एँ) ({{size}}) भेजना चाहता/चाहती है। डाउनलोड शुरू करने के लिए स्वीकार करें।",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} आपको {{count}} फ़ाइल(एँ) भेजना चाहता/चाहती है। डाउनलोड शुरू करने के लिए स्वीकार करें।",
 		"receiveFromPairedTitle": "जोड़े गए उपकरण से आने वाली फ़ाइल",
-		"saveLocation": "सहेजने का स्थान:"
+		"saveLocation": "सहेजने का स्थान:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "ट्रांसफ़र प्रगति",
@@ -382,7 +387,14 @@
 			"thisDevice": "यह उपकरण",
 			"thisDeviceHint": "जिन उपकरणों से आप जुड़ते हैं उन्हें दिखाया जाने वाला नाम। OS और उपकरण प्रकार स्वचालित रूप से पहचाने जाते हैं।",
 			"title": "जोड़े गए उपकरण",
-			"unpairedHint": "इस उपकरण ने जोड़ना हटा दिया। इसे अपनी सूची से हटाएँ।"
+			"unpairedHint": "इस उपकरण ने जोड़ना हटा दिया। इसे अपनी सूची से हटाएँ।",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

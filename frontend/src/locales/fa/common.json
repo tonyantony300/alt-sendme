@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} می‌خواهد {{count}} فایل ({{size}}) برای شما بفرستد. برای شروع دانلود بپذیرید.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} می‌خواهد {{count}} فایل برای شما بفرستد. برای شروع دانلود بپذیرید.",
 		"receiveFromPairedTitle": "فایل ورودی از دستگاه جفت‌شده",
-		"saveLocation": "محل ذخیره:"
+		"saveLocation": "محل ذخیره:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "پیشرفت انتقال",
@@ -382,7 +387,14 @@
 			"thisDevice": "این دستگاه",
 			"thisDeviceHint": "نامی که به دستگاه‌های جفت‌شده نمایش داده می‌شود. سیستم‌عامل و نوع دستگاه به‌طور خودکار شناسایی می‌شوند.",
 			"title": "دستگاه‌های جفت‌شده",
-			"unpairedHint": "این دستگاه جفت‌سازی را لغو کرد. آن را از فهرست خود حذف کنید."
+			"unpairedHint": "این دستگاه جفت‌سازی را لغو کرد. آن را از فهرست خود حذف کنید.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} {{count}} fájlt szeretne küldeni neked ({{size}}). Fogadd el a letöltés indításához.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} {{count}} fájlt szeretne küldeni neked. Fogadd el a letöltés indításához.",
 		"receiveFromPairedTitle": "Bejövő fájl párosított eszközről",
-		"saveLocation": "Mentési hely:"
+		"saveLocation": "Mentési hely:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Átvitel állapota",
@@ -382,7 +387,14 @@
 			"thisDevice": "Ez az eszköz",
 			"thisDeviceHint": "A párosított eszközök számára megjelenő név. Az operációs rendszer és az eszköztípus automatikusan felismerésre kerül.",
 			"title": "Párosított eszközök",
-			"unpairedHint": "Ez az eszköz megszüntette a párosítást. Távolítsd el a listádról."
+			"unpairedHint": "Ez az eszköz megszüntette a párosítást. Távolítsd el a listádról.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

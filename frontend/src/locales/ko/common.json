@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}}님이 {{count}}개 파일({{size}})을내려고 합니다. 수락하면 다운로드가 시작됩니다.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}}님이 {{count}}개 파일을내려고 합니다. 수락하면 다운로드가 시작됩니다.",
 		"receiveFromPairedTitle": "페어링된 기기에서 파일이 도착했습니다",
-		"saveLocation": "저장 위치:"
+		"saveLocation": "저장 위치:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "전송 진행률",
@@ -382,7 +387,14 @@
 			"thisDevice": "이 기기",
 			"thisDeviceHint": "페어링 상대에게 표시되는 이름입니다. OS와 기기 유형은 자동으로 감지됩니다.",
 			"title": "페어링된 기기",
-			"unpairedHint": "이 기기가 페어링을 해제했습니다. 목록에서 제거하세요."
+			"unpairedHint": "이 기기가 페어링을 해제했습니다. 목록에서 제거하세요.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

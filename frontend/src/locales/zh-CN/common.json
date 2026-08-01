@@ -163,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} 想向您发送 {{count}} 个文件（{{size}}）。接受后开始下载。",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} 想向您发送 {{count}} 个文件。接受后开始下载。",
 		"receiveFromPairedTitle": "来自配对设备的文件",
-		"saveLocation": "保存位置："
+		"saveLocation": "保存位置：",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "传输进度",
@@ -382,7 +387,14 @@
 			"thisDevice": "此设备",
 			"thisDeviceHint": "显示给配对设备的名称。操作系统和设备类型会自动检测。",
 			"title": "配对设备",
-			"unpairedHint": "此设备已取消配对。请从列表中移除。"
+			"unpairedHint": "此设备已取消配对。请从列表中移除。",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {
