@@ -48,6 +48,9 @@ Po co polegać na WeTransfer, Dropbox czy Google Drive, skoro można niezawodnie
 - **Wznawialne i nadawalne** — Przerwane transfery wznawiają się automatycznie; udostępniaj ten sam plik dowolnej liczbie peerów jednocześnie.
 - **Podgląd przed pobraniem** — Zobacz, co otrzymujesz, zanim pobierzesz.
 - **Sparowane urządzenia** — Sparuj komputery i telefony Android raz w **Ustawienia → Urządzenia**, a następnie wysyłaj pliki bez kopiowania ticketów za każdym razem.
+- **Urządzenia w pobliżu w tej samej sieci** — Inne urządzenia DashBeam w Twojej sieci LAN pojawiają się automatycznie (mDNS). Sparuj w Ustawieniach lub wyślij podczas udostępniania — bez wklejania ticketu.
+- **Obecność w tle** — Na desktopie działaj dalej w zasobniku lub pasku menu i opcjonalnie uruchamiaj przy logowaniu, aby sparowane urządzenia widziały Cię online.
+- **Powiadomienia systemowe** — Prośby o parowanie i zaproszenia do plików mogą wyświetlać powiadomienia systemu, gdy aplikacja nie jest na pierwszym planie (desktop i Android).
 - **Lekki jak piórko** — Niewielkie instalacje, minimalny ślad w sieci.
 - **Darmowy i open source** — Bez kosztów uploadu, bez limitów rozmiaru, napędzany przez społeczność.
 
@@ -141,16 +144,27 @@ Szukamy Partnerów, którzy dołączą do naszej misji! Zostań partnerem i wspi
 ## Jak to działa
 
 1. Upuść plik lub folder — DashBeam tworzy jednorazowy kod udostępniania (zwany „ticketem”).
-2. Udostępnij ticket przez czat, e-mail lub SMS, **lub** wyślij bezpośrednio do sparowanego urządzenia (desktop / Android).
-3. Twój znajomy wkleja ticket w aplikacji (lub akceptuje zaproszenie ze sparowanego urządzenia), a transfer się rozpoczyna.
+2. Udostępnij ticket przez czat, e-mail lub SMS, **lub** wyślij bezpośrednio do sparowanego lub pobliskiego urządzenia (desktop / Android).
+3. Twój znajomy wkleja ticket w aplikacji (lub akceptuje zaproszenie), a transfer się rozpoczyna.
 
 ### Sparowane urządzenia
 
-Na macOS, Windows, Linux i Android możesz sparować urządzenia w **Ustawienia → Urządzenia** za pomocą kodu parowania. Po sparowaniu:
+Na macOS, Windows, Linux i Android możesz sparować urządzenia w **Ustawienia → Urządzenia** za pomocą kodu parowania lub akceptując prośbę o parowanie Nearby w tej samej sieci lokalnej. Po sparowaniu:
 
 - Nadawcy mogą dotknąć **Send** obok sparowanego urządzenia podczas udostępniania: bez ręcznego kopiowania ticketu.
-- Odbiorcy otrzymują monit w aplikacji, gdy sparowany nadawca ich zaprasza (aplikacja musi być otwarta).
+- Odbiorcy otrzymują monit w aplikacji, gdy sparowany nadawca ich zaprasza; przy włączonych powiadomieniach systemowych mogą też dostać baner systemu, gdy okno nie ma fokusu.
+- Na desktopie zasobnik / pasek menu może pokazywać, które sparowane urządzenia są online, a DashBeam może działać dalej po zamknięciu okna (**Ustawienia → Ogólne → Startup & background**).
 - Ręczne tickety i [sendme CLI](https://www.iroh.computer/sendme) nadal działają dokładnie tak samo jak wcześniej.
+
+### Urządzenia w pobliżu
+
+Gdy inne aplikacje DashBeam są w tej samej sieci Wi-Fi lub LAN, mogą pojawić się w **Nearby** w **Ustawienia → Urządzenia** oraz w arkuszu **Send to a device** podczas udostępniania:
+
+- **Sparuj** z Ustawień, aby dodać urządzenie bez wymiany kodu parowania.
+- **Wyślij** z arkusza udostępniania, aby zaprosić urządzenie Nearby bieżącym ticketem; odbiorcy potwierdzają krótki kod weryfikacyjny przed akceptacją.
+- Kontroluj, czy inni mogą Cię znaleźć, w **Ustawienia → Sieć → Your discoverability** (Everyone / Paired only / Off).
+
+Nearby opiera się na [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). Jeśli sieć blokuje multicast (Wi-Fi gościnne, wiele VPN), użyj ręcznego ticketu lub sparuj przez internet — zobacz [Rozwiązywanie problemów](../troubleshooting.md#the-nearby-list-is-empty).
 
 
 ## Porównanie
@@ -167,6 +181,7 @@ Na macOS, Windows, Linux i Android możesz sparować urządzenia w **Ustawienia 
 | Wznawialne transfery | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Nieograniczony rozmiar pliku | ✅ | ✅ | ✅ | ✅ | Ograniczony pamięcią przeglądarki |
 | Platformy | CLI + desktop + mobile + web | Desktop + mobile (bez web/CLI) | Desktop + mobile (bez web/CLI) | Tylko CLI | Web/PWA + aplikacja Android + CLI |
+| Wykrywanie urządzeń w LAN | ✅ | ❌ | ✅ | ❌ | ✅ |
 | Haczyk | W trakcie prac | Zamknięty kod źródłowy; obsługa danych nie podlega audytowi | Tylko ta sama sieć, brak wznawiania | Tylko CLI; interfejsy graficzne to osobne projekty utrzymywane przez społeczność | Limit przepustowości WebRTC/SCTP; limity pamięci przeglądarki |
 
 [Dowiedz się więcej →](https://www.dashbeam.net/en/compare)
@@ -185,6 +200,7 @@ DashBeam jest zbudowany na [Iroh](https://www.iroh.computer), nowoczesnym stosie
 | **QUIC + TLS 1.3** | Szyfrowany transport; multipleksowanie bez blokowania head-of-line |
 | **Relays + hole punching** | Inicjowanie połączeń przez NAT; preferuj bezpośrednie, w razie potrzeby relay |
 | **Control protocol** (pairing) | Długotrwały kanał do zapamiętywania urządzeń i dostarczania zaproszeń do udostępniania |
+| **Local discovery** (mDNS) | Opcjonalna reklama w LAN, by urządzenia Nearby znajdowały się bez ticketu |
 
 ### Blobs
 
@@ -228,6 +244,16 @@ Parowanie nie zastępuje ticketów; dostarcza je za Ciebie.
 4. Gdy udostępniasz, DashBeam nadal tworzy normalny jednorazowy ticket bloba; wybierając sparowane urządzenie, wysyła ten ticket jako **zaproszenie** w aplikacji zamiast kopiować-wklejać.
 
 Ręczne tickety i [sendme CLI](https://www.iroh.computer/sendme) nadal działają dokładnie tak samo jak wcześniej.
+
+### Nearby (lokalne wykrywanie)
+
+W tej samej sieci lokalnej DashBeam może reklamować i przeglądać peery przez mDNS (desktop i Android; nie aplikacja webowa).
+
+1. Gdy wykrywalność to **Everyone**, urządzenie publikuje wystarczająco dużo metadanych, by inni widzieli jego nazwę w Nearby.
+2. **Paired only** nadal ogłasza obecność bez ujawniania nazwy wyświetlanej obcym w LAN.
+3. **Off** zatrzymuje reklamę; nadal możesz przeglądać i wysyłać do innych, którzy pozostają wykrywalni.
+4. Zaproszenia do plików przy pierwszym kontakcie pokazują krótki kod weryfikacyjny wyprowadzony z kluczy publicznych obu urządzeń, aby każda strona mogła potwierdzić, że rozmawia z zamierzonym peerem przed akceptacją.
+5. Akceptacja prośby o parowanie Nearby lub zaproszenia do pliku tworzy te same lokalne rekordy sparowanych urządzeń co parowanie kodem.
 
 ### Samodzielnie hostowane relaye i discovery
 

@@ -30,6 +30,12 @@ Please describe what's happening and what you would have expected instead.
 - How you installed it (.AppImage, .deb, .rpm, Flatpak, .msi, .exe, .dmg, .apk):
 - Did it work in an earlier version? If so, which:
 
+**If the problem involves Nearby / local discovery**, please also tell us:
+
+- Are both devices on the same Wi-Fi/LAN (not guest network)?
+- Any VPN enabled on either side?
+- Discoverability setting on each device (Settings → Network → Your discoverability):
+
 **If the problem involves sending or receiving files**, please also tell us:
 
 - The other device's platform and version:

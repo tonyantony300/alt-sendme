@@ -168,6 +168,11 @@ each other on the new configuration. The devices stay listed either way.
 Pairing codes expire after a short window. If a code stops working, generate a fresh one
 with **Show pairing code**.
 
+On desktop, presence needs DashBeam to be running. If you close the window with
+**Keep running in the background** enabled, the tray / menu bar icon keeps the process
+alive. You can also enable **Start at login** under **Settings → General → Startup &
+background** so paired devices can see you online without opening the window first.
+
 ---
 
 ## The Nearby list is empty

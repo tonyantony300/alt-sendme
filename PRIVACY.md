@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last Updated:** Jul 30 - 2026
+**Last Updated:** Aug 1 - 2026
 
 DashBeam is designed with privacy and security as core principles. This privacy policy explains how the application handles your data and what information may be visible to third parties.
 
@@ -25,6 +25,8 @@ DashBeam stores the following data locally on your device:
 
 - **Secret Keys**: On desktop, your device's Iroh secret key is stored in the OS credential store (macOS Keychain, Windows Credential Manager, Linux Secret Service) under the `alt-sendme` service name. Public device metadata (display name, endpoint ID) is stored in the app data directory. During active transfers, temporary files are stored in your system's temp directory.
 - **Paired devices**: When you pair devices, DashBeam stores the remote device's endpoint ID and display name locally. Paired invites deliver the same one-time blob ticket as manual sharing; tickets are not reused across shares.
+- **Discoverability preference**: Whether this device advertises itself on the local network (Everyone / Paired only / Off), stored locally.
+- **App settings**: Preferences such as start-at-login, keep-running-in-background, and system notifications toggles remain on your device.
 - **Downloaded Files**: Files you receive are saved to a location you choose
 - **Debug Logs**: Only when you explicitly enable **Debug logging** (see below). Off by default.
 
@@ -89,6 +91,22 @@ When using Node ID-only tickets, DashBeam uses public-key based discovery (Pkarr
 
 When a direct peer-to-peer connection is established (the preferred method), no third-party servers are involved in the transfer.
 
+### Local Network Discovery (mDNS)
+
+On desktop and Android, DashBeam can optionally discover other DashBeam devices on the same Wi-Fi or LAN using [multicast DNS (mDNS)](https://en.wikipedia.org/wiki/Multicast_DNS). This is separate from internet relays and Pkarr discovery.
+
+**What may be visible on your local network** (depending on **Settings → Network → Your discoverability**):
+
+- **Everyone**: Nearby peers can learn that a DashBeam device is present and see its display name and device type.
+- **Paired only**: Nearby peers can detect that a device exists, but not its display name.
+- **Off**: This device does not advertise itself. You can still browse and contact others who remain discoverable.
+
+mDNS traffic stays on your local subnet. It is not sent to DashBeam, Iroh relays, or other internet services. Guest Wi-Fi, corporate networks, and many VPNs often block multicast; when that happens, Nearby is unavailable and you can still use tickets or internet pairing.
+
+### System Notifications
+
+When **Settings → General → Show system notifications** is enabled, DashBeam may ask the OS to show local notifications for pair requests, file invites, and related outcomes. Notification text can include a device display name and file count or size. Notifications are delivered by your operating system and are not uploaded to DashBeam servers.
+
 ## Encryption and Security
 
 - **Encryption Protocol**: All traffic uses QUIC protocol with TLS 1.3 encryption
@@ -121,6 +139,8 @@ You maintain full control over:
 - Whether to use relay servers (can be disabled)
 - Whether to use custom relay servers
 - Whether to use a custom self-hosted discovery server
+- Whether this device is discoverable on the local network, and how much identity it advertises
+- Whether system notifications are shown
 - Whether to enable debug logging, and whether to share a diagnostics file
 - Local data storage (can be cleared by uninstalling the application)
 
@@ -157,3 +177,4 @@ While DashBeam is designed with privacy and security in mind, no method of trans
 - Be aware that encrypted transfer metadata may still be visible to relay server operators (connection metadata only)
 - Consider using custom relay servers or disabling relays for maximum privacy
 - Understand that direct peer-to-peer connections may expose your IP address to the other party and also to any relay server facilitating the connection.
+- On a shared local network, set discoverability to **Paired only** or **Off** if you do not want other people on that LAN to see your device name in Nearby.

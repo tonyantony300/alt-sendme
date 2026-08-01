@@ -48,6 +48,9 @@ Pourquoi compter sur WeTransfer, Dropbox ou Google Drive lorsque vous pouvez tra
 - **Reprise et diffusion** — Les transferts interrompus reprennent automatiquement ; partagez le même fichier avec autant de pairs que vous le souhaitez simultanément.
 - **Aperçu avant le téléchargement** — Voyez ce que vous recevez avant de le télécharger.
 - **Appareils appairés** — Appairez ordinateurs et téléphones Android une fois dans **Paramètres → Appareils**, puis envoyez des fichiers sans copier de tickets à chaque fois.
+- **À proximité sur le même réseau** — Les autres appareils DashBeam de votre LAN apparaissent automatiquement (mDNS). Appairez depuis Paramètres, ou envoyez pendant le partage — sans coller de ticket.
+- **Présence en arrière-plan** — Sur le bureau, laissez l'application tourner dans la barre d'état système ou la barre de menu, et démarrez-la éventuellement à la connexion pour que les appareils appairés vous voient en ligne.
+- **Notifications système** — Les demandes d'appairage et les invitations de fichiers peuvent afficher des notifications OS lorsque l'application n'est pas au premier plan (bureau et Android).
 - **Ultra-léger** — Installations minuscules, empreinte web minimale.
 - **Gratuit et open source** — Pas de frais d'envoi, pas de limite de taille, porté par la communauté.
 
@@ -141,16 +144,27 @@ Nous recherchons des partenaires pour rejoindre notre mission ! Associez-vous à
 ## Comment ça marche
 
 1. Déposez votre fichier ou dossier — DashBeam crée un code de partage à usage unique (appelé « ticket »).
-2. Partagez le ticket par chat, e-mail ou SMS, **ou** envoyez directement à un appareil appairé (bureau / Android).
-3. Votre ami colle le ticket dans son application (ou accepte une invitation d'appareil appairé), et le transfert commence.
+2. Partagez le ticket par chat, e-mail ou SMS, **ou** envoyez directement à un appareil appairé ou à proximité (bureau / Android).
+3. Votre ami colle le ticket dans son application (ou accepte une invitation), et le transfert commence.
 
 ### Appareils appairés
 
-Sur macOS, Windows, Linux et Android, vous pouvez appairer des appareils dans **Paramètres → Appareils** à l'aide d'un code d'appairage. Après l'appairage :
+Sur macOS, Windows, Linux et Android, vous pouvez appairer des appareils dans **Paramètres → Appareils** à l'aide d'un code d'appairage, ou en acceptant une demande d'appairage Nearby sur le même réseau local. Après l'appairage :
 
 - Les expéditeurs peuvent appuyer sur **Envoyer** à côté d'un appareil appairé pendant le partage : pas de copie manuelle de ticket.
-- Les destinataires reçoivent une invite dans l'application lorsqu'un expéditeur appairé les invite (l'application doit être ouverte).
+- Les destinataires reçoivent une invite dans l'application lorsqu'un expéditeur appairé les invite ; avec les notifications système activées, ils peuvent aussi recevoir une bannière OS lorsque la fenêtre n'est pas au premier plan.
+- Sur le bureau, la barre d'état système / barre de menu peut indiquer quels appareils appairés sont en ligne, et DashBeam peut continuer à tourner après la fermeture de la fenêtre (**Paramètres → Général → Startup & background**).
 - Les tickets manuels et le [sendme CLI](https://www.iroh.computer/sendme) fonctionnent exactement comme avant.
+
+### Appareils à proximité
+
+Lorsque d'autres applications DashBeam sont sur le même Wi-Fi ou LAN, elles peuvent apparaître sous **Nearby** dans **Paramètres → Appareils** et dans la feuille **Send to a device** pendant le partage :
+
+- **Appairez** depuis Paramètres pour ajouter un appareil sans échanger de code d'appairage.
+- **Envoyez** depuis la feuille de partage pour inviter un appareil Nearby avec le ticket actuel ; les destinataires confirment un court code de vérification avant d'accepter.
+- Contrôlez si les autres peuvent vous trouver dans **Paramètres → Réseau → Your discoverability** (Everyone / Paired only / Off).
+
+Nearby s'appuie sur [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). Si votre réseau bloque le multicast (Wi-Fi invité, de nombreux VPN), utilisez un ticket manuel ou appairage via Internet — voir [Dépannage](../troubleshooting.md#the-nearby-list-is-empty).
 
 
 ## Comparaison
@@ -167,6 +181,7 @@ Sur macOS, Windows, Linux et Android, vous pouvez appairer des appareils dans **
 | Transferts reprenables | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Taille de fichier illimitée | ✅ | ✅ | ✅ | ✅ | Limitée par la mémoire du navigateur |
 | Plateformes | CLI + bureau + mobile + web | Bureau + mobile (pas de web/CLI) | Bureau + mobile (pas de web/CLI) | CLI uniquement | Web/PWA + application Android + CLI |
+| Découvrir des appareils sur le LAN | ✅ | ❌ | ✅ | ❌ | ✅ |
 | Le piège | En cours | Code fermé ; le traitement des données ne peut pas être audité | Même réseau uniquement, pas de reprise | CLI uniquement ; les interfaces graphiques sont séparées, maintenues par la communauté | Plafond de débit WebRTC/SCTP ; limites de mémoire du navigateur |
 
 [En savoir plus →](https://www.dashbeam.net/en/compare)
@@ -185,6 +200,7 @@ DashBeam est construit sur [Iroh](https://www.iroh.computer), une stack réseau 
 | **QUIC + TLS 1.3** | Transport chiffré ; multiplexage sans blocage en tête de ligne |
 | **Relais + hole punching** | Amorcent les connexions à travers les NAT ; privilégient le direct, basculent sur le relais |
 | **Protocole de contrôle** (appairage) | Canal persistant pour mémoriser les appareils et transmettre les invitations de partage |
+| **Local discovery** (mDNS) | Annonce LAN optionnelle pour que les appareils Nearby se trouvent sans ticket |
 
 ### Blobs
 
@@ -228,6 +244,16 @@ L'appairage ne remplace pas les tickets ; il les transmet pour vous.
 4. Lorsque vous partagez, DashBeam crée toujours un ticket blob à usage unique normal ; choisir un appareil appairé envoie ce ticket sous forme d'**invitation** dans l'application au lieu de vous faire copier-coller.
 
 Les tickets manuels et le [sendme CLI](https://www.iroh.computer/sendme) continuent de fonctionner exactement comme avant.
+
+### Nearby (découverte locale)
+
+Sur le même réseau local, DashBeam peut annoncer et parcourir les pairs via mDNS (bureau et Android ; pas l'application web).
+
+1. Lorsque la découvrabilité est **Everyone**, l'appareil publie assez de métadonnées pour que les autres affichent son nom dans Nearby.
+2. **Paired only** annonce encore la présence sans exposer le nom d'affichage aux inconnus sur le LAN.
+3. **Off** arrête l'annonce ; vous pouvez toujours parcourir et envoyer aux autres qui restent découvrables.
+4. Les invitations de fichiers au premier contact affichent un court code de vérification dérivé des clés publiques des deux appareils, pour que chaque côté confirme qu'il parle au pair prévu avant d'accepter.
+5. Accepter une demande d'appairage Nearby ou une invitation de fichier crée les mêmes enregistrements locaux d'appareils appairés que l'appairage par code.
 
 ### Auto-hébergement des relais et de la découverte
 

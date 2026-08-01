@@ -48,6 +48,9 @@ Por que depender do WeTransfer, Dropbox ou Google Drive quando você pode transf
 - **Retomável e transmitível** — Transferências interrompidas retomam automaticamente; compartilhe o mesmo arquivo com quantos peers quiser ao mesmo tempo.
 - **Visualize antes de baixar** — Veja o que você está recebendo antes de baixar.
 - **Dispositivos pareados** — Pareie computadores e celulares Android uma vez em **Configurações → Dispositivos**, depois envie arquivos sem copiar tickets toda vez.
+- **Próximos na mesma rede** — Outros dispositivos DashBeam na sua LAN aparecem automaticamente (mDNS). Pareie nas Configurações ou envie ao compartilhar — sem colar ticket.
+- **Presença em segundo plano** — No desktop, continue rodando na bandeja ou barra de menus e, opcionalmente, inicie no login para que dispositivos pareados vejam você online.
+- **Notificações do sistema** — Pedidos de pareamento e convites de arquivo podem exibir notificações do SO quando o app não está em primeiro plano (desktop e Android).
 - **Ultraleve** — Instalações minúsculas, pegada web mínima.
 - **Gratuito e de código aberto** — Sem custos de upload, sem limites de tamanho, impulsionado pela comunidade.
 
@@ -141,16 +144,27 @@ Estamos procurando Parceiros para se juntar à nossa missão! Faça parceria con
 ## Como funciona
 
 1. Arraste seu arquivo ou pasta — DashBeam cria um código de compartilhamento único (chamado de "ticket").
-2. Compartilhe o ticket por chat, e-mail ou mensagem de texto, **ou** envie diretamente para um dispositivo pareado (desktop / Android).
-3. Seu amigo cola o ticket no app (ou aceita um convite de dispositivo pareado), e a transferência começa.
+2. Compartilhe o ticket por chat, e-mail ou mensagem de texto, **ou** envie diretamente para um dispositivo pareado ou próximo (desktop / Android).
+3. Seu amigo cola o ticket no app (ou aceita um convite), e a transferência começa.
 
 ### Dispositivos pareados
 
-No macOS, Windows, Linux e Android você pode parear dispositivos em **Configurações → Dispositivos** usando um código de pareamento. Após o pareamento:
+No macOS, Windows, Linux e Android você pode parear dispositivos em **Configurações → Dispositivos** usando um código de pareamento, ou aceitando um pedido de pareamento Nearby na mesma rede local. Após o pareamento:
 
 - Remetentes podem tocar em **Enviar** ao lado de um dispositivo pareado durante o compartilhamento: sem copiar ticket manualmente.
-- Destinatários recebem um prompt no app quando um remetente pareado os convida (o app precisa estar aberto).
+- Destinatários recebem um prompt no app quando um remetente pareado os convida; com notificações do sistema ativadas, também podem receber um banner do SO quando a janela não está em foco.
+- No desktop, a bandeja / barra de menus pode mostrar quais dispositivos pareados estão online, e o DashBeam pode continuar rodando depois que você fecha a janela (**Configurações → Geral → Startup & background**).
 - Tickets manuais e o [sendme CLI](https://www.iroh.computer/sendme) ainda funcionam exatamente como antes.
+
+### Dispositivos próximos
+
+Quando outros apps DashBeam estão na mesma Wi-Fi ou LAN, eles podem aparecer em **Nearby** em **Configurações → Dispositivos** e na folha **Send to a device** ao compartilhar:
+
+- **Pareie** nas Configurações para adicionar um dispositivo sem trocar um código de pareamento.
+- **Envie** pela folha de compartilhamento para convidar um dispositivo Nearby com o ticket atual; os destinatários confirmam um código de verificação curto antes de aceitar.
+- Controle se outros podem encontrá-lo em **Configurações → Rede → Your discoverability** (Everyone / Paired only / Off).
+
+Nearby depende de [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). Se sua rede bloquear multicast (Wi-Fi de convidados, muitas VPNs), use um ticket manual ou pareie pela internet — veja [Solução de problemas](../troubleshooting.md#the-nearby-list-is-empty).
 
 
 ## Comparação
@@ -167,6 +181,7 @@ No macOS, Windows, Linux e Android você pode parear dispositivos em **Configura
 | Transferências retomáveis | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Tamanho de arquivo ilimitado | ✅ | ✅ | ✅ | ✅ | Limitado pela memória do navegador |
 | Plataformas | CLI + desktop + mobile + web | Desktop + mobile (sem web/CLI) | Desktop + mobile (sem web/CLI) | Apenas CLI | Web/PWA + app Android + CLI |
+| Descobrir dispositivos na LAN | ✅ | ❌ | ✅ | ❌ | ✅ |
 | A ressalva | Em desenvolvimento | Código fechado; tratamento de dados não pode ser auditado | Apenas mesma rede, sem retomada | Apenas CLI; interfaces gráficas são separadas, mantidas pela comunidade | Teto de throughput WebRTC/SCTP; limites de memória do navegador |
 
 [Saiba mais →](https://www.dashbeam.net/en/compare)
@@ -185,6 +200,7 @@ DashBeam é construído sobre [Iroh](https://www.iroh.computer), uma stack de re
 | **QUIC + TLS 1.3** | Transporte criptografado; multiplexação sem bloqueio head-of-line |
 | **Relays + hole punching** | Inicializam conexões através de NATs; preferem caminho direto, recuam para relay |
 | **Protocolo de controle** (pareamento) | Canal persistente para lembrar dispositivos e entregar convites de compartilhamento |
+| **Local discovery** (mDNS) | Anúncio opcional na LAN para que dispositivos Nearby se encontrem sem ticket |
 
 ### Blobs
 
@@ -228,6 +244,16 @@ O pareamento não substitui tickets; ele os entrega para você.
 4. Quando você compartilha, o DashBeam ainda cria um ticket blob único normal; escolher um dispositivo pareado envia esse ticket como um **convite** no app em vez de fazer você copiar e colar.
 
 Tickets manuais e o [sendme CLI](https://www.iroh.computer/sendme) continuam funcionando exatamente como antes.
+
+### Nearby (descoberta local)
+
+Na mesma rede local, o DashBeam pode anunciar e procurar peers com mDNS (desktop e Android; não o app web).
+
+1. Quando a descobribilidade é **Everyone**, o dispositivo publica metadados suficientes para que outros mostrem seu nome em Nearby.
+2. **Paired only** ainda anuncia presença sem expor o nome de exibição a estranhos na LAN.
+3. **Off** para de anunciar; você ainda pode procurar e enviar para outros que permaneçam descobertos.
+4. Convites de arquivo no primeiro contato mostram um código de verificação curto derivado das chaves públicas de ambos os dispositivos, para cada lado confirmar que está falando com o peer pretendido antes de aceitar.
+5. Aceitar um pedido de pareamento Nearby ou um convite de arquivo cria os mesmos registros locais de dispositivo pareado que o pareamento por código.
 
 ### Auto-hospedagem de relays e descoberta
 

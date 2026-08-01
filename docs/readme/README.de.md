@@ -48,6 +48,9 @@ Warum auf WeTransfer, Dropbox oder Google Drive setzen, wenn Sie Dateien zuverl�
 - **Fortsetzbar & broadcastfähig** – Unterbrochene Transfers werden automatisch fortgesetzt; teilen Sie dieselbe Datei gleichzeitig mit beliebig vielen Peers.
 - **Vorschau vor dem Download** – Sehen Sie, was Sie empfangen, bevor Sie herunterladen.
 - **Gepairte Geräte** – Paaren Sie Computer und Android-Handys einmal unter **Einstellungen → Geräte**, und senden Sie Dateien ohne jedes Mal Tickets kopieren zu müssen.
+- **In der Nähe im selben Netzwerk** – Andere DashBeam-Geräte in Ihrem LAN erscheinen automatisch (mDNS). Paaren Sie unter Einstellungen oder senden Sie beim Teilen – ohne Ticket einzufügen.
+- **Hintergrund-Präsenz** – Auf dem Desktop im Tray oder in der Menüleiste weiterlaufen lassen und optional beim Anmelden starten, damit gepairte Geräte Sie online sehen.
+- **Systembenachrichtigungen** – Pairing-Anfragen und Datei-Einladungen können OS-Benachrichtigungen auslösen, wenn die App nicht im Vordergrund ist (Desktop und Android).
 - **Leichtgewichtig** – Minimale Installation, geringer Web-Footprint.
 - **Kostenlos & Open Source** – Keine Upload-Kosten, keine Größenlimits, community-getrieben.
 
@@ -141,16 +144,27 @@ Wir suchen Partner, die unsere Mission unterstützen! Werden Sie Partner und unt
 ## So funktioniert es
 
 1. Datei oder Ordner ablegen – DashBeam erstellt einen einmaligen Freigabe-Code (ein sogenanntes „Ticket“).
-2. Teilen Sie das Ticket per Chat, E-Mail oder SMS **oder** senden Sie direkt an ein gepairtes Gerät (Desktop / Android).
-3. Ihr Freund fügt das Ticket in der App ein (oder nimmt eine Einladung von einem gepairten Gerät an), und der Transfer beginnt.
+2. Teilen Sie das Ticket per Chat, E-Mail oder SMS **oder** senden Sie direkt an ein gepairtes oder nahegelegenes Gerät (Desktop / Android).
+3. Ihr Freund fügt das Ticket in der App ein (oder nimmt eine Einladung an), und der Transfer beginnt.
 
 ### Gepairte Geräte
 
-Unter macOS, Windows, Linux und Android können Sie Geräte unter **Einstellungen → Geräte** mit einem Pairing-Code paaren. Nach dem Pairing:
+Unter macOS, Windows, Linux und Android können Sie Geräte unter **Einstellungen → Geräte** mit einem Pairing-Code paaren oder eine Nearby-Pairing-Anfrage im selben lokalen Netzwerk annehmen. Nach dem Pairing:
 
 - Absender können beim Teilen neben einem gepairten Gerät auf **Send** tippen – kein manuelles Kopieren des Tickets.
-- Empfänger erhalten eine In-App-Aufforderung, wenn ein gepairter Absender sie einlädt (App muss geöffnet sein).
+- Empfänger erhalten eine In-App-Aufforderung, wenn ein gepairter Absender sie einlädt; bei aktivierten Systembenachrichtigungen können sie auch ein OS-Banner erhalten, wenn das Fenster nicht fokussiert ist.
+- Auf dem Desktop kann das Tray / die Menüleiste anzeigen, welche gepairten Geräte online sind, und DashBeam kann nach dem Schließen des Fensters weiterlaufen (**Einstellungen → Allgemein → Startup & background**).
 - Manuelle Tickets und die [sendme CLI](https://www.iroh.computer/sendme) funktionieren weiterhin genau wie zuvor.
+
+### Geräte in der Nähe
+
+Wenn andere DashBeam-Apps im selben Wi-Fi oder LAN sind, können sie unter **Nearby** in **Einstellungen → Geräte** und im Blatt **Send to a device** beim Teilen erscheinen:
+
+- **Paaren** Sie unter Einstellungen, um ein Gerät ohne Austausch eines Pairing-Codes hinzuzufügen.
+- **Senden** Sie aus dem Freigabeblatt, um ein Nearby-Gerät mit dem aktuellen Ticket einzuladen; Empfänger bestätigen vor dem Annehmen einen kurzen Verifizierungscode.
+- Steuern Sie, ob andere Sie finden können, unter **Einstellungen → Netzwerk → Your discoverability** (Everyone / Paired only / Off).
+
+Nearby basiert auf [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). Wenn Ihr Netzwerk Multicast blockiert (Gast-Wi-Fi, viele VPNs), nutzen Sie ein manuelles Ticket oder paaren Sie über das Internet – siehe [Fehlerbehebung](../troubleshooting.md#the-nearby-list-is-empty).
 
 
 ## Vergleich
@@ -167,6 +181,7 @@ Unter macOS, Windows, Linux und Android können Sie Geräte unter **Einstellunge
 | Fortsetzbare Transfers | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Unbegrenzte Dateigröße | ✅ | ✅ | ✅ | ✅ | Begrenzt durch Browser-Speicher |
 | Plattformen | CLI + Desktop + Mobile + Web | Desktop + Mobile (kein Web/CLI) | Desktop + Mobile (kein Web/CLI) | Nur CLI | Web/PWA + Android-App + CLI |
+| Geräte im LAN entdecken | ✅ | ❌ | ✅ | ❌ | ✅ |
 | Der Haken | In Arbeit | Closed Source; Datenverarbeitung nicht prüfbar | Nur im selben Netzwerk, kein Fortsetzen | Nur CLI; GUI-Frontends sind separate, von der Community gepflegte Projekte | WebRTC/SCTP-Durchsatz-Obergrenze; Browser-Speicherlimits |
 
 [Mehr erfahren →](https://www.dashbeam.net/en/compare)
@@ -185,6 +200,7 @@ DashBeam basiert auf [Iroh](https://www.iroh.computer), einem modernen Peer-to-P
 | **QUIC + TLS 1.3** | Verschlüsselter Transport; Multiplexing ohne Head-of-Line-Blocking |
 | **Relays + Hole Punching** | Verbindungen über NATs bootstrappen; direkten Pfad bevorzugen, Relay als Fallback |
 | **Control protocol** (pairing) | Langfristiger Kanal, um Geräte zu merken und Freigabe-Einladungen zuzustellen |
+| **Local discovery** (mDNS) | Optionale LAN-Werbung, damit Nearby-Geräte einander ohne Ticket finden |
 
 ### Blobs
 
@@ -228,6 +244,16 @@ Pairing ersetzt Tickets nicht; es liefert sie für Sie.
 4. Beim Teilen erstellt DashBeam weiterhin ein normales einmaliges Blob-Ticket; wählen Sie ein gepairtes Gerät, wird dieses Ticket als In-App-**Einladung** gesendet, statt es kopieren und einfügen zu müssen.
 
 Manuelle Tickets und die [sendme CLI](https://www.iroh.computer/sendme) funktionieren weiterhin genau wie zuvor.
+
+### Nearby (lokale Discovery)
+
+Im selben lokalen Netzwerk kann DashBeam Peers per mDNS bewerben und browsen (Desktop und Android; nicht die Web-App).
+
+1. Wenn die Auffindbarkeit **Everyone** ist, veröffentlicht das Gerät genug Metadaten, damit andere seinen Namen unter Nearby sehen.
+2. **Paired only** meldet weiterhin Präsenz, ohne den Anzeigenamen Fremden im LAN preiszugeben.
+3. **Off** stoppt die Werbung; Sie können weiterhin browsen und an andere senden, die auffindbar bleiben.
+4. Datei-Einladungen beim Erstkontakt zeigen einen kurzen Verifizierungscode, der aus den öffentlichen Schlüsseln beider Geräte abgeleitet wird, damit jede Seite vor dem Annehmen bestätigen kann, mit dem beabsichtigten Peer zu sprechen.
+5. Das Annehmen einer Nearby-Pairing-Anfrage oder Datei-Einladung erzeugt dieselben lokalen Datensätze gepairter Geräte wie das Pairing per Code.
 
 ### Selbst gehostete Relays und Discovery
 

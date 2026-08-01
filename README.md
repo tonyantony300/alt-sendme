@@ -48,6 +48,9 @@ Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easil
 - **Resumable & broadcastable** - Interrupted transfers resume automatically; share the same file with any number of peers at once.
 - **Preview before you download** - See what you're receiving before you download it.
 - **Paired devices** - Pair computers and Android phones once in **Settings → Devices**, then send files without copying tickets each time.
+- **Nearby on the same network** - Other DashBeam devices on your LAN show up automatically (mDNS). Pair from Settings, or send while sharing—no ticket paste required.
+- **Background presence** - On desktop, keep running in the tray or menu bar and optionally start at login so paired devices see you online.
+- **System notifications** - Pair requests and file invites can raise OS notifications when the app isn't in the foreground (desktop and Android).
 - **Featherlight** - Tiny installs, minimal web footprint.
 - **Free & open source** - No upload costs, no size limits, community-driven.
 
@@ -143,16 +146,27 @@ We're looking for Partners to join our mission! Partner with us and support whil
 ## How it works 
 
 1. Drop your file or folder - DashBeam creates a one-time share code (called a "ticket").
-2. Share the ticket via chat, email, or text, **or** send directly to a paired device (desktop / Android).
-3. Your friend pastes the ticket in their app (or accepts a paired-device invite), and the transfer begins.
+2. Share the ticket via chat, email, or text, **or** send directly to a paired or nearby device (desktop / Android).
+3. Your friend pastes the ticket in their app (or accepts an invite), and the transfer begins.
 
 ### Paired devices
 
-On macOS, Windows, Linux, and Android you can pair devices in **Settings → Devices** using a pairing code. After pairing:
+On macOS, Windows, Linux, and Android you can pair devices in **Settings → Devices** using a pairing code, or by accepting a Nearby pair request on the same local network. After pairing:
 
 - Senders can tap **Send** next to a paired device while sharing: no manual ticket copy.
-- Receivers get an in-app prompt when a paired sender invites them (app must be open).
+- Receivers get an in-app prompt when a paired sender invites them; with system notifications enabled, they can also get an OS banner when the window isn't focused.
+- On desktop, the tray / menu bar can show which paired devices are online, and DashBeam can stay running after you close the window (**Settings → General → Startup & background**).
 - Manual tickets and the [sendme CLI](https://www.iroh.computer/sendme) still work exactly as before.
+
+### Nearby devices
+
+When other DashBeam apps are on the same Wi-Fi or LAN, they can appear under **Nearby** in **Settings → Devices** and in the **Send to a device** sheet while sharing:
+
+- **Pair** from Settings to add a device without exchanging a pairing code.
+- **Send** from the share sheet to invite a Nearby device with the current ticket; receivers confirm a short verification code before accepting.
+- Control whether others can find you under **Settings → Network → Your discoverability** (Everyone / Paired only / Off).
+
+Nearby relies on [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). If your network blocks multicast (guest Wi-Fi, many VPNs), use a manual ticket or pair over the internet instead—see [Troubleshooting](docs/troubleshooting.md#the-nearby-list-is-empty).
 
 
 ## Comparison
@@ -169,6 +183,7 @@ On macOS, Windows, Linux, and Android you can pair devices in **Settings → Dev
 | Resumable transfers | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Unlimited file size | ✅ | ✅ | ✅ | ✅ | Limited by browser memory |
 | Platforms | CLI + desktop + mobile + web | Desktop + mobile (no web/CLI) | Desktop + mobile (no web/CLI) | CLI only | Web/PWA + Android app + CLI |
+| Discover devices on LAN | ✅ | ❌ | ✅ | ❌ | ✅ |
 | The catch | WIP | Closed source; data handling cannot be audited | Same-network only, no resume | CLI-only; GUI front-ends are separate, community-maintained | WebRTC/SCTP throughput ceiling; browser memory limits |
 
 [Know more →](https://www.dashbeam.net/en/compare)
@@ -187,6 +202,7 @@ DashBeam is built on [Iroh](https://www.iroh.computer), a modern peer-to-peer ne
 | **QUIC + TLS 1.3** | Encrypted transport; multiplexing without head-of-line blocking |
 | **Relays + hole punching** | Bootstrap connections across NATs; prefer direct, fall back to relay |
 | **Control protocol** (pairing) | Long-lived channel to remember devices and deliver share invites |
+| **Local discovery** (mDNS) | Optional LAN advertising so Nearby devices can find each other without a ticket |
 
 ### Blobs
 
@@ -230,6 +246,16 @@ Pairing doesn’t replace tickets; it delivers them for you.
 4. When you share, DashBeam still creates a normal one-time blob ticket; choosing a paired device ships that ticket as an in-app **invite** instead of making you copy-paste it.
 
 Manual tickets and the [sendme CLI](https://www.iroh.computer/sendme) keep working exactly as before.
+
+### Nearby (local discovery)
+
+On the same local network, DashBeam can advertise and browse peers with mDNS (desktop and Android; not the web app).
+
+1. When discoverability is **Everyone**, the device publishes enough metadata for others to show its name in Nearby.
+2. **Paired only** still announces presence without exposing the display name to strangers on the LAN.
+3. **Off** stops advertising; you can still browse and send to others who remain discoverable.
+4. First-contact file invites show a short verification code derived from both devices' public keys so each side can confirm they're talking to the intended peer before accepting.
+5. Accepting a Nearby pair request or file invite creates the same local paired-device records as code-based pairing.
 
 ### Self-hosting relays and discovery
 

@@ -48,6 +48,9 @@ Una herramienta gratuita y de código abierto para transferir archivos que aprov
 - **Reanudable y difusible** — Las transferencias interrumpidas se reanudan automáticamente; comparte el mismo archivo con cualquier cantidad de pares a la vez.
 - **Vista previa antes de descargar** — Mira lo que recibes antes de descargarlo.
 - **Dispositivos emparejados** — Empareja computadoras y teléfonos Android una vez en **Configuración → Dispositivos**, y luego envía archivos sin copiar tickets cada vez.
+- **Cercanos en la misma red** — Otros dispositivos DashBeam en tu LAN aparecen automáticamente (mDNS). Empareja desde Configuración o envía al compartir: no hace falta pegar un ticket.
+- **Presencia en segundo plano** — En escritorio, sigue en ejecución en la bandeja o barra de menús y, opcionalmente, inicia al iniciar sesión para que los dispositivos emparejados te vean en línea.
+- **Notificaciones del sistema** — Las solicitudes de emparejamiento y las invitaciones de archivos pueden mostrar notificaciones del SO cuando la app no está en primer plano (escritorio y Android).
 - **Ultraligero** — Instalaciones mínimas, huella web reducida.
 - **Gratuito y de código abierto** — Sin costos de subida, sin límites de tamaño, impulsado por la comunidad.
 
@@ -141,16 +144,27 @@ Más opciones en [GitHub Releases](https://github.com/tonyantony300/dashbeam/rel
 ## Cómo funciona
 
 1. Suelta tu archivo o carpeta: DashBeam crea un código de uso único para compartir (llamado «ticket»).
-2. Comparte el ticket por chat, correo electrónico o mensaje de texto, **o** envíalo directamente a un dispositivo emparejado (escritorio / Android).
-3. Tu contacto pega el ticket en su app (o acepta una invitación de un dispositivo emparejado) y comienza la transferencia.
+2. Comparte el ticket por chat, correo electrónico o mensaje de texto, **o** envíalo directamente a un dispositivo emparejado o cercano (escritorio / Android).
+3. Tu contacto pega el ticket en su app (o acepta una invitación) y comienza la transferencia.
 
 ### Dispositivos emparejados
 
-En macOS, Windows, Linux y Android puedes emparejar dispositivos en **Configuración → Dispositivos** usando un código de emparejamiento. Después del emparejamiento:
+En macOS, Windows, Linux y Android puedes emparejar dispositivos en **Configuración → Dispositivos** usando un código de emparejamiento, o aceptando una solicitud de emparejamiento Nearby en la misma red local. Después del emparejamiento:
 
 - Los remitentes pueden tocar **Enviar** junto a un dispositivo emparejado mientras comparten: sin copiar el ticket manualmente.
-- Los receptores reciben un aviso en la app cuando un remitente emparejado los invita (la app debe estar abierta).
+- Los receptores reciben un aviso en la app cuando un remitente emparejado los invita; con notificaciones del sistema activadas, también pueden recibir un banner del SO cuando la ventana no tiene el foco.
+- En escritorio, la bandeja / barra de menús puede mostrar qué dispositivos emparejados están en línea, y DashBeam puede seguir en ejecución después de cerrar la ventana (**Configuración → General → Startup & background**).
 - Los tickets manuales y el [sendme CLI](https://www.iroh.computer/sendme) siguen funcionando exactamente igual que antes.
+
+### Dispositivos cercanos
+
+Cuando otras apps DashBeam están en la misma Wi-Fi o LAN, pueden aparecer en **Nearby** en **Configuración → Dispositivos** y en la hoja **Send to a device** al compartir:
+
+- **Empareja** desde Configuración para añadir un dispositivo sin intercambiar un código de emparejamiento.
+- **Envía** desde la hoja de compartir para invitar a un dispositivo Nearby con el ticket actual; los receptores confirman un código de verificación corto antes de aceptar.
+- Controla si otros pueden encontrarte en **Configuración → Red → Your discoverability** (Everyone / Paired only / Off).
+
+Nearby depende de [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). Si tu red bloquea el multicast (Wi-Fi de invitados, muchas VPN), usa un ticket manual o empareja por internet: consulta [Solución de problemas](../troubleshooting.md#the-nearby-list-is-empty).
 
 
 ## Comparación
@@ -167,6 +181,7 @@ En macOS, Windows, Linux y Android puedes emparejar dispositivos en **Configurac
 | Transferencias reanudables | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Tamaño de archivo ilimitado | ✅ | ✅ | ✅ | ✅ | Limitado por la memoria del navegador |
 | Plataformas | CLI + escritorio + móvil + web | Escritorio + móvil (sin web/CLI) | Escritorio + móvil (sin web/CLI) | Solo CLI | Web/PWA + app Android + CLI |
+| Descubrir dispositivos en la LAN | ✅ | ❌ | ✅ | ❌ | ✅ |
 | La pega | En desarrollo | Código cerrado; el manejo de datos no puede auditarse | Solo misma red, sin reanudación | Solo CLI; las interfaces gráficas son separadas y mantenidas por la comunidad | Límite de rendimiento WebRTC/SCTP; límites de memoria del navegador |
 
 [Saber más →](https://www.dashbeam.net/en/compare)
@@ -185,6 +200,7 @@ DashBeam está construido sobre [Iroh](https://www.iroh.computer), un stack de r
 | **QUIC + TLS 1.3** | Transporte cifrado; multiplexación sin bloqueo en la cabecera de línea |
 | **Relays + hole punching** | Inician conexiones a través de NAT; prefieren la ruta directa, con fallback al relay |
 | **Protocolo de control** (emparejamiento) | Canal persistente para recordar dispositivos y entregar invitaciones de compartición |
+| **Local discovery** (mDNS) | Anuncio opcional en la LAN para que los dispositivos Nearby se encuentren sin ticket |
 
 ### Blobs
 
@@ -228,6 +244,16 @@ El emparejamiento no reemplaza los tickets; los entrega por ti.
 4. Cuando compartes, DashBeam sigue creando un ticket blob de uso único normal; elegir un dispositivo emparejado envía ese ticket como una **invitación** en la app en lugar de hacerte copiarlo y pegarlo.
 
 Los tickets manuales y el [sendme CLI](https://www.iroh.computer/sendme) siguen funcionando exactamente igual que antes.
+
+### Nearby (descubrimiento local)
+
+En la misma red local, DashBeam puede anunciar y explorar pares con mDNS (escritorio y Android; no la app web).
+
+1. Cuando la descubribilidad es **Everyone**, el dispositivo publica suficientes metadatos para que otros muestren su nombre en Nearby.
+2. **Paired only** sigue anunciando presencia sin exponer el nombre visible a desconocidos en la LAN.
+3. **Off** deja de anunciar; aún puedes explorar y enviar a otros que sigan siendo descubribles.
+4. Las invitaciones de archivos en el primer contacto muestran un código de verificación corto derivado de las claves públicas de ambos dispositivos, para que cada lado confirme que habla con el par previsto antes de aceptar.
+5. Aceptar una solicitud de emparejamiento Nearby o una invitación de archivo crea los mismos registros locales de dispositivo emparejado que el emparejamiento por código.
 
 ### Autohospedaje de relays y descubrimiento
 
