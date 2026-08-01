@@ -97,6 +97,8 @@ pub fn run() {
             focus_main_window,
             #[cfg(desktop)]
             set_background_on_close,
+            #[cfg(desktop)]
+            set_tray_labels,
             check_launch_intent,
             fetch_ticket_metadata,
             verify_relays,
@@ -196,6 +198,16 @@ pub fn run() {
                     error = %error,
                     "System tray unavailable; app will continue without tray icon"
                 );
+            }
+            #[cfg(desktop)]
+            {
+                use tauri::Listener as _;
+                let handle = app.handle().clone();
+                for event in ["paired-device-presence", "device-paired", "device-unpaired"] {
+                    let handle = handle.clone();
+                    app.listen(event, move |_| tray::refresh_presence(&handle));
+                }
+                tray::refresh_presence(&app.handle().clone());
             }
             #[cfg(desktop)]
             {

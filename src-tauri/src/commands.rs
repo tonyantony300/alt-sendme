@@ -1485,6 +1485,14 @@ pub fn set_background_on_close(enabled: bool) {
     crate::tray::set_background_on_close(enabled);
 }
 
+/// Push translated tray strings from the frontend. Best-effort: a missing
+/// tray (build failed, or not yet created) is a no-op.
+#[cfg(desktop)]
+#[tauri::command]
+pub fn set_tray_labels(app_handle: tauri::AppHandle, labels: crate::tray::TrayLabels) {
+    crate::tray::apply_labels(&app_handle, labels);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

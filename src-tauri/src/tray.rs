@@ -30,6 +30,39 @@ pub fn set_background_on_close(enabled: bool) {
     BACKGROUND_ON_CLOSE.store(enabled, Ordering::Relaxed);
 }
 
+/// Tray strings, pushed from the frontend so the menu follows the app
+/// language. English defaults cover the window between process start and the
+/// webview's first `set_tray_labels` call.
+#[derive(Clone, serde::Deserialize)]
+pub struct TrayLabels {
+    pub open: String,
+    pub quit: String,
+    pub no_devices: String,
+    /// Template with `{{online}}` and `{{total}}` placeholders.
+    pub devices_online: String,
+}
+
+impl Default for TrayLabels {
+    fn default() -> Self {
+        Self {
+            open: "Open".to_string(),
+            quit: "Quit".to_string(),
+            no_devices: "No paired devices".to_string(),
+            devices_online: "{{online}} of {{total}} devices online".to_string(),
+        }
+    }
+}
+
+pub fn format_presence(labels: &TrayLabels, online: usize, total: usize) -> String {
+    if total == 0 {
+        return labels.no_devices.clone();
+    }
+    labels
+        .devices_online
+        .replace("{{online}}", &online.to_string())
+        .replace("{{total}}", &total.to_string())
+}
+
 /// Return true if window was shown (or attempted) successfully, false otherwise.
 pub fn open_and_focus(app: &AppHandle) -> bool {
     // try main window by label first
@@ -60,10 +93,25 @@ pub fn open_and_focus(app: &AppHandle) -> bool {
     false
 }
 
+/// Everything needed to mutate the tray after it is built. Managed in Tauri
+/// state because `setup_tray` returns before any presence event arrives.
+pub struct TrayHandles {
+    pub tray: tauri::tray::TrayIcon,
+    pub status: MenuItem<tauri::Wry>,
+    pub open: MenuItem<tauri::Wry>,
+    pub quit: MenuItem<tauri::Wry>,
+    pub labels: std::sync::Mutex<TrayLabels>,
+    /// Last known counts, so a label change can re-render without re-querying.
+    pub counts: std::sync::Mutex<(usize, usize)>,
+}
+
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
-    let open = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?; // open button
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?; // quit button
-    let menu = Menu::with_items(app, &[&open, &quit])?;
+    let labels = TrayLabels::default();
+    // Disabled: a status readout, not an action.
+    let status = MenuItem::with_id(app, "status", &labels.no_devices, false, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", &labels.open, true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", &labels.quit, true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&status, &open, &quit])?;
 
     let mut builder = TrayIconBuilder::new()
         .menu(&menu)
@@ -96,15 +144,15 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             }
             _ => {}
         })
-        .on_tray_icon_event(move |tray, event| match event {
-            TrayIconEvent::Click {
+        .on_tray_icon_event(move |tray, event| {
+            if let TrayIconEvent::Click {
                 button: MouseButton::Left,
                 ..
-            } => {
+            } = event
+            {
                 let app = tray.app_handle();
                 let _ = open_and_focus(&app);
             }
-            _ => {}
         });
 
     let icon = match app
@@ -126,10 +174,94 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     };
 
     builder = builder.icon(icon);
-
     let tray = builder.build(app)?;
 
-    app.manage(tray);
+    app.manage(TrayHandles {
+        tray,
+        status,
+        open,
+        quit,
+        labels: std::sync::Mutex::new(labels),
+        counts: std::sync::Mutex::new((0, 0)),
+    });
     TRAY_ACTIVE.store(true, Ordering::Relaxed);
     Ok(())
+}
+
+/// Re-render the status item and tooltip from the cached counts + labels.
+fn render(handles: &TrayHandles) {
+    let labels = handles.labels.lock().expect("tray labels lock").clone();
+    let (online, total) = *handles.counts.lock().expect("tray counts lock");
+    let status = format_presence(&labels, online, total);
+    let _ = handles.status.set_text(&status);
+    let _ = handles.open.set_text(&labels.open);
+    let _ = handles.quit.set_text(&labels.quit);
+    let _ = handles
+        .tray
+        .set_tooltip(Some(format!("DashBeam — {status}")));
+}
+
+/// Swap in translated strings; called by the frontend on mount and whenever
+/// the app language changes.
+pub fn apply_labels(app: &AppHandle, labels: TrayLabels) {
+    let Some(handles) = app.try_state::<TrayHandles>() else {
+        return;
+    };
+    *handles.labels.lock().expect("tray labels lock") = labels;
+    render(&handles);
+}
+
+/// Recompute presence from the node and re-render. Cheap enough to call on
+/// every presence event — `list_paired` is a store read, not a network call.
+pub fn refresh_presence(app: &AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        let node = {
+            let state = app.state::<crate::state::AppStateMutex>();
+            let guard = state.lock().await;
+            guard.node.clone()
+        };
+        let Some(node) = node else {
+            return;
+        };
+        let Ok(counts) = node.presence_summary() else {
+            return;
+        };
+        let Some(handles) = app.try_state::<TrayHandles>() else {
+            return;
+        };
+        *handles.counts.lock().expect("tray counts lock") = counts;
+        render(&handles);
+    });
+}
+
+#[cfg(test)]
+mod presence_label_tests {
+    use super::{format_presence, TrayLabels};
+
+    fn labels() -> TrayLabels {
+        TrayLabels {
+            open: "Open".to_string(),
+            quit: "Quit".to_string(),
+            no_devices: "No paired devices".to_string(),
+            devices_online: "{{online}} of {{total}} devices online".to_string(),
+        }
+    }
+
+    #[test]
+    fn substitutes_both_counts() {
+        assert_eq!(format_presence(&labels(), 2, 3), "2 of 3 devices online");
+    }
+
+    #[test]
+    fn uses_the_empty_label_when_nothing_is_paired() {
+        assert_eq!(format_presence(&labels(), 0, 0), "No paired devices");
+    }
+
+    #[test]
+    fn leaves_unknown_placeholders_untouched() {
+        let mut l = labels();
+        l.devices_online = "{{online}}/{{total}} ({{bogus}})".to_string();
+        assert_eq!(format_presence(&l, 1, 4), "1/4 ({{bogus}})");
+    }
 }
