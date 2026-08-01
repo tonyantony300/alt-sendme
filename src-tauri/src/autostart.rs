@@ -33,10 +33,13 @@ pub fn is_enabled(app: &AppHandle) -> Result<Option<bool>, String> {
         .map_err(|e| e.to_string())
 }
 
-pub fn set(app: &AppHandle, enabled: bool) -> Result<bool, String> {
+/// Async because the Flatpak path waits on a portal consent dialog, which is
+/// open for as long as the user takes to answer it. Awaiting keeps that wait
+/// off the main thread; blocking on it would freeze the window instead.
+pub async fn set(app: &AppHandle, enabled: bool) -> Result<bool, String> {
     #[cfg(all(target_os = "linux", feature = "autostart-portal"))]
     if is_flatpak() {
-        return crate::autostart_portal::set(enabled);
+        return crate::autostart_portal::set(enabled).await;
     }
     if is_flatpak() {
         return Err("Autostart is unavailable in this Flatpak build".to_string());

@@ -1507,10 +1507,15 @@ pub fn autostart_is_enabled(app_handle: tauri::AppHandle) -> Result<Option<bool>
 /// Request an autostart change. Returns the state the OS ended up in, which
 /// may differ from `enabled` when the platform (or the user, via a portal
 /// dialog) refuses.
+///
+/// `async` on purpose: Tauri runs synchronous commands on the main thread, and
+/// the Flatpak path blocks on a portal consent dialog until the user answers
+/// it. As an async command Tauri drives this off the main thread, so the
+/// window keeps painting while the dialog is up.
 #[cfg(desktop)]
 #[tauri::command]
-pub fn autostart_set(app_handle: tauri::AppHandle, enabled: bool) -> Result<bool, String> {
-    crate::autostart::set(&app_handle, enabled)
+pub async fn autostart_set(app_handle: tauri::AppHandle, enabled: bool) -> Result<bool, String> {
+    crate::autostart::set(&app_handle, enabled).await
 }
 
 #[cfg(test)]
