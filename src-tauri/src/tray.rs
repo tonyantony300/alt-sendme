@@ -182,6 +182,18 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     };
 
     builder = builder.icon(icon);
+    // macOS menu bar items must be NSImage templates: the system renders them
+    // as a mask so they invert against light/dark menu bars and stay legible
+    // under Reduce Transparency. Without this the full-colour app icon is
+    // pasted into the menu bar as-is.
+    //
+    // TODO(design): the source asset is still `icons/128x128.png`, a colour
+    // icon. Templating makes it behave correctly, but a purpose-drawn
+    // monochrome (alpha-only) asset would look considerably better.
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.icon_as_template(true);
+    }
     let tray = builder.build(app)?;
 
     app.manage(TrayHandles {
