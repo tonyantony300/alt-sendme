@@ -390,10 +390,7 @@ impl ControlProtocol {
                     self.allow_peer(remote).await;
                     self.ctx.paired_connections.refresh().await;
 
-                    if let Some(handle) = &self.ctx.app_handle {
-
-                        let _ = handle.emit_event("device-paired");
-                    }
+                    crate::pairing_util::emit_device_paired(&self.ctx.app_handle, display_name);
                 }
                 pairing_completed = true;
                 break;
@@ -746,9 +743,15 @@ impl ControlProtocol {
         self.ctx.access.write().await.allowed.insert(*remote);
         self.ctx.paired_connections.refresh().await;
 
-        if let Some(handle) = &self.ctx.app_handle {
-            let _ = handle.emit_event("device-paired");
-        }
+        let display_name = self
+            .ctx
+            .paired_store
+            .get(&endpoint_id)
+            .ok()
+            .flatten()
+            .map(|d| d.display_name)
+            .unwrap_or_default();
+        crate::pairing_util::emit_device_paired(&self.ctx.app_handle, &display_name);
     }
 
     async fn is_allowed(&self, remote: &EndpointId) -> bool {
@@ -1528,6 +1531,7 @@ impl NodeService {
         let info = nearby_peer_identity(endpoint_id, self.probe_identity(endpoint_id).await.ok());
 
         let now = protocol::identity::unix_now_ms();
+        let display_name = info.display_name.clone();
         self.paired_store.remember(PairedDevice {
             endpoint_id: info.endpoint_id.clone(),
             display_name: info.display_name,
@@ -1544,9 +1548,7 @@ impl NodeService {
         self.access.write().await.allowed.insert(endpoint_id.parse()?);
         self.paired_connections.refresh().await;
 
-        if let Some(handle) = &self.app_handle {
-            let _ = handle.emit_event("device-paired");
-        }
+        crate::pairing_util::emit_device_paired(&self.app_handle, &display_name);
 
         // The pairing above is already durable and the UI has already been
         // told about it — notifying the sender is a courtesy on top, not a

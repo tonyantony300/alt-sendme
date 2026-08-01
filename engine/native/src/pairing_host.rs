@@ -164,10 +164,7 @@ impl NodeService {
         self.access.write().await.allowed.insert(peer_id);
         self.paired_connections.refresh().await;
 
-        if let Some(handle) = &self.app_handle {
-
-            let _ = handle.emit_event("device-paired");
-        }
+        crate::pairing_util::emit_device_paired(&self.app_handle, &display_name);
 
         Ok(())
     }

@@ -50,6 +50,18 @@ pub fn emit_paired_invite_received(
     let _ = handle.emit_event_with_payload("paired-invite-received", &payload.to_string());
 }
 
+/// Emit `device-paired` with the peer's name. The payload is additive —
+/// existing listeners ignore it — and lets the shell name the device in an
+/// OS notification instead of saying "a device".
+pub fn emit_device_paired(app_handle: &AppHandle, display_name: &str) {
+    let payload = serde_json::json!({ "display_name": display_name });
+
+    let Some(handle) = app_handle else {
+        return;
+    };
+    let _ = handle.emit_event_with_payload("device-paired", &payload.to_string());
+}
+
 /// Emit `nearby-pair-request-received` when an unpaired peer asks to pair (no files).
 pub fn emit_nearby_pair_request(
     app_handle: &AppHandle,
