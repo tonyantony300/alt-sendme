@@ -21,12 +21,14 @@ import {
 } from '@/store/pairing-data-store'
 import { ensureNodeCapabilityLifecycle } from '@/store/node-capability-store'
 import { useNodeCapability } from '@/hooks/useNodeCapability'
+import { useInviteNotifications } from '@/hooks/useInviteNotifications'
 import { useTranslation } from '@/i18n'
 import { toastManager } from '../ui/toast'
 
 /** Syncs relay settings to the device node and listens for paired invites globally. */
 export function DeviceNodeSync() {
 	const { t } = useTranslation()
+	useInviteNotifications()
 	const { isNodeReady, refreshNodeStatus } = useNodeCapability()
 	const setInvite = usePairedInviteStore((s) => s.setInvite)
 	const didSyncRelay = useRef(false)
