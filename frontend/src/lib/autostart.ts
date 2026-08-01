@@ -6,13 +6,16 @@ import { IS_DESKTOP } from './platform'
  * truth, not the persisted setting — a login item removed through system
  * settings must be reflected in the UI.
  *
- * Resolves to `null` when the platform cannot be asked. That is Flatpak: the
+ * Resolves to `null` when the platform cannot be asked. That is Flatpak — the
  * XDG Background portal has no read-only query, and requesting one just to
  * paint a toggle would show the user a consent dialog every time they opened
- * Settings. Callers keep their cached value on `null`.
+ * Settings — and also web/mobile, which have no login-item concept at all.
+ * Callers keep their cached value on `null`.
  */
 export async function isAutostartEnabled(): Promise<boolean | null> {
-	if (!IS_DESKTOP) return false
+	// `null`, not `false`: "cannot be asked" is not the same as "off", and
+	// reporting `off` here would let callers act on an answer nobody gave.
+	if (!IS_DESKTOP) return null
 	return invoke<boolean | null>('autostart_is_enabled')
 }
 
