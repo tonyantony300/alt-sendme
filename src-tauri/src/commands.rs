@@ -986,6 +986,33 @@ fn load_persisted_discoverability(app_handle: &tauri::AppHandle) -> Discoverabil
     parse_persisted_discoverability(&raw).unwrap_or_default()
 }
 
+/// Extracts the persisted `minimizeToTray` value from the raw contents of
+/// tauri-plugin-store's `settings.json`. Same envelope shape as
+/// `parse_persisted_discoverability` — see its doc comment for why this is a
+/// raw file read rather than `StoreExt::store`.
+#[cfg(any(desktop, test))]
+fn parse_persisted_minimize_to_tray(raw: &str) -> Option<bool> {
+    let file: serde_json::Value = serde_json::from_str(raw).ok()?;
+    let envelope: serde_json::Value =
+        serde_json::from_str(file.get("app_settings")?.as_str()?).ok()?;
+    envelope.get("state")?.get("minimizeToTray")?.as_bool()
+}
+
+/// The user's "keep running in the background" choice, read before the first
+/// window-close can happen. Defaults to `true`: closing to the tray is the
+/// behaviour every existing install already has (the old close handler hid
+/// unconditionally), so a missing key must not silently start quitting.
+#[cfg(desktop)]
+pub fn load_persisted_minimize_to_tray(app_handle: &tauri::AppHandle) -> bool {
+    let Ok(data_dir) = app_handle.path().app_data_dir() else {
+        return true;
+    };
+    let Ok(raw) = std::fs::read_to_string(data_dir.join("settings.json")) else {
+        return true;
+    };
+    parse_persisted_minimize_to_tray(&raw).unwrap_or(true)
+}
+
 #[cfg(any(desktop, target_os = "android"))]
 pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), String> {
     let data_dir = app_handle
@@ -1450,6 +1477,14 @@ pub async fn respond_nearby_invite(
     result.map_err(|e| e.to_string())
 }
 
+/// Mirror the frontend's "keep running in the background" switch into the
+/// process-wide flag the window-close handler reads.
+#[cfg(desktop)]
+#[tauri::command]
+pub fn set_background_on_close(enabled: bool) {
+    crate::tray::set_background_on_close(enabled);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1495,6 +1530,29 @@ mod tests {
         let envelope = serde_json::json!({ "state": { "discoverability": "bogus" } });
         let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
         assert_eq!(parse_persisted_discoverability(&file), None);
+    }
+
+    #[test]
+    fn parse_persisted_minimize_to_tray_reads_the_zustand_envelope() {
+        let envelope = serde_json::json!({ "state": { "minimizeToTray": false, "darkMode": true }, "version": 0 });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), Some(false));
+
+        let envelope = serde_json::json!({ "state": { "minimizeToTray": true } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), Some(true));
+    }
+
+    #[test]
+    fn parse_persisted_minimize_to_tray_tolerates_missing_or_malformed_data() {
+        assert_eq!(parse_persisted_minimize_to_tray("not json"), None);
+        assert_eq!(parse_persisted_minimize_to_tray("{}"), None);
+        let file = serde_json::json!({ "app_settings": "{\"state\":{}}" }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), None);
+        // Wrong type must not panic or coerce.
+        let envelope = serde_json::json!({ "state": { "minimizeToTray": "yes" } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), None);
     }
 
     #[tokio::test]

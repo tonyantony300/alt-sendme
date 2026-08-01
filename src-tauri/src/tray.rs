@@ -1,9 +1,7 @@
 use tauri::{AppHandle, Manager};
 
-#[cfg(not(target_os = "macos"))]
 use std::sync::atomic::{AtomicBool, Ordering};
 
-#[cfg(not(target_os = "macos"))]
 use tauri::{
     menu::{Menu, MenuItem},
     path::BaseDirectory,
@@ -13,12 +11,23 @@ use tauri::{
 // to show confirmation dialog box for quit event from tray
 // use tauri_plugin_dialog::DialogExt;
 
-#[cfg(not(target_os = "macos"))]
 static TRAY_ACTIVE: AtomicBool = AtomicBool::new(false);
 
-#[cfg(not(target_os = "macos"))]
+/// Mirrors the frontend's `minimizeToTray` setting. Lives here rather than in
+/// `AppState` because the window-close handler is synchronous and cannot lock
+/// the async `AppStateMutex`.
+static BACKGROUND_ON_CLOSE: AtomicBool = AtomicBool::new(true);
+
 pub fn is_active() -> bool {
     TRAY_ACTIVE.load(Ordering::Relaxed)
+}
+
+pub fn background_on_close() -> bool {
+    BACKGROUND_ON_CLOSE.load(Ordering::Relaxed)
+}
+
+pub fn set_background_on_close(enabled: bool) {
+    BACKGROUND_ON_CLOSE.store(enabled, Ordering::Relaxed);
 }
 
 /// Return true if window was shown (or attempted) successfully, false otherwise.

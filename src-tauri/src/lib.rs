@@ -95,6 +95,8 @@ pub fn run() {
             get_file_size,
             #[cfg(desktop)]
             focus_main_window,
+            #[cfg(desktop)]
+            set_background_on_close,
             check_launch_intent,
             fetch_ticket_metadata,
             verify_relays,
@@ -150,6 +152,10 @@ pub fn run() {
         .setup(|app| {
             init_logging(app.handle());
             setup_common(app);
+            #[cfg(desktop)]
+            tray::set_background_on_close(commands::load_persisted_minimize_to_tray(
+                &app.handle().clone(),
+            ));
             #[cfg(any(desktop, target_os = "android"))]
             {
                 let handle = app.handle().clone();
