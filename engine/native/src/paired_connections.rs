@@ -126,7 +126,12 @@ impl PairedConnectionManager {
     /// Used when mDNS reports the device just appeared on the local network —
     /// the strongest possible signal that presence should be re-checked now
     /// instead of waiting out an exponential backoff that may be minutes long.
-    /// A no-op if the device isn't connectable (e.g. remotely unpaired).
+    ///
+    /// A no-op if the device isn't connectable (e.g. remotely unpaired), or if
+    /// a live session already exists. mDNS re-fires `Discovered` whenever a
+    /// peer's advertised addrs change; aborting an already-online session on
+    /// every rediscovery flaps presence (the peer's old inbound handler
+    /// unregisters the key and marks us offline).
     pub async fn nudge_reconnect(&self, endpoint_id: &str) {
         let key = endpoint_id.to_lowercase();
         let Ok(Some(device)) = self.paired_store.get(endpoint_id) else {
@@ -136,6 +141,30 @@ impl PairedConnectionManager {
             return;
         }
 
+        // Already online — leave the live session alone. Only wake a task
+        // that's sleeping in reconnect backoff.
+        if self.sessions.read().await.contains_key(&key) {
+            return;
+        }
+
+        self.respawn_connect_task(key, device).await;
+    }
+
+    /// Test-only: the old nudge behaviour — abort and re-dial even when a live
+    /// session exists. Used to simulate an unfixed peer flapping its outbound.
+    #[doc(hidden)]
+    pub async fn force_reconnect_for_tests(&self, endpoint_id: &str) {
+        let key = endpoint_id.to_lowercase();
+        let Ok(Some(device)) = self.paired_store.get(endpoint_id) else {
+            return;
+        };
+        if !device.pairing_status.is_connectable() {
+            return;
+        }
+        self.respawn_connect_task(key, device).await;
+    }
+
+    async fn respawn_connect_task(&self, key: String, device: PairedDevice) {
         let mut tasks = self.tasks.lock().await;
         if let Some(handle) = tasks.remove(&key) {
             handle.abort();
@@ -209,14 +238,29 @@ impl PairedConnectionManager {
 
     pub async fn register_inbound(&self, endpoint_id: &str, conn: Connection) {
         let key = endpoint_id.to_lowercase();
-        
+        // If we already hold a session for this peer (almost always our own
+        // outbound), do not replace it. Presence stays true; the inbound is
+        // still served by `handle_control_session` for invites. Replacing
+        // would let the inbound's later unregister wipe our live outbound
+        // and flap the UI when the peer rediscovers us over mDNS.
+        if self.sessions.read().await.contains_key(&key) {
+            set_presence(
+                &self.presence,
+                &self.app_handle,
+                &self.paired_store,
+                &key,
+                true,
+            );
+            return;
+        }
         self.set_session(&key, conn).await;
     }
 
-    pub async fn unregister_inbound(&self, endpoint_id: &str) {
+    pub async fn unregister_inbound(&self, endpoint_id: &str, conn: &Connection) {
         let key = endpoint_id.to_lowercase();
-
-        self.remove_session(&key).await;
+        // Only clear presence if *this* connection is the one we stored.
+        // A peer flapping their outbound must not take down our outbound.
+        self.remove_session_if(&key, conn).await;
     }
 
     async fn run_supervisor(self: Arc<Self>) {
@@ -281,7 +325,7 @@ impl PairedConnectionManager {
                         _ = conn.closed() => {}
                         _ = self.read_outbound_control_loop(&conn) => {}
                     }
-                    self.remove_session(&key).await;
+                    self.remove_session_if(&key, &conn).await;
                 }
                 Err(_err) => {
                     set_presence(
@@ -457,6 +501,32 @@ impl PairedConnectionManager {
 
     async fn remove_session(&self, key: &str) {
         let removed = self.sessions.write().await.remove(key).is_some();
+        if removed {
+            set_presence(
+                &self.presence,
+                &self.app_handle,
+                &self.paired_store,
+                key,
+                false,
+            );
+        }
+    }
+
+    /// Drop the stored session only when it is still `conn`. Prevents an old
+    /// inbound teardown (or a superseded outbound) from clearing a newer live
+    /// link and flapping presence.
+    async fn remove_session_if(&self, key: &str, conn: &Connection) {
+        let removed = {
+            let mut sessions = self.sessions.write().await;
+            let matches = sessions
+                .get(key)
+                .is_some_and(|current| current.stable_id() == conn.stable_id());
+            if matches {
+                sessions.remove(key).is_some()
+            } else {
+                false
+            }
+        };
         if removed {
             set_presence(
                 &self.presence,

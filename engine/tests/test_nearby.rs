@@ -143,6 +143,75 @@ async fn paired_peer_probe_refused_under_off_does_not_kill_session() {
     );
 }
 
+/// mDNS re-fires `Discovered` whenever a peer's advertised addrs change (and
+/// on some stacks, often). For already-paired peers that maps to
+/// `nudge_reconnect`. Nudging must *not* abort a live presence session —
+/// otherwise nearby-paired devices (which stay on the LAN and keep
+/// rediscovering) flap online/offline while code-paired peers that aren't
+/// being rediscovered stay stable.
+#[tokio::test]
+async fn mdns_rediscovery_does_not_flap_paired_presence() {
+    let (alice, bob) = common::spawn_paired_nodes().await;
+
+    common::wait_until(
+        "bob to see alice online before rediscovery nudges",
+        PRESENCE_DEADLINE,
+        || is_online(&bob, &alice.endpoint_id()),
+    )
+    .await;
+    common::wait_until(
+        "alice to see bob online before rediscovery nudges",
+        PRESENCE_DEADLINE,
+        || is_online(&alice, &bob.endpoint_id()),
+    )
+    .await;
+
+    // Several rediscoveries in quick succession — mirrors what a chatty
+    // mDNS republish looks like on a busy LAN.
+    for _ in 0..5 {
+        bob.simulate_paired_lan_appeared_for_tests(&alice.endpoint_id())
+            .await;
+        alice
+            .simulate_paired_lan_appeared_for_tests(&bob.endpoint_id())
+            .await;
+    }
+
+    assert_stays_online(&bob, &alice.endpoint_id(), Duration::from_secs(5)).await;
+    assert_stays_online(&alice, &bob.endpoint_id(), Duration::from_secs(5)).await;
+}
+
+/// Even if the *peer* still runs the old "abort on every mDNS rediscovery"
+/// behaviour, this device must keep showing them online — our outbound to
+/// them is still alive, and their flapping inbound must not clear it.
+#[tokio::test]
+async fn peer_outbound_flaps_do_not_clear_our_presence() {
+    let (alice, bob) = common::spawn_paired_nodes().await;
+
+    common::wait_until(
+        "bob to see alice online",
+        PRESENCE_DEADLINE,
+        || is_online(&bob, &alice.endpoint_id()),
+    )
+    .await;
+    common::wait_until(
+        "alice to see bob online",
+        PRESENCE_DEADLINE,
+        || is_online(&alice, &bob.endpoint_id()),
+    )
+    .await;
+
+    // Alice is the unfixed peer: force-abort her outbound to bob repeatedly.
+    for _ in 0..5 {
+        alice
+            .force_paired_reconnect_for_tests(&bob.endpoint_id())
+            .await;
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
+
+    // Bob is the device under test — his view of alice must stay online.
+    assert_stays_online(&bob, &alice.endpoint_id(), Duration::from_secs(5)).await;
+}
+
 /// Real multicast. CI runners frequently block it, so this is opt-in:
 /// `cargo test --manifest-path engine/Cargo.toml --test test_nearby -- --ignored --test-threads=1`
 #[tokio::test]

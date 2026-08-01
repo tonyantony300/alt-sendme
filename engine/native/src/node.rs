@@ -558,7 +558,7 @@ impl ControlProtocol {
         if registered {
             self.ctx
                 .paired_connections
-                .unregister_inbound(&endpoint_id)
+                .unregister_inbound(&endpoint_id, &conn)
                 .await;
         }
 
@@ -1673,6 +1673,27 @@ impl NodeService {
         self.nearby.lock().await.observe(endpoint_id, false);
     }
 
+    /// Test-only: simulates an mDNS rediscovery of an already-paired peer —
+    /// the `ObserveOutcome::Paired` branch of `spawn_lan_event_loop`, which
+    /// nudges that peer's presence reconnect. Used to prove rediscovery does
+    /// not tear down a live session (mDNS re-fires `Discovered` whenever a
+    /// peer's advertised addrs change, and nearby-paired devices stay on the
+    /// LAN so they keep rediscovering).
+    #[doc(hidden)]
+    pub async fn simulate_paired_lan_appeared_for_tests(&self, endpoint_id: &str) {
+        self.paired_connections.nudge_reconnect(endpoint_id).await;
+    }
+
+    /// Test-only: aborts and re-dials a paired peer even when a live session
+    /// exists — the pre-fix `nudge_reconnect` behaviour. Lets us prove the
+    /// *other* device stays online when this one flaps its outbound link.
+    #[doc(hidden)]
+    pub async fn force_paired_reconnect_for_tests(&self, endpoint_id: &str) {
+        self.paired_connections
+            .force_reconnect_for_tests(endpoint_id)
+            .await;
+    }
+
     /// Dial a peer's control ALPN and ask who it is. Used for devices found on
     /// the local network, where mDNS supplies a node id and nothing else.
     pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {
@@ -1820,7 +1841,10 @@ fn spawn_lan_event_loop(
                         ObserveOutcome::Paired => {
                             // Strongest possible signal that a known device
                             // just came online — retry presence now instead
-                            // of waiting out its exponential backoff.
+                            // of waiting out its exponential backoff. No-op
+                            // when a live session already exists (see
+                            // `nudge_reconnect`); mDNS rediscovery must not
+                            // tear down an already-online link.
                             paired_connections.nudge_reconnect(&endpoint_id).await;
                         }
                         ObserveOutcome::Known | ObserveOutcome::Invalid => {}
