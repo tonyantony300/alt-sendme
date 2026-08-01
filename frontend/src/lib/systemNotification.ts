@@ -57,6 +57,39 @@ async function isAppInForeground(): Promise<boolean> {
 	return focused && visible
 }
 
+let permissionBootstrapped = false
+
+/**
+ * Ask for notification permission once, at a moment the app is on screen.
+ *
+ * `sendSystemNotification` cannot do this itself: its foreground/settings
+ * gate suppresses whenever the app *is* on screen, so any request made from
+ * there necessarily happens while the app is backgrounded. On desktop that is
+ * harmless (the plugin grants unconditionally), but on Android it maps to the
+ * real `POST_NOTIFICATIONS` runtime dialog, which a non-resumed Activity
+ * cannot show — the promise stalls and the notification is lost.
+ *
+ * Call this from a mounted component so the prompt lands while the user is
+ * looking at the app. Safe to call repeatedly; it runs at most once per
+ * session and never throws.
+ */
+export async function ensureNotificationPermission(): Promise<boolean> {
+	if (!IS_TAURI || permissionBootstrapped) {
+		return false
+	}
+	permissionBootstrapped = true
+
+	try {
+		if (await isPermissionGranted()) {
+			return true
+		}
+		return (await requestPermission()) === 'granted'
+	} catch (error) {
+		console.warn('Failed to bootstrap notification permission:', error)
+		return false
+	}
+}
+
 export async function sendSystemNotification(
 	options: SystemNotificationOptions
 ): Promise<boolean> {
@@ -83,6 +116,9 @@ export async function sendSystemNotification(
 			return false
 		}
 
+		// Fallback for the case where `ensureNotificationPermission` never ran.
+		// It normally has, from a foreground moment — see its doc comment for
+		// why requesting from here is a bad moment on Android.
 		let granted = await isPermissionGranted()
 		if (!granted) {
 			const permission = await requestPermission()

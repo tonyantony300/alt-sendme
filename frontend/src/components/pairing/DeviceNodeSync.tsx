@@ -22,6 +22,7 @@ import {
 import { ensureNodeCapabilityLifecycle } from '@/store/node-capability-store'
 import { useNodeCapability } from '@/hooks/useNodeCapability'
 import { useInviteNotifications } from '@/hooks/useInviteNotifications'
+import { ensureNotificationPermission } from '@/lib/systemNotification'
 import { useTranslation } from '@/i18n'
 import { toastManager } from '../ui/toast'
 
@@ -39,6 +40,11 @@ export function DeviceNodeSync() {
 		if (!IS_PAIRING_CAPABLE) return
 		ensureNodeCapabilityLifecycle()
 		void preloadPairingData()
+		// Ask for notification permission here, while the app is on screen.
+		// Deferring it to the first notification would put Android's
+		// POST_NOTIFICATIONS dialog in front of a backgrounded Activity, which
+		// cannot show it. Self-guards to once per session.
+		void ensureNotificationPermission()
 	}, [])
 
 	// Preload may finish while the node is still starting; hydrate once ready.
