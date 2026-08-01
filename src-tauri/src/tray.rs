@@ -60,7 +60,6 @@ pub fn open_and_focus(app: &AppHandle) -> bool {
     false
 }
 
-#[cfg(not(target_os = "macos"))]
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let open = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?; // open button
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?; // quit button

@@ -190,7 +190,7 @@ pub fn run() {
                     }
                 });
             }
-            #[cfg(all(desktop, not(target_os = "macos")))]
+            #[cfg(desktop)]
             if let Err(error) = tray::setup_tray(&app.handle()) {
                 tracing::warn!(
                     error = %error,
