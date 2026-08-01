@@ -5,7 +5,7 @@ import { IS_WEB } from './platform'
 export const SETTING_FILE = 'settings.json'
 
 export const defaultAppSettings: AppSettingsState = {
-	minimizeToTray: false,
+	minimizeToTray: true,
 	startOnBoot: false,
 	enableNotifications: true,
 	darkMode: false,

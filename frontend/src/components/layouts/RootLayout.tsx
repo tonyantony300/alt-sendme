@@ -11,6 +11,7 @@ import { PairedInviteDialog } from '../pairing/PairedInviteDialog'
 import { ReceiverProvider } from '../receiver/ReceiverProvider'
 import { WindowsContextMenuSync } from '../settings/system-tray/context-menu-toggle'
 import { useIsWindowsPortable } from '@/hooks/use-windows-portable'
+import { useTrayLabels } from '../../hooks/useTrayLabels'
 import {
 	IS_ANDROID,
 	IS_FLATPAK,
@@ -25,6 +26,7 @@ import {
 export function RootLayout() {
 	const { t } = useTranslation('common')
 	const { data: isWindowsPortable = false } = useIsWindowsPortable()
+	useTrayLabels()
 	return (
 		<ReceiverProvider>
 			{IS_TAURI && !IS_ANDROID && !isWindowsPortable && !IS_FLATPAK && (

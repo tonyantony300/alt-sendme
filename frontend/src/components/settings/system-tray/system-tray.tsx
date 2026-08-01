@@ -1,5 +1,5 @@
 import { useTranslation } from '../../../i18n'
-import { IS_WINDOWS } from '@/lib/platform'
+import { IS_MACOS, IS_WINDOWS } from '@/lib/platform'
 import { Frame, FrameHeader, FramePanel, FrameTitle } from '../../ui/frame'
 import { ContextMenuToggle } from './context-menu-toggle'
 import { MinimizeSystemTray } from './minimize-system-tray'
@@ -14,9 +14,11 @@ export function SystemTray() {
 				<FrameTitle>{t('settings.general.systembar.title')}</FrameTitle>
 			</FrameHeader>
 			<FramePanel className="space-y-4">
-				<MinimizeSystemTray />
-				<ShowProgressOnIcon />
 				<StartOnStartup />
+				{/* macOS never quits on window close — platform convention, so
+				    there is nothing here for the user to decide. */}
+				{!IS_MACOS && <MinimizeSystemTray />}
+				<ShowProgressOnIcon />
 				{IS_WINDOWS && <ContextMenuToggle />}
 			</FramePanel>
 		</Frame>
