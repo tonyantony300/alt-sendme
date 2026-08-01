@@ -1,4 +1,10 @@
-import { CheckCircle, Copy, MonitorSmartphone, Share2 } from 'lucide-react'
+import {
+	CheckCircle,
+	Copy,
+	MonitorSmartphone,
+	QrCode,
+	Share2,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { useTranslation } from '../../i18n/react-i18next-compat'
@@ -10,6 +16,12 @@ import type { TransferProgress } from '../../types/transfer'
 import { PulseAnimation } from '../common/PulseAnimation'
 import { TransferProgressBar } from '../common/TransferProgressBar'
 import { Button } from '../ui/button'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+} from '../ui/dialog'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
@@ -110,29 +122,17 @@ export function ShareLinkPanel({
 
 				{!isTransporting && ticket && (
 					<div className="w-full space-y-3 mt-2 sm:mt-0">
-						<div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-4 sm:gap-5">
-							<div className="flex flex-col items-center justify-center gap-2">
-								<div className="p-2.5 bg-white rounded-xl shadow-sm">
-									<QRCode value={receiveLink} size={120} />
-								</div>
-								<p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-									Scan to receive
-								</p>
-							</div>
-							<div className="flex-1 w-full min-w-0 flex flex-col justify-center gap-1.5">
-								<TicketDisplay
-									ticket={ticket}
-									receiveLink={receiveLink}
-									copySuccess={copySuccess}
-									onCopyTicket={onCopyTicket}
-									isBroadcastMode={isBroadcastMode}
-									onSetBroadcast={onSetBroadcast}
-								/>
-								<p className="text-xs text-left text-muted-foreground">
-									{t('common:sender.sendThisTicket')}
-								</p>
-							</div>
-						</div>
+						<TicketDisplay
+							ticket={ticket}
+							receiveLink={receiveLink}
+							copySuccess={copySuccess}
+							onCopyTicket={onCopyTicket}
+							isBroadcastMode={isBroadcastMode}
+							onSetBroadcast={onSetBroadcast}
+						/>
+						<p className="text-xs text-left text-muted-foreground">
+							{t('common:sender.sendThisTicket')}
+						</p>
 						{showPairedDevicesOption && onOpenPairedDevices ? (
 							<div className="flex flex-col items-center gap-3 pt-1">
 								<p className="text-xs text-center text-muted-foreground">
@@ -181,6 +181,7 @@ function TicketDisplay({
 }: TicketDisplayProps) {
 	const { t } = useTranslation()
 	const [linkCopySuccess, setLinkCopySuccess] = useState(false)
+	const [qrDialogOpen, setQrDialogOpen] = useState(false)
 	const linkCopyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const showBroadcastToggle = useAppSettingStore(
 		(state) => state.showBroadcastToggle
@@ -250,6 +251,11 @@ function TicketDisplay({
 		}
 	}
 
+	const actionButtonStyle = (active: boolean) => ({
+		backgroundColor: active ? 'var(--app-primary)' : 'var(--color-foreground)',
+		border: '1px solid var(--border)',
+	})
+
 	return (
 		<div className="w-full space-y-2.5">
 			<div className="flex items-center justify-between gap-3">
@@ -281,13 +287,17 @@ function TicketDisplay({
 					<Button
 						type="button"
 						size="icon-xs"
+						onClick={() => setQrDialogOpen(true)}
+						style={actionButtonStyle(false)}
+						title={t('common:sender.showReceiveQr')}
+					>
+						<QrCode className="h-3.5 w-3.5" />
+					</Button>
+					<Button
+						type="button"
+						size="icon-xs"
 						onClick={() => void shareTicket()}
-						style={{
-							backgroundColor: linkCopySuccess
-								? 'var(--app-primary)'
-								: 'var(--color-foreground)',
-							border: '1px solid var(--border)',
-						}}
+						style={actionButtonStyle(linkCopySuccess)}
 						title={t(
 							canNativeShare
 								? 'common:sender.shareReceiveLink'
@@ -304,12 +314,7 @@ function TicketDisplay({
 						type="button"
 						size="icon-xs"
 						onClick={onCopyTicket}
-						style={{
-							backgroundColor: copySuccess
-								? 'var(--app-primary)'
-								: 'var(--color-foreground)',
-							border: '1px solid var(--border)',
-						}}
+						style={actionButtonStyle(copySuccess)}
 						title={t('common:sender.copyToClipboard')}
 					>
 						{copySuccess ? (
@@ -320,6 +325,28 @@ function TicketDisplay({
 					</Button>
 				</InputGroupAddon>
 			</InputGroup>
+
+			<Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+				<DialogContent
+					className="max-w-sm"
+					showCloseButton={false}
+					centered
+				>
+					<div className="flex flex-col items-center gap-4 p-8 text-center">
+						<DialogTitle>{t('common:sender.receiveQrTitle')}</DialogTitle>
+						<div className="rounded-xl bg-white p-3 shadow-sm">
+							<QRCode
+								value={receiveLink}
+								size={220}
+								title={t('common:sender.scanToReceive')}
+							/>
+						</div>
+						<DialogDescription>
+							{t('common:sender.scanToReceive')}
+						</DialogDescription>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }
