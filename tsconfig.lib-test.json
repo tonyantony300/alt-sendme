@@ -9,8 +9,10 @@
 	},
 	"include": [
 		"frontend/src/vite-env.d.ts",
+		"frontend/src/types/file-system-access.d.ts",
 		"frontend/src/lib/**/*.test.ts",
 		"frontend/src/lib/**/*.test.tsx",
+		"frontend/src/store/**/*.test.ts",
 		"frontend/src/components/**/*.type-test.tsx"
 	]
 }

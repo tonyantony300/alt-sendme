@@ -39,7 +39,7 @@
 		"startSharing": "ចាប់ផ្តើមចែករំលែក",
 		"startingShare": "កំពុងចាប់ផ្តើមចែករំលែក...",
 		"stopSharing": "បញ្ឈប់ការចែករំលែក",
-		"shareThisTicket": "ចែករំលែកសំបុត្រនេះ៖",
+		"shareThisTicket": "សំបុត្រចែករំលែកមួយដង",
 		"sendThisTicket": "ផ្ញើសំបុត្រនេះទៅមនុស្សដែលចង់ទទួលឯកសាររបស់អ្នក",
 		"keepAppOpen": "រក្សាឲ្យកម្មវិធីនេះបើកនៅពេលដែលអ្នកដទៃកំពុងទាញយកឯកសារ",
 		"fileLabel": "ឯកសារ៖",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "ផ្គុំគូឧបករណ៍ក្នុងការកំណត់ រួចត្រឡប់មកទីនេះដើម្បីផ្ញើដោយមិនត្រូវការតំណភ្ជាប់។",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "មិនទាន់មានឧបករណ៍ដែលបានផ្គុំគូ",
-				"hint": "ជ្រើសឧបករណ៍ - ការផ្ទេរនឹងចាប់ផ្តើមនៅពេលពួកគេទទួលយក។",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "ផ្គុំគូឧបករណ៍ក្នុងការកំណត់",
 				"nodeUnavailable": "ការផ្ញើតាមឧបករណ៍មិនអាចប្រើបានឥឡូវនេះ។ អ្នកនៅតែអាចប្រើការផ្ទេរតែមួយដងពីផ្ទាំងផ្សេងទៀត។",
 				"searchNoResults": "គ្មានឧបករណ៍ដែលបានផ្គុំគូត្រូវនឹងការស្វែងរករបស់អ្នក។",
 				"searchPlaceholder": "ស្វែងរកឧបករណ៍ដែលបានផ្គុំគូ",
-				"title": "ផ្ញើទៅឧបករណ៍ដែលបានផ្គុំគូ"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "ផ្ញើទៅឧបករណ៍ដែលបានផ្គុំគូ",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "នរណាម្នាក់ដែលមានតំណភ្ជាប់នេះអាចទទួលឯកសាររបស់អ្នកបាន។",
 				"transferInProgress": "ការផ្ទេរកំពុងដំណើរការ - បើកការផ្ទេរតែមួយដងដើម្បីមើលព័ត៌មានលម្អិត។",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} ចង់ផ្ញើឯកសារ {{count}} ឯកសារ ({{size}}) មកអ្នក។ ទទួលយកដើម្បីចាប់ផ្តើមទាញយក។",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} ចង់ផ្ញើឯកសារ {{count}} ឯកសារ មកអ្នក។ ទទួលយកដើម្បីចាប់ផ្តើមទាញយក។",
 		"receiveFromPairedTitle": "ឯកសារពីឧបករណ៍ដែលបានផ្គុំគូ",
-		"saveLocation": "ទីតាំងរក្សាទុក៖"
+		"saveLocation": "ទីតាំងរក្សាទុក៖",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "វឌ្ឍនភាពនៃការផ្ទេរ",
@@ -379,7 +387,14 @@
 			"thisDevice": "ឧបករណ៍នេះ",
 			"thisDeviceHint": "ឈ្មោះដែលបង្ហាញទៅឧបករណ៍ដែលអ្នកផ្គុំគូជាមួយ។ ប្រព័ន្ធប្រតិបត្តិការ និងប្រភេទឧបករណ៍ត្រូវបានរកឃើញដោយស្វ័យប្រវត្តិ។",
 			"title": "ឧបករណ៍ដែលបានផ្គុំគូ",
-			"unpairedHint": "ឧបករណ៍នេះបានដោះផ្គុំគូ។ ដកវាចេញពីបញ្ជីរបស់អ្នក។"
+			"unpairedHint": "ឧបករណ៍នេះបានដោះផ្គុំគូ។ ដកវាចេញពីបញ្ជីរបស់អ្នក។",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

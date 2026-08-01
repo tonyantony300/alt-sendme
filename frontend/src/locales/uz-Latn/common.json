@@ -39,7 +39,7 @@
 		"startSharing": "Ulashishni boshlash",
 		"startingShare": "Ulashish boshlanmoqda...",
 		"stopSharing": "Ulashishni to'xtatish",
-		"shareThisTicket": "Ushbu ticketni ulashing:",
+		"shareThisTicket": "Bir martalik ulashish ticketi",
 		"sendThisTicket": "Ushbu ticketni faylingizni qabul qiladigan kishiga yuboring",
 		"keepAppOpen": "Boshqalar fayllaringizni yuklab olayotganda ilovani ochiq qoldiring",
 		"fileLabel": "Fayl:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Sozlamalarda qurilmalarni juftlang, keyin havolasiz yuborish uchun bu yerga qayting.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Hali juftlangan qurilmalar yo'q",
-				"hint": "Qurilma tanlang - qabul qilinganda uzatish boshlanadi.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Sozlamalarda qurilmalarni juftlash",
 				"nodeUnavailable": "Qurilmaga yuborish hozir mavjud emas. Boshqa tabdagi bir martalik uzatishdan foydalanishingiz mumkin.",
 				"searchNoResults": "Qidiruvga mos juftlangan qurilmalar topilmadi.",
 				"searchPlaceholder": "Juftlangan qurilmalarni qidirish",
-				"title": "Juftlangan qurilmaga yuborish"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Juftlangan qurilmaga yuborish",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Bu havolaga ega bo'lgan har kim fayllaringizni qabul qilishi mumkin.",
 				"transferInProgress": "Uzatish davom etmoqda - tafsilotlar uchun bir martalik uzatishni oching.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} sizga {{count}} ta fayl ({{size}}) yubormoqchi. Yuklab olishni boshlash uchun qabul qiling.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} sizga {{count}} ta fayl yubormoqchi. Yuklab olishni boshlash uchun qabul qiling.",
 		"receiveFromPairedTitle": "Juftlangan qurilmadan kiruvchi fayl",
-		"saveLocation": "Saqlash joyi:"
+		"saveLocation": "Saqlash joyi:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Uzatish jarayoni",
@@ -379,7 +387,14 @@
 			"thisDevice": "Bu qurilma",
 			"thisDeviceHint": "Juftlagan qurilmalaringizga ko'rsatiladigan nom. OS va qurilma turi avtomatik aniqlanadi.",
 			"title": "Juftlangan qurilmalar",
-			"unpairedHint": "Bu qurilma juftlikni bekor qildi. Ro'yxatdan olib tashlang."
+			"unpairedHint": "Bu qurilma juftlikni bekor qildi. Ro'yxatdan olib tashlang.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

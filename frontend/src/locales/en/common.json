@@ -40,7 +40,7 @@
 		"startingShare": "Starting Share...",
 		"stopSharing": "Stop Sharing",
 		"exitSharing": "Exit sharing",
-		"shareThisTicket": "Share this ticket:",
+		"shareThisTicket": "One time share ticket",
 		"sendThisTicket": "Send this ticket to the person who wants to receive your file",
 		"keepAppOpen": "Keep this app open while others download your files",
 		"fileLabel": "File:",
@@ -107,13 +107,16 @@
 			"unknownPeer": "Unknown device"
 		},
 		"sharingActive": {
-			"devicesButton": "Send to a paired device",
+			"devicesButton": "Send to a device",
 			"or": "or",
 			"devices": {
-				"title": "Send to a paired device",
-				"hint": "Choose a device - the transfer starts when they accept.",
+				"title": "Send to a device",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby.",
 				"emptyTitle": "No paired devices yet",
-				"emptyHint": "Pair devices in Settings, then return here to send without a link.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"nodeUnavailable": "Device sending is unavailable right now. You can still use One-time transfer from the other tab.",
 				"manageInSettings": "Pair devices in Settings",
 				"searchPlaceholder": "Search paired devices",
@@ -136,6 +139,20 @@
 		"pairedInvite": {
 			"saveTo": "Save to",
 			"changeFolder": "Change folder"
+		},
+		"receiveFromNearbyTitle": "Incoming file from a nearby device",
+		"receiveFromNearbyDescription": "{{sender}} (unverified) wants to send you {{count}} file(s) ({{size}}).",
+		"receiveFromNearbyDescriptionNoSize": "{{sender}} (unverified) wants to send you {{count}} file(s).",
+		"nearbyInvite": {
+			"unverifiedSender": "Unverified — not yet paired with this device",
+			"fingerprintLabel": "Verification code",
+			"fingerprintHint": "Check that this code matches what {{sender}} sees on their screen before accepting.",
+			"fingerprintUnavailable": "Couldn't compute a verification code for this device, so it can't be confirmed safely. Decline and ask the sender to try again."
+		},
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
 		},
 		"receiveBusyTitle": "Download already in progress",
 		"receiveBusyDescription": "Wait for the current download to finish before accepting another file.",
@@ -244,18 +261,24 @@
 				"description": "The app will automatically check for updates on startup"
 			},
 			"systembar": {
-				"title": "System Tray",
-				"minimizeToTray": {
-					"label": "Minimize to system tray",
-					"description": "When close dialog, minimize the app instead of terminate"
+				"title": "Startup & background",
+				"runOnSystemStartup": {
+					"label": "Start DashBeam when I sign in",
+					"description": "Launch in the background at login so paired devices can see you're online"
 				},
+				"runOnSystemStartupFailed": "Couldn't change the startup setting",
+				"minimizeToTray": {
+					"label": "Keep running in the background",
+					"description": "Closing the window keeps DashBeam running in the tray. Quit from the tray icon to stop it."
+				},
+				"trayOpen": "Open",
+				"trayQuit": "Quit",
+				"trayNoDevices": "No paired devices",
+				"trayDevicesOnline": "{{online}} of {{total}} devices online",
+				"trayDeviceOnline": "{{name}} - Online",
 				"showProgressOnIcon": {
 					"label": "Show transfer progress on app icon",
 					"description": "Using a progress bar overlay on the app icon to indicate transfer progress"
-				},
-				"runOnSystemStartup": {
-					"label": "Run on system startup",
-					"description": "Automatically launch the app when the system starts"
 				},
 				"contextMenu": {
 					"label": "Explorer context menu",
@@ -268,6 +291,11 @@
 					"label": "Show broadcast toggle while sharing",
 					"description": "Display a broadcast switch on the sharing screen so multiple receivers can download the same files at once."
 				}
+			},
+			"notifications": {
+				"title": "Notifications",
+				"label": "Show system notifications",
+				"description": "Get notified about pair requests, incoming files, and completed downloads when DashBeam isn't in front of you"
 			},
 			"debugMode": {
 				"label": "Debug logging",
@@ -333,7 +361,29 @@
 			"statusRePairRequired": "Re-pair required",
 			"unpairedHint": "This device removed the pairing. Remove it from your list.",
 			"deviceUnpairedToast": "{{name}} unpaired this device",
-			"copied": "Pairing code copied"
+			"copied": "Pairing code copied",
+			"nearby": {
+				"heading": "Nearby",
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"empty": "No devices found nearby.",
+				"unverified": "Unverified",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request",
+				"inviteFailed": "Couldn't reach this device",
+				"unavailableTitle": "Nearby is unavailable",
+				"discoverabilityPairedOnlyHint": "Nearby devices can see that this device exists, but not its name.",
+				"discoverabilityOffHint": "This device won't appear on the local network. You can still find and send to others.",
+				"discoverabilityTitle": "Your discoverability",
+				"discoverabilityDescription": "Control how other devices on your local network can find this device.",
+				"discoverabilityEveryone": "Everyone",
+				"discoverabilityEveryoneDesc": "Your device and its name are visible to all nearby devices on the local network.",
+				"discoverabilityPairedOnly": "Paired only",
+				"discoverabilityPairedOnlyDesc": "Nearby devices can see that this device exists, but not its name.",
+				"discoverabilityOff": "Off",
+				"discoverabilityOffDesc": "This device won't appear on the local network. You can still find and send to others."
+			}
 		},
 		"network": {
 			"relay": {
@@ -429,6 +479,18 @@
 	"android": {
 		"preparingFile": "Preparing file..."
 	},
+	"notifications": {
+		"pairRequestTitle": "{{sender}} wants to pair",
+		"pairRequestBody": "Open DashBeam to accept or decline",
+		"inviteTitle": "{{sender}} is sending you files",
+		"nearbyInviteTitle": "{{sender}} nearby wants to send you files",
+		"inviteBody": "{{count}} files · {{size}}",
+		"inviteBodyNoSize": "{{count}} files",
+		"declinedTitle": "{{sender}} declined",
+		"declinedBody": "Your request wasn't accepted",
+		"pairedTitle": "Device paired",
+		"pairedBody": "{{name}} is now paired"
+	},
 	"footer": {
 		"relay": {
 			"ariaLabel": "Relay connection status",
@@ -454,6 +516,14 @@
 			"lanNote": "On the same local network, relays are skipped entirely.",
 			"encryptedNote": "Transfers are always end-to-end encrypted, so relays never see your files.",
 			"disabledNote": "Relays are off. Direct connections only, so transfers may fail across strict firewalls or NATs."
+		}
+	},
+	"pairing": {
+		"verification": {
+			"title": "Confirm it's you",
+			"description": "Waiting for {{name}} to accept.",
+			"unavailable": "Couldn't compute a verification code for this device. {{name}} won't be able to confirm it's you.",
+			"close": "Close"
 		}
 	}
 }

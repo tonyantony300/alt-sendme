@@ -1,5 +1,5 @@
 [package]
-name = "alt-sendme"
+name = "dashbeam"
 version = "0.6.2"
 description = "P2P file sharing with NAT hole punching"
 authors = ["Tony Antony"]
@@ -8,7 +8,7 @@ edition = "2021"
 rust-version = "1.91"
 
 [lib]
-name = "alt_sendme_lib"
+name = "dashbeam_lib"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [build-dependencies]
@@ -44,6 +44,7 @@ tauri-plugin-store = "2.4.2"
 tauri-plugin-notification = "2.3.3"
 reqwest = "0.13.2"
 tauri-plugin-deep-link = "2.4.6"
+tauri-plugin-autostart = "2.5.1"
 
 [features]
 default = ["custom-protocol", "default-tls", "dialog-gtk3"]
@@ -52,13 +53,30 @@ custom-protocol = ["tauri/custom-protocol"]
 # GTK dialogs by default; the Flatpak build swaps in dialog-xdg-portal.
 dialog-gtk3 = ["tauri-plugin-dialog/gtk3"]
 dialog-xdg-portal = ["tauri-plugin-dialog/xdg-portal"]
+# Flatpak-only: autostart through the XDG Background portal, since the
+# autostart plugin would write a .desktop file the host never reads.
+# `ashpd` is a Linux-only target dependency, so the module this enables is
+# additionally gated on `target_os = "linux"`.
+autostart-portal = ["dep:ashpd"]
 linux-gstreamer = ["dep:gstreamer", "dep:gstreamer-app", "dep:gstreamer-video"]
 cargo-clippy = []
 
 [target.'cfg(target_os = "linux")'.dependencies]
+# Deliberately 0.11, not the newer 0.13: `rfd` (via tauri-plugin-dialog's
+# xdg-portal feature, which the Flatpak build enables) already pulls ashpd
+# 0.11 in, so this reuses that copy instead of vendoring a second one.
+# The backend is spelled out because ashpd `compile_error!`s if both its
+# async-std and tokio features end up enabled; tauri-plugin-dialog selects
+# `rfd/tokio`, so tokio is the one that must match.
+ashpd = { version = "0.11", optional = true, default-features = false, features = ["tokio"] }
 gstreamer = { version = "0.23", optional = true }
 gstreamer-app = { version = "0.23", optional = true }
 gstreamer-video = { version = "0.23", optional = true }
+
+# Already pulled by tauri-plugin-notification; direct dep so we can set
+# timeout (the plugin does not expose it).
+[target.'cfg(any(target_os = "linux", target_os = "macos", windows))'.dependencies]
+notify-rust = "4.18"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"

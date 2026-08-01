@@ -39,7 +39,7 @@
 		"startSharing": "Commencer le partage",
 		"startingShare": "Démarrage du partage...",
 		"stopSharing": "Arrêter le partage",
-		"shareThisTicket": "Partagez ce ticket :",
+		"shareThisTicket": "Ticket de partage unique",
 		"sendThisTicket": "Envoyez ce ticket à la personne qui souhaite recevoir votre fichier",
 		"keepAppOpen": "Gardez cette application ouverte pendant que d'autres téléchargent vos fichiers",
 		"fileLabel": "Fichier :",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Associez des appareils dans les Réglages, puis revenez ici pour envoyer sans lien.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Aucun appareil associé pour l’instant",
-				"hint": "Choisissez un appareil - le transfert démarre lorsqu’il accepte.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Associer des appareils dans les Réglages",
 				"nodeUnavailable": "L’envoi vers un appareil n’est pas disponible pour le moment. Vous pouvez toujours utiliser Transfert unique dans l’autre onglet.",
 				"searchNoResults": "Aucun appareil associé ne correspond à votre recherche.",
 				"searchPlaceholder": "Rechercher des appareils associés",
-				"title": "Envoyer à un appareil associé"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Envoyer à un appareil associé",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Toute personne disposant de ce lien peut recevoir vos fichiers.",
 				"transferInProgress": "Transfert en cours - ouvrez Transfert unique pour voir les détails.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} souhaite vous envoyer {{count}} fichier(s) ({{size}}). Acceptez pour lancer le téléchargement.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} souhaite vous envoyer {{count}} fichier(s). Acceptez pour lancer le téléchargement.",
 		"receiveFromPairedTitle": "Fichier entrant depuis un appareil associé",
-		"saveLocation": "Emplacement d’enregistrement :"
+		"saveLocation": "Emplacement d’enregistrement :",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Progression du transfert",
@@ -379,7 +387,14 @@
 			"thisDevice": "Cet appareil",
 			"thisDeviceHint": "Nom affiché aux appareils avec lesquels vous vous associez. Le système d’exploitation et le type d’appareil sont détectés automatiquement.",
 			"title": "Appareils associés",
-			"unpairedHint": "Cet appareil a supprimé l’association. Retirez-le de votre liste."
+			"unpairedHint": "Cet appareil a supprimé l’association. Retirez-le de votre liste.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

@@ -39,7 +39,7 @@
 		"startSharing": "Започни дељење",
 		"startingShare": "Започињем дељење...",
 		"stopSharing": "Прекини дељење",
-		"shareThisTicket": "Подели ову карту:",
+		"shareThisTicket": "Једнократна карта за дељење",
 		"sendThisTicket": "Пошаљи ову карту особи која жели да прими твоју датотеку",
 		"keepAppOpen": "Држи апликацију отвореном док други преузимају твоје датотеке",
 		"fileLabel": "Датотека:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Upari uređaje u Podešavanjima, pa se vrati ovde da šalješ bez linka.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Još nema uparenih uređaja",
-				"hint": "Izaberi uređaj - prenos počinje kada prihvate.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Upari uređaje u Podešavanjima",
 				"nodeUnavailable": "Slanje na uređaj trenutno nije dostupno. I dalje možeš koristiti jednokratni prenos sa druge kartice.",
 				"searchNoResults": "Nijedan upareni uređaj ne odgovara pretrazi.",
 				"searchPlaceholder": "Pretraži uparene uređaje",
-				"title": "Pošalji na upareni uređaj"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Pošalji na upareni uređaj",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Svako sa ovim linkom može da primi tvoje datoteke.",
 				"transferInProgress": "Prenos u toku - otvori jednokratni prenos za detalje.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} želi da ti pošalje {{count}} datoteku/e ({{size}}). Prihvati da započneš preuzimanje.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} želi da ti pošalje {{count}} datoteku/e. Prihvati da započneš preuzimanje.",
 		"receiveFromPairedTitle": "Dolazna datoteka sa uparenog uređaja",
-		"saveLocation": "Lokacija čuvanja:"
+		"saveLocation": "Lokacija čuvanja:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Напредак преноса",
@@ -379,7 +387,14 @@
 			"thisDevice": "Ovaj uređaj",
 			"thisDeviceHint": "Naziv prikazan uređajima sa kojima se uparuješ. OS i tip uređaja se automatski detektuju.",
 			"title": "Upareni uređaji",
-			"unpairedHint": "Ovaj uređaj je uklonio uparivanje. Ukloni ga sa svoje liste."
+			"unpairedHint": "Ovaj uređaj je uklonio uparivanje. Ukloni ga sa svoje liste.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

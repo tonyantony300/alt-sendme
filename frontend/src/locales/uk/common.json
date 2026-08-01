@@ -39,7 +39,7 @@
 		"startSharing": "Почати передачу",
 		"startingShare": "Запуск передачі...",
 		"stopSharing": "Припинити передачу",
-		"shareThisTicket": "Поділитися цим тікетом:",
+		"shareThisTicket": "Одноразовий тікет",
 		"sendThisTicket": "Надішліть цей тікет людині, яка хоче отримати ваш файл",
 		"keepAppOpen": "Не закривайте програму, поки інші завантажують ваші файли",
 		"fileLabel": "Файл:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Спарте пристрої в Налаштуваннях, потім поверніться сюди, щоб надсилати без посилання.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Ще немає спарених пристроїв",
-				"hint": "Виберіть пристрій - передача розпочнеться після прийняття.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Спарити пристрої в Налаштуваннях",
 				"nodeUnavailable": "Надсилання на пристрій зараз недоступне. Ви все ще можете скористатися одноразовою передачею з іншої вкладки.",
 				"searchNoResults": "Жоден спарений пристрій не відповідає пошуку.",
 				"searchPlaceholder": "Пошук спарених пристроїв",
-				"title": "Надіслати на спарений пристрій"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Надіслати на спарений пристрій",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Будь-хто з цим посиланням може отримати ваші файли.",
 				"transferInProgress": "Передача триває - відкрийте одноразову передачу, щоб переглянути деталі.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} хоче надіслати вам {{count}} файл(ів) ({{size}}). Прийміть, щоб розпочати завантаження.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} хоче надіслати вам {{count}} файл(ів). Прийміть, щоб розпочати завантаження.",
 		"receiveFromPairedTitle": "Вхідний файл від спареного пристрою",
-		"saveLocation": "Місце збереження:"
+		"saveLocation": "Місце збереження:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Прогрес передачі",
@@ -379,7 +387,14 @@
 			"thisDevice": "Цей пристрій",
 			"thisDeviceHint": "Назва, яку бачать пристрої, з якими ви спарюєтесь. ОС і тип пристрою визначаються автоматично.",
 			"title": "Спарені пристрої",
-			"unpairedHint": "Цей пристрій роз’єднав спарювання. Видаліть його зі свого списку."
+			"unpairedHint": "Цей пристрій роз’єднав спарювання. Видаліть його зі свого списку.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

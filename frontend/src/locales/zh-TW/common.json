@@ -39,7 +39,7 @@
 		"startSharing": "開始分享",
 		"startingShare": "正在啟動分享...",
 		"stopSharing": "停止分享",
-		"shareThisTicket": "分享此票券：",
+		"shareThisTicket": "一次性分享票券",
 		"sendThisTicket": "將此票券傳送給想要接收您檔案的人",
 		"keepAppOpen": "在其他人下載您的檔案時請保持應用程式開啟",
 		"fileLabel": "檔案：",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "在設定中配對裝置後，返回此處即可無需連結傳送。",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "尚無配對裝置",
-				"hint": "選擇一台裝置 - 對方接受後即開始傳輸。",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "在設定中配對裝置",
 				"nodeUnavailable": "裝置傳送目前無法使用。您仍可在其他分頁使用一次性傳輸。",
 				"searchNoResults": "沒有與搜尋相符的配對裝置。",
 				"searchPlaceholder": "搜尋配對裝置",
-				"title": "傳送至配對裝置"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "傳送至配對裝置",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "擁有此連結的任何人都可以接收您的檔案。",
 				"transferInProgress": "傳輸進行中 - 開啟「一次性傳輸」查看詳情。",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} 想傳送 {{count}} 個檔案（{{size}}）給您。接受後即開始下載。",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} 想傳送 {{count}} 個檔案給您。接受後即開始下載。",
 		"receiveFromPairedTitle": "來自配對裝置的檔案",
-		"saveLocation": "儲存位置："
+		"saveLocation": "儲存位置：",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "傳輸進度",
@@ -379,7 +387,14 @@
 			"thisDevice": "此裝置",
 			"thisDeviceHint": "顯示給配對裝置的名稱。作業系統和裝置類型會自動偵測。",
 			"title": "配對裝置",
-			"unpairedHint": "此裝置已取消配對。請從清單中移除。"
+			"unpairedHint": "此裝置已取消配對。請從清單中移除。",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

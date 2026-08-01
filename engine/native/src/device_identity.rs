@@ -329,6 +329,17 @@ impl PairedDeviceInfo {
     }
 }
 
+/// Online/total counts across *actively* paired devices, for the tray summary.
+/// Peers that unpaired remotely — or whose local identity went stale — are
+/// excluded from both counts: the tray must not advertise a device the user
+/// cannot actually reach.
+pub fn presence_summary(devices: &[PairedDeviceInfo]) -> (usize, usize) {
+    let active = devices.iter().filter(|d| d.pairing_status.is_active());
+    let total = active.clone().count();
+    let online = active.filter(|d| d.online).count();
+    (online, total)
+}
+
 /// Serializable device info for the frontend.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeviceInfo {
@@ -346,5 +357,52 @@ impl From<&DeviceIdentity> for DeviceInfo {
             device_type: id.device_type(),
             os: id.os(),
         }
+    }
+}
+
+#[cfg(test)]
+mod presence_summary_tests {
+    use super::*;
+    use protocol::identity::PairingStatus;
+
+    fn info(endpoint_id: &str, online: bool, status: PairingStatus) -> PairedDeviceInfo {
+        PairedDeviceInfo {
+            endpoint_id: endpoint_id.to_string(),
+            display_name: "Device".to_string(),
+            device_type: "laptop".to_string(),
+            os: "macos".to_string(),
+            paired_at: 0,
+            last_seen_at: 0,
+            relay_url: None,
+            pairing_status: status,
+            online,
+        }
+    }
+
+    #[test]
+    fn counts_only_actively_paired_devices() {
+        let devices = vec![
+            info("a", true, PairingStatus::Active),
+            info("b", false, PairingStatus::Active),
+            info("c", true, PairingStatus::Active),
+        ];
+        assert_eq!(presence_summary(&devices), (2, 3));
+    }
+
+    #[test]
+    fn excludes_inactive_pairings_from_both_counts() {
+        // An unpaired-remotely peer must not be advertised in the tray, even
+        // if a stale presence entry still says it is online.
+        let devices = vec![
+            info("a", true, PairingStatus::Active),
+            info("b", true, PairingStatus::UnpairedRemotely),
+            info("c", false, PairingStatus::StaleLocalIdentity),
+        ];
+        assert_eq!(presence_summary(&devices), (1, 1));
+    }
+
+    #[test]
+    fn empty_list_is_zero_of_zero() {
+        assert_eq!(presence_summary(&[]), (0, 0));
     }
 }

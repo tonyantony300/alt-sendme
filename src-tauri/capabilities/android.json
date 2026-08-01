@@ -16,6 +16,7 @@
 		"dialog:allow-open",
 		"dialog:allow-save",
 		"store:default",
+		"notification:default",
 		"native-utils:default",
 		"deep-link:default"
 	]

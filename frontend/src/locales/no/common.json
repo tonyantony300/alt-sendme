@@ -39,7 +39,7 @@
 		"startSharing": "Start deling",
 		"startingShare": "Starter deling...",
 		"stopSharing": "Stopp deling",
-		"shareThisTicket": "Del denne nøkkelen:",
+		"shareThisTicket": "Engangs delingsnøkkel",
 		"sendThisTicket": "Send denne nøkkelen til personen som skal motta filen",
 		"keepAppOpen": "Hold appen åpen mens andre laster ned filene",
 		"fileLabel": "Fil:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Koble sammen enheter i Innstillinger, og kom tilbake hit for å sende uten en lenke.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Ingen sammenkoblede enheter ennå",
-				"hint": "Velg en enhet - overføringen starter når den godtas.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Koble sammen enheter i Innstillinger",
 				"nodeUnavailable": "Sending til enheter er ikke tilgjengelig akkurat nå. Du kan fortsatt bruke Engangsoverføring i den andre fanen.",
 				"searchNoResults": "Ingen sammenkoblede enheter samsvarer med søket.",
 				"searchPlaceholder": "Søk etter sammenkoblede enheter",
-				"title": "Send til sammenkoblet enhet"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Send til sammenkoblet enhet",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Alle med denne lenken kan motta filene dine.",
 				"transferInProgress": "Overføring pågår - åpne Engangsoverføring for detaljer.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} vil sende deg {{count}} fil(er) ({{size}}). Godta for å starte nedlastingen.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} vil sende deg {{count}} fil(er). Godta for å starte nedlastingen.",
 		"receiveFromPairedTitle": "Innkommende fil fra sammenkoblet enhet",
-		"saveLocation": "Lagringssted:"
+		"saveLocation": "Lagringssted:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Status",
@@ -379,7 +387,14 @@
 			"thisDevice": "Denne enheten",
 			"thisDeviceHint": "Navn som vises for enheter du kobler sammen med. OS og enhetstype oppdages automatisk.",
 			"title": "Sammenkoblede enheter",
-			"unpairedHint": "Denne enheten brøt sammenkoblingen. Fjern den fra listen din."
+			"unpairedHint": "Denne enheten brøt sammenkoblingen. Fjern den fra listen din.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

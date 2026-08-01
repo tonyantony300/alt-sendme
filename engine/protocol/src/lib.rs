@@ -1,6 +1,7 @@
 pub mod control;
 pub mod discovery;
 pub mod identity;
+pub mod nearby;
 pub mod pairing;
 pub mod pairing_auth;
 pub mod receive;
@@ -21,6 +22,10 @@ pub use pairing::{
     PAIRED_RECONNECT_MAX_SECS, PAIRED_RECONNECT_MIN_SECS, PRESENCE_CONNECT_TIMEOUT_SECS,
 };
 pub use pairing_auth::{export_connection_keying_material, sign_challenge, verify_challenge};
+pub use nearby::{
+    allows_unpaired_control, should_answer_identity, should_publish_mdns,
+    unpaired_message_allowed, Discoverability,
+};
 pub use receive::{download_to_store, fetch_metadata, DownloadToStoreResult};
 pub use relay::{
     build_relay_mode, get_relay_status, relay_fallback_policy, resolve_relay_mode_with_fallback,

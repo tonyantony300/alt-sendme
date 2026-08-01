@@ -1,31 +1,34 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { invoke, listen, type UnlistenFn } from '@/lib/platform-api'
-import {
-	getWebPreviewErrorMessage,
-	isWebPreviewError,
-} from '@/lib/web-preview-error'
-import { useTranslation } from '../i18n/react-i18next-compat'
-import type { AlertType } from '../types/ui'
-import type { TransferMetadata, TransferProgress } from '../types/transfer'
-import { SpeedAverager, calculateETA } from '../utils/etaUtils'
-import { getRelayConfigArg } from '../lib/relay'
-import { getDiscoveryConfigArg } from '../lib/discovery'
-import { useSenderStore } from '../store/sender-store'
-import { IS_PAIRING_CAPABLE } from '@/lib/platform'
-import {
-	invitePairedDevice,
-	isPairedDeviceActive,
-	listPairedDevices,
-	type PairedDevice,
-} from '@/lib/pairing-api'
-import { incrementPairedSendCount } from '@/lib/paired-send-counts'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNodeCapability } from '@/hooks/useNodeCapability'
 import {
 	applyPresencePatch,
 	usePairedDeviceEvents,
 } from '@/hooks/usePairedDeviceEvents'
+import { incrementPairedSendCount } from '@/lib/paired-send-counts'
+import {
+	inviteNearbyDevice,
+	invitePairedDevice,
+	isPairedDeviceActive,
+	listPairedDevices,
+	type PairedDevice,
+} from '@/lib/pairing-api'
+import { IS_PAIRING_CAPABLE } from '@/lib/platform'
+import { invoke, listen, type UnlistenFn } from '@/lib/platform-api'
+import {
+	getWebPreviewErrorMessage,
+	isWebPreviewError,
+} from '@/lib/web-preview-error'
+import { useNearbyStore } from '@/store/nearby-store'
+import { useNearbyVerificationStore } from '@/store/nearby-verification-store'
 import { toastManager } from '../components/ui/toast'
+import { useTranslation } from '../i18n/react-i18next-compat'
+import { getDiscoveryConfigArg } from '../lib/discovery'
+import { getRelayConfigArg } from '../lib/relay'
 import { copyTextToClipboard } from '../lib/utils'
+import { useSenderStore } from '../store/sender-store'
+import type { TransferMetadata, TransferProgress } from '../types/transfer'
+import type { AlertType } from '../types/ui'
+import { calculateETA, SpeedAverager } from '../utils/etaUtils'
 
 export type PairedInviteStatus = 'sending' | 'sent' | 'failed'
 
@@ -54,6 +57,7 @@ export interface UseSenderReturn {
 	isNodeStatusPending?: boolean
 	pairedInviteStatus: Record<string, PairedInviteStatus>
 	onInvitePairedDevice: (endpointId: string) => Promise<boolean>
+	onInviteNearbyDevice: (endpointId: string) => Promise<boolean>
 
 	handleFileSelect: (
 		path: string,
@@ -995,6 +999,82 @@ export function useSender(): UseSenderReturn {
 		}
 	}
 
+	const onInviteNearbyDevice = async (endpointId: string): Promise<boolean> => {
+		if (!ticket) {
+			return false
+		}
+		if (!isNodeReady) {
+			toastManager.add({
+				title: t('common:settings.devices.nodeUnavailableTitle'),
+				description: t('common:settings.devices.nodeUnavailableHint'),
+				type: 'error',
+			})
+			return false
+		}
+		if (pairedInviteStatus[endpointId] === 'sending') return false
+		const anotherInviteInFlight = Object.entries(pairedInviteStatus).some(
+			([id, status]) =>
+				id !== endpointId && (status === 'sending' || status === 'sent')
+		)
+		if (anotherInviteInFlight || pairedInviteStatus[endpointId] === 'sent') {
+			return false
+		}
+
+		const nearbyDevices = useNearbyStore.getState().devices
+		const nearby = nearbyDevices.find((d) => d.endpointId === endpointId)
+		const nearbyName =
+			nearby?.displayName ??
+			(endpointId
+				? `${endpointId.slice(0, 8)}…`
+				: t('common:sender.pairedDevices.unknownPeer'))
+		const fileCount = Math.max(selectedPaths.length, 1)
+		setInviteStatus(endpointId, 'sending')
+		try {
+			const totalSize = await resolveShareTotalSize()
+			const delivered = await inviteNearbyDevice(
+				endpointId,
+				ticket,
+				fileCount,
+				totalSize
+			)
+			if (delivered) {
+				setInviteStatus(endpointId, 'sent')
+				toastManager.add({
+					title: t('common:sender.pairedDevices.inviteSentTo', {
+						name: nearbyName,
+					}),
+					description: t('common:sender.pairedDevices.inviteSentDesc'),
+					type: 'success',
+				})
+				// The receiver is now looking at this device's verification code
+				// and being asked to check it against our screen — so show it.
+				// Only on confirmed delivery: a code for an invite that never
+				// arrived is worse than none.
+				useNearbyVerificationStore
+					.getState()
+					.show({ endpointId, name: nearbyName })
+				return true
+			}
+			setInviteStatus(endpointId, 'failed')
+			toastManager.add({
+				title: t('common:sender.pairedDevices.inviteFailed'),
+				description: t('common:settings.devices.nearby.inviteFailed'),
+				type: 'error',
+			})
+			setTimeout(() => setInviteStatus(endpointId, null), 4000)
+			return false
+		} catch (error) {
+			setInviteStatus(endpointId, 'failed')
+			toastManager.add({
+				title: t('common:sender.pairedDevices.inviteFailed'),
+				description: String(error),
+				type: 'error',
+			})
+			setTimeout(() => setInviteStatus(endpointId, null), 4000)
+			return false
+		}
+	}
+
 	const copyTicket = async () => {
 		if (ticket) {
 			try {
@@ -1038,6 +1118,7 @@ export function useSender(): UseSenderReturn {
 		isNodeStatusPending,
 		pairedInviteStatus,
 		onInvitePairedDevice,
+		onInviteNearbyDevice,
 
 		handleFileSelect,
 		handleFilesSelect,

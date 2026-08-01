@@ -398,6 +398,92 @@ mod tests {
     }
 }
 
+#[cfg(test)]
+mod fingerprint_tests {
+    use super::short_fingerprint;
+
+    #[test]
+    fn formats_as_three_groups_of_four() {
+        let id = "00".repeat(32);
+        assert_eq!(short_fingerprint(&id).unwrap(), "AAAA-AAAA-AAAA");
+    }
+
+    #[test]
+    fn is_uppercase_base32_and_grouped() {
+        let id = "ff".repeat(32);
+        let fp = short_fingerprint(&id).unwrap();
+        assert_eq!(fp.len(), 14, "12 chars plus 2 dashes");
+        assert_eq!(fp.matches('-').count(), 2);
+        assert!(
+            fp.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '-'),
+            "base32 alphabet is A-Z and 2-7: {fp}"
+        );
+    }
+
+    #[test]
+    fn is_deterministic() {
+        let id = "a1b2c3d4".repeat(8);
+        assert_eq!(short_fingerprint(&id), short_fingerprint(&id));
+    }
+
+    #[test]
+    fn distinct_keys_give_distinct_fingerprints() {
+        // Vary an EARLY byte. The fingerprint is the first 60 bits of a
+        // 256-bit key, so keys differing only in a late byte collide by
+        // construction — that is inherent to truncation, not a defect.
+        let a = "00".repeat(32);
+        let b = format!("01{}", "00".repeat(31));
+        assert_ne!(short_fingerprint(&a), short_fingerprint(&b));
+    }
+
+    #[test]
+    fn rejects_wrong_length() {
+        assert_eq!(short_fingerprint(&"00".repeat(16)), None);
+        assert_eq!(short_fingerprint(&"00".repeat(64)), None);
+    }
+
+    #[test]
+    fn rejects_non_hex() {
+        assert_eq!(short_fingerprint(&"zz".repeat(32)), None);
+    }
+
+    #[test]
+    fn tolerates_surrounding_whitespace() {
+        let id = format!("  {}  ", "00".repeat(32));
+        assert_eq!(short_fingerprint(&id).unwrap(), "AAAA-AAAA-AAAA");
+    }
+}
+
+/// Human-comparable fingerprint of an endpoint id, shown on both screens when
+/// two devices meet on the local network for the first time.
+///
+/// iroh's TLS already binds a connection to the peer's public key, so a matching
+/// fingerprint proves you are talking to the device you think you are. Display
+/// names are self-reported and spoofable; this is not.
+///
+/// 12 base32 characters is 60 bits. No hashing is needed — truncating a
+/// uniformly distributed public key stays uniformly distributed, and the key is
+/// not secret. Returns `None` for anything that is not a 64-character hex id.
+pub fn short_fingerprint(endpoint_id_hex: &str) -> Option<String> {
+    let bytes = data_encoding::HEXLOWER_PERMISSIVE
+        .decode(endpoint_id_hex.trim().as_bytes())
+        .ok()?;
+    if bytes.len() != 32 {
+        return None;
+    }
+    let encoded = data_encoding::BASE32_NOPAD.encode(&bytes);
+    let grouped = encoded
+        .as_bytes()
+        .iter()
+        .take(12)
+        .collect::<Vec<_>>()
+        .chunks(4)
+        .map(|chunk| chunk.iter().map(|b| **b as char).collect::<String>())
+        .collect::<Vec<_>>()
+        .join("-");
+    Some(grouped)
+}
+
 pub fn normalize_display_name(name: &str) -> Result<String, String> {
     let trimmed = name.trim();
     if trimmed.is_empty() {

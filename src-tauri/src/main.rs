@@ -12,5 +12,5 @@ fn main() {
     // Logging is initialised inside `run()`'s setup hook, where the log directory is
     // known. Doing it there rather than here is what gives Android a subscriber at all —
     // the mobile entry point never goes through this file.
-    alt_sendme_lib::run();
+    dashbeam_lib::run();
 }

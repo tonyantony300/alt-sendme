@@ -1,6 +1,6 @@
-import { invoke } from './platform-api'
-import { IS_PAIRING_CAPABLE } from './platform'
 import type { DiscoveryConfigArg } from './discovery-config'
+import { IS_PAIRING_CAPABLE } from './platform'
+import { invoke } from './platform-api'
 import type { RelayConfigArg } from './relay-config'
 
 export interface DeviceInfo {
@@ -177,6 +177,84 @@ export async function respondPairedInvite(
 	})
 }
 
+export type Discoverability = 'everyone' | 'paired-only' | 'off'
+
+export async function getDiscoverability(): Promise<Discoverability> {
+	if (!pairingCapable()) return 'off'
+	return invoke<Discoverability>('get_discoverability')
+}
+
+/**
+ * IPC seam: the key MUST be the Rust parameter name of `set_discoverability`
+ * in `src-tauri/src/commands.rs` (`setting: Discoverability`). Tauri matches
+ * invoke payload keys to command parameters by name, so a mismatch fails at
+ * runtime with "missing required key" — never rename one side alone.
+ */
+type SetDiscoverabilityArgs = {
+	setting: Discoverability
+}
+
+export async function setDiscoverability(
+	value: Discoverability
+): Promise<void> {
+	if (!pairingCapable()) return
+	const args: SetDiscoverabilityArgs = { setting: value }
+	await invoke('set_discoverability', args)
+}
+
+export interface NearbyStatus {
+	/**
+	 * Why LAN discovery is unavailable (the mDNS pump failed to start), or
+	 * null when it is running or deliberately off. Queryable because the
+	 * `nearby-unavailable` event can fire during node init, before any
+	 * frontend listener exists.
+	 */
+	reason: string | null
+}
+
+export async function getNearbyStatus(): Promise<NearbyStatus> {
+	if (!pairingCapable()) return { reason: null }
+	return invoke<NearbyStatus>('nearby_status')
+}
+
+/**
+ * Delivers the active share ticket to a Nearby (unpaired LAN) device.
+ * Same ticket reuse as `invitePairedDevice` — no separate share is minted.
+ */
+export async function inviteNearbyDevice(
+	endpointId: string,
+	blobTicket: string,
+	fileCount: number,
+	totalSize: number
+): Promise<boolean> {
+	if (!pairingCapable()) return false
+	const result = await invoke<InviteDelivered>('invite_nearby_device', {
+		endpointId,
+		blobTicket,
+		fileCount,
+		totalSize,
+	})
+	return result.delivered
+}
+
+/** Asks a Nearby LAN device to pair — no file ticket. */
+export async function requestNearbyPair(endpointId: string): Promise<boolean> {
+	if (!pairingCapable()) return false
+	const result = await invoke<InviteDelivered>('request_nearby_pair', {
+		endpointId,
+	})
+	return result.delivered
+}
+
+export async function respondNearbyInvite(
+	endpointId: string,
+	accept: boolean,
+	block = false
+): Promise<void> {
+	if (!pairingCapable()) return
+	await invoke('respond_nearby_invite', { endpointId, accept, block })
+}
+
 export function formatOsLabel(os: string | undefined | null): string {
 	switch ((os ?? '').toLowerCase()) {
 		case 'macos':
@@ -248,6 +326,20 @@ export function isPairedDeviceActive(
 	device: Pick<PairedDevice, 'pairing_status'>
 ): boolean {
 	return (device.pairing_status ?? 'active') === 'active'
+}
+
+/**
+ * True when `endpointId` already has a paired-device record. Nearby invites
+ * from an already-paired sender route to the normal paired-invite dialog
+ * instead of the Nearby fingerprint-confirmation one — see
+ * `NearbyInviteDialog` and `DeviceNodeSync`.
+ */
+export function isKnownPairedEndpoint(
+	devices: Pick<PairedDevice, 'endpoint_id'>[],
+	endpointId: string
+): boolean {
+	const id = endpointId.toLowerCase()
+	return devices.some((device) => device.endpoint_id.toLowerCase() === id)
 }
 
 /** 0 = online+active, 1 = offline+active, 2 = unpaired */

@@ -39,7 +39,7 @@
 		"startSharing": "শেয়ার শুরু করুন",
 		"startingShare": "শেয়ার শুরু হচ্ছে...",
 		"stopSharing": "শেয়ার বন্ধ করুন",
-		"shareThisTicket": "এই টিকিটটি শেয়ার করুন:",
+		"shareThisTicket": "একবারের শেয়ার টিকিট",
 		"sendThisTicket": "যিনি আপনার ফাইল গ্রহণ করবেন তাকে এই টিকিটটি পাঠান",
 		"keepAppOpen": "অন্যরা ফাইল ডাউনলোড করার সময় এই অ্যাপটি খোলা রাখুন",
 		"fileLabel": "ফাইল:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "সেটিংসে ডিভাইস জোড়া দিন, তারপর লিংক ছাড়াই পাঠাতে এখানে ফিরে আসুন।",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "এখনও কোনো জোড়া ডিভাইস নেই",
-				"hint": "একটি ডিভাইস বেছে নিন - গ্রহণ করলে স্থানান্তর শুরু হবে।",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "সেটিংসে ডিভাইস জোড়া দিন",
 				"nodeUnavailable": "ডিভাইসে পাঠানো এখন উপলব্ধ নয়। আপনি অন্য ট্যাব থেকে এক-বারের স্থানান্তর এখনও ব্যবহার করতে পারেন।",
 				"searchNoResults": "আপনার অনুসন্ধানের সাথে কোনো জোড়া ডিভাইস মিলছে না।",
 				"searchPlaceholder": "জোড়া ডিভাইস অনুসন্ধান",
-				"title": "জোড়া ডিভাইসে পাঠান"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "জোড়া ডিভাইসে পাঠান",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "এই লিংক থাকলে যে কেউ আপনার ফাইল গ্রহণ করতে পারবে।",
 				"transferInProgress": "স্থানান্তর চলছে - বিস্তারিত দেখতে এক-বারের স্থানান্তর খুলুন।",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} আপনাকে {{count}}টি ফাইল ({{size}}) পাঠাতে চায়। ডাউনলোড শুরু করতে গ্রহণ করুন।",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} আপনাকে {{count}}টি ফাইল পাঠাতে চায়। ডাউনলোড শুরু করতে গ্রহণ করুন।",
 		"receiveFromPairedTitle": "জোড়া ডিভাইস থেকে আসা ফাইল",
-		"saveLocation": "সংরক্ষণের অবস্থান:"
+		"saveLocation": "সংরক্ষণের অবস্থান:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "স্থানান্তরের অগ্রগতি",
@@ -379,7 +387,14 @@
 			"thisDevice": "এই ডিভাইস",
 			"thisDeviceHint": "যে ডিভাইসের সাথে জোড়া দেন তাদের দেখানো নাম। OS ও ডিভাইসের ধরন স্বয়ংক্রিয়ভাবে শনাক্ত হয়।",
 			"title": "জোড়া ডিভাইস",
-			"unpairedHint": "এই ডিভাইস জোড়া সরিয়েছে। তালিকা থেকে সরিয়ে দিন।"
+			"unpairedHint": "এই ডিভাইস জোড়া সরিয়েছে। তালিকা থেকে সরিয়ে দিন।",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

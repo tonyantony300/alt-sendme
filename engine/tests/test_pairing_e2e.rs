@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use common::{wait_until, MockEventEmitter};
 use engine::identity_store::identity_key_path;
-use engine::{DiscoveryModeOption, NodeService, PairingStatus};
+use engine::{Discoverability, DiscoveryModeOption, NodeService, PairingStatus};
 use iroh::endpoint::RelayMode;
 use iroh::SecretKey;
 
@@ -28,6 +28,7 @@ async fn start_node(data_dir: &Path, emitter: std::sync::Arc<MockEventEmitter>) 
             data_dir,
             RelayMode::Default,
             DiscoveryModeOption::Default,
+            Discoverability::default(),
             Some(emitter),
         ),
     )
@@ -152,6 +153,96 @@ async fn e2e_pairing_lifecycle() {
     let (stranger_down, joiner_down, host_down) =
         tokio::join!(stranger.shutdown(), joiner.shutdown(), host.shutdown());
     stranger_down.expect("shutdown stranger");
+    joiner_down.expect("shutdown joiner");
+    host_down.expect("shutdown host");
+}
+
+/// When the unpair notify (`Forget`) never arrives — e.g. the fire-and-forget
+/// dial after local teardown fails on a real LAN — the remaining side used to
+/// keep the peer as `Active`/`offline` and flap online every reconnect tick
+/// against `Discoverability::Everyone`. It must instead detect the peer's
+/// "not permitted for unpaired peer" close and mark `UnpairedRemotely`.
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn missed_forget_still_marks_unpaired_remotely() {
+    assert!(
+        std::env::var_os("IROH_SECRET").is_none(),
+        "IROH_SECRET overrides the seeded per-node identities; unset it first"
+    );
+    let host_dir = tempfile::tempdir().expect("host dir");
+    let joiner_dir = tempfile::tempdir().expect("joiner dir");
+    let host_id = seed_identity(host_dir.path());
+    let joiner_id = seed_identity(joiner_dir.path());
+
+    let host_events = MockEventEmitter::new();
+    let joiner_events = MockEventEmitter::new();
+    let (host, joiner) = tokio::join!(
+        start_node(host_dir.path(), host_events.clone()),
+        start_node(joiner_dir.path(), joiner_events.clone())
+    );
+
+    let ticket = host
+        .start_pairing_host(Some(300))
+        .await
+        .expect("open pairing window");
+
+    let end = tokio::time::Instant::now() + JOIN_DEADLINE;
+    loop {
+        match tokio::time::timeout(Duration::from_secs(30), joiner.join_pairing(&ticket)).await {
+            Ok(Ok(())) => break,
+            Ok(Err(err)) => {
+                assert!(
+                    tokio::time::Instant::now() < end,
+                    "join_pairing did not succeed within {JOIN_DEADLINE:?}: {err:#}"
+                );
+            }
+            Err(_) => {
+                assert!(
+                    tokio::time::Instant::now() < end,
+                    "join_pairing did not succeed within {JOIN_DEADLINE:?}: last attempt hung"
+                );
+            }
+        }
+        tokio::time::sleep(Duration::from_secs(2)).await;
+    }
+
+    wait_until(
+        "host to store the joiner as paired",
+        SETTLE_DEADLINE,
+        || paired_status(&host, &joiner_id) == Some(PairingStatus::Active),
+    )
+    .await;
+    host.stop_pairing_host().await;
+
+    // Joiner drops the host without sending Forget (missed notify).
+    joiner
+        .forget_paired_silently_for_tests(&host_id)
+        .await
+        .expect("silent forget");
+    assert_eq!(paired_status(&joiner, &host_id), None);
+
+    // Host still believes the relationship is active until it learns otherwise.
+    assert_eq!(
+        paired_status(&host, &joiner_id),
+        Some(PairingStatus::Active),
+        "precondition: host has not received Forget"
+    );
+
+    // Nudge a reconnect so we don't wait out backoff; joiner (Everyone) will
+    // accept the dial then reject Recognition as unpaired.
+    host.force_paired_reconnect_for_tests(&joiner_id).await;
+
+    wait_until(
+        "host to mark joiner unpaired-remotely after Recognition rejection",
+        SETTLE_DEADLINE,
+        || paired_status(&host, &joiner_id) == Some(PairingStatus::UnpairedRemotely),
+    )
+    .await;
+    wait_until("host device-unpaired event after missed Forget", SETTLE_DEADLINE, || {
+        host_events.has_event("device-unpaired")
+    })
+    .await;
+
+    let (joiner_down, host_down) = tokio::join!(joiner.shutdown(), host.shutdown());
     joiner_down.expect("shutdown joiner");
     host_down.expect("shutdown host");
 }

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { IS_DESKTOP } from '../lib/platform'
 import {
 	defaultAppSettings,
 	localSettingLazyStoreStorage,
@@ -23,6 +24,22 @@ export type AppSettingsState = {
 	pkarrRelayUrl: string
 	dnsOrigin: string
 	showBroadcastToggle: boolean
+	/**
+	 * Nearby/LAN discoverability. Mirrors the engine's `Discoverability` —
+	 * persisted here (like the relay settings) so it survives restarts;
+	 * `init_node_service` reads this store's file before the node starts so an
+	 * `Off` choice never registers mDNS even briefly, and `DeviceNodeSync`
+	 * re-applies it once the node is ready as a safety net.
+	 */
+	discoverability: 'everyone' | 'paired-only' | 'off'
+	/**
+	 * One-shot: the first-run "enable autostart" step has already run.
+	 *
+	 * Records that we tried, not that it succeeded — a user who turns the
+	 * toggle off must never have it turned back on by a later launch, and a
+	 * platform that refused must not be re-asked on every startup.
+	 */
+	autostartInitialized: boolean
 }
 
 export type AppSettingsActions = {
@@ -43,11 +60,53 @@ export type AppSettingsActions = {
 	setPkarrRelayUrl: (value: string) => void
 	setDnsOrigin: (value: string) => void
 	setShowBroadcastToggle: (value: boolean) => void
+	setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') => void
+	setAutostartInitialized: (value: boolean) => void
 }
 
 export type AppSettings = AppSettingsState & AppSettingsActions
 
 const AppSettingsKey = 'app_settings'
+
+/** Bumped whenever a persisted value needs correcting; see `migrateAppSettings`. */
+const AppSettingsVersion = 1
+
+/**
+ * v0 → v1: force `minimizeToTray` back to `true`.
+ *
+ * Until the always-on-presence work landed, nothing read this key — the
+ * toggle was dead and the window-close handler hid to the tray
+ * unconditionally. `persist` has no `partialize`, so the whole state object
+ * (including the old hardcoded `minimizeToTray: false` default) was written
+ * to disk the first time a user changed *any* setting. A persisted `false`
+ * therefore records a dead default, never a user choice.
+ *
+ * Reading it as intent would flip "close hides to tray" — the behaviour
+ * every install has always had — into "close quits", which shuts the node
+ * down and kills in-flight transfers on the first upgrade.
+ *
+ * Only this one key is corrected; every other persisted value is carried
+ * through untouched. `version: 1` is written back to disk as part of
+ * rehydration, so this runs at most once per install: a user who turns the
+ * toggle off *after* upgrading keeps it off.
+ */
+function migrateAppSettings(
+	persistedState: unknown,
+	version: number
+): Partial<AppSettingsState> {
+	// `persistedState` is whatever happened to be on disk — never assume a shape.
+	const state =
+		typeof persistedState === 'object' &&
+		persistedState !== null &&
+		!Array.isArray(persistedState)
+			? (persistedState as Partial<AppSettingsState>)
+			: {}
+
+	if (version < 1) {
+		return { ...state, minimizeToTray: true }
+	}
+	return state
+}
 
 export const useAppSettingStore = create<AppSettings>()(
 	persist(
@@ -77,14 +136,38 @@ export const useAppSettingStore = create<AppSettings>()(
 			setDnsOrigin: (value: string) => set({ dnsOrigin: value }),
 			setShowBroadcastToggle: (value: boolean) =>
 				set({ showBroadcastToggle: value }),
+			setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') =>
+				set({ discoverability: value }),
+			setAutostartInitialized: (value: boolean) =>
+				set({ autostartInitialized: value }),
 		}),
 		{
 			name: AppSettingsKey,
+			version: AppSettingsVersion,
+			migrate: migrateAppSettings,
 			storage: createJSONStorage(() => localSettingLazyStoreStorage),
 			merge: (persistedState, currentState) => ({
 				...currentState,
 				...(persistedState as Partial<AppSettings>),
 			}),
+			// The Rust close handler seeds itself from `settings.json` during
+			// `setup()`, long before the webview rehydrates — so on the launch
+			// where the migration above corrects a stale value, the running
+			// process would still be using the old one. Push the hydrated value
+			// across so the correction applies to this session, not just the
+			// next one.
+			onRehydrateStorage: () => (state) => {
+				if (!state || !IS_DESKTOP) return
+				void import('../lib/platform-api')
+					.then(({ invoke }) =>
+						invoke('set_background_on_close', {
+							enabled: state.minimizeToTray,
+						})
+					)
+					.catch((error) => {
+						console.warn('Failed to sync minimizeToTray to backend:', error)
+					})
+			},
 		}
 	)
 )

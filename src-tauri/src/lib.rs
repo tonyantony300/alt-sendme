@@ -1,5 +1,11 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
+#[cfg(desktop)]
+mod autostart;
+// `ashpd` is declared under `[target.'cfg(target_os = "linux")'.dependencies]`,
+// so this module can only compile on Linux even when the feature is enabled.
+#[cfg(all(desktop, target_os = "linux", feature = "autostart-portal"))]
+mod autostart_portal;
 mod commands;
 mod features;
 mod logging;
@@ -57,10 +63,15 @@ pub fn run() {
         builder
     } else {
         builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
-                let _ = window.unminimize();
-                let _ = window.set_focus();
+            // A duplicate autostart trigger (e.g. a Linux autostart entry
+            // plus a systemd user unit) re-invokes an already-running
+            // instance with `--hidden`; do not force the window open then.
+            if !wants_hidden_launch(args.iter().cloned()) {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.unminimize();
+                    let _ = window.set_focus();
+                }
             }
             let maybe_path = first_non_flag_arg(args.into_iter().skip(1));
             if let Some(path) = maybe_path {
@@ -73,6 +84,13 @@ pub fn run() {
             }
         }))
     };
+
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_autostart::init(
+        tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+        // Autostart launches must not pop a window; see `wants_hidden_launch`.
+        Some(vec!["--hidden"]),
+    ));
 
     let builder = builder
         .plugin(tauri_plugin_dialog::init())
@@ -95,6 +113,16 @@ pub fn run() {
             get_file_size,
             #[cfg(desktop)]
             focus_main_window,
+            #[cfg(desktop)]
+            show_system_notification,
+            #[cfg(desktop)]
+            set_background_on_close,
+            #[cfg(desktop)]
+            set_tray_labels,
+            #[cfg(desktop)]
+            autostart_is_enabled,
+            #[cfg(desktop)]
+            autostart_set,
             check_launch_intent,
             fetch_ticket_metadata,
             verify_relays,
@@ -132,10 +160,52 @@ pub fn run() {
             invite_paired_device,
             #[cfg(any(desktop, target_os = "android"))]
             respond_paired_invite,
+            #[cfg(any(desktop, target_os = "android"))]
+            list_nearby,
+            #[cfg(any(desktop, target_os = "android"))]
+            nearby_status,
+            #[cfg(any(desktop, target_os = "android"))]
+            get_discoverability,
+            #[cfg(any(desktop, target_os = "android"))]
+            set_discoverability,
+            #[cfg(any(desktop, target_os = "android"))]
+            invite_nearby_device,
+            #[cfg(any(desktop, target_os = "android"))]
+            request_nearby_pair,
+            #[cfg(any(desktop, target_os = "android"))]
+            respond_nearby_invite,
         ])
         .setup(|app| {
             init_logging(app.handle());
             setup_common(app);
+            #[cfg(desktop)]
+            tray::set_background_on_close(commands::load_persisted_minimize_to_tray(
+                &app.handle().clone(),
+            ));
+            #[cfg(desktop)]
+            {
+                // The window is configured `visible: false` so an autostart
+                // launch never flashes. Show it here — ahead of node init,
+                // which blocks on relay resolution — so a slow network never
+                // delays the window.
+                //
+                // Android has no equivalent show step and would stay invisible
+                // forever. It is safe only because `tauri.android.conf.json`
+                // redeclares the whole `app.windows` array, and Tauri merges
+                // platform configs with RFC 7396 JSON Merge Patch, which
+                // *replaces* arrays rather than merging their members — so the
+                // global `visible: false` never reaches Android. That block
+                // looks redundant; it is load-bearing and must not be removed.
+                // (Tauri's config structs are `deny_unknown_fields` strict
+                // JSON, so the note cannot live in the file itself.)
+                if !wants_hidden_launch(std::env::args().skip(1)) {
+                    if let Some(window) = app.get_webview_window("main") {
+                        if let Err(error) = window.show() {
+                            tracing::warn!(%error, "failed to show window on launch");
+                        }
+                    }
+                }
+            }
             #[cfg(any(desktop, target_os = "android"))]
             {
                 let handle = app.handle().clone();
@@ -158,12 +228,40 @@ pub fn run() {
                     }
                 });
             }
-            #[cfg(all(desktop, not(target_os = "macos")))]
+            #[cfg(desktop)]
             if let Err(error) = tray::setup_tray(&app.handle()) {
                 tracing::warn!(
                     error = %error,
                     "System tray unavailable; app will continue without tray icon"
                 );
+            }
+            #[cfg(desktop)]
+            {
+                use tauri::Listener as _;
+                let handle = app.handle().clone();
+                for event in ["paired-device-presence", "device-paired", "device-unpaired"] {
+                    let handle = handle.clone();
+                    app.listen(event, move |_| tray::refresh_presence(&handle));
+                }
+                tray::refresh_presence(&app.handle().clone());
+            }
+            #[cfg(desktop)]
+            {
+                // Autostart asked for a hidden window, but without a tray icon
+                // there is no way back to the app. Show it rather than leave a
+                // running process the user cannot reach.
+                if wants_hidden_launch(std::env::args().skip(1)) && !tray::is_active() {
+                    if let Some(window) = app.get_webview_window("main") {
+                        if let Err(error) = window.show() {
+                            // No tray and no window: the process is running but
+                            // completely unreachable. Worth a loud log line.
+                            tracing::warn!(
+                                %error,
+                                "failed to show window after tray setup failed; app may be unreachable"
+                            );
+                        }
+                    }
+                }
             }
             Ok(())
         });
@@ -171,15 +269,30 @@ pub fn run() {
     #[cfg(desktop)]
     let builder = builder.on_window_event(|window, event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-            #[cfg(not(target_os = "macos"))]
-            if !tray::is_active() {
-                return;
+            // macOS: closing a window never quits the app. Platform
+            // convention, and not something the user setting overrides.
+            #[cfg(target_os = "macos")]
+            {
+                api.prevent_close();
+                if let Err(e) = window.hide() {
+                    tracing::warn!(error = %e, "failed to hide window");
+                }
             }
 
-            api.prevent_close();
-            tracing::debug!("App closed to system tray");
-            if let Err(e) = window.hide() {
-                tracing::warn!(error = %e, "failed to hide window");
+            // Windows/Linux: hide only when there is a tray icon to get back
+            // from AND the user wants background running. Otherwise fall
+            // through to a real close, which triggers RunEvent::Exit and
+            // shuts the node down.
+            #[cfg(not(target_os = "macos"))]
+            {
+                if !tray::is_active() || !tray::background_on_close() {
+                    return;
+                }
+                api.prevent_close();
+                tracing::debug!("App closed to system tray");
+                if let Err(e) = window.hide() {
+                    tracing::warn!(error = %e, "failed to hide window");
+                }
             }
         }
     });
@@ -212,6 +325,14 @@ pub fn run() {
 
 fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> {
     args.into_iter().find(|arg| !arg.starts_with('-'))
+}
+
+/// True when the process was launched by autostart and should not show a
+/// window. Exact match only, so a future `--hidden-something` cannot silently
+/// trigger it.
+#[cfg(desktop)]
+fn wants_hidden_launch(args: impl IntoIterator<Item = String>) -> bool {
+    args.into_iter().any(|arg| arg == "--hidden")
 }
 
 fn app_state_initial() -> AppState {
@@ -260,5 +381,43 @@ fn setup_common(app: &tauri::App) {
     #[cfg(target_os = "windows")]
     if let Some(window) = app.handle().get_webview_window("main") {
         platform::windows::window::adjust_initial_window_size(&window);
+    }
+}
+
+#[cfg(all(test, desktop))]
+mod hidden_launch_tests {
+    use super::wants_hidden_launch;
+
+    fn args(items: &[&str]) -> Vec<String> {
+        items.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn detects_the_hidden_flag() {
+        assert!(wants_hidden_launch(args(&["--hidden"])));
+    }
+
+    #[test]
+    fn ignores_an_absent_flag() {
+        assert!(!wants_hidden_launch(args(&[])));
+        assert!(!wants_hidden_launch(args(&["/Users/me/file.txt"])));
+    }
+
+    #[test]
+    fn coexists_with_a_launch_intent_path() {
+        // Autostart passes --hidden; a file association passes a path. Both
+        // can arrive together, and neither may shadow the other.
+        let both = args(&["--hidden", "/Users/me/file.txt"]);
+        assert!(wants_hidden_launch(both.clone()));
+        assert_eq!(
+            super::first_non_flag_arg(both),
+            Some("/Users/me/file.txt".to_string())
+        );
+    }
+
+    #[test]
+    fn does_not_match_partial_flags() {
+        assert!(!wants_hidden_launch(args(&["--hidden-extra"])));
+        assert!(!wants_hidden_launch(args(&["hidden"])));
     }
 }

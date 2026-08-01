@@ -39,7 +39,7 @@
 		"startSharing": "شروع اشتراک‌گذاری",
 		"startingShare": "در حال شروع...",
 		"stopSharing": "توقف اشتراک‌گذاری",
-		"shareThisTicket": "این تیکت رو به اشتراک بگذارید:",
+		"shareThisTicket": "تیکت اشتراک یک‌بارمصرف",
 		"sendThisTicket": "این تیکت رو برای کسی که میخواد فایل رو بگیره بفرستید",
 		"keepAppOpen": "تا پایان ارسال برنامه رو باز نگه دار",
 		"fileLabel": "فایل:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "دستگاه‌ها را در تنظیمات جفت کنید، سپس برای ارسال بدون لینک به اینجا برگردید.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "هنوز دستگاه جفت‌شده‌ای نیست",
-				"hint": "یک دستگاه انتخاب کنید - انتقال وقتی شروع می‌شود که بپذیرند.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "جفت‌کردن دستگاه‌ها در تنظیمات",
 				"nodeUnavailable": "ارسال به دستگاه در حال حاضر در دسترس نیست. همچنان می‌توانید از انتقال یک‌باره در تب دیگر استفاده کنید.",
 				"searchNoResults": "هیچ دستگاه جفت‌شده‌ای با جستجوی شما مطابقت ندارد.",
 				"searchPlaceholder": "جستجوی دستگاه‌های جفت‌شده",
-				"title": "ارسال به دستگاه جفت‌شده"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "ارسال به دستگاه جفت‌شده",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "هر کسی که این لینک را دارد می‌تواند فایل‌های شما را دریافت کند.",
 				"transferInProgress": "انتقال در حال انجام است - برای جزئیات، انتقال یک‌باره را باز کنید.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} می‌خواهد {{count}} فایل ({{size}}) برای شما بفرستد. برای شروع دانلود بپذیرید.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} می‌خواهد {{count}} فایل برای شما بفرستد. برای شروع دانلود بپذیرید.",
 		"receiveFromPairedTitle": "فایل ورودی از دستگاه جفت‌شده",
-		"saveLocation": "محل ذخیره:"
+		"saveLocation": "محل ذخیره:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "پیشرفت انتقال",
@@ -379,7 +387,14 @@
 			"thisDevice": "این دستگاه",
 			"thisDeviceHint": "نامی که به دستگاه‌های جفت‌شده نمایش داده می‌شود. سیستم‌عامل و نوع دستگاه به‌طور خودکار شناسایی می‌شوند.",
 			"title": "دستگاه‌های جفت‌شده",
-			"unpairedHint": "این دستگاه جفت‌سازی را لغو کرد. آن را از فهرست خود حذف کنید."
+			"unpairedHint": "این دستگاه جفت‌سازی را لغو کرد. آن را از فهرست خود حذف کنید.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

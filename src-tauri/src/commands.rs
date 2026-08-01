@@ -4,8 +4,9 @@ use engine::{
     build_discovery_mode, download, fetch_metadata, get_relay_status as engine_get_relay_status,
     resolve_relay_mode_with_fallback, start_share_items,
     verify_discovery as engine_verify_discovery, verify_relays as engine_verify_relays,
-    AddrInfoOptions, AppHandle, DeviceInfo, EventEmitter, FileMetadata, FilePreviewItem,
-    NodeService, PairedDevice, PairedDeviceInfo, ReceiveOptions, SendOptions,
+    AddrInfoOptions, AppHandle, DeviceInfo, Discoverability, EventEmitter, FileMetadata,
+    FilePreviewItem, NearbyDevice, NodeService, PairedDevice, PairedDeviceInfo, ReceiveOptions,
+    SendOptions,
 };
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -951,6 +952,67 @@ pub async fn verify_discovery(
     engine_verify_discovery(discovery).await
 }
 
+/// Extracts the persisted `discoverability` value from the raw contents of
+/// tauri-plugin-store's `settings.json` — the same file the frontend's
+/// `useAppSettingStore` writes (a zustand `persist` envelope, JSON-stringified
+/// under the `app_settings` key). `None` when the file, key, or field is
+/// missing or malformed; callers fall back to the default.
+#[cfg(any(desktop, target_os = "android", test))]
+fn parse_persisted_discoverability(raw: &str) -> Option<Discoverability> {
+    let file: serde_json::Value = serde_json::from_str(raw).ok()?;
+    let envelope: serde_json::Value =
+        serde_json::from_str(file.get("app_settings")?.as_str()?).ok()?;
+    serde_json::from_value(envelope.get("state")?.get("discoverability")?.clone()).ok()
+}
+
+/// Reads the user's persisted discoverability choice so it reaches
+/// `NodeService::start` *before* LAN discovery starts — an `Off`-persisted
+/// start must never register mDNS at all, not even for the moment it takes
+/// the webview to load and sync settings (`DeviceNodeSync` re-applies it
+/// then, as a safety net, the same way relay settings are re-applied).
+///
+/// A deliberate raw read of the store file rather than `StoreExt::store`:
+/// loading the store Rust-side would register it without the frontend's
+/// `LazyStore` options (defaults, autoSave), and the plugin silently reuses
+/// the first-registered instance.
+#[cfg(any(desktop, target_os = "android"))]
+fn load_persisted_discoverability(app_handle: &tauri::AppHandle) -> Discoverability {
+    let Ok(data_dir) = app_handle.path().app_data_dir() else {
+        return Discoverability::default();
+    };
+    let Ok(raw) = std::fs::read_to_string(data_dir.join("settings.json")) else {
+        return Discoverability::default();
+    };
+    parse_persisted_discoverability(&raw).unwrap_or_default()
+}
+
+/// Extracts the persisted `minimizeToTray` value from the raw contents of
+/// tauri-plugin-store's `settings.json`. Same envelope shape as
+/// `parse_persisted_discoverability` — see its doc comment for why this is a
+/// raw file read rather than `StoreExt::store`.
+#[cfg(any(desktop, test))]
+fn parse_persisted_minimize_to_tray(raw: &str) -> Option<bool> {
+    let file: serde_json::Value = serde_json::from_str(raw).ok()?;
+    let envelope: serde_json::Value =
+        serde_json::from_str(file.get("app_settings")?.as_str()?).ok()?;
+    envelope.get("state")?.get("minimizeToTray")?.as_bool()
+}
+
+/// The user's "keep running in the background" choice, read before the first
+/// window-close can happen. Defaults to `true`: closing to the tray is the
+/// behaviour every existing install already has (the old close handler hid
+/// unconditionally), so a missing key must not silently start quitting.
+#[cfg(desktop)]
+pub fn load_persisted_minimize_to_tray(app_handle: &tauri::AppHandle) -> bool {
+    let Ok(data_dir) = app_handle.path().app_data_dir() else {
+        return true;
+    };
+    let Ok(raw) = std::fs::read_to_string(data_dir.join("settings.json")) else {
+        return true;
+    };
+    parse_persisted_minimize_to_tray(&raw).unwrap_or(true)
+}
+
 #[cfg(any(desktop, target_os = "android"))]
 pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), String> {
     let data_dir = app_handle
@@ -961,14 +1023,21 @@ pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), Strin
     let (relay_mode, _) = resolve_relay_mode_with_fallback(None).await?;
     let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
     let discovery_mode = build_discovery_mode(None)?;
+    let discoverability = load_persisted_discoverability(&app_handle);
 
     let emitter = Arc::new(TauriEventEmitter {
         app_handle: app_handle.clone(),
     });
     let boxed_handle: AppHandle = Some(emitter);
-    let node = NodeService::start(&data_dir, relay_mode, discovery_mode, boxed_handle)
-        .await
-        .map_err(|e| format!("Failed to start device node: {e}"))?;
+    let node = NodeService::start(
+        &data_dir,
+        relay_mode,
+        discovery_mode,
+        discoverability,
+        boxed_handle,
+    )
+    .await
+    .map_err(|e| format!("Failed to start device node: {e}"))?;
     let state = app_handle.state::<AppStateMutex>();
     let mut guard = state.lock().await;
     guard.node = Some(Arc::new(node));
@@ -1274,6 +1343,244 @@ pub async fn respond_paired_invite(
     Ok(())
 }
 
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn list_nearby(state: State<'_, AppStateMutex>) -> Result<Vec<NearbyDevice>, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    Ok(node.list_nearby().await)
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn get_discoverability(
+    state: State<'_, AppStateMutex>,
+) -> Result<Discoverability, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    Ok(node.discoverability().await)
+}
+
+/// The frontend seam is `setDiscoverability` in
+/// `frontend/src/lib/pairing-api.ts` — its invoke payload key must match this
+/// command's `setting` parameter name.
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn set_discoverability(
+    setting: Discoverability,
+    state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    node.set_discoverability(setting).await.map_err(|error| {
+        tracing::error!(
+            target: "dashbeam::_events::nearby::set_discoverability_failed",
+            ?setting,
+            %error,
+        );
+        format!("Failed to update discoverability: {error}")
+    })?;
+
+    Ok(())
+}
+
+#[derive(serde::Serialize)]
+pub struct NearbyStatusResponse {
+    /// Why LAN discovery is unavailable (mDNS pump failed to start), or
+    /// `None` when it's running or deliberately off. Queryable because the
+    /// `nearby-unavailable` event can fire during node init, before the
+    /// frontend has any listener registered.
+    pub reason: Option<String>,
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn nearby_status(
+    state: State<'_, AppStateMutex>,
+) -> Result<NearbyStatusResponse, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    Ok(NearbyStatusResponse {
+        reason: node.nearby_unavailable_reason(),
+    })
+}
+
+/// Delivers the caller's active share ticket to a Nearby device over the
+/// control ALPN — same path as `invite_paired_device`. The receiver's
+/// fingerprint confirmation is what promotes the peer to paired.
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn invite_nearby_device(
+    endpoint_id: String,
+    blob_ticket: String,
+    file_count: u32,
+    total_size: u64,
+    state: State<'_, AppStateMutex>,
+) -> Result<InviteDelivered, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    let delivered = node
+        .invite_nearby_device(&endpoint_id, &blob_ticket, file_count, total_size)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(InviteDelivered { delivered })
+}
+
+/// Asks a Nearby device to pair (no file share). Receiver confirms on name /
+/// device type; accept reuses `respond_nearby_invite`.
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn request_nearby_pair(
+    endpoint_id: String,
+    state: State<'_, AppStateMutex>,
+) -> Result<InviteDelivered, String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    let delivered = node
+        .request_nearby_pair(&endpoint_id)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(InviteDelivered { delivered })
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn respond_nearby_invite(
+    endpoint_id: String,
+    accept: bool,
+    block: bool,
+    state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let node = {
+        let guard = state.lock().await;
+        require_node_arc(&guard)?
+    };
+    let result = if accept {
+        node.accept_nearby_invite(&endpoint_id).await
+    } else {
+        node.decline_nearby_invite(&endpoint_id, block).await
+    };
+    result.map_err(|e| e.to_string())
+}
+
+/// Show a desktop notification that stays as long as the OS allows.
+///
+/// The Tauri notification plugin always uses the default timeout (often a
+/// couple of seconds) and does not expose a timeout API. Invite toasts need
+/// to be readable/actionable, so desktop goes through notify-rust with
+/// `Timeout::Never` (Linux: until dismissed; Windows: longest toast; macOS
+/// ignores timeout — banner length is system-controlled).
+#[cfg(desktop)]
+#[tauri::command]
+pub fn show_system_notification(
+    app: tauri::AppHandle,
+    title: String,
+    body: Option<String>,
+    icon: Option<String>,
+) -> Result<(), String> {
+    let mut notification = notify_rust::Notification::new();
+    let app_name = app
+        .config()
+        .product_name
+        .clone()
+        .unwrap_or_else(|| "DashBeam".into());
+    notification.appname(&app_name);
+    notification.summary(&title);
+    if let Some(body) = body.as_deref() {
+        notification.body(body);
+    }
+    if let Some(icon) = icon.as_deref() {
+        notification.icon(icon);
+    } else {
+        notification.auto_icon();
+    }
+    notification.timeout(notify_rust::Timeout::Never);
+
+    #[cfg(windows)]
+    {
+        let exe = tauri::utils::platform::current_exe().map_err(|e| e.to_string())?;
+        let exe_dir = exe
+            .parent()
+            .ok_or_else(|| "failed to get exe directory".to_string())?;
+        let curr_dir = exe_dir.display().to_string();
+        let sep = std::path::MAIN_SEPARATOR;
+        // AppUserModelID only when installed — matching tauri-plugin-notification.
+        if !(curr_dir.ends_with(&format!("{sep}target{sep}debug"))
+            || curr_dir.ends_with(&format!("{sep}target{sep}release")))
+        {
+            notification.app_id(&app.config().identifier);
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let identifier = app.config().identifier.clone();
+        let _ = notify_rust::set_application(if tauri::is_dev() {
+            "com.apple.Terminal"
+        } else {
+            &identifier
+        });
+    }
+
+    notification.show().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Mirror the frontend's "keep running in the background" switch into the
+/// process-wide flag the window-close handler reads.
+#[cfg(desktop)]
+#[tauri::command]
+pub fn set_background_on_close(enabled: bool) {
+    crate::tray::set_background_on_close(enabled);
+}
+
+/// Push translated tray strings from the frontend. Best-effort: a missing
+/// tray (build failed, or not yet created) is a no-op.
+#[cfg(desktop)]
+#[tauri::command]
+pub fn set_tray_labels(app_handle: tauri::AppHandle, labels: crate::tray::TrayLabels) {
+    crate::tray::apply_labels(&app_handle, labels);
+}
+
+/// Whether the OS currently launches DashBeam at sign-in. The OS is the
+/// source of truth — a user who removed the login item outside the app must
+/// see the toggle turn itself off.
+/// `null` means the platform cannot be asked (Flatpak) — the caller keeps
+/// its cached value rather than prompting the user.
+#[cfg(desktop)]
+#[tauri::command]
+pub fn autostart_is_enabled(app_handle: tauri::AppHandle) -> Result<Option<bool>, String> {
+    crate::autostart::is_enabled(&app_handle)
+}
+
+/// Request an autostart change. Returns the state the OS ended up in, which
+/// may differ from `enabled` when the platform (or the user, via a portal
+/// dialog) refuses.
+///
+/// `async` on purpose: Tauri runs synchronous commands on the main thread, and
+/// the Flatpak path blocks on a portal consent dialog until the user answers
+/// it. As an async command Tauri drives this off the main thread, so the
+/// window keeps painting while the dialog is up.
+#[cfg(desktop)]
+#[tauri::command]
+pub async fn autostart_set(app_handle: tauri::AppHandle, enabled: bool) -> Result<bool, String> {
+    crate::autostart::set(&app_handle, enabled).await
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1288,6 +1595,60 @@ mod tests {
             .expect("clock should be after unix epoch")
             .as_nanos();
         std::env::temp_dir().join(format!("{}-{}-{}.txt", name_prefix, std::process::id(), ts))
+    }
+
+    /// Locks the persisted-settings seam: the raw `settings.json` layout this
+    /// parses is written by the frontend's `useAppSettingStore` (zustand
+    /// `persist` envelope, stringified under `app_settings`).
+    #[test]
+    fn parse_persisted_discoverability_reads_the_zustand_envelope() {
+        let envelope = serde_json::json!({ "state": { "discoverability": "off", "darkMode": true }, "version": 0 });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(
+            parse_persisted_discoverability(&file),
+            Some(Discoverability::Off)
+        );
+
+        let envelope = serde_json::json!({ "state": { "discoverability": "paired-only" } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(
+            parse_persisted_discoverability(&file),
+            Some(Discoverability::PairedOnly)
+        );
+    }
+
+    #[test]
+    fn parse_persisted_discoverability_tolerates_missing_or_malformed_data() {
+        assert_eq!(parse_persisted_discoverability("not json"), None);
+        assert_eq!(parse_persisted_discoverability("{}"), None);
+        let file = serde_json::json!({ "app_settings": "{\"state\":{}}" }).to_string();
+        assert_eq!(parse_persisted_discoverability(&file), None);
+        let envelope = serde_json::json!({ "state": { "discoverability": "bogus" } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_discoverability(&file), None);
+    }
+
+    #[test]
+    fn parse_persisted_minimize_to_tray_reads_the_zustand_envelope() {
+        let envelope = serde_json::json!({ "state": { "minimizeToTray": false, "darkMode": true }, "version": 0 });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), Some(false));
+
+        let envelope = serde_json::json!({ "state": { "minimizeToTray": true } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), Some(true));
+    }
+
+    #[test]
+    fn parse_persisted_minimize_to_tray_tolerates_missing_or_malformed_data() {
+        assert_eq!(parse_persisted_minimize_to_tray("not json"), None);
+        assert_eq!(parse_persisted_minimize_to_tray("{}"), None);
+        let file = serde_json::json!({ "app_settings": "{\"state\":{}}" }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), None);
+        // Wrong type must not panic or coerce.
+        let envelope = serde_json::json!({ "state": { "minimizeToTray": "yes" } });
+        let file = serde_json::json!({ "app_settings": envelope.to_string() }).to_string();
+        assert_eq!(parse_persisted_minimize_to_tray(&file), None);
     }
 
     #[tokio::test]
@@ -1322,7 +1683,7 @@ mod tests {
         .await
         .expect("start_share should succeed");
 
-        let fetched = fetch_ticket_metadata(share.ticket.clone(), None)
+        let fetched = fetch_ticket_metadata(share.ticket.clone(), None, None)
             .await
             .expect("fetch_ticket_metadata command should succeed");
 

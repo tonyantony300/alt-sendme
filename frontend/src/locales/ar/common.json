@@ -39,7 +39,7 @@
 		"startSharing": "بدء المشاركة",
 		"startingShare": "بدء المشاركة...",
 		"stopSharing": "إيقاف المشاركة",
-		"shareThisTicket": "شارك هذه التذكرة:",
+		"shareThisTicket": "تذكرة مشاركة لمرة واحدة",
 		"sendThisTicket": "أرسل هذه التذكرة للشخص الذي يريد استقبال ملفك",
 		"keepAppOpen": "احتفظ بهذا التطبيق مفتوحاً بينما يقوم الآخرون بتنزيل ملفاتك",
 		"fileLabel": "الملف:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "اقترن الأجهزة في الإعدادات، ثم عد هنا للإرسال دون رابط.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "لا توجد أجهزة مقترنة بعد",
-				"hint": "اختر جهازاً - يبدأ النقل عند قبولهم.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "اقترن الأجهزة في الإعدادات",
 				"nodeUnavailable": "إرسال الأجهزة غير متاح حالياً. لا يزال بإمكانك استخدام النقل لمرة واحدة من التبويب الآخر.",
 				"searchNoResults": "لا توجد أجهزة مقترنة تطابق بحثك.",
 				"searchPlaceholder": "البحث في الأجهزة المقترنة",
-				"title": "إرسال إلى جهاز مقترن"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "إرسال إلى جهاز مقترن",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "يمكن لأي شخص لديه هذا الرابط استقبال ملفاتك.",
 				"transferInProgress": "النقل قيد التقدم - افتح النقل لمرة واحدة لعرض التفاصيل.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "يريد {{sender}} إرسال {{count}} ملف/ملفات ({{size}}) إليك. اقبل لبدء التنزيل.",
 		"receiveFromPairedDescriptionNoSize": "يريد {{sender}} إرسال {{count}} ملف/ملفات إليك. اقبل لبدء التنزيل.",
 		"receiveFromPairedTitle": "ملف وارد من جهاز مقترن",
-		"saveLocation": "موقع الحفظ:"
+		"saveLocation": "موقع الحفظ:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "تقدم النقل",
@@ -379,7 +387,14 @@
 			"thisDevice": "هذا الجهاز",
 			"thisDeviceHint": "الاسم المعروض للأجهزة التي تقترن معها. يتم اكتشاف نظام التشغيل ونوع الجهاز تلقائياً.",
 			"title": "الأجهزة المقترنة",
-			"unpairedHint": "أزال هذا الجهاز الاقتران. أزله من قائمتك."
+			"unpairedHint": "أزال هذا الجهاز الاقتران. أزله من قائمتك.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

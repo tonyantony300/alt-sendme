@@ -39,7 +39,7 @@
 		"startSharing": "Freigabe starten",
 		"startingShare": "Freigabe wird gestartet...",
 		"stopSharing": "Freigabe beenden",
-		"shareThisTicket": "Dieses Ticket teilen:",
+		"shareThisTicket": "Einmaliges Share-Ticket",
 		"sendThisTicket": "Senden Sie dieses Ticket an die Person, die Ihre Datei empfangen möchte",
 		"keepAppOpen": "Lassen Sie diese App geöffnet, während andere Ihre Dateien herunterladen",
 		"fileLabel": "Datei:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Koppeln Sie Geräte in den Einstellungen und kehren Sie hierher zurück, um ohne Link zu senden.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Noch keine gekoppelten Geräte",
-				"hint": "Wählen Sie ein Gerät - die Übertragung startet, sobald es angenommen wird.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Geräte in Einstellungen koppeln",
 				"nodeUnavailable": "Senden an Geräte ist derzeit nicht verfügbar. Sie können weiterhin „Einmalige Übertragung“ im anderen Tab verwenden.",
 				"searchNoResults": "Keine gekoppelten Geräte entsprechen Ihrer Suche.",
 				"searchPlaceholder": "Gekoppelte Geräte suchen",
-				"title": "An gekoppeltes Gerät senden"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "An gekoppeltes Gerät senden",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Jeder mit diesem Link kann Ihre Dateien empfangen.",
 				"transferInProgress": "Übertragung läuft - öffnen Sie „Einmalige Übertragung“, um Details anzuzeigen.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} möchte Ihnen {{count}} Datei(en) senden ({{size}}). Annehmen, um den Download zu starten.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} möchte Ihnen {{count}} Datei(en) senden. Annehmen, um den Download zu starten.",
 		"receiveFromPairedTitle": "Eingehende Datei von gekoppeltem Gerät",
-		"saveLocation": "Speicherort:"
+		"saveLocation": "Speicherort:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Übertragungsfortschritt",
@@ -379,7 +387,14 @@
 			"thisDevice": "Dieses Gerät",
 			"thisDeviceHint": "Name, der gekoppelten Geräten angezeigt wird. Betriebssystem und Gerätetyp werden automatisch erkannt.",
 			"title": "Gekoppelte Geräte",
-			"unpairedHint": "Dieses Gerät hat die Kopplung aufgehoben. Entfernen Sie es aus Ihrer Liste."
+			"unpairedHint": "Dieses Gerät hat die Kopplung aufgehoben. Entfernen Sie es aus Ihrer Liste.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

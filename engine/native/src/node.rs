@@ -12,33 +12,71 @@ use iroh::endpoint::{
 use iroh::protocol::{AcceptError, ProtocolHandler, Router};
 use iroh::address_lookup::pkarr::{PkarrPublisher, PkarrResolver};
 use iroh::address_lookup::dns::DnsAddressLookup;
-use iroh::{EndpointAddr, EndpointId, TransportAddr};
+use iroh::EndpointId;
 use protocol::{
-    apply_options, export_connection_keying_material, read_message, sign_challenge,
-    verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, DiscoveryModeOption,
-    InviteResponse, PairedDevice, PairingStatus, RememberVote, CONTROL_ALPN,
-    PRESENCE_CONNECT_TIMEOUT_SECS,
+    allows_unpaired_control, apply_options, export_connection_keying_material, read_message,
+    should_answer_identity, should_publish_mdns, sign_challenge, unpaired_message_allowed,
+    verify_challenge, write_message, AddrInfoOptions, AppHandle, ControlMessage, Discoverability,
+    DiscoveryModeOption, InviteResponse, PairedDevice, PairingStatus, RememberVote,
+    CONTROL_ALPN, PRESENCE_CONNECT_TIMEOUT_SECS,
 };
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{mpsc, Mutex, RwLock};
 use tokio::task::JoinHandle;
 use tracing::debug;
 
 use crate::device_identity::{
     load_or_create_identity, DeviceIdentity, DeviceInfo, PairedDeviceInfo, PairedDeviceStore,
 };
+use crate::lan_discovery::{LanDiscovery, LanEvent};
+use crate::nearby::{NearbyDevice, NearbyRegistry, ObserveOutcome};
 use crate::paired_connections::{invite_wait_timeout, PairedConnectionManager};
 use crate::pairing_util::{build_control_connect_addr, set_presence};
+use crate::rate_limit::UnpairedRateLimiter;
 use crate::runtime::NodeRuntime;
 
 #[derive(Debug)]
-struct AccessState {
-    allowed: HashSet<EndpointId>,
-    pairing_host_open: bool,
+pub(crate) struct AccessState {
+    pub(crate) allowed: HashSet<EndpointId>,
+    pub(crate) pairing_host_open: bool,
+    pub(crate) discoverability: Discoverability,
+}
+
+/// How long an *unpaired* peer's control connection may take to present a
+/// direct (non-relay) path before it's rejected. The handshake can complete
+/// over the relay a beat before hole punching validates the direct path, so
+/// an immediate check would falsely reject genuine LAN peers; on a local
+/// network the direct path settles well inside this window.
+const UNPAIRED_DIRECT_PATH_DEADLINE: Duration = Duration::from_secs(3);
+
+/// Poll interval while waiting out [`UNPAIRED_DIRECT_PATH_DEADLINE`].
+const UNPAIRED_DIRECT_PATH_POLL: Duration = Duration::from_millis(100);
+
+/// Whether `conn` currently has at least one direct (non-relay) path,
+/// waiting up to [`UNPAIRED_DIRECT_PATH_DEADLINE`] for one to appear.
+///
+/// This is the closest iroh 1.0.3 gets to "is this peer actually nearby":
+/// [`Connection::paths`] snapshots the open paths and each path knows whether
+/// it is IP or relay. It is deliberately *not* a LAN check — a remote peer
+/// whose hole punch succeeds also earns a direct path — but it shuts out the
+/// cheapest abuse, an arbitrary internet stranger reaching us through the
+/// relay with nothing but our endpoint id.
+async fn has_direct_path(conn: &Connection) -> bool {
+    let deadline = tokio::time::Instant::now() + UNPAIRED_DIRECT_PATH_DEADLINE;
+    loop {
+        if conn.paths().iter().any(|path| path.is_ip()) {
+            return true;
+        }
+        if tokio::time::Instant::now() >= deadline {
+            return false;
+        }
+        tokio::time::sleep(UNPAIRED_DIRECT_PATH_POLL).await;
+    }
 }
 
 #[derive(Debug)]
 struct PairedOnlyHook {
     access: Arc<RwLock<AccessState>>,
+    blocked: Arc<RwLock<HashSet<String>>>,
 }
 
 impl EndpointHooks for PairedOnlyHook {
@@ -52,10 +90,32 @@ impl EndpointHooks for PairedOnlyHook {
             return AfterHandshakeOutcome::accept();
         }
         let remote = conn.remote_id();
-        let access = self.access.read().await;
-        let allowed = access.allowed.contains(&remote);
-        if access.pairing_host_open || allowed {
+        if self.blocked.read().await.contains(&remote.to_string()) {
+            return AfterHandshakeOutcome::Reject {
+                error_code: 403u32.into(),
+                reason: b"blocked peer".to_vec(),
+            };
+        }
+        let (allowed, pairing_host_open, discoverability) = {
+            let access = self.access.read().await;
+            (
+                access.allowed.contains(&remote),
+                access.pairing_host_open,
+                access.discoverability,
+            )
+        };
+        if pairing_host_open || allowed {
 
+            return AfterHandshakeOutcome::accept();
+        }
+
+        // A stranger's connection is only welcome under `Everyone`, and even
+        // then only when it has a direct path — `allows_unpaired_control`
+        // is a *local network* affordance, but the endpoint is reachable from
+        // the whole internet via the relay, and anyone holding our endpoint id
+        // could otherwise pop invite dialogs remotely. Paired peers above are
+        // exempt: their presence connections legitimately run relay-only.
+        if allows_unpaired_control(discoverability) && has_direct_path(conn).await {
             return AfterHandshakeOutcome::accept();
         }
 
@@ -77,6 +137,37 @@ struct ControlCtx {
     home_relay_url: Arc<std::sync::RwLock<Option<String>>>,
     presence: Arc<std::sync::RwLock<HashMap<String, bool>>>,
     paired_connections: Arc<PairedConnectionManager>,
+    /// Endpoint ids this node has sent a nearby invite to and not yet seen a
+    /// response for, with just enough identity to record them as paired if
+    /// that response is an accept. Consulted when an *unpaired* peer sends an
+    /// `InviteResponse` — only acted on if it's in here, so an arbitrary
+    /// unpaired stranger can't spoof an acceptance for an invite it never
+    /// received. See `NodeService::invite_nearby_device` (adds) and
+    /// `ControlProtocol::handle_paired_control_message` (consumes).
+    pending_nearby_invites: Arc<RwLock<HashMap<String, PendingNearbyInvite>>>,
+    /// Devices seen on the local network but not yet paired. Shared with
+    /// `NodeService` so the sender's half of mutual nearby pairing
+    /// (`ControlProtocol::commit_nearby_pairing`) can expire its own Nearby
+    /// entry for a peer it just committed to pairing with, mirroring what
+    /// `NodeService::accept_nearby_invite` does on the receiver's side.
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    /// Token buckets throttling control messages from *unpaired* peers — see
+    /// `rate_limit` module docs. Shared with `NodeService` (like `blocked`)
+    /// so a network rebuild doesn't hand strangers a fresh allowance.
+    unpaired_limiter: Arc<std::sync::Mutex<UnpairedRateLimiter>>,
+}
+
+/// Snapshot of a nearby peer's identity, captured when we invite them, kept
+/// just long enough to record them as paired if they accept. Not the full
+/// `NearbyDevice` — only what `PairedDevice` needs — because the Nearby
+/// entry itself may have expired by the time the response arrives (the peer
+/// stopped advertising, or already got promoted locally), and this is a
+/// standalone fallback, not a live reference to it.
+#[derive(Debug, Clone)]
+struct PendingNearbyInvite {
+    display_name: String,
+    device_type: String,
+    os: String,
 }
 
 #[derive(Clone)]
@@ -98,12 +189,15 @@ impl ControlProtocol {
 
         if allowed {
 
-            return self.handle_paired_peer_connection(conn).await;
+            return self.handle_control_session(conn, true).await;
         }
 
         if !pairing_host_open {
-
-            return Ok(());
+            // Not paired and no pairing window is open: the only way we got
+            // this far is the handshake gate accepting us under
+            // `Discoverability::Everyone`. Serve the reduced unpaired
+            // message set (identity probes, unpaired invites).
+            return self.handle_control_session(conn, false).await;
         }
 
         let keying = export_connection_keying_material(&conn).context("export keying material")?;
@@ -244,6 +338,10 @@ impl ControlProtocol {
                                 &remote.to_string(),
                                 false
                             );
+                            self.ctx
+                                .paired_connections
+                                .forget(&remote.to_string())
+                                .await;
                             let payload = serde_json::json!({
                                 "endpoint_id": device.endpoint_id,
                                 "display_name": device.display_name,
@@ -257,6 +355,11 @@ impl ControlProtocol {
                             }
                         }
                     }
+                }
+                ControlMessage::WhoAreYou
+                | ControlMessage::Identity { .. }
+                | ControlMessage::PairRequest { .. } => {
+                    // Discovery / pair-request messages; ignore on pairing-host sessions
                 }
             }
 
@@ -291,10 +394,7 @@ impl ControlProtocol {
                     self.allow_peer(remote).await;
                     self.ctx.paired_connections.refresh().await;
 
-                    if let Some(handle) = &self.ctx.app_handle {
-
-                        let _ = handle.emit_event("device-paired");
-                    }
+                    crate::pairing_util::emit_device_paired(&self.ctx.app_handle, display_name);
                 }
                 pairing_completed = true;
                 break;
@@ -343,28 +443,33 @@ impl ControlProtocol {
         Ok(())
     }
 
-    async fn handle_paired_peer_connection(&self, conn: Connection) -> anyhow::Result<()> {
+    /// Serves an accepted control connection's message loop. `peer_is_paired`
+    /// distinguishes an established relationship (tracked in
+    /// `paired_connections` for reuse) from a peer the handshake gate let
+    /// through only because we're discoverable — an unpaired peer may probe
+    /// our identity or send an unpaired invite, and nothing else.
+    ///
+    /// Registration with `paired_connections` is deliberately lazy: a paired
+    /// peer can still open a short-lived, probe-only connection (e.g. our own
+    /// `probe_identity`, dialed against someone we already know), and that
+    /// must never clobber the session entry the peer's real persistent
+    /// control connection occupies. Only a message that implies an ongoing
+    /// relationship (anything but `WhoAreYou`) marks this connection as the
+    /// one to register — and only that connection gets unregistered again.
+    async fn handle_control_session(
+        &self,
+        conn: Connection,
+        peer_is_paired: bool,
+    ) -> anyhow::Result<()> {
         let remote = conn.remote_id();
         let endpoint_id = remote.to_string();
+        let mut registered = false;
 
-        self.ctx
-            .paired_connections
-            .register_inbound(&endpoint_id, conn.clone())
-            .await;
-
-        let keying = match export_connection_keying_material(&conn) {
-            Ok(keying) => keying,
-            Err(err) => {
-                self.ctx
-                    .paired_connections
-                    .unregister_inbound(&endpoint_id)
-                    .await;
-                return Err(err).context("export keying material for paired session");
-            }
-        };
+        let keying = export_connection_keying_material(&conn)
+            .context("export keying material for control session")?;
 
         loop {
-            let (_send, mut recv) = match conn.accept_bi().await {
+            let (mut send, mut recv) = match conn.accept_bi().await {
                 Ok(streams) => {
 
                     streams
@@ -383,20 +488,80 @@ impl ControlProtocol {
                 }
             };
 
-            let unpaired = self
-                .handle_paired_control_message(&remote, &keying, msg)
+            // The handshake gate decided whether to accept the connection at
+            // all; this decides what may travel across it. An unpaired peer
+            // sending a relationship message is buggy or hostile either way.
+            if !peer_is_paired && !unpaired_message_allowed(&msg) {
+                conn.close(403u32.into(), b"not permitted for unpaired peer");
+                break;
+            }
+
+            // Every message an unpaired peer sends costs a token; an empty
+            // bucket means it's probing or inviting in a loop — drop the
+            // connection rather than serving the spam. Paired peers are never
+            // charged.
+            if !peer_is_paired {
+                let allowed_now = self
+                    .ctx
+                    .unpaired_limiter
+                    .lock()
+                    .expect("unpaired limiter lock")
+                    .allow(&endpoint_id, std::time::Instant::now());
+                if !allowed_now {
+                    tracing::debug!("rate-limiting unpaired control messages from {remote}");
+                    conn.close(429u32.into(), b"unpaired control rate limit");
+                    break;
+                }
+            }
+
+            if let ControlMessage::WhoAreYou = msg {
+                let setting = self.ctx.access.read().await.discoverability;
+                if !should_answer_identity(setting, peer_is_paired) {
+                    if !peer_is_paired {
+                        conn.close(403u32.into(), b"not discoverable");
+                        break;
+                    }
+                    // A paired peer's session must survive a refused probe —
+                    // ignore it and keep serving this connection.
+                    continue;
+                }
+                let info = DeviceInfo::from(self.ctx.identity.as_ref());
+                let reply = ControlMessage::Identity {
+                    endpoint_id: info.endpoint_id,
+                    display_name: info.display_name,
+                    device_type: info.device_type,
+                    os: info.os,
+                };
+                if let Err(err) = write_message(&mut send, &reply).await {
+                    tracing::debug!("identity reply failed: {err:#}");
+                }
+                continue;
+            }
+
+            if peer_is_paired && !registered {
+                self.ctx
+                    .paired_connections
+                    .register_inbound(&endpoint_id, conn.clone())
+                    .await;
+                registered = true;
+            }
+
+            let unpaired_now = self
+                .handle_paired_control_message(&remote, &keying, msg, peer_is_paired)
                 .await;
-            if unpaired {
+            if unpaired_now {
                 // Close so the sender's delivery wait resolves promptly.
                 conn.close(0u32.into(), b"unpaired");
                 break;
             }
         }
 
-        self.ctx
-            .paired_connections
-            .unregister_inbound(&endpoint_id)
-            .await;
+        if registered {
+            self.ctx
+                .paired_connections
+                .unregister_inbound(&endpoint_id, &conn)
+                .await;
+        }
 
         Ok(())
     }
@@ -407,6 +572,7 @@ impl ControlProtocol {
         remote: &EndpointId,
         keying: &[u8],
         msg: ControlMessage,
+        peer_is_paired: bool,
     ) -> bool {
         match msg {
             ControlMessage::Invite {
@@ -425,7 +591,51 @@ impl ControlProtocol {
                     &sender_name,
                 );
             }
+            ControlMessage::PairRequest {
+                sender_name,
+                device_type,
+                os,
+            } => {
+                crate::pairing_util::emit_nearby_pair_request(
+                    &self.ctx.app_handle,
+                    &remote.to_string(),
+                    &sender_name,
+                    &device_type,
+                    &os,
+                );
+            }
             ControlMessage::InviteResponse { response, .. } => {
+                // A paired peer's response always corresponds to something we
+                // sent (`invite_paired_device` requires the target to already
+                // be in our allowlist). An unpaired peer has no such
+                // guarantee — anyone could dial in and claim to be answering
+                // an invite — so only act on it if it matches a nearby
+                // invite this node actually sent.
+                if !peer_is_paired {
+                    let pending = self
+                        .ctx
+                        .pending_nearby_invites
+                        .write()
+                        .await
+                        .remove(&remote.to_string());
+                    let Some(pending) = pending else {
+                        tracing::debug!(
+                            "ignoring InviteResponse from unpaired {remote} with no outstanding nearby invite"
+                        );
+                        return false;
+                    };
+                    // Mirror what `accept_nearby_invite` does on the
+                    // receiver's side: without this, the receiver's
+                    // persistent presence connection back to us is rejected
+                    // (their `Recognition` isn't allowed from a peer we still
+                    // consider unpaired), so presence/reconnect never
+                    // establishes in that direction. A decline stays
+                    // toast-only — nothing to commit.
+                    if matches!(response, InviteResponse::Accepted) {
+                        self.commit_nearby_pairing(remote, pending).await;
+                    }
+                }
+
                 let response_str = match response {
                     InviteResponse::Accepted => "accepted",
                     InviteResponse::Declined => "declined",
@@ -500,6 +710,54 @@ impl ControlProtocol {
         false
     }
 
+    /// Commits the sender's half of mutual nearby pairing: seeing our own
+    /// invite accepted is the same kind of durable trust decision accepting
+    /// one is, so it gets the same treatment `NodeService::accept_nearby_invite`
+    /// gives the receiver — a `PairedDevice` record, an allowlist entry, a
+    /// `paired_connections` refresh, and the `device-paired` event (reused,
+    /// not a new one) so both platform UIs pick it up the same way.
+    ///
+    /// Without this, pairing stayed one-sided: the receiver trusted us, but
+    /// we still saw them as an unpaired stranger, so their persistent
+    /// presence connection back to us kept getting rejected (their
+    /// `Recognition` isn't allowed from a peer we don't consider paired) and
+    /// presence/reconnect never established in that direction.
+    async fn commit_nearby_pairing(&self, remote: &EndpointId, pending: PendingNearbyInvite) {
+        let endpoint_id = remote.to_string();
+        let now = protocol::identity::unix_now_ms();
+        if let Err(err) = self.ctx.paired_store.remember(PairedDevice {
+            endpoint_id: endpoint_id.clone(),
+            display_name: pending.display_name,
+            device_type: pending.device_type,
+            os: pending.os,
+            paired_at: now,
+            last_seen_at: now,
+            relay_url: None,
+            pairing_status: PairingStatus::default(),
+        }) {
+            tracing::debug!(
+                "failed to remember nearby peer {remote} after mutual accept: {err:#}"
+            );
+            return;
+        }
+
+        // Mirrors `accept_nearby_invite`: a paired record must not also show
+        // under Nearby.
+        self.ctx.nearby.lock().await.expire(&endpoint_id);
+        self.ctx.access.write().await.allowed.insert(*remote);
+        self.ctx.paired_connections.refresh().await;
+
+        let display_name = self
+            .ctx
+            .paired_store
+            .get(&endpoint_id)
+            .ok()
+            .flatten()
+            .map(|d| d.display_name)
+            .unwrap_or_default();
+        crate::pairing_util::emit_device_paired(&self.ctx.app_handle, &display_name);
+    }
+
     async fn is_allowed(&self, remote: &EndpointId) -> bool {
         self.ctx.access.read().await.allowed.contains(remote)
     }
@@ -523,28 +781,65 @@ impl ProtocolHandler for ControlProtocol {
 }
 
 pub struct NodeService {
-    runtime: Arc<Mutex<NodeRuntime>>,
-    identity: Arc<DeviceIdentity>,
-    paired_store: Arc<PairedDeviceStore>,
-    access: Arc<RwLock<AccessState>>,
-    pairing_host_open: Arc<AtomicBool>,
-    pairing_host_persistent: Arc<AtomicBool>,
+    pub(crate) runtime: Arc<Mutex<NodeRuntime>>,
+    pub(crate) identity: Arc<DeviceIdentity>,
+    pub(crate) paired_store: Arc<PairedDeviceStore>,
+    pub(crate) access: Arc<RwLock<AccessState>>,
+    pub(crate) pairing_host_open: Arc<AtomicBool>,
+    pub(crate) pairing_host_persistent: Arc<AtomicBool>,
     /// True after the endpoint has reached its home relay (or relay is disabled).
     network_ready: Arc<AtomicBool>,
-    pairing_expire_task: Mutex<Option<JoinHandle<()>>>,
-    paired_connections: Arc<PairedConnectionManager>,
+    pub(crate) pairing_expire_task: Mutex<Option<JoinHandle<()>>>,
+    pub(crate) paired_connections: Arc<PairedConnectionManager>,
     connections_supervisor: Mutex<Option<JoinHandle<()>>>,
     presence: Arc<std::sync::RwLock<HashMap<String, bool>>>,
-    app_handle: AppHandle,
+    pub(crate) app_handle: AppHandle,
     relay_mode: Mutex<RelayMode>,
     discovery_mode: Mutex<DiscoveryModeOption>,
+    /// Devices seen on the local network but not yet paired. Fed by
+    /// `lan_discovery`'s mDNS pump; see `spawn_lan_event_loop`.
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    /// `None` when discovery isn't running: `Discoverability::Off`, or the
+    /// mDNS pump failed to start (no multicast, VPN, isolated guest network).
+    lan_discovery: Mutex<Option<LanDiscoveryHandle>>,
+    /// Why LAN discovery is unavailable (`Some(reason)` after the mDNS pump
+    /// failed to start), or `None` when it's running — or deliberately off.
+    /// The `nearby-unavailable` event announcing the failure can fire during
+    /// node init, before any frontend listener exists; this keeps the reason
+    /// queryable (`nearby_unavailable_reason`) so the UI can hydrate it.
+    nearby_unavailable: Arc<std::sync::RwLock<Option<String>>>,
+    /// See `ControlCtx::unpaired_limiter`. Owned here so rebuilds reuse it.
+    unpaired_limiter: Arc<std::sync::Mutex<UnpairedRateLimiter>>,
+    /// Peers a local user explicitly declined-and-blocked from a nearby
+    /// invite. Consulted by `PairedOnlyHook::after_handshake`, ahead of the
+    /// `Discoverability` check, so a blocked peer is rejected at the QUIC
+    /// handshake — before it can send anything at all.
+    blocked: Arc<RwLock<HashSet<String>>>,
+    /// Endpoint ids this node has sent a nearby invite to and not yet seen a
+    /// response for. See `ControlCtx::pending_nearby_invites` for why this
+    /// exists — the same map, shared with `ControlProtocol` via `ControlCtx`
+    /// so the receiving side of the control connection can consult it.
+    pending_nearby_invites: Arc<RwLock<HashMap<String, PendingNearbyInvite>>>,
+    /// Serializes `reconfigure_network`, `set_discoverability`, and
+    /// `shutdown` — all of them tear down and/or rebuild `runtime` and
+    /// `lan_discovery`. Held for the whole decide-then-rebuild-then-settle
+    /// sequence in each, not just the rebuild itself, so a decision made
+    /// while holding it (e.g. "did this transition cross the `Off`
+    /// boundary?") can't go stale before its consequence (starting
+    /// discovery, clearing the registry) runs.
+    network_transition: Mutex<()>,
 }
 
 impl NodeService {
+    /// `discoverability` is the persisted user setting, applied *before*
+    /// discovery starts — a device whose owner chose `Off` must never
+    /// register the mDNS publisher, not even for the moment it would take the
+    /// frontend to sync the setting after the webview loads.
     pub async fn start(
         data_dir: &Path,
         relay_mode: RelayMode,
         discovery_mode: DiscoveryModeOption,
+        discoverability: Discoverability,
         app_handle: AppHandle,
     ) -> anyhow::Result<Self> {
 
@@ -576,15 +871,28 @@ impl NodeService {
         let access = Arc::new(RwLock::new(AccessState {
             allowed: allowed.clone(),
             pairing_host_open: false,
+            discoverability,
         }));
         let pairing_host_open = Arc::new(AtomicBool::new(false));
         let pairing_host_persistent = Arc::new(AtomicBool::new(false));
         let network_ready = Arc::new(AtomicBool::new(false));
         let presence = Arc::new(std::sync::RwLock::new(HashMap::new()));
+        let blocked: Arc<RwLock<HashSet<String>>> = Arc::new(RwLock::new(HashSet::new()));
+        let pending_nearby_invites: Arc<RwLock<HashMap<String, PendingNearbyInvite>>> =
+            Arc::new(RwLock::new(HashMap::new()));
+        // Created before `build_runtime` (rather than after, as in an earlier
+        // version) because `ControlCtx` now needs it too — the sender-side
+        // half of mutual nearby pairing expires its own Nearby entry for the
+        // peer it just pledged to trust.
+        let nearby = Arc::new(Mutex::new(NearbyRegistry::new()));
+        let nearby_unavailable: Arc<std::sync::RwLock<Option<String>>> =
+            Arc::new(std::sync::RwLock::new(None));
+        let unpaired_limiter = Arc::new(std::sync::Mutex::new(UnpairedRateLimiter::new()));
 
         let paired_connections = Arc::new(PairedConnectionManager::new(
             identity.clone(),
             paired_store.clone(),
+            access.clone(),
             presence.clone(),
             app_handle.clone(),
         ));
@@ -593,6 +901,10 @@ impl NodeService {
             identity.clone(),
             paired_store.clone(),
             access.clone(),
+            blocked.clone(),
+            pending_nearby_invites.clone(),
+            nearby.clone(),
+            unpaired_limiter.clone(),
             pairing_host_persistent.clone(),
             app_handle.clone(),
             presence.clone(),
@@ -605,6 +917,24 @@ impl NodeService {
         let runtime = Arc::new(Mutex::new(runtime));
         paired_connections.attach_runtime(runtime.clone());
         let connections_supervisor = paired_connections.start();
+
+        let lan_discovery = if should_publish_mdns(access.read().await.discoverability) {
+            let endpoint = {
+                let runtime = runtime.lock().await;
+                runtime.endpoint.clone()
+            };
+            start_lan_discovery(
+                &endpoint,
+                nearby.clone(),
+                access.clone(),
+                paired_connections.clone(),
+                runtime.clone(),
+                app_handle.clone(),
+                &nearby_unavailable,
+            )
+        } else {
+            None
+        };
 
         Ok(Self {
             runtime,
@@ -621,12 +951,26 @@ impl NodeService {
             app_handle,
             relay_mode: Mutex::new(relay_mode),
             discovery_mode: Mutex::new(discovery_mode),
+            nearby,
+            lan_discovery: Mutex::new(lan_discovery),
+            nearby_unavailable,
+            unpaired_limiter,
+            network_transition: Mutex::new(()),
+            blocked,
+            pending_nearby_invites,
         })
     }
 
     pub async fn shutdown(&self) -> anyhow::Result<()> {
+        // Same lock `reconfigure_network`/`set_discoverability` hold for their
+        // whole transition — without it, a shutdown racing an in-flight
+        // rebuild could close the endpoint the rebuild just built, or the
+        // rebuild could resurrect a `lan_discovery` handle after shutdown
+        // just stopped it.
+        let _guard = self.network_transition.lock().await;
 
         self.stop_pairing_host().await;
+        self.stop_lan_discovery().await;
         if let Some(handle) = self.connections_supervisor.lock().await.take() {
             handle.abort();
 
@@ -644,6 +988,8 @@ impl NodeService {
         relay_mode: RelayMode,
         discovery_mode: DiscoveryModeOption,
     ) -> anyhow::Result<()> {
+        let _guard = self.network_transition.lock().await;
+
         {
             let current_relay = self.relay_mode.lock().await;
             let current_discovery = self.discovery_mode.lock().await;
@@ -654,12 +1000,48 @@ impl NodeService {
             }
         }
 
+        self.rebuild_network(relay_mode, discovery_mode).await
+    }
+
+    /// Closes the current endpoint and router and rebuilds them, then
+    /// restarts LAN discovery on the new endpoint per the current
+    /// `Discoverability` setting. Shared by `reconfigure_network` (relay or
+    /// discovery-mode changes) and `set_discoverability` transitions across
+    /// the `Off` boundary.
+    ///
+    /// The rebuild is the only reliable way to stop mDNS advertising: iroh
+    /// 1.0.3 has no API to unregister an address-lookup service from a live
+    /// endpoint, and `MdnsAddressLookup`'s `advertise` flag is fixed at
+    /// construction, so a lightweight stop/start toggle on the same endpoint
+    /// cannot actually stop the broadcast and would leak one live mDNS actor
+    /// (plus its multicast socket) per toggle.
+    ///
+    /// Callers must already hold `self.network_transition` for their entire
+    /// decide-then-rebuild-then-settle sequence — this method assumes it, it
+    /// doesn't acquire it itself. Without that, two overlapping rebuilds can
+    /// interleave their close/build steps (the second closing the endpoint
+    /// the first just built) and whichever caller's post-rebuild decision
+    /// (start discovery, clear the registry) runs last wins arbitrarily
+    /// instead of reflecting its own transition.
+    async fn rebuild_network(
+        &self,
+        relay_mode: RelayMode,
+        discovery_mode: DiscoveryModeOption,
+    ) -> anyhow::Result<()> {
         self.stop_pairing_host().await;
 
         self.network_ready.store(false, Ordering::SeqCst);
         if let Some(handle) = &self.app_handle {
             let _ = handle.emit_event("device-node-network-warming");
         }
+
+        // Stop the old consumer + pump before the endpoint they're bound to
+        // is closed below. Aborting drops our `MdnsAddressLookup` clone; the
+        // endpoint's own registered clone drops with it once the old
+        // `Endpoint`'s last handle goes away (when `*runtime = new_runtime`
+        // replaces it), letting the old actor and its multicast socket
+        // actually die instead of leaking.
+        self.stop_lan_discovery().await;
 
         let mut runtime = self.runtime.lock().await;
         runtime.router.shutdown().await?;
@@ -669,6 +1051,10 @@ impl NodeService {
             self.identity.clone(),
             self.paired_store.clone(),
             self.access.clone(),
+            self.blocked.clone(),
+            self.pending_nearby_invites.clone(),
+            self.nearby.clone(),
+            self.unpaired_limiter.clone(),
             self.pairing_host_persistent.clone(),
             self.app_handle.clone(),
             self.presence.clone(),
@@ -679,12 +1065,39 @@ impl NodeService {
         )
         .await?;
 
+        let endpoint = new_runtime.endpoint.clone();
         *runtime = new_runtime;
+        drop(runtime);
+
         self.paired_connections.refresh().await;
         *self.relay_mode.lock().await = relay_mode;
         *self.discovery_mode.lock().await = discovery_mode;
 
+        if should_publish_mdns(self.access.read().await.discoverability) {
+            let discovery = start_lan_discovery(
+                &endpoint,
+                self.nearby.clone(),
+                self.access.clone(),
+                self.paired_connections.clone(),
+                self.runtime.clone(),
+                self.app_handle.clone(),
+                &self.nearby_unavailable,
+            );
+            *self.lan_discovery.lock().await = discovery;
+        } else {
+            // Off is a choice, not a failure — a stale "unavailable" reason
+            // from an earlier failed start must not outlive it.
+            *self.nearby_unavailable.write().expect("nearby_unavailable") = None;
+        }
+
         Ok(())
+    }
+
+    /// Stops the LAN-discovery consumer task and its mDNS pump, if running.
+    async fn stop_lan_discovery(&self) {
+        if let Some(handle) = self.lan_discovery.lock().await.take() {
+            handle.shutdown();
+        }
     }
 
     pub fn is_network_ready(&self) -> bool {
@@ -729,6 +1142,12 @@ impl NodeService {
         Ok(infos)
     }
 
+    /// `(online, total)` across actively-paired devices. Used by the desktop
+    /// tray, which has no access to the presence map directly.
+    pub fn presence_summary(&self) -> anyhow::Result<(usize, usize)> {
+        Ok(crate::device_identity::presence_summary(&self.list_paired()?))
+    }
+
     pub async fn forget_paired(&self, endpoint_id: &str) -> anyhow::Result<()> {
         debug!(
             target: "dashbeam::_events::pairing::forget",
@@ -739,6 +1158,29 @@ impl NodeService {
             .paired_store
             .get(endpoint_id)?
             .and_then(|d| d.relay_url);
+
+        // Prefer the live presence link so Forget arrives before we tear it
+        // down. A post-teardown redial is best-effort and must not block the
+        // Devices UI on connect timeout when the peer is already gone.
+        let delivered = if let Some(conn) = self.paired_connections.live_session(endpoint_id).await
+        {
+            send_forget_on_connection(&self.identity, &conn)
+                .await
+                .is_ok()
+        } else {
+            false
+        };
+        if !delivered {
+            let runtime = self.runtime.clone();
+            let identity = self.identity.clone();
+            let notify_id = endpoint_id.to_string();
+            tokio::spawn(async move {
+                let _ =
+                    send_forget_to_peer(&runtime, &identity, &notify_id, stored_relay.as_deref())
+                        .await;
+            });
+        }
+
         if let Ok(id) = EndpointId::from_str(endpoint_id) {
             self.access.write().await.allowed.remove(&id);
 
@@ -760,18 +1202,6 @@ impl NodeService {
             let _ = handle.emit_event_with_payload("device-unpaired", &payload.to_string());
         }
 
-        let runtime = self.runtime.clone();
-        let identity = self.identity.clone();
-        let endpoint_id = endpoint_id.to_string();
-        tokio::spawn(async move {
-            let _ = send_forget_to_peer(
-                &runtime,
-                &identity,
-                &endpoint_id,
-                stored_relay.as_deref(),
-            )
-            .await;
-        });
         Ok(())
     }
 
@@ -794,160 +1224,6 @@ impl NodeService {
             relay_url,
         };
         ticket.encode()
-    }
-
-    pub async fn start_pairing_host(&self, ttl_secs: Option<u64>) -> anyhow::Result<String> {
-        debug!(
-            target: "dashbeam::_events::pairing::host_open",
-            ttl_secs = ?ttl_secs,
-        );
-
-        self.stop_pairing_host().await;
-
-        let persistent = protocol::pairing::pairing_host_is_persistent(ttl_secs);
-        self.pairing_host_persistent
-            .store(persistent, Ordering::SeqCst);
-        self.pairing_host_open.store(true, Ordering::SeqCst);
-        self.access.write().await.pairing_host_open = true;
-
-        if let Some(ttl) = ttl_secs {
-            let access = self.access.clone();
-            let flag = self.pairing_host_open.clone();
-            let persistent_flag = self.pairing_host_persistent.clone();
-            let app_handle = self.app_handle.clone();
-            let handle = tokio::spawn(async move {
-                tokio::time::sleep(Duration::from_secs(ttl)).await;
-                flag.store(false, Ordering::SeqCst);
-                persistent_flag.store(false, Ordering::SeqCst);
-                access.write().await.pairing_host_open = false;
-
-                if let Some(handle) = &app_handle {
-
-                    let _ = handle.emit_event("pairing-host-expired");
-                }
-            });
-            *self.pairing_expire_task.lock().await = Some(handle);
-        }
-
-        let ticket = self.pairing_ticket()?;
-
-        Ok(ticket)
-    }
-
-    pub async fn stop_pairing_host(&self) {
-        if let Some(handle) = self.pairing_expire_task.lock().await.take() {
-            handle.abort();
-
-        }
-        self.pairing_host_persistent.store(false, Ordering::SeqCst);
-        let was_open = self.pairing_host_open.swap(false, Ordering::SeqCst);
-        self.access.write().await.pairing_host_open = false;
-        let _ = was_open;
-    }
-
-    pub async fn join_pairing(&self, ticket_str: &str) -> anyhow::Result<()> {
-        let ticket = protocol::PairingTicket::decode(ticket_str).inspect_err(|error| {
-            debug!(
-                target: "dashbeam::_events::pairing::join_failed",
-                stage = "decode_ticket",
-                %error,
-            );
-        })?;
-        let remote = EndpointId::from_str(&ticket.endpoint_id)?;
-        debug!(
-            target: "dashbeam::_events::pairing::join_attempt",
-            remote = %remote.fmt_short(),
-            has_relay = ticket.relay_url.is_some(),
-        );
-
-        let host_relay_url = ticket.relay_url.clone();
-        let mut addr = EndpointAddr::from(remote);
-        if let Some(relay) = host_relay_url.as_deref() {
-            if let Ok(url) = relay.parse() {
-                addr.addrs.insert(TransportAddr::Relay(url));
-
-            }
-        }
-
-        let endpoint = {
-            let runtime = self.runtime.lock().await;
-            runtime.endpoint.clone()
-        };
-        let conn = match endpoint.connect(addr, CONTROL_ALPN).await {
-            Ok(conn) => conn,
-            Err(err) => {
-                return Err(err).context("pairing connect failed");
-            }
-        };
-
-        let keying = export_connection_keying_material(&conn)?;
-
-        let (mut send, mut recv) = conn.open_bi().await.context("open bi stream for join")?;
-
-        // Send first so the host can accept_bi and begin its side of the handshake.
-        let info = ControlMessage::PairingInfo {
-            endpoint_id: self.identity.endpoint_id(),
-            display_name: self.identity.display_name(),
-            device_type: self.identity.device_type(),
-            os: self.identity.os(),
-            signature: sign_challenge(&self.identity.secret_key, &keying),
-        };
-        write_message(&mut send, &info)
-            .await
-            .context("write local PairingInfo")?;
-
-        let vote = ControlMessage::RememberVote {
-            session_id: uuid::Uuid::new_v4().to_string(),
-            vote: RememberVote::Remember,
-        };
-        write_message(&mut send, &vote)
-            .await
-            .context("write RememberVote")?;
-
-        let host_info = match read_message(&mut recv).await {
-            Ok(msg) => msg,
-            Err(err) => {
-
-                return Err(err).context("read host PairingInfo");
-            }
-        };
-
-        let ControlMessage::PairingInfo {
-            endpoint_id,
-            display_name,
-            device_type,
-            os,
-            signature,
-        } = host_info
-        else {
-
-            anyhow::bail!("expected host PairingInfo");
-        };
-        let peer_id = EndpointId::from_str(&endpoint_id).context("invalid host endpoint id")?;
-        if !verify_challenge(&peer_id, &keying, &signature) {
-            anyhow::bail!("host PairingInfo signature invalid");
-        }
-
-        let now = protocol::identity::unix_now_ms();
-        self.paired_store.remember(PairedDevice {
-            endpoint_id: endpoint_id.clone(),
-            display_name: display_name.clone(),
-            device_type,
-            os,
-            paired_at: now,
-            last_seen_at: now,
-            relay_url: host_relay_url.clone(),
-            pairing_status: PairingStatus::Active,
-        })?;
-        self.access.write().await.allowed.insert(peer_id);
-        self.paired_connections.refresh().await;
-
-        if let Some(handle) = &self.app_handle {
-
-            let _ = handle.emit_event("device-paired");
-        }
-
-        Ok(())
     }
 
     pub async fn invite_paired_device(
@@ -973,20 +1249,147 @@ impl NodeService {
             anyhow::bail!("unknown paired device");
         }
 
+        self.deliver_invite(remote_endpoint_id, blob_ticket, file_count, total_size, true)
+            .await
+    }
+
+    /// Sends the caller's *already-minted* share ticket to a device found on
+    /// the local network — same wire `Invite` a paired device receives.
+    /// Reuses the active share rather than minting a second ephemeral one.
+    /// The receiver has no `PairedDevice` record yet, so its UI shows the
+    /// sender's fingerprint for confirmation instead of treating this as routine.
+    pub async fn invite_nearby_device(
+        &self,
+        endpoint_id: &str,
+        blob_ticket: &str,
+        file_count: u32,
+        total_size: u64,
+    ) -> anyhow::Result<bool> {
+        let nearby_device = self
+            .nearby
+            .lock()
+            .await
+            .list()
+            .into_iter()
+            .find(|d| d.endpoint_id == endpoint_id);
+        anyhow::ensure!(nearby_device.is_some(), "device is not on the local network");
+        anyhow::ensure!(!blob_ticket.is_empty(), "no blob ticket provided");
+
+        // A device we've never talked to has no cached `paired_connections`
+        // session and never will — skip straight to a fresh dial rather than
+        // waiting out `invite_wait_timeout`.
+        let delivered = self
+            .deliver_invite(endpoint_id, blob_ticket, file_count, total_size, false)
+            .await?;
+        if !delivered {
+            return Ok(false);
+        }
+
+        // Record this as an outstanding nearby invite so a later
+        // `InviteResponse` from this (still unpaired, from our side) peer is
+        // recognized as a real answer rather than an unsolicited claim from
+        // an arbitrary unpaired stranger — and, if it's an accept, carries
+        // enough identity to record them as paired on our side too (mutual
+        // pairing). Snapshotted now rather than re-read from the Nearby list
+        // when the response arrives, because that entry may have expired by
+        // then.
+        let pending = match nearby_device.filter(|d| d.identified) {
+            Some(d) => PendingNearbyInvite {
+                display_name: d
+                    .display_name
+                    .unwrap_or_else(|| endpoint_id.chars().take(8).collect()),
+                device_type: d
+                    .device_type
+                    .unwrap_or_else(protocol::identity::default_device_type),
+                os: d.os.unwrap_or_default(),
+            },
+            None => PendingNearbyInvite {
+                display_name: endpoint_id.chars().take(8).collect(),
+                device_type: protocol::identity::default_device_type(),
+                os: String::new(),
+            },
+        };
+        self.pending_nearby_invites
+            .write()
+            .await
+            .insert(endpoint_id.to_string(), pending);
+
+        Ok(true)
+    }
+
+    /// Asks a Nearby (unpaired LAN) device to pair — no file ticket.
+    /// Receiver confirms on name/device type; accept reuses
+    /// [`Self::accept_nearby_invite`] + `InviteResponse` mutual pairing.
+    pub async fn request_nearby_pair(&self, endpoint_id: &str) -> anyhow::Result<bool> {
+        let nearby_device = self
+            .nearby
+            .lock()
+            .await
+            .list()
+            .into_iter()
+            .find(|d| d.endpoint_id == endpoint_id);
+        anyhow::ensure!(nearby_device.is_some(), "device is not on the local network");
+
+        let delivered = self.deliver_pair_request(endpoint_id).await?;
+        if !delivered {
+            return Ok(false);
+        }
+
+        let pending = match nearby_device.filter(|d| d.identified) {
+            Some(d) => PendingNearbyInvite {
+                display_name: d
+                    .display_name
+                    .unwrap_or_else(|| endpoint_id.chars().take(8).collect()),
+                device_type: d
+                    .device_type
+                    .unwrap_or_else(protocol::identity::default_device_type),
+                os: d.os.unwrap_or_default(),
+            },
+            None => PendingNearbyInvite {
+                display_name: endpoint_id.chars().take(8).collect(),
+                device_type: protocol::identity::default_device_type(),
+                os: String::new(),
+            },
+        };
+        self.pending_nearby_invites
+            .write()
+            .await
+            .insert(endpoint_id.to_string(), pending);
+
+        Ok(true)
+    }
+
+    /// Connects to `remote_endpoint_id` and delivers a single `Invite`
+    /// message. Shared by [`Self::invite_paired_device`] and
+    /// [`Self::invite_nearby_device`] — same wire message either way; only
+    /// the precondition each checks beforehand differs. `use_cached_session`
+    /// controls whether a `paired_connections` session is worth checking
+    /// first: a paired device usually keeps one open, but a peer we're
+    /// inviting for the first time never has one.
+    async fn deliver_invite(
+        &self,
+        remote_endpoint_id: &str,
+        blob_ticket: &str,
+        file_count: u32,
+        total_size: u64,
+        use_cached_session: bool,
+    ) -> anyhow::Result<bool> {
+        let remote = EndpointId::from_str(remote_endpoint_id)?;
         let stored_relay = self
             .paired_store
             .get(remote_endpoint_id)?
             .and_then(|d| d.relay_url);
 
-        let conn = match self
-            .paired_connections
-            .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
-            .await
-        {
-            Some(conn) => {
+        let cached = if use_cached_session {
+            self.paired_connections
+                .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
+                .await
+        } else {
+            None
+        };
 
-                conn
-            }
+        let conn = match cached {
+            Some(conn) => conn,
             None => {
                 let endpoint = {
                     let runtime = self.runtime.lock().await;
@@ -1005,15 +1408,17 @@ impl NodeService {
                 .await;
                 match connect {
                     Ok(Ok(conn)) => {
-                        let now = protocol::identity::unix_now_ms();
-                        let _ = self.paired_store.touch(remote_endpoint_id, now);
-                        set_presence(
-                            &self.presence,
-                            &self.app_handle,
-                            &self.paired_store,
-                            remote_endpoint_id,
-                            true,
-                        );
+                        if use_cached_session {
+                            let now = protocol::identity::unix_now_ms();
+                            let _ = self.paired_store.touch(remote_endpoint_id, now);
+                            set_presence(
+                                &self.presence,
+                                &self.app_handle,
+                                &self.paired_store,
+                                remote_endpoint_id,
+                                true,
+                            );
+                        }
                         conn
                     }
                     Ok(Err(_err)) => {
@@ -1060,6 +1465,52 @@ impl NodeService {
         Ok(true)
     }
 
+    async fn deliver_pair_request(&self, remote_endpoint_id: &str) -> anyhow::Result<bool> {
+        let remote = EndpointId::from_str(remote_endpoint_id)?;
+        let endpoint = {
+            let runtime = self.runtime.lock().await;
+            runtime.endpoint.clone()
+        };
+        let addr = build_control_connect_addr(&endpoint, remote, None);
+
+        let connect = tokio::time::timeout(
+            Duration::from_secs(PRESENCE_CONNECT_TIMEOUT_SECS),
+            endpoint.connect(addr, CONTROL_ALPN),
+        )
+        .await;
+        let conn = match connect {
+            Ok(Ok(conn)) => conn,
+            Ok(Err(_err)) => return Ok(false),
+            Err(_) => return Ok(false),
+        };
+
+        let (mut send, _recv) = match conn.open_bi().await {
+            Ok(streams) => streams,
+            Err(err) => {
+                return Err(err).context("open bi stream for pair request");
+            }
+        };
+
+        let request = ControlMessage::PairRequest {
+            sender_name: self.identity.display_name(),
+            device_type: self.identity.device_type(),
+            os: self.identity.os(),
+        };
+        if let Err(err) = write_message(&mut send, &request).await {
+            return Err(err).context("write PairRequest message");
+        }
+
+        drop(send);
+        tokio::spawn(async move {
+            match tokio::time::timeout(Duration::from_secs(15), conn.closed()).await {
+                Ok(_closed) => {}
+                Err(_) => {}
+            }
+        });
+
+        Ok(true)
+    }
+
     pub async fn respond_paired_invite(
         &self,
         remote_endpoint_id: &str,
@@ -1071,11 +1522,6 @@ impl NodeService {
             remote = %remote.fmt_short(),
             accepted,
         );
-        let response = if accepted {
-            InviteResponse::Accepted
-        } else {
-            InviteResponse::Declined
-        };
         let access = self.access.read().await;
         let in_allowlist = access.allowed.contains(&remote);
         drop(access);
@@ -1084,16 +1530,101 @@ impl NodeService {
             anyhow::bail!("unknown paired device");
         }
 
+        self.deliver_invite_response(remote_endpoint_id, accepted, true)
+            .await
+    }
+
+    /// Accepting is what creates the trust relationship. The user has
+    /// compared the fingerprint on screen; recording the peer as paired is
+    /// the durable consequence of that decision. Delegates the actual
+    /// accept notification to [`Self::deliver_invite_response`] — the same
+    /// message an already-paired device's accept sends.
+    pub async fn accept_nearby_invite(&self, endpoint_id: &str) -> anyhow::Result<()> {
+        // The probe reply's `endpoint_id` field is self-reported and
+        // untrusted; only its cosmetic fields may be used, and only when the
+        // reply's id matches the connection-verified one. See
+        // `nearby_peer_identity`.
+        let info = nearby_peer_identity(endpoint_id, self.probe_identity(endpoint_id).await.ok());
+
+        let now = protocol::identity::unix_now_ms();
+        let display_name = info.display_name.clone();
+        self.paired_store.remember(PairedDevice {
+            endpoint_id: info.endpoint_id.clone(),
+            display_name: info.display_name,
+            device_type: info.device_type,
+            os: info.os,
+            paired_at: now,
+            last_seen_at: now,
+            relay_url: None,
+            pairing_status: PairingStatus::default(),
+        })?;
+
+        // Now that a paired record exists, it must not also show under Nearby.
+        self.nearby.lock().await.expire(endpoint_id);
+        self.access.write().await.allowed.insert(endpoint_id.parse()?);
+        self.paired_connections.refresh().await;
+
+        crate::pairing_util::emit_device_paired(&self.app_handle, &display_name);
+
+        // The pairing above is already durable and the UI has already been
+        // told about it — notifying the sender is a courtesy on top, not a
+        // condition of acceptance succeeding. If the sender has gone away
+        // (network blip, closed app) since sending the invite, that must not
+        // undo — or report as failed — an accept that already happened.
+        // We just met this peer — never a cached session to wait on.
+        if let Err(err) = self.deliver_invite_response(endpoint_id, true, false).await {
+            tracing::debug!(
+                "accepted nearby invite from {endpoint_id} but could not notify the sender: {err:#}"
+            );
+        }
+
+        Ok(())
+    }
+
+    pub async fn decline_nearby_invite(
+        &self,
+        endpoint_id: &str,
+        block: bool,
+    ) -> anyhow::Result<()> {
+        if block {
+            self.nearby.lock().await.expire(endpoint_id);
+            self.blocked.write().await.insert(endpoint_id.to_string());
+        }
+        self.deliver_invite_response(endpoint_id, false, false)
+            .await
+    }
+
+    /// Connects to `remote_endpoint_id` and delivers an `InviteResponse`.
+    /// Shared by [`Self::respond_paired_invite`], [`Self::accept_nearby_invite`],
+    /// and [`Self::decline_nearby_invite`] — see [`Self::deliver_invite`] for
+    /// why `use_cached_session` exists.
+    async fn deliver_invite_response(
+        &self,
+        remote_endpoint_id: &str,
+        accepted: bool,
+        use_cached_session: bool,
+    ) -> anyhow::Result<()> {
+        let remote = EndpointId::from_str(remote_endpoint_id)?;
+        let response = if accepted {
+            InviteResponse::Accepted
+        } else {
+            InviteResponse::Declined
+        };
+
         let stored_relay = self
             .paired_store
             .get(remote_endpoint_id)?
             .and_then(|d| d.relay_url);
 
-        let conn = match self
-            .paired_connections
-            .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
-            .await
-        {
+        let cached = if use_cached_session {
+            self.paired_connections
+                .wait_for_connection(remote_endpoint_id, invite_wait_timeout())
+                .await
+        } else {
+            None
+        };
+
+        let conn = match cached {
             Some(conn) => conn,
             None => {
                 let endpoint = {
@@ -1131,9 +1662,201 @@ impl NodeService {
         write_message(&mut send, &message)
             .await
             .context("write InviteResponse message")?;
-        let _ = send.finish();
+
+        // As with `deliver_invite`: when this is a freshly dialed connection
+        // (no cached session — always true for a nearby accept/decline, and
+        // possible for the paired path too), `conn` is the *only* handle to
+        // it. Returning immediately would drop that handle — and iroh closes
+        // the connection when its last handle drops — racing the still
+        // in-flight write against the receiver ever calling `accept_bi()`.
+        // Hold it open in the background long enough for that race to
+        // resolve in the write's favor; the caller doesn't need to wait for
+        // it.
+        drop(send);
+        tokio::spawn(async move {
+            let _ = tokio::time::timeout(Duration::from_secs(5), conn.closed()).await;
+        });
 
         Ok(())
+    }
+
+    /// Rebuilds the network and clears the Nearby list on a move to `Off`;
+    /// rebuilds it again (this time starting discovery) on a move away from
+    /// `Off`. Any other transition (e.g. `Everyone` <-> `PairedOnly`) touches
+    /// neither — both still publish over mDNS, they only differ in who gets
+    /// an identity reply.
+    ///
+    /// A rebuild, not a lightweight toggle: iroh 1.0.3 has no API to
+    /// unregister an address-lookup service from a live endpoint, so the only
+    /// way to actually stop (or resume) the mDNS advertisement is to close
+    /// the endpoint the old `MdnsAddressLookup` clone was registered on. See
+    /// `rebuild_network`.
+    ///
+    /// The whole decide-then-rebuild-then-clear sequence runs under
+    /// `network_transition`, held from before `previous`/`now_off` are read
+    /// to after the trailing clear. Without that, a second call (another
+    /// `set_discoverability`, or a concurrent `reconfigure_network`) could
+    /// run its own rebuild in the gap — `now_off`, captured before the lock
+    /// existed, would then no longer describe the state by the time this
+    /// call's clear-or-not decision executed, e.g. wiping a registry a
+    /// competing transition had just repopulated. Holding the lock for the
+    /// full sequence means no such gap exists: whichever call is currently
+    /// inside it is the only one touching `runtime` or `lan_discovery`.
+    pub async fn set_discoverability(&self, setting: Discoverability) -> anyhow::Result<()> {
+        let _guard = self.network_transition.lock().await;
+
+        let previous = {
+            let mut access = self.access.write().await;
+            let previous = access.discoverability;
+            access.discoverability = setting;
+            previous
+        };
+
+        let now_off = matches!(setting, Discoverability::Off);
+        if now_off == matches!(previous, Discoverability::Off) {
+            return Ok(());
+        }
+
+        let (relay_mode, discovery_mode) = {
+            (
+                self.relay_mode.lock().await.clone(),
+                self.discovery_mode.lock().await.clone(),
+            )
+        };
+        if let Err(err) = self.rebuild_network(relay_mode, discovery_mode).await {
+            // The old endpoint is already gone and no replacement came up —
+            // the node is effectively dead, which the caller must hear about
+            // rather than getting a silent Ok. Restore the previous setting
+            // so `discoverability()` (and the UI's revert-on-error read of
+            // it) reflects that the transition did not land.
+            self.access.write().await.discoverability = previous;
+            return Err(err.context("rebuild network for discoverability change"));
+        }
+
+        if now_off {
+            // Still holding `network_transition`, so no other transition can
+            // have run between `rebuild_network` returning and this clear —
+            // `now_off` is still accurate. Note this doesn't make the
+            // consumer-task shutdown inside `rebuild_network` itself
+            // instantaneous (`abort()` only requests cancellation, landing at
+            // the task's next await point); it only guarantees nothing *else*
+            // in this process can race the clear.
+            self.nearby.lock().await.clear();
+        }
+
+        Ok(())
+    }
+
+    pub async fn discoverability(&self) -> Discoverability {
+        self.access.read().await.discoverability
+    }
+
+    /// Devices currently seen on the local network but not yet paired.
+    pub async fn list_nearby(&self) -> Vec<NearbyDevice> {
+        self.nearby.lock().await.list()
+    }
+
+    /// Why LAN discovery is unavailable, or `None` when it's running (or
+    /// deliberately `Off`). Lets the UI recover the failure reason on mount —
+    /// the `nearby-unavailable` event may have fired during node init, before
+    /// any listener existed.
+    pub fn nearby_unavailable_reason(&self) -> Option<String> {
+        self.nearby_unavailable
+            .read()
+            .expect("nearby_unavailable")
+            .clone()
+    }
+
+    /// Test-only: seeds the Nearby registry as if a real mDNS sighting had
+    /// just come in, without needing actual multicast. `NearbyRegistry` is
+    /// pure state (see its module docs) so this is exactly what
+    /// `spawn_lan_event_loop` does on `LanEvent::Appeared` — it just skips
+    /// the socket. Lets integration tests exercise `invite_nearby_device`'s
+    /// "device must be on the local network" precondition deterministically
+    /// on CI runners that block multicast.
+    #[doc(hidden)]
+    pub async fn inject_nearby_device_for_tests(&self, endpoint_id: &str) {
+        self.nearby.lock().await.observe(endpoint_id, false);
+    }
+
+    /// Test-only: simulates an mDNS rediscovery of an already-paired peer —
+    /// the `ObserveOutcome::Paired` branch of `spawn_lan_event_loop`, which
+    /// nudges that peer's presence reconnect. Used to prove rediscovery does
+    /// not tear down a live session (mDNS re-fires `Discovered` whenever a
+    /// peer's advertised addrs change, and nearby-paired devices stay on the
+    /// LAN so they keep rediscovering).
+    #[doc(hidden)]
+    pub async fn simulate_paired_lan_appeared_for_tests(&self, endpoint_id: &str) {
+        self.paired_connections.nudge_reconnect(endpoint_id).await;
+    }
+
+    /// Test-only: aborts and re-dials a paired peer even when a live session
+    /// exists — the pre-fix `nudge_reconnect` behaviour. Lets us prove the
+    /// *other* device stays online when this one flaps its outbound link.
+    #[doc(hidden)]
+    pub async fn force_paired_reconnect_for_tests(&self, endpoint_id: &str) {
+        self.paired_connections
+            .force_reconnect_for_tests(endpoint_id)
+            .await;
+    }
+
+    /// Test-only: drop a peer locally without sending `Forget`. Simulates a
+    /// missed unpair notify (fire-and-forget dial failed) so the remaining
+    /// side can prove it still detects remote unpair from the close reason.
+    #[doc(hidden)]
+    pub async fn forget_paired_silently_for_tests(&self, endpoint_id: &str) -> anyhow::Result<()> {
+        if let Ok(id) = EndpointId::from_str(endpoint_id) {
+            self.access.write().await.allowed.remove(&id);
+        }
+        self.paired_store.forget(endpoint_id)?;
+        self.paired_connections.forget(endpoint_id).await;
+        set_presence(
+            &self.presence,
+            &self.app_handle,
+            &self.paired_store,
+            endpoint_id,
+            false,
+        );
+        Ok(())
+    }
+
+    /// Dial a peer's control ALPN and ask who it is. Used for devices found on
+    /// the local network, where mDNS supplies a node id and nothing else.
+    pub async fn probe_identity(&self, endpoint_id: &str) -> anyhow::Result<DeviceInfo> {
+        probe_identity_via(&self.runtime, endpoint_id).await
+    }
+}
+
+/// Resolves the identity to record for a nearby peer being promoted to
+/// paired. `endpoint_id` — the id the invite's TLS-authenticated connection
+/// proved — is authoritative and is *always* what gets stored; the probe
+/// reply only ever contributes cosmetic fields (name, device type, OS), and
+/// only when its self-reported id matches. A reply claiming a different id is
+/// hostile or broken either way: storing it would plant a durable
+/// `PairedDevice` (allowlisted on every later launch via
+/// `load_allowed_from_store`) for a key the user never verified.
+/// `ControlProtocol::commit_nearby_pairing` applies the same rule on the
+/// sender's side by construction — it only ever uses the connection's id.
+fn nearby_peer_identity(endpoint_id: &str, probed: Option<DeviceInfo>) -> DeviceInfo {
+    let fallback = || DeviceInfo {
+        endpoint_id: endpoint_id.to_string(),
+        display_name: endpoint_id.chars().take(8).collect(),
+        device_type: protocol::identity::default_device_type(),
+        os: String::new(),
+    };
+    match probed {
+        Some(info) if info.endpoint_id.eq_ignore_ascii_case(endpoint_id) => DeviceInfo {
+            endpoint_id: endpoint_id.to_string(),
+            ..info
+        },
+        Some(info) => {
+            tracing::warn!(
+                "identity probe for {endpoint_id} replied with mismatching endpoint id {}; ignoring the reply",
+                info.endpoint_id
+            );
+            fallback()
+        }
+        None => fallback(),
     }
 }
 
@@ -1150,6 +1873,228 @@ fn load_allowed_from_store(paired_store: &PairedDeviceStore) -> anyhow::Result<H
     }
 
     Ok(allowed)
+}
+
+/// Bundles the mDNS pump (`LanDiscovery`) with its consumer task so both are
+/// torn down together. iroh 1.0.3 has no API to unregister an address-lookup
+/// service from a live endpoint and `MdnsAddressLookup`'s `advertise` flag is
+/// fixed at construction, so this only ever gets a clean shutdown by closing
+/// the endpoint the pump's `MdnsAddressLookup` clone is registered on — see
+/// `NodeService::rebuild_network`.
+struct LanDiscoveryHandle {
+    pump: LanDiscovery,
+    consumer: JoinHandle<()>,
+}
+
+impl LanDiscoveryHandle {
+    /// Aborts the consumer, then the pump. `abort()` only *requests*
+    /// cancellation — the task actually stops at its next await point (e.g.
+    /// mid-`nearby.lock().await` or `rx.recv().await`), not synchronously
+    /// here. Aborting the consumer first, before the pump, still narrows the
+    /// window: nothing enqueues a *new* event once the pump is stopped, and
+    /// in practice the consumer's own abort lands well before the endpoint
+    /// rebuild that follows this call completes.
+    fn shutdown(self) {
+        self.consumer.abort();
+        self.pump.shutdown();
+    }
+}
+
+/// Starts the mDNS pump and its consumer loop, wiring sightings into `nearby`
+/// and identity probes into the discovery/identified events.
+///
+/// Failure is **not** fatal: no multicast, an active VPN, or an isolated guest
+/// network all produce an error here, and the app must keep working with
+/// pairing codes and relays. Mirrors how `node_init_error` treats a failed
+/// `NodeService`.
+fn start_lan_discovery(
+    endpoint: &Endpoint,
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    access: Arc<RwLock<AccessState>>,
+    paired_connections: Arc<PairedConnectionManager>,
+    runtime: Arc<Mutex<NodeRuntime>>,
+    app_handle: AppHandle,
+    unavailable: &Arc<std::sync::RwLock<Option<String>>>,
+) -> Option<LanDiscoveryHandle> {
+    let (tx, rx) = mpsc::unbounded_channel();
+    match LanDiscovery::start(endpoint, tx) {
+        Ok(pump) => {
+            *unavailable.write().expect("nearby_unavailable") = None;
+            let consumer =
+                spawn_lan_event_loop(rx, nearby, access, paired_connections, runtime, app_handle);
+            Some(LanDiscoveryHandle { pump, consumer })
+        }
+        Err(err) => {
+            tracing::debug!("mDNS discovery unavailable: {err:#}");
+            // Recorded *and* emitted: the event covers listeners that already
+            // exist, the slot covers the cold-start case where this failure
+            // happens before the frontend has mounted any listener at all —
+            // it hydrates via `NodeService::nearby_unavailable_reason`.
+            *unavailable.write().expect("nearby_unavailable") = Some(err.to_string());
+            emit_nearby_reason(&app_handle, "nearby-unavailable", &err.to_string());
+            None
+        }
+    }
+}
+
+/// Consumes `LanEvent`s and turns them into `NearbyRegistry` updates and UI
+/// events. All policy decisions about what a sighting means live here —
+/// `lan_discovery` itself only knows how to talk to multicast.
+fn spawn_lan_event_loop(
+    mut rx: mpsc::UnboundedReceiver<LanEvent>,
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    access: Arc<RwLock<AccessState>>,
+    paired_connections: Arc<PairedConnectionManager>,
+    runtime: Arc<Mutex<NodeRuntime>>,
+    app_handle: AppHandle,
+) -> JoinHandle<()> {
+    tokio::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                LanEvent::Appeared { endpoint_id } => {
+                    let is_paired = is_paired_endpoint(&access, &endpoint_id).await;
+                    let outcome = nearby.lock().await.observe(&endpoint_id, is_paired);
+                    match outcome {
+                        ObserveOutcome::ProbeNeeded => {
+                            emit_nearby(&app_handle, "nearby-device-found", &endpoint_id);
+                            spawn_identity_probe(
+                                endpoint_id,
+                                runtime.clone(),
+                                nearby.clone(),
+                                app_handle.clone(),
+                            );
+                        }
+                        ObserveOutcome::Paired => {
+                            // Strongest possible signal that a known device
+                            // just came online — retry presence now instead
+                            // of waiting out its exponential backoff. No-op
+                            // when a live session already exists (see
+                            // `nudge_reconnect`); mDNS rediscovery must not
+                            // tear down an already-online link.
+                            paired_connections.nudge_reconnect(&endpoint_id).await;
+                        }
+                        ObserveOutcome::Known | ObserveOutcome::Invalid => {}
+                    }
+                }
+                LanEvent::Vanished { endpoint_id } => {
+                    if nearby.lock().await.expire(&endpoint_id) {
+                        emit_nearby(&app_handle, "nearby-device-lost", &endpoint_id);
+                    }
+                }
+            }
+        }
+    })
+}
+
+/// Runs `probe_identity_via` in the background and feeds a successful reply
+/// back into the registry. Old build peers or a declined probe leave the
+/// device listed but unidentified, so the user can still send to it.
+fn spawn_identity_probe(
+    endpoint_id: String,
+    runtime: Arc<Mutex<NodeRuntime>>,
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    app_handle: AppHandle,
+) {
+    tokio::spawn(async move {
+        match probe_identity_via(&runtime, &endpoint_id).await {
+            Ok(info) => {
+                // `ControlMessage::Identity.os` is `#[serde(default)]`, so an
+                // old-build peer's reply deserializes to `""` rather than
+                // being absent — normalize that to "unknown" here, at the
+                // probe-to-registry boundary, rather than storing `Some("")`.
+                let os = if info.os.is_empty() {
+                    None
+                } else {
+                    Some(info.os)
+                };
+                let updated = nearby.lock().await.set_identity(
+                    &endpoint_id,
+                    info.display_name,
+                    info.device_type,
+                    os,
+                );
+                if updated {
+                    emit_nearby(&app_handle, "nearby-device-identified", &endpoint_id);
+                }
+            }
+            Err(err) => {
+                tracing::debug!("identity probe for {endpoint_id} failed: {err:#}");
+            }
+        }
+    });
+}
+
+/// Whether `endpoint_id` is already in the paired allowlist. Nearby ignores
+/// paired peers entirely — normal presence tracking applies to them instead.
+async fn is_paired_endpoint(access: &Arc<RwLock<AccessState>>, endpoint_id: &str) -> bool {
+    match EndpointId::from_str(endpoint_id) {
+        Ok(id) => access.read().await.allowed.contains(&id),
+        Err(_) => false,
+    }
+}
+
+/// Dial a peer's control ALPN and ask who it is. Shared by `NodeService::probe_identity`
+/// (a caller already holding a `NodeService`) and the Nearby identity probe
+/// (a background task that only has the `runtime` handle).
+async fn probe_identity_via(
+    runtime: &Arc<Mutex<NodeRuntime>>,
+    endpoint_id: &str,
+) -> anyhow::Result<DeviceInfo> {
+    let remote: EndpointId = endpoint_id.parse()?;
+    let endpoint = {
+        let runtime = runtime.lock().await;
+        runtime.endpoint.clone()
+    };
+    let conn = tokio::time::timeout(
+        Duration::from_secs(5),
+        endpoint.connect(remote, CONTROL_ALPN),
+    )
+    .await
+    .context("identity probe timed out")??;
+
+    let (mut send, mut recv) = conn.open_bi().await?;
+    write_message(&mut send, &ControlMessage::WhoAreYou).await?;
+    match tokio::time::timeout(Duration::from_secs(5), read_message(&mut recv))
+        .await
+        .context("identity reply timed out")??
+    {
+        ControlMessage::Identity {
+            endpoint_id,
+            display_name,
+            device_type,
+            os,
+        } => Ok(DeviceInfo {
+            endpoint_id,
+            display_name,
+            device_type,
+            os,
+        }),
+        other => anyhow::bail!("unexpected reply to WhoAreYou: {other:?}"),
+    }
+}
+
+/// Emits a Nearby event carrying just the endpoint id, matching what the
+/// frontend needs to look up the affected row in its own Nearby list.
+fn emit_nearby(app_handle: &AppHandle, event: &str, endpoint_id: &str) {
+    emit_nearby_payload(
+        app_handle,
+        event,
+        serde_json::json!({ "endpointId": endpoint_id }),
+    );
+}
+
+/// Emits a Nearby event carrying a free-form reason, used for `nearby-unavailable`.
+fn emit_nearby_reason(app_handle: &AppHandle, event: &str, reason: &str) {
+    emit_nearby_payload(app_handle, event, serde_json::json!({ "reason": reason }));
+}
+
+fn emit_nearby_payload(app_handle: &AppHandle, event: &str, payload: serde_json::Value) {
+    let Some(handle) = app_handle.as_ref() else {
+        return;
+    };
+    if let Err(err) = handle.emit_event_with_payload(event, &payload.to_string()) {
+        tracing::debug!("emit {event} failed: {err:#}");
+    }
 }
 
 async fn send_forget_to_peer(
@@ -1186,7 +2131,14 @@ async fn send_forget_to_peer(
         }
     };
 
-    let keying = export_connection_keying_material(&conn)?;
+    send_forget_on_connection(identity, &conn).await
+}
+
+async fn send_forget_on_connection(
+    identity: &DeviceIdentity,
+    conn: &iroh::endpoint::Connection,
+) -> anyhow::Result<()> {
+    let keying = export_connection_keying_material(conn)?;
     let (mut send, _recv) = conn.open_bi().await.context("forget open bi")?;
     let forget = ControlMessage::Forget {
         signature: sign_challenge(&identity.secret_key, &keying),
@@ -1216,6 +2168,10 @@ async fn build_runtime(
     identity: Arc<DeviceIdentity>,
     paired_store: Arc<PairedDeviceStore>,
     access: Arc<RwLock<AccessState>>,
+    blocked: Arc<RwLock<HashSet<String>>>,
+    pending_nearby_invites: Arc<RwLock<HashMap<String, PendingNearbyInvite>>>,
+    nearby: Arc<Mutex<NearbyRegistry>>,
+    unpaired_limiter: Arc<std::sync::Mutex<UnpairedRateLimiter>>,
     pairing_host_persistent: Arc<AtomicBool>,
     app_handle: AppHandle,
     presence: Arc<std::sync::RwLock<HashMap<String, bool>>>,
@@ -1227,6 +2183,7 @@ async fn build_runtime(
 
     let hook = PairedOnlyHook {
         access: access.clone(),
+        blocked,
     };
 
     // The control endpoint must both publish (so paired peers can find us by
@@ -1280,6 +2237,9 @@ async fn build_runtime(
             home_relay_url: home_relay_url.clone(),
             presence,
             paired_connections,
+            pending_nearby_invites,
+            nearby,
+            unpaired_limiter,
         },
     };
 
@@ -1316,4 +2276,57 @@ async fn build_runtime(
     }
 
     Ok(NodeRuntime { endpoint, router })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn probe_reply(endpoint_id: &str) -> DeviceInfo {
+        DeviceInfo {
+            endpoint_id: endpoint_id.to_string(),
+            display_name: "Bob's Laptop".to_string(),
+            device_type: "laptop".to_string(),
+            os: "macos".to_string(),
+        }
+    }
+
+    #[test]
+    fn nearby_peer_identity_keeps_cosmetics_from_a_matching_reply() {
+        let info = nearby_peer_identity("abcdef1234567890", Some(probe_reply("abcdef1234567890")));
+        assert_eq!(info.endpoint_id, "abcdef1234567890");
+        assert_eq!(info.display_name, "Bob's Laptop");
+        assert_eq!(info.device_type, "laptop");
+        assert_eq!(info.os, "macos");
+    }
+
+    #[test]
+    fn nearby_peer_identity_matches_ids_case_insensitively() {
+        let info = nearby_peer_identity("ABCDEF1234567890", Some(probe_reply("abcdef1234567890")));
+        assert_eq!(
+            info.endpoint_id, "ABCDEF1234567890",
+            "the connection-verified id is stored verbatim"
+        );
+        assert_eq!(info.display_name, "Bob's Laptop");
+    }
+
+    /// The regression this guards: a malicious peer answering the probe with
+    /// someone else's endpoint id must never get that id into the durable
+    /// paired record — the connection-verified id wins and the lying reply's
+    /// cosmetic fields are discarded wholesale.
+    #[test]
+    fn nearby_peer_identity_rejects_a_mismatching_reply_id() {
+        let info = nearby_peer_identity("abcdef1234567890", Some(probe_reply("attacker0000000")));
+        assert_eq!(info.endpoint_id, "abcdef1234567890");
+        assert_eq!(info.display_name, "abcdef12", "falls back to the id prefix");
+        assert_ne!(info.display_name, "Bob's Laptop");
+    }
+
+    #[test]
+    fn nearby_peer_identity_falls_back_when_the_probe_failed() {
+        let info = nearby_peer_identity("abcdef1234567890", None);
+        assert_eq!(info.endpoint_id, "abcdef1234567890");
+        assert_eq!(info.display_name, "abcdef12");
+        assert_eq!(info.os, "");
+    }
 }

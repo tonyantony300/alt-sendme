@@ -39,7 +39,7 @@
 		"startSharing": "Iniciar Compartilhamento",
 		"startingShare": "Iniciando Compartilhamento...",
 		"stopSharing": "Parar Compartilhamento",
-		"shareThisTicket": "Compartilhe este ticket:",
+		"shareThisTicket": "Ticket de compartilhamento único",
 		"sendThisTicket": "Envie este ticket para a pessoa que deseja receber seu arquivo",
 		"keepAppOpen": "Mantenha este aplicativo aberto enquanto outros baixam seus arquivos",
 		"fileLabel": "Arquivo:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Pareie dispositivos em Configurações e volte aqui para enviar sem um link.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Nenhum dispositivo pareado ainda",
-				"hint": "Escolha um dispositivo - a transferência começa quando ele aceitar.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Parear dispositivos em Configurações",
 				"nodeUnavailable": "O envio para dispositivos não está disponível no momento. Você ainda pode usar Transferência única na outra aba.",
 				"searchNoResults": "Nenhum dispositivo pareado corresponde à sua busca.",
 				"searchPlaceholder": "Buscar dispositivos pareados",
-				"title": "Enviar para um dispositivo pareado"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Enviar para um dispositivo pareado",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Qualquer pessoa com este link pode receber seus arquivos.",
 				"transferInProgress": "Transferência em andamento - abra Transferência única para ver os detalhes.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} quer enviar {{count}} arquivo(s) ({{size}}). Aceite para iniciar o download.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} quer enviar {{count}} arquivo(s). Aceite para iniciar o download.",
 		"receiveFromPairedTitle": "Arquivo recebido de dispositivo pareado",
-		"saveLocation": "Local de salvamento:"
+		"saveLocation": "Local de salvamento:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Progresso da Transferência",
@@ -379,7 +387,14 @@
 			"thisDevice": "Este dispositivo",
 			"thisDeviceHint": "Nome exibido aos dispositivos com os quais você pareia. SO e tipo de dispositivo são detectados automaticamente.",
 			"title": "Dispositivos pareados",
-			"unpairedHint": "Este dispositivo removeu o pareamento. Remova-o da sua lista."
+			"unpairedHint": "Este dispositivo removeu o pareamento. Remova-o da sua lista.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

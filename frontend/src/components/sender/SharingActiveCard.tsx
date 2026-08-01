@@ -1,7 +1,7 @@
 import { useState } from 'react'
+import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { SharingControlsProps } from '../../types/sender'
-import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import {
 	Sheet,
 	SheetContent,
@@ -28,12 +28,13 @@ export function SharingActiveCard({
 	isNodeStatusPending = false,
 	pairedInviteStatus = {},
 	onInvitePairedDevice,
+	onInviteNearbyDevice,
 	onCopyTicket,
 	onStopSharing,
 	onSetBroadcast,
 }: SharingControlsProps) {
 	const { t } = useTranslation()
-	const [devicesOpen, setDevicesOpen] = useState(false)
+	const [devicesOpen, setDevicesOpen] = useState(IS_PAIRING_CAPABLE)
 
 	return (
 		<>
@@ -50,7 +51,7 @@ export function SharingActiveCard({
 				onCopyTicket={onCopyTicket}
 				onSetBroadcast={onSetBroadcast}
 				onStopSharing={onStopSharing}
-				showPairedDevicesOption={IS_PAIRING_CAPABLE}
+				showPairedDevicesOption={IS_PAIRING_CAPABLE && !devicesOpen}
 				onOpenPairedDevices={() => setDevicesOpen(true)}
 			/>
 
@@ -76,6 +77,7 @@ export function SharingActiveCard({
 								isNodeStatusPending={isNodeStatusPending}
 								hasTicket={Boolean(ticket)}
 								onInvitePairedDevice={onInvitePairedDevice}
+								onInviteNearbyDevice={onInviteNearbyDevice}
 								onInviteSuccess={() => setDevicesOpen(false)}
 								showHeader={false}
 								showSearch

@@ -39,7 +39,7 @@
 		"startSharing": "共有を開始",
 		"startingShare": "共有を開始しています...",
 		"stopSharing": "共有を停止",
-		"shareThisTicket": "このチケットを共有：",
+		"shareThisTicket": "ワンタイム共有チケット",
 		"sendThisTicket": "ファイルを受け取りたい相手にこのチケットを送信してください",
 		"keepAppOpen": "他の人があなたのファイルをダウンロードしている間、このアプリを開いたままにしてください",
 		"fileLabel": "ファイル：",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "設定でデバイスをペアリングしてから、ここに戻ってリンクなしで送信できます。",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "ペアリング済みデバイスがありません",
-				"hint": "デバイスを選択してください - 相手が承認すると転送が始まります。",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "設定でデバイスをペアリング",
 				"nodeUnavailable": "現在デバイス送信は利用できません。別のタブの「ワンタイム転送」は引き続きご利用いただけます。",
 				"searchNoResults": "検索条件に一致するペアリング済みデバイスがありません。",
 				"searchPlaceholder": "ペアリング済みデバイスを検索",
-				"title": "ペアリング済みデバイスに送信"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "ペアリング済みデバイスに送信",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "このリンクを知っている人なら誰でもファイルを受け取れます。",
 				"transferInProgress": "転送中 - 詳細は「ワンタイム転送」タブを開いてください。",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} から {{count}} 件のファイル（{{size}}）が届きます。承認するとダウンロードが始まります。",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} から {{count}} 件のファイルが届きます。承認するとダウンロードが始まります。",
 		"receiveFromPairedTitle": "ペアリング済みデバイスからファイルが届きました",
-		"saveLocation": "保存先："
+		"saveLocation": "保存先：",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "転送の進行状況",
@@ -379,7 +387,14 @@
 			"thisDevice": "このデバイス",
 			"thisDeviceHint": "ペアリング相手に表示される名前です。OS とデバイスの種類は自動的に検出されます。",
 			"title": "ペアリング済みデバイス",
-			"unpairedHint": "このデバイスがペアリングを解除しました。一覧から削除してください。"
+			"unpairedHint": "このデバイスがペアリングを解除しました。一覧から削除してください。",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {

@@ -39,7 +39,7 @@
 		"startSharing": "Inizia Condivisione",
 		"startingShare": "Inizio Condivisione...",
 		"stopSharing": "Ferma Condivisione",
-		"shareThisTicket": "Condividi questo ticket:",
+		"shareThisTicket": "Ticket di condivisione monouso",
 		"sendThisTicket": "Invia questo ticket al destinatario del tuo file",
 		"keepAppOpen": "Mantieni questa app aperta mentre gli altri scaricano i tuoi file",
 		"fileLabel": "File:",
@@ -102,16 +102,19 @@
 		},
 		"sharingActive": {
 			"devices": {
-				"emptyHint": "Associa i dispositivi nelle Impostazioni, poi torna qui per inviare senza un link.",
+				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
 				"emptyTitle": "Nessun dispositivo associato",
-				"hint": "Scegli un dispositivo - il trasferimento inizia quando lo accetta.",
+				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
 				"manageInSettings": "Associa dispositivi nelle Impostazioni",
 				"nodeUnavailable": "L’invio al dispositivo non è disponibile al momento. Puoi comunque usare Trasferimento singolo nell’altra scheda.",
 				"searchNoResults": "Nessun dispositivo associato corrisponde alla ricerca.",
 				"searchPlaceholder": "Cerca dispositivi associati",
-				"title": "Invia a un dispositivo associato"
+				"title": "Send to a device",
+				"pairedSection": "Paired",
+				"nearbySection": "Nearby - Pair & Send",
+				"nearbyEmpty": "No devices nearby."
 			},
-			"devicesButton": "Invia a un dispositivo associato",
+			"devicesButton": "Send to a device",
 			"link": {
 				"hint": "Chiunque abbia questo link può ricevere i tuoi file.",
 				"transferInProgress": "Trasferimento in corso - apri Trasferimento singolo per i dettagli.",
@@ -160,7 +163,12 @@
 		"receiveFromPairedDescription": "{{sender}} vuole inviarti {{count}} file ({{size}}). Accetta per avviare il download.",
 		"receiveFromPairedDescriptionNoSize": "{{sender}} vuole inviarti {{count}} file. Accetta per avviare il download.",
 		"receiveFromPairedTitle": "File in arrivo da dispositivo associato",
-		"saveLocation": "Percorso di salvataggio:"
+		"saveLocation": "Percorso di salvataggio:",
+		"nearbyPairRequest": {
+			"title": "Pairing request",
+			"description": "{{sender}} wants to pair with this device.",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
+		}
 	},
 	"transfer": {
 		"progress": "Avanzamento Trasferimento",
@@ -379,7 +387,14 @@
 			"thisDevice": "Questo dispositivo",
 			"thisDeviceHint": "Nome mostrato ai dispositivi con cui ti associ. Sistema operativo e tipo di dispositivo vengono rilevati automaticamente.",
 			"title": "Dispositivi associati",
-			"unpairedHint": "Questo dispositivo ha rimosso l’associazione. Rimuovilo dall’elenco."
+			"unpairedHint": "Questo dispositivo ha rimosso l’associazione. Rimuovilo dall’elenco.",
+			"nearby": {
+				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
+				"pair": "Pair",
+				"pairing": "Pairing…",
+				"pairSent": "Pairing request sent",
+				"pairDeclined": "{{name}} declined the pairing request"
+			}
 		}
 	},
 	"updater": {
