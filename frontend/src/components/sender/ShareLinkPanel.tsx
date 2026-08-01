@@ -110,22 +110,29 @@ export function ShareLinkPanel({
 
 				{!isTransporting && ticket && (
 					<div className="w-full space-y-3 mt-2 sm:mt-0">
-						<div className="flex justify-center">
-							<div className="p-3 bg-white rounded-xl shadow-sm">
-								<QRCode value={receiveLink} size={160} />
+						<div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-4 sm:gap-5">
+							<div className="flex flex-col items-center justify-center gap-2">
+								<div className="p-2.5 bg-white rounded-xl shadow-sm">
+									<QRCode value={receiveLink} size={120} />
+								</div>
+								<p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+									Scan to receive
+								</p>
+							</div>
+							<div className="flex-1 w-full min-w-0 flex flex-col justify-center gap-1.5">
+								<TicketDisplay
+									ticket={ticket}
+									receiveLink={receiveLink}
+									copySuccess={copySuccess}
+									onCopyTicket={onCopyTicket}
+									isBroadcastMode={isBroadcastMode}
+									onSetBroadcast={onSetBroadcast}
+								/>
+								<p className="text-xs text-left text-muted-foreground">
+									{t('common:sender.sendThisTicket')}
+								</p>
 							</div>
 						</div>
-						<TicketDisplay
-							ticket={ticket}
-							receiveLink={receiveLink}
-							copySuccess={copySuccess}
-							onCopyTicket={onCopyTicket}
-							isBroadcastMode={isBroadcastMode}
-							onSetBroadcast={onSetBroadcast}
-						/>
-						<p className="text-xs text-left text-muted-foreground">
-							{t('common:sender.sendThisTicket')}
-						</p>
 						{showPairedDevicesOption && onOpenPairedDevices ? (
 							<div className="flex flex-col items-center gap-3 pt-1">
 								<p className="text-xs text-center text-muted-foreground">
