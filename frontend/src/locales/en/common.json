@@ -486,8 +486,8 @@
 		"nearbyInviteTitle": "{{sender}} nearby wants to send you files",
 		"inviteBody": "{{count}} files · {{size}}",
 		"inviteBodyNoSize": "{{count}} files",
-		"declinedTitle": "{{sender}} declined your files",
-		"declinedBody": "Nothing was sent",
+		"declinedTitle": "{{sender}} declined",
+		"declinedBody": "Your request wasn't accepted",
 		"pairedTitle": "Device paired",
 		"pairedBody": "{{name}} is now paired"
 	},
