@@ -1134,6 +1134,12 @@ impl NodeService {
         Ok(infos)
     }
 
+    /// `(online, total)` across actively-paired devices. Used by the desktop
+    /// tray, which has no access to the presence map directly.
+    pub fn presence_summary(&self) -> anyhow::Result<(usize, usize)> {
+        Ok(crate::device_identity::presence_summary(&self.list_paired()?))
+    }
+
     pub async fn forget_paired(&self, endpoint_id: &str) -> anyhow::Result<()> {
         debug!(
             target: "dashbeam::_events::pairing::forget",
