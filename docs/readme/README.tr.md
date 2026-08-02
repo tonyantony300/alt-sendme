@@ -1,6 +1,6 @@
-<img src="../../assets/rename-banner.svg" alt="Duyuru: AltSendme artık DashBeam oldu. Aynı uygulama; bulması, hatırlaması ve telafuz etmesi daha kolay." width="1200" />
+<img src="../../assets/rename-banner.svg" alt="Duyuru: AltSendme artık DashBeam oldu. Aynı uygulama; bulması, hatırlaması ve telaffuz etmesi daha kolay." width="1200" />
 
-**Dil:** English | [中文](docs/readme/README.zh-CN.md) | [Русский](docs/readme/README.ru.md) | [Português](docs/readme/README.pt-BR.md) | [Español](docs/readme/README.es.md) | [Deutsch](docs/readme/README.de.md) | [Français](docs/readme/README.fr.md) | [日本語](docs/readme/README.ja.md) | [한국어](docs/readme/README.ko.md) | [Polski](docs/readme/README.pl.md) | [العربية](docs/readme/README.ar.md) | [Türkçe](docs/README.tr.md)
+**Dil:** [English](../../README.md) | [中文](README.zh-CN.md) | [Русский](README.ru.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [日本語](README.ja.md) | 한국어 | [Polski](README.pl.md) | [العربية](README.ar.md)
 
 <div align="center">
 
@@ -31,7 +31,7 @@
 </div>
 [İleri teknolojiye sahip uçtan uca ağın](https://www.iroh.computer) gücünden yararlanarak size dosyalarınızı hiçbir bulut sunucuya kaydetmeden paylaşmanıza olan sağlayan ücretsiz, açık kaynak kodlu bir araç.
 
-Uçtan uca şifrelenmiş ve hiçbir kişisel bilgiyi dahil etmeden, kolay ve güvenli bir şekilde dosyalarımızı paylaşmak varken neden WeTransfter, Dropbox veya Google Drive kullanalım ki?
+Uçtan uca şifrelenmiş ve hiçbir kişisel bilgiyi dahil etmeden, kolay ve güvenli bir şekilde dosyalarımızı paylaşmak varken neden WeTransfer, Dropbox veya Google Drive kullanalım ki?
 
 
 
@@ -41,14 +41,14 @@ Uçtan uca şifrelenmiş ve hiçbir kişisel bilgiyi dahil etmeden, kolay ve gü
 - **İstediğin şeyi, boyutu ne kadar olursa olsun aktar** - İster dosya ister klasör olsun, uçtan uca BLAKE3 bütünlük kontrolü ile doğrulanır.
 - **Zamanına değecek kadar hızlı** - Işık hızında aktarımlar için çoklu gigabit bağlantılarını tam kapasiteyle kullanır.
 - **Varsayılan olarak gizli** - Hesap, kaydolma, takipçiler, reklamlar hiçbiri yok. 
-- **Doğrudan cihazdan cihazada aktarım** - Dosyalar cihazınızdan cihazınıza kurumsal bulut depolamalarına uğramadan giderler.
+- **Doğrudan cihazdan cihaza aktarım** - Dosyalar cihazınızdan cihazınıza kurumsal bulut depolamalarına uğramadan giderler.
 - **Hep açık uçtan uca şifreleme** - Tüm aktarımlar TLS 1.3 'lü QUIC kullanır; aktarma noktaları, sürece dahil olsalar bile yalnızca şifrelenmiş trafiği görürler.
-- **Kriptografik kimlik doğrulama** - Her bilet dosya aktarımı başlamadan önce doğru gönderiyice bağlantı kurduğunuzdan emin olur.
+- **Kriptografik kimlik doğrulama** - Her bilet dosya aktarımı başlamadan önce doğru göndericiye bağlantı kurduğunuzdan emin olur.
 - **Devam edilebilir & yayınlanabilir** - Bölünen aktarımlar otomatik olarak devam eder; aynı dosyayı tek seferde istediğiniz kişi ile paylaşabilirsiniz.
 - **İndirmeden önce önizle** - İndirmeden önce aldığınız şeyi görebilirsiniz.
 - **Bağlı cihazlar** - **Ayarlar → Cihazlar** kısmından bilgisayar ve Android telefonlarınızı bir defa bağlayın, sonrasında her seferde bilet kopyalamadan dosyaları gönderin.
 - **Tüy kadar hafif** - Küçük kurulumlar, minimal web ayak izi.
-- **Ücretsiz ve açık kaynak kodlu** - Yükleme maaliyeti, boyut sınırı yok, topluluk tarafından yönetiliyor.
+- **Ücretsiz ve açık kaynak kodlu** - Yükleme maliyeti, boyut sınırı yok, topluluk tarafından yönetiliyor.
 
 
 ## Gerçek dünya istatistikleri
@@ -114,7 +114,7 @@ Kurmanın en kolay yolu işletim sisteminiz için olan sürümü aşağıdan ind
   </tr>
 </table>
 
-Daha fazla seçim  [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) veya [İndirmeşer](https://www.dashbeam.net/en/downloads) sayfasında bulunabilir.
+Daha fazla seçim [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) veya [İndirmeşer](https://www.dashbeam.net/en/downloads) sayfasında bulunabilir.
 
 Sorunla mı karşılaştınız? Yaygın sorunlar ve log toplamak için bakınız [Sorun Giderme](docs/troubleshooting.md)
 
@@ -142,8 +142,8 @@ Görevimize katılacak Partnerler arıyoruz! Bizimle Partner olun ve biz uçtan 
 ## Nasıl çalışıyor
 
 1. Dosya veya klasörünüzü bırakın - DashBeam ("bilet" denen) bir tek seferlik paylaşım kodu oluşturur
-2. Biletii sohbet, email veya kısa mesaj ile paylaşın **veya** direkt olarak eşleşmiş bir cihaza gönderin (masaüstü / Android).
-3. Arkafaşınız bileti uygulamalarına yapıştırır (veya eşleşmiş bir cihazın davetini kabul eder), ve aktarım başlar.
+2. Bileti sohbet, email veya kısa mesaj ile paylaşın **veya** direkt olarak eşleşmiş bir cihaza gönderin (masaüstü / Android).
+3. Arkadaşınız bileti uygulamalarına yapıştırır (veya eşleşmiş bir cihazın davetini kabul eder), ve aktarım başlar.
 
 ### Eşleşmiş cihazlar
 
@@ -180,7 +180,7 @@ DashBeam, cihazlar arası doğrudan iletişimi kolaylaştıran modern bir eşler
 
 | Parça | Burada yaptığı |
 |-------|-------------------|
-| **Bloblar** (`iroh-blobs`) | Dosya verisini saklar ve yayınlar; ever yığın BLAKE3 ile doğrulanır |
+| **Bloblar** (`iroh-blobs`) | Dosya verisini saklar ve yayınlar; her yığın BLAKE3 ile doğrulanır |
 | **Biletler** | Bir eşe *kimi* arayacağını ve *neyi* alacağını belirten bir dizedir |
 | **Uç noktalar** | Her cihazin Iroh kimliğidir (Ed25519 anahtarı → uç nokta idsi) |
 | **QUIC + TLS 1.3** | Şifrelenmiş taşıma; kuyruk başı engellemesi olmadan çoklama |
@@ -193,7 +193,6 @@ Dosyalar herhangi bir sunucuya yüklenmez. Bunlar, bir BLAKE3 hash değeri ile a
 
 - Bir **link** bu 32-baytlık hash değeridir: eğer hashler uyuşursa, içerik de uyuşur.
 - Klasörler ve büyük dosyalar **HashSeq** kullanır (diğer blobları işaret eden bir blob).
-- The sender is the **provider**; the receiver is the **requester**. Either side can do both.
 - Gönderici **sağlayıcıdır**; alıcı da **isteyen**dir. İki taraf da ikisini yapabilir.
 
 ### Biletler
@@ -202,9 +201,9 @@ Bir paylaşım **bileti** şunları içeren tek bir tokendir:
 
 1. Göndericinin uç nokta id'si (doğru cihaz ile bağlandığını bilmek için)
 2. Onları aramak için yeterli adres / aktarma bilgisi
-3. İndirilecek blob malı
+3. İndirilecek blob hashi
 
-Sadece beraber bilet paylaştığınız kişilere bağlanırsınız: IP adresinizi yabancılara yayılmaz. Bu herkese tüm herşeyi açığa çıkaran yöntemin aksine, Iroh'un teşvik ettiği "samimi ağ" modelidir.
+Sadece beraber bilet paylaştığınız kişilere bağlanırsınız: IP adresiniz yabancılara yayılmaz. Bu herkese tüm herşeyi açığa çıkaran yöntemin aksine, Iroh'un teşvik ettiği "samimi ağ" modelidir.
 
 ### Ağlar arası bağlanma
 
@@ -214,7 +213,7 @@ Sadece beraber bilet paylaştığınız kişilere bağlanırsınız: IP adresini
 2. Iroh, doğrudan eşler arası bağlantıya geçmek için **QUIC delik açma** işlemini dener.
 3. Doğrudan bir yol kurulabilirse, trafik cihazdan cihaza aktarılır. Aksi takdirde, aktarıcı yedek bir UDP atlama noktası olarak yol üzerinde kalır.
 
-İki durumda da yük uçtan uca şifrelenir. Aktarma sunucları dosyalarınız değil, şifreli bir metin görür. [Iroh aktarma sunucuları hakkında daha fazla bilgi →](https://docs.iroh.computer/about/faq)
+İki durumda da yük uçtan uca şifrelenir. Aktarma sunucuları dosyalarınız değil, şifreli bir metin görür. [Iroh aktarma sunucuları hakkında daha fazla bilgi →](https://docs.iroh.computer/about/faq)
 
 ### QUIC & şifreleme
 
@@ -227,7 +226,7 @@ Eşleşmek biletlerin yerini almaz; aksine sizin için biletleri iletir.
 1. Cihazlar  özel bir ALPN kontrolü üzerinden kısa bir **eşleşme kodu** (sunucunun uçnokta id'si) paylaşırlar.
 2. İki taraf da kimliklerini bağlantı-tabanlı bir anahtar materyali ile cihaz sırrını kullanarak imzalayarak onaylarlar, sonrasında karşı tarafı yerel olarak hatırlar.
 3. Kalıcı bir kontrol bağlantısı durum bilgisini saklar (çevrim içi,çevrim dışı).
-4. Paylaştığınızda, DashBeam yine de tek seferlik normal bir blob bileti oluştutur; Eşlemiş bir cihaz seçildiğinde o bileti siz kopyalama yapıştırmanıza gerek kalmadan uygulama içi davet olarak gönderir
+4. Paylaştığınızda, DashBeam yine de tek seferlik normal bir blob bileti oluşturur; eşlemiş bir cihaz seçildiğinde o bileti siz kopyalama yapıştırmanıza gerek kalmadan uygulama içi davet olarak gönderir.
 
 Manuel biletler ve [sendme CLI](https://www.iroh.computer/sendme) eskisi gibi çalışmaya devam eder.
 
@@ -240,9 +239,9 @@ Kendi iroh aktarma ve keşif sunucunuzu nasıl çalıştıracağınız, DashBeam
 
 Ön gereklilikler, yerel kurulum, derleme aşamaları için [CONTRIBUTING.md](CONTRIBUTING.md#development-setup) 'ye bakın.
 
-## Katkıda bulunmak [Discord](https://discord.gg/xwb7z22Eve) 'umuza katılın
+## Katkıda bulunmak için [Discord](https://discord.gg/xwb7z22Eve) 'umuza katılın
 
-Katkıda bulunmanın en iyi Discord kanalımıza katılın selam vermektir. Kendinizi tanıtın ve yeteneklerinizi veya ilgilerinizi - ister kodlama, ister test etme, ister tasarım veya başka bir şey de olur, paylaşın. Soru sorabilir, çözüm önerebilir, veya fikir de üretebilirsiniz. Geliştiriciler her yolda size yardımcı olmak için oradalar.
+Katkıda bulunmanın en iyi Discord kanalımıza katılıp selam vermektir. Kendinizi tanıtın ve yeteneklerinizi veya ilgilerinizi - ister kodlama, ister test etme, ister tasarım veya başka bir şey de olur, paylaşın. Soru sorabilir, çözüm önerebilir, veya fikir de üretebilirsiniz. Geliştiriciler her yolda size yardımcı olmak için oradalar.
 
 Burası, konuyu daha iyi anlamak, yön konusunda fikir almak ve [topluluk](https://discord.gg/xwb7z22Eve) ile işbirliği içinde olmak için en iyi yerdir.
 
