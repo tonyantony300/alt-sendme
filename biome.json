@@ -60,6 +60,18 @@
 	},
 	"overrides": [
 		{
+			"includes": ["flatpak/**/*.json"],
+			"formatter": {
+				"enabled": false
+			},
+			"linter": {
+				"enabled": false
+			},
+			"assist": {
+				"enabled": false
+			}
+		},
+		{
 			"includes": ["frontend/src/wasm/pkg/wasm_bridge.d.ts"],
 			"formatter": {
 				"enabled": false

@@ -71,6 +71,9 @@
 		"copyToClipboard": "Copy to clipboard",
 		"shareReceiveLink": "Share receive link",
 		"copyReceiveLink": "Copy receive link",
+		"showReceiveQr": "Show receive QR code",
+		"receiveQrTitle": "Receive QR",
+		"scanToReceive": "Scan to receive",
 		"description": "Description (optional)",
 		"broadcastMode": {
 			"index": "Broadcast",
