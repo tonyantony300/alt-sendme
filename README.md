@@ -1,6 +1,6 @@
 <img src="assets/rename-banner.svg" alt="Announcement: AltSendme is now DashBeam. Same app, easier to find, remember and pronounce." width="1200" />
 
-**Language:** English | [中文](docs/readme/README.zh-CN.md) | [Русский](docs/readme/README.ru.md) | [Português](docs/readme/README.pt-BR.md) | [Español](docs/readme/README.es.md) | [Deutsch](docs/readme/README.de.md) | [Français](docs/readme/README.fr.md) | [日本語](docs/readme/README.ja.md) | [한국어](docs/readme/README.ko.md) | [Polski](docs/readme/README.pl.md) | [العربية](docs/readme/README.ar.md)
+**Language:** English | [中文](docs/readme/README.zh-CN.md) | [Русский](docs/readme/README.ru.md) | [Português](docs/readme/README.pt-BR.md) | [Español](docs/readme/README.es.md) | [Deutsch](docs/readme/README.de.md) | [Français](docs/readme/README.fr.md) | [日本語](docs/readme/README.ja.md) | [한국어](docs/readme/README.ko.md) | [Polski](docs/readme/README.pl.md) | [العربية](docs/readme/README.ar.md) | [Türkçe](docs/readme/README.tr.md)
 
 <div align="center">
 
