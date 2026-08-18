@@ -1,6 +1,7 @@
 package com.dashbeam.plugin.native_utils
 
 import android.app.Activity
+import android.app.DownloadManager
 import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
@@ -52,6 +53,16 @@ class OpenDownloadFolderArgs {
     var treeUri: String = ""
 }
 
+@InvokeArg
+class ExportToMediaStoreArgs {
+    var sourceDir: String = ""
+}
+
+@InvokeArg
+class OpenDownloadTargetArgs {
+    var uri: String = ""
+}
+
 @Keep
 data class DownloadFolderSelectionResponse(
     val uri: String,
@@ -68,6 +79,9 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         private const val RW_PERMISSION_FLAGS =
             Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
         private const val SHARE_RECEIVED_EVENT = "shareReceived"
+
+        /** Sentinel the Rust side matches to fall back to app-private staging. */
+        const val MEDIA_STORE_UNSUPPORTED = "MEDIA_STORE_UNSUPPORTED"
     }
 
     @Command
@@ -178,6 +192,57 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
             invoke.resolve()
         } catch (e: Exception) {
             invoke.reject(e.message ?: "Failed to open download folder")
+        }
+    }
+
+    @Command
+    fun export_to_media_store(invoke: Invoke) {
+        val args = invoke.parseArgs(ExportToMediaStoreArgs::class.java)
+        scope.launch {
+            try {
+                val result = exportDirectoryToMediaStore(activity, File(args.sourceDir))
+                invoke.resolveObject(result)
+            } catch (_: MediaStoreUnsupportedException) {
+                invoke.reject(MEDIA_STORE_UNSUPPORTED)
+            } catch (e: Exception) {
+                invoke.reject(e.message ?: "Failed to export to the Downloads folder")
+            }
+        }
+    }
+
+    /**
+     * Show a received file, or the system Downloads list when there is no
+     * single file to show.
+     *
+     * A MediaStore export has no tree URI to hand back, so opening the folder
+     * the SAF way is not available here.
+     */
+    @Command
+    fun open_download_target(invoke: Invoke) {
+        val args = invoke.parseArgs(OpenDownloadTargetArgs::class.java)
+        val uriString = args.uri.trim()
+
+        try {
+            val intent = if (uriString.isEmpty()) {
+                Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
+            } else {
+                val uri = Uri.parse(uriString)
+                val mime = activity.contentResolver.getType(uri) ?: "*/*"
+                Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, mime)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+            try {
+                activity.startActivity(intent)
+            } catch (_: android.content.ActivityNotFoundException) {
+                activity.startActivity(Intent.createChooser(intent, null))
+            }
+            invoke.resolve()
+        } catch (e: Exception) {
+            invoke.reject(e.message ?: "Failed to open the downloaded file")
         }
     }
 

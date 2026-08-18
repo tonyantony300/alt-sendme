@@ -1,5 +1,9 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import {
+	MEDIA_STORE_DEFAULT_VERSION,
+	migrateDownloadFolder,
+} from '../lib/download-folder-migration'
 import { IS_DESKTOP } from '../lib/platform'
 import {
 	defaultAppSettings,
@@ -69,7 +73,7 @@ export type AppSettings = AppSettingsState & AppSettingsActions
 const AppSettingsKey = 'app_settings'
 
 /** Bumped whenever a persisted value needs correcting; see `migrateAppSettings`. */
-const AppSettingsVersion = 1
+const AppSettingsVersion = MEDIA_STORE_DEFAULT_VERSION
 
 /**
  * v0 → v1: force `minimizeToTray` back to `true`.
@@ -85,10 +89,14 @@ const AppSettingsVersion = 1
  * every install has always had — into "close quits", which shuts the node
  * down and kills in-flight transfers on the first upgrade.
  *
- * Only this one key is corrected; every other persisted value is carried
- * through untouched. `version: 1` is written back to disk as part of
- * rehydration, so this runs at most once per install: a user who turns the
- * toggle off *after* upgrading keeps it off.
+ * v1 → v2: drop the stored Android download folder. See
+ * `migrateDownloadFolder` for why an explicitly picked folder is dropped
+ * rather than kept.
+ *
+ * Only these keys are corrected; every other persisted value is carried
+ * through untouched. The new version is written back to disk as part of
+ * rehydration, so each step runs at most once per install: a user who turns
+ * the tray toggle off — or picks a folder — *after* upgrading keeps it.
  */
 function migrateAppSettings(
 	persistedState: unknown,
@@ -102,10 +110,12 @@ function migrateAppSettings(
 			? (persistedState as Partial<AppSettingsState>)
 			: {}
 
+	const withDownloadFolder = migrateDownloadFolder(state, version)
+
 	if (version < 1) {
-		return { ...state, minimizeToTray: true }
+		return { ...withDownloadFolder, minimizeToTray: true }
 	}
-	return state
+	return withDownloadFolder
 }
 
 export const useAppSettingStore = create<AppSettings>()(

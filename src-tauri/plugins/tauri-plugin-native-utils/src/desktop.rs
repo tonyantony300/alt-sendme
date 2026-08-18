@@ -1,5 +1,5 @@
 use serde::de::DeserializeOwned;
-use tauri::{AppHandle, Runtime, ipc::Channel, plugin::PluginApi};
+use tauri::{ipc::Channel, plugin::PluginApi, AppHandle, Runtime};
 
 use crate::models::*;
 
@@ -58,6 +58,21 @@ impl<R: Runtime> NativeUtils<R> {
 
 impl<R: Runtime> NativeUtils<R> {
     pub fn open_download_folder(&self, _: OpenDownloadFolderArgs) -> crate::Result<()> {
+        Err(crate::Error::UnsupportedPlafrormError)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn export_to_media_store(
+        &self,
+        _: ExportToMediaStoreArgs,
+    ) -> crate::Result<ExportToMediaStoreResult> {
+        Err(crate::Error::UnsupportedPlafrormError)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn open_download_target(&self, _: OpenDownloadTargetArgs) -> crate::Result<()> {
         Err(crate::Error::UnsupportedPlafrormError)
     }
 }

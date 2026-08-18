@@ -37,10 +37,7 @@ pub(crate) async fn consume_share_intent<R: Runtime>(
 }
 
 #[command]
-pub(crate) async fn cancel_job<R: Runtime>(
-    app: tauri::AppHandle<R>,
-    job: AsyncJob,
-) -> Result<()> {
+pub(crate) async fn cancel_job<R: Runtime>(app: tauri::AppHandle<R>, job: AsyncJob) -> Result<()> {
     app.native_utils().cancel_job(job)
 }
 
@@ -64,4 +61,18 @@ pub(crate) async fn open_download_folder<R: Runtime>(
 ) -> Result<()> {
     app.native_utils()
         .open_download_folder(OpenDownloadFolderArgs { tree_uri })
+}
+
+#[command]
+pub(crate) async fn export_to_media_store<R: Runtime>(
+    app: AppHandle<R>,
+    args: ExportToMediaStoreArgs,
+) -> Result<ExportToMediaStoreResult> {
+    app.native_utils().export_to_media_store(args)
+}
+
+#[command]
+pub(crate) async fn open_download_target<R: Runtime>(app: AppHandle<R>, uri: String) -> Result<()> {
+    app.native_utils()
+        .open_download_target(OpenDownloadTargetArgs { uri })
 }

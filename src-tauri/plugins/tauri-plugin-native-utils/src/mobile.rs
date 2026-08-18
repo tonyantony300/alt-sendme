@@ -88,3 +88,22 @@ impl<R: Runtime> NativeUtils<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn export_to_media_store(
+        &self,
+        args: ExportToMediaStoreArgs,
+    ) -> crate::Result<ExportToMediaStoreResult> {
+        self.0
+            .run_mobile_plugin("export_to_media_store", args)
+            .map_err(Into::into)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn open_download_target(&self, args: OpenDownloadTargetArgs) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("open_download_target", args)
+            .map_err(Into::into)
+    }
+}

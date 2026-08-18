@@ -43,6 +43,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::cancel_job,
             commands::export_to_tree,
             commands::open_download_folder,
+            commands::export_to_media_store,
+            commands::open_download_target,
             commands::get_window_insets,
         ])
         .setup(|app, api| {

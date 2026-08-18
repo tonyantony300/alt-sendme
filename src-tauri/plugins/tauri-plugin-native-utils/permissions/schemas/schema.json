@@ -319,6 +319,18 @@
           "markdownDescription": "Denies the consume_share_intent command without any pre-configured scope."
         },
         {
+          "description": "Enables the export_to_media_store command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-export-to-media-store",
+          "markdownDescription": "Enables the export_to_media_store command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the export_to_media_store command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-export-to-media-store",
+          "markdownDescription": "Denies the export_to_media_store command without any pre-configured scope."
+        },
+        {
           "description": "Enables the export_to_tree command without any pre-configured scope.",
           "type": "string",
           "const": "allow-export-to-tree",
@@ -353,6 +365,18 @@
           "type": "string",
           "const": "deny-open-download-folder",
           "markdownDescription": "Denies the open_download_folder command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the open_download_target command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-open-download-target",
+          "markdownDescription": "Enables the open_download_target command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the open_download_target command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-open-download-target",
+          "markdownDescription": "Denies the open_download_target command without any pre-configured scope."
         },
         {
           "description": "Enables the select_download_folder command without any pre-configured scope.",
@@ -391,10 +415,10 @@
           "markdownDescription": "Denies the select_send_folder command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-get-window-insets`",
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-get-window-insets`"
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`"
         }
       ]
     }

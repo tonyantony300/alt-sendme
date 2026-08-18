@@ -16,7 +16,11 @@ import {
 	getWebPreviewErrorMessage,
 	isWebPreviewError,
 } from '@/lib/web-preview-error'
-import { openDownloadFolder, selectDownloadFolder } from '@/plugins/nativeUtils'
+import {
+	openDownloadFolder,
+	openDownloadTarget,
+	selectDownloadFolder,
+} from '@/plugins/nativeUtils'
 import { useAppSettingStore } from '@/store/app-setting'
 import { useReceiverActionsStore } from '@/store/receiver-actions-store'
 import { useTransferTabStore } from '@/store/transfer-tab-store'
@@ -133,6 +137,13 @@ export function useReceiver(): UseReceiverReturn {
 		type: 'info',
 	})
 	const pendingConflictNoticeRef = useRef<string | null>(null)
+	/**
+	 * `content://` URIs of the files a MediaStore export just published.
+	 *
+	 * A MediaStore export yields no tree URI, so these are what "Open" has to
+	 * work with — one file opens directly, several land in the Downloads list.
+	 */
+	const androidMediaStoreUrisRef = useRef<string[]>([])
 
 	const fileNamesRef = useRef<string[]>([])
 	const transferProgressRef = useRef<TransferProgress | null>(null)
@@ -422,6 +433,30 @@ export function useReceiver(): UseReceiverReturn {
 				}
 			})
 
+			// Files reached the public Downloads collection. Nothing to warn
+			// about — the success screen shows the new path, and the URIs make
+			// "Open" work without a tree URI.
+			await registerListener('receive-download-mediastore', (event: any) => {
+				if (!IS_ANDROID) return
+				try {
+					const payload = event.payload as {
+						path?: string
+						uris?: string[]
+					}
+					const path = String(payload?.path ?? '').trim()
+					androidMediaStoreUrisRef.current = Array.isArray(payload?.uris)
+						? payload.uris
+						: []
+					if (!path) return
+					setSavePath(path)
+					setTransferMetadata((prev) =>
+						prev ? { ...prev, downloadPath: path } : prev
+					)
+				} catch (error) {
+					console.error('Failed to handle MediaStore export notice:', error)
+				}
+			})
+
 			await registerListener('receive-conflicts', (event: any) => {
 				if (transferSeqRef.current === 0) return
 				try {
@@ -603,6 +638,7 @@ export function useReceiver(): UseReceiverReturn {
 				setIsPreviewLoading(false)
 				pendingConflictNoticeRef.current = null
 				folderOpenTriggeredRef.current = false
+				androidMediaStoreUrisRef.current = []
 				androidOpenUriRef.current = IS_ANDROID
 					? downloadsUriRef.current.trim()
 					: ''
@@ -728,6 +764,7 @@ export function useReceiver(): UseReceiverReturn {
 		pendingConflictNoticeRef.current = null
 		folderOpenTriggeredRef.current = false
 		androidOpenUriRef.current = ''
+		androidMediaStoreUrisRef.current = []
 		transferItemCountRef.current = undefined
 	}
 
@@ -741,16 +778,27 @@ export function useReceiver(): UseReceiverReturn {
 
 			if (IS_ANDROID) {
 				const treeUri = androidOpenUriRef.current.trim()
-				if (!treeUri) {
-					folderOpenTriggeredRef.current = false
-					showAlert(
-						t('common:errors.openFolderFailed'),
-						t('common:errors.openFolderUnavailableDesc'),
-						'error'
+				if (treeUri) {
+					await openDownloadFolder(treeUri)
+					return
+				}
+
+				const mediaStoreUris = androidMediaStoreUrisRef.current
+				if (mediaStoreUris.length > 0) {
+					// One file opens in whatever app handles it; several have no
+					// single target, so fall back to the system Downloads list.
+					await openDownloadTarget(
+						mediaStoreUris.length === 1 ? mediaStoreUris[0] : ''
 					)
 					return
 				}
-				await openDownloadFolder(treeUri)
+
+				folderOpenTriggeredRef.current = false
+				showAlert(
+					t('common:errors.openFolderFailed'),
+					t('common:errors.openFolderUnavailableDesc'),
+					'error'
+				)
 				return
 			}
 

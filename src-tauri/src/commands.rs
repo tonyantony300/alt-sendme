@@ -449,8 +449,7 @@ fn finalize_android_receive(
     let tree_uri = tree_uri.map(str::trim).filter(|uri| !uri.is_empty());
 
     let Some(tree_uri) = tree_uri else {
-        emit_receive_download_fallback(app_handle, staging_dir, "private");
-        return Ok(());
+        return finalize_android_media_store_receive(app_handle, staging_dir);
     };
 
     let export_result = app_handle.native_utils().export_to_tree(ExportToTreeArgs {
@@ -478,6 +477,63 @@ fn finalize_android_receive(
             tracing::warn!("SAF export failed, keeping app-private files: {e}");
             emit_receive_download_fallback(app_handle, staging_dir, "saf");
             // Transfer itself succeeded — files remain in staging.
+            Ok(())
+        }
+    }
+}
+
+/// Export a finished receive into the public `Download/DashBeam` collection.
+///
+/// This is the zero-configuration path — no folder picked, no permission
+/// prompt. Files left in app-private staging are invisible to every file
+/// manager and cannot be opened, so anything short of a successful export
+/// falls back to the old behaviour and tells the user where they ended up.
+#[cfg(target_os = "android")]
+fn finalize_android_media_store_receive(
+    app_handle: &tauri::AppHandle,
+    staging_dir: &Path,
+) -> Result<(), String> {
+    use tauri_plugin_native_utils::{
+        ExportToMediaStoreArgs, NativeUtilsExt, MEDIA_STORE_UNSUPPORTED,
+    };
+
+    let export_result = app_handle
+        .native_utils()
+        .export_to_media_store(ExportToMediaStoreArgs {
+            source_dir: staging_dir.to_string_lossy().into_owned(),
+        });
+
+    match export_result {
+        Ok(result) => {
+            tracing::info!(
+                exported = result.exported_count,
+                conflicts = result.conflicts.len(),
+                path = %result.display_path,
+                "Exported received files to the Downloads collection"
+            );
+            if let Err(e) = std::fs::remove_dir_all(staging_dir) {
+                tracing::warn!(
+                    "Failed to clean staging dir after MediaStore export ({}): {}",
+                    staging_dir.display(),
+                    e
+                );
+            }
+            let payload = serde_json::json!({
+                "path": result.display_path,
+                "uris": result.uris,
+            });
+            let _ = app_handle.emit("receive-download-mediastore", payload);
+            Ok(())
+        }
+        Err(e) => {
+            let message = e.to_string();
+            if message.contains(MEDIA_STORE_UNSUPPORTED) {
+                tracing::info!("MediaStore unavailable on this device; keeping app-private files");
+            } else {
+                tracing::warn!("MediaStore export failed, keeping app-private files: {message}");
+            }
+            // Transfer itself succeeded — files remain in staging.
+            emit_receive_download_fallback(app_handle, staging_dir, "private");
             Ok(())
         }
     }
