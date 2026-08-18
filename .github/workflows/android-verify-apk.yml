@@ -123,9 +123,19 @@ jobs:
           echo "token file present and matches"
 
           APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -r | head -1)/apksigner
+          # Match the 64-hex digest itself rather than a field position: the
+          # label's surrounding punctuation varies between build-tools versions.
           ACTUAL=$("$APKSIGNER" verify --print-certs "$APK" \
-            | awk -F': ' '/certificate SHA-256 digest/ { print toupper($2); exit }' \
-            | sed 's/../&:/g; s/:$//')
+            | grep -i 'certificate SHA-256 digest' \
+            | grep -oiE '[0-9a-f]{64}' \
+            | head -1 \
+            | tr '[:lower:]' '[:upper:]' \
+            | sed 's/../&:/g; s/:$//' || true)
+          if [ -z "$ACTUAL" ]; then
+            echo "ERROR: could not read a signing certificate from the APK."
+            "$APKSIGNER" verify --print-certs "$APK" || true
+            exit 1
+          fi
           if [ "$ACTUAL" != "$EXPECTED_SHA256" ]; then
             echo "ERROR: APK signed by an unexpected key."
             echo "  expected: $EXPECTED_SHA256"
