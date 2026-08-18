@@ -44,4 +44,9 @@ export interface SuccessScreenProps {
 	onDone: () => void
 	wasStopped?: boolean
 	onOpenFolder?: () => Promise<void>
+	/**
+	 * Hold "Open" disabled — the files are still being written to their final
+	 * destination, so there is nothing to open yet.
+	 */
+	isOpenPending?: boolean
 }

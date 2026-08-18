@@ -438,8 +438,27 @@ pub async fn receive_file(
     }
 }
 
+/// Move a finished receive out of staging, bracketed by a completion event.
+///
+/// `receive-completed` fires when the engine finishes writing app-private
+/// staging, which is *before* the export below re-copies every byte out of it.
+/// The success screen is therefore already up while the destination — the
+/// path, and the `content://` URIs "Open" needs — does not exist yet. Emitting
+/// on the way out, after whichever payload event the chosen path produced,
+/// gives the UI a single signal for "the files are now where they belong".
 #[cfg(target_os = "android")]
 fn finalize_android_receive(
+    app_handle: &tauri::AppHandle,
+    staging_dir: &Path,
+    tree_uri: Option<&str>,
+) -> Result<(), String> {
+    let result = export_android_receive(app_handle, staging_dir, tree_uri);
+    let _ = app_handle.emit("receive-export-finished", ());
+    result
+}
+
+#[cfg(target_os = "android")]
+fn export_android_receive(
     app_handle: &tauri::AppHandle,
     staging_dir: &Path,
     tree_uri: Option<&str>,

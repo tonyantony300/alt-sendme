@@ -47,14 +47,21 @@ export async function selectDownloadFolder(): Promise<DownloadFolderSelectionRes
 /**
  * Show a MediaStore-exported receive.
  *
- * Pass a single file's `content://` URI to open it directly, or an empty
- * string to land in the system Downloads list — a MediaStore export has no
- * tree URI, so there is no folder to open the SAF way.
+ * Pass a single file's `content://` URI to open it directly, and
+ * `relativePath` (e.g. `Download/DashBeam`) to open the folder a multi-file
+ * export landed in. A MediaStore export has no tree URI, so there is no folder
+ * to open the SAF way; the system Downloads list is the last resort.
  */
-export async function openDownloadTarget(uri: string): Promise<void> {
+export async function openDownloadTarget(
+	uri: string,
+	relativePath = ''
+): Promise<void> {
 	if (!IS_TAURI) return
 
-	await invoke<void>('plugin:native-utils|open_download_target', { uri })
+	await invoke<void>('plugin:native-utils|open_download_target', {
+		uri,
+		relativePath,
+	})
 }
 
 /** Open the selected Android SAF download folder in a system file manager. */

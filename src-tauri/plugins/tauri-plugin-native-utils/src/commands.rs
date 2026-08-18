@@ -72,9 +72,13 @@ pub(crate) async fn export_to_media_store<R: Runtime>(
 }
 
 #[command]
-pub(crate) async fn open_download_target<R: Runtime>(app: AppHandle<R>, uri: String) -> Result<()> {
+pub(crate) async fn open_download_target<R: Runtime>(
+    app: AppHandle<R>,
+    uri: String,
+    relative_path: String,
+) -> Result<()> {
     app.native_utils()
-        .open_download_target(OpenDownloadTargetArgs { uri })
+        .open_download_target(OpenDownloadTargetArgs { uri, relative_path })
 }
 
 #[command]

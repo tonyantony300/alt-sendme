@@ -61,6 +61,14 @@ class ExportToMediaStoreArgs {
 @InvokeArg
 class OpenDownloadTargetArgs {
     var uri: String = ""
+
+    /**
+     * Destination relative to external storage, e.g. `Download/DashBeam`.
+     *
+     * Used to open the exact folder a receive landed in when there is no
+     * single file to show. Empty falls back to the system Downloads list.
+     */
+    var relativePath: String = ""
 }
 
 @Keep
@@ -82,6 +90,10 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
         /** Sentinel the Rust side matches to fall back to app-private staging. */
         const val MEDIA_STORE_UNSUPPORTED = "MEDIA_STORE_UNSUPPORTED"
+
+        /** Documents provider backing the primary shared-storage volume. */
+        private const val EXTERNAL_STORAGE_AUTHORITY =
+            "com.android.externalstorage.documents"
     }
 
     @Command
@@ -227,39 +239,89 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
     }
 
     /**
-     * Show a received file, or the system Downloads list when there is no
-     * single file to show.
+     * Show a received file, the folder it landed in, or — failing both — the
+     * system Downloads list.
      *
      * A MediaStore export has no tree URI to hand back, so opening the folder
-     * the SAF way is not available here.
+     * the SAF way is not available here. `ACTION_VIEW_DOWNLOADS` accepts no
+     * target and can only ever show the Downloads root, which is why a
+     * document URI built from `relativePath` is tried first: that is the only
+     * form that lands the user inside `Download/DashBeam` rather than one
+     * level above it. Support varies by OEM file manager, hence the chain.
      */
     @Command
     fun open_download_target(invoke: Invoke) {
         val args = invoke.parseArgs(OpenDownloadTargetArgs::class.java)
         val uriString = args.uri.trim()
+        val relativePath = args.relativePath.trim().trim('/')
 
         try {
-            val intent = if (uriString.isEmpty()) {
-                Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
-            } else {
+            val candidates = mutableListOf<Intent>()
+
+            if (uriString.isNotEmpty()) {
                 val uri = Uri.parse(uriString)
                 val mime = activity.contentResolver.getType(uri) ?: "*/*"
-                Intent(Intent.ACTION_VIEW).apply {
+                candidates += Intent(Intent.ACTION_VIEW).apply {
                     setDataAndType(uri, mime)
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
             }
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-            try {
-                activity.startActivity(intent)
-            } catch (_: android.content.ActivityNotFoundException) {
-                activity.startActivity(Intent.createChooser(intent, null))
+            candidates += folderIntents(relativePath)
+            candidates += Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
+
+            if (!startFirstResolvable(candidates)) {
+                invoke.reject("No app available to open the downloaded files")
+                return
             }
             invoke.resolve()
         } catch (e: Exception) {
             invoke.reject(e.message ?: "Failed to open the downloaded file")
         }
+    }
+
+    /**
+     * `ACTION_VIEW` intents pointing at a storage folder, most specific first.
+     *
+     * Two document-URI shapes are tried because file managers disagree on
+     * which one they accept: some resolve a bare document URI, others only
+     * one built against a tree.
+     */
+    private fun folderIntents(relativePath: String): List<Intent> {
+        if (relativePath.isEmpty()) return emptyList()
+
+        val documentId = "primary:$relativePath"
+        val authority = EXTERNAL_STORAGE_AUTHORITY
+        val treeUri = DocumentsContract.buildTreeDocumentUri(authority, documentId)
+
+        return listOf(
+            DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId),
+            DocumentsContract.buildDocumentUri(authority, documentId),
+        ).map { uri ->
+            Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, DocumentsContract.Document.MIME_TYPE_DIR)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        }
+    }
+
+    /**
+     * Fire the first intent something can handle, reporting whether any did.
+     *
+     * `resolveActivity` is unreliable under API 30 package visibility, so this
+     * simply attempts each one and moves on when nothing catches it.
+     */
+    private fun startFirstResolvable(intents: List<Intent>): Boolean {
+        for (intent in intents) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            try {
+                activity.startActivity(intent)
+                return true
+            } catch (_: android.content.ActivityNotFoundException) {
+                // Try the next, less specific, target.
+            }
+        }
+        return false
     }
 
     @ActivityCallback

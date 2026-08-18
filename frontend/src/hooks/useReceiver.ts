@@ -96,6 +96,8 @@ export interface UseReceiverReturn {
 	transferProgress: TransferProgress | null
 	previewMetadata: TicketPreviewMetadata | null
 	isPreviewLoading: boolean
+	/** Android is still copying the receive out of app-private staging. */
+	isExportPending: boolean
 	fileNames: string[]
 
 	handleTicketChange: (ticket: string) => void
@@ -113,6 +115,14 @@ export function useReceiver(): UseReceiverReturn {
 	const [isReceiving, setIsReceiving] = useState(false)
 	const [isTransporting, setIsTransporting] = useState(false)
 	const [isCompleted, setIsCompleted] = useState(false)
+	/**
+	 * Android is still copying the received files out of app-private staging.
+	 *
+	 * The success screen goes up on `receive-completed`, which the engine
+	 * emits before that copy starts, so "Open" has no destination to point at
+	 * until `receive-export-finished` lands.
+	 */
+	const [isExportPending, setIsExportPending] = useState(false)
 	const [savePath, setSavePath] = useState('')
 	const downloadsPath = useAppSettingStore((state) => state.downloadsPath)
 	const setDownloadsPath = useAppSettingStore((state) => state.setDownloadsPath)
@@ -141,9 +151,11 @@ export function useReceiver(): UseReceiverReturn {
 	 * `content://` URIs of the files a MediaStore export just published.
 	 *
 	 * A MediaStore export yields no tree URI, so these are what "Open" has to
-	 * work with — one file opens directly, several land in the Downloads list.
+	 * work with — one file opens directly, several open the folder below.
 	 */
 	const androidMediaStoreUrisRef = useRef<string[]>([])
+	/** Where that export landed, relative to storage: `Download/DashBeam`. */
+	const androidMediaStorePathRef = useRef('')
 
 	const fileNamesRef = useRef<string[]>([])
 	const transferProgressRef = useRef<TransferProgress | null>(null)
@@ -447,6 +459,7 @@ export function useReceiver(): UseReceiverReturn {
 					androidMediaStoreUrisRef.current = Array.isArray(payload?.uris)
 						? payload.uris
 						: []
+					androidMediaStorePathRef.current = path
 					if (!path) return
 					setSavePath(path)
 					setTransferMetadata((prev) =>
@@ -455,6 +468,12 @@ export function useReceiver(): UseReceiverReturn {
 				} catch (error) {
 					console.error('Failed to handle MediaStore export notice:', error)
 				}
+			})
+
+			// The export is done — whatever it produced, "Open" now has
+			// somewhere to go, so the button can leave its pending state.
+			await registerListener('receive-export-finished', () => {
+				setIsExportPending(false)
 			})
 
 			await registerListener('receive-conflicts', (event: any) => {
@@ -639,6 +658,10 @@ export function useReceiver(): UseReceiverReturn {
 				pendingConflictNoticeRef.current = null
 				folderOpenTriggeredRef.current = false
 				androidMediaStoreUrisRef.current = []
+				androidMediaStorePathRef.current = ''
+				// Every Android receive ends in an export, so the target is
+				// pending from the moment the transfer starts.
+				setIsExportPending(IS_ANDROID)
 				androidOpenUriRef.current = IS_ANDROID
 					? downloadsUriRef.current.trim()
 					: ''
@@ -658,6 +681,10 @@ export function useReceiver(): UseReceiverReturn {
 					discovery: getDiscoveryConfigArg(),
 				})
 			} catch (error) {
+				// A receive that never finished never exports, so nothing is
+				// coming to clear the pending flag.
+				setIsExportPending(false)
+
 				if (
 					String(error) === 'cancelled' ||
 					String(error).endsWith(': cancelled')
@@ -765,11 +792,16 @@ export function useReceiver(): UseReceiverReturn {
 		folderOpenTriggeredRef.current = false
 		androidOpenUriRef.current = ''
 		androidMediaStoreUrisRef.current = []
+		androidMediaStorePathRef.current = ''
+		setIsExportPending(false)
 		transferItemCountRef.current = undefined
 	}
 
 	const handleOpenFolder = async () => {
-		if (IS_WEB || folderOpenTriggeredRef.current) {
+		// The export still has files in flight; its destination is not yet
+		// somewhere the user could be sent. The button is disabled while this
+		// holds, so reaching here means a stray call.
+		if (IS_WEB || isExportPending || folderOpenTriggeredRef.current) {
 			return
 		}
 
@@ -784,11 +816,13 @@ export function useReceiver(): UseReceiverReturn {
 				}
 
 				const mediaStoreUris = androidMediaStoreUrisRef.current
-				if (mediaStoreUris.length > 0) {
-					// One file opens in whatever app handles it; several have no
-					// single target, so fall back to the system Downloads list.
+				const mediaStorePath = androidMediaStorePathRef.current
+				if (mediaStoreUris.length > 0 || mediaStorePath) {
+					// One file opens in whatever app handles it; several open
+					// the folder they landed in.
 					await openDownloadTarget(
-						mediaStoreUris.length === 1 ? mediaStoreUris[0] : ''
+						mediaStoreUris.length === 1 ? mediaStoreUris[0] : '',
+						mediaStorePath
 					)
 					return
 				}
@@ -833,6 +867,7 @@ export function useReceiver(): UseReceiverReturn {
 		transferProgress,
 		previewMetadata,
 		isPreviewLoading,
+		isExportPending,
 		fileNames,
 
 		handleTicketChange,

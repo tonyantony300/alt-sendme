@@ -37,6 +37,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 		transferProgress,
 		previewMetadata,
 		isPreviewLoading,
+		isExportPending,
 		fileNames,
 		handleTicketChange,
 		handleBrowseFolder,
@@ -96,6 +97,7 @@ export function Receiver({ onTransferStateChange }: ReceiverProps) {
 						metadata={transferMetadata}
 						onDone={resetForNewTransfer}
 						onOpenFolder={handleOpenFolder}
+						isOpenPending={isExportPending}
 					/>
 				</div>
 			) : (

@@ -38,11 +38,16 @@ pub struct ExportToMediaStoreArgs {
     pub source_dir: String,
 }
 
-/// Empty `uri` opens the system Downloads list instead of a single file.
+/// What to show for a MediaStore export, most specific first.
+///
+/// `uri` is a single exported file; an empty one falls through to
+/// `relative_path`, the folder the export landed in (e.g. `Download/DashBeam`).
+/// With neither, the system Downloads list is all that is left.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenDownloadTargetArgs {
     pub uri: String,
+    pub relative_path: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

@@ -6,6 +6,7 @@ import { DONATE_LINK } from '../../lib/version'
 import { formatFileSize } from '../../lib/utils'
 import type { SuccessScreenProps } from '../../types/transfer'
 import { Button } from '../ui/button'
+import { Spinner } from '../ui/spinner'
 
 function formatDuration(ms: number): string {
 	if (ms === 0) {
@@ -47,9 +48,9 @@ export function TransferSuccessScreen({
 	metadata,
 	onDone,
 	onOpenFolder,
+	isOpenPending = false,
 }: SuccessScreenProps) {
 	const wasStopped = metadata.wasStopped || false
-	const isReceiver = !!metadata.downloadPath
 	const isDirectory = metadata.pathType === 'directory'
 	const { t } = useTranslation()
 	const donateLinkText = t('common:transfer.donateLink')
@@ -159,15 +160,23 @@ export function TransferSuccessScreen({
 				</div>
 			</div>
 
-			{isReceiver && onOpenFolder && !IS_WEB ? (
+			{onOpenFolder && !IS_WEB ? (
 				<div className="flex gap-3 w-full max-w-sm">
+					{/* Rendered from the first frame, disabled while the files
+					    are still on their way to the download folder — a button
+					    that appears late reads as the screen being broken. */}
 					<Button
 						type="button"
 						variant="secondary"
 						onClick={onOpenFolder}
+						disabled={isOpenPending}
 						className="flex-1"
 					>
-						<ExternalLinkIcon size={12} />
+						{isOpenPending ? (
+							<Spinner className="size-3" />
+						) : (
+							<ExternalLinkIcon size={12} />
+						)}
 						{t('common:transfer.open')}
 					</Button>
 					<Button type="button" className="flex-1" onClick={onDone}>
