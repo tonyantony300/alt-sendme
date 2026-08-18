@@ -1,0 +1,167 @@
+name: 'android-aab'
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to stamp (defaults to package.json)'
+        required: false
+        type: string
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  android-play-aab:
+    name: Android Play Store AAB
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 10.12.1
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          packages: build-tools;36.0.0 platform-tools platforms;android-36
+
+      - name: Set up NDK
+        uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779
+        id: setup-ndk
+        with:
+          ndk-version: r28b
+          local-cache: true
+
+      - name: NDK and SDK env
+        shell: bash
+        run: |
+          NDK_PATH="${{ steps.setup-ndk.outputs.ndk-path }}"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          if [ -n "${ANDROID_HOME:-}" ]; then
+            echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${ANDROID_SDK_ROOT:-}" ] && [ -z "${ANDROID_HOME:-}" ]; then
+            echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          fi
+
+      - name: Set Rust 1.91 and Android targets
+        uses: dtolnay/rust-toolchain@3056ad9b1fc916cb9a55f7f72ae4a848b7d50249 # 1.91.0
+        with:
+          components: rustfmt
+          targets: aarch64-linux-android,armv7-linux-androideabi
+
+      # `beforeBuildCommand` runs `pnpm build:wasm`, so the wasm toolchain is
+      # required even for an Android-only build.
+      - name: Install WASM build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-bindgen-cli --version 0.2.126 --locked
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32
+        with:
+          workspaces: './src-tauri -> target'
+          key: ubuntu-22.04-android-cargo
+
+      - name: Resolve version and sync
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          elif [ -n "${INPUT_VERSION:-}" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="$(node -p "require('./package.json').version")"
+          fi
+          pnpm pkg set version="$VERSION"
+          pnpm run sync-version
+          node scripts/validate-version.js
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Building AAB for $VERSION"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Empty APK profile list means "build no APKs" — the tagged `publish`
+      # workflow already produces those.
+      - name: Build Play Store AAB
+        env:
+          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_APK_PROFILES: ''
+          ANDROID_AAB_PROFILES: universal
+        run: pnpm run android:build:release
+
+      # Guards against a bundle signed by the wrong key, which would either be
+      # rejected by Play or silently establish the wrong upload identity.
+      - name: Verify signing identity
+        shell: bash
+        env:
+          EXPECTED_SHA256: 'B4:5E:62:74:E9:6B:4A:72:73:AD:93:51:2D:D5:1C:0D:C6:DA:A5:CA:19:14:9D:C6:01:B9:0F:88:93:8F:09:59'
+        run: |
+          set -euo pipefail
+          AAB=build/android-aab/app-universal-release.aab
+          if [ ! -f "$AAB" ]; then
+            echo "ERROR: expected signed AAB at $AAB"
+            ls -la build/android-aab 2>&1 || true
+            exit 1
+          fi
+          ACTUAL=$(keytool -printcert -jarfile "$AAB" | awk '/SHA256:/ { print $2; exit }')
+          echo "signer SHA-256: $ACTUAL"
+          if [ "$ACTUAL" != "$EXPECTED_SHA256" ]; then
+            echo "ERROR: AAB signed by an unexpected key."
+            echo "  expected: $EXPECTED_SHA256"
+            echo "  actual:   $ACTUAL"
+            exit 1
+          fi
+          VERSION_CODE=$(grep -h '^tauri.android.versionCode=' \
+            src-tauri/gen/android/app/tauri.properties 2>/dev/null \
+            | cut -d= -f2 || true)
+          VERSION_CODE=${VERSION_CODE:-unknown}
+          echo "versionCode: $VERSION_CODE"
+          {
+            echo "### Play Store AAB"
+            echo ""
+            echo "- version: \`${VERSION}\` (versionCode \`${VERSION_CODE}\`)"
+            echo "- signer SHA-256: \`${ACTUAL}\`"
+            echo "- upload to Play Console → Production/Internal testing → Create release"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rename AAB
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp build/android-aab/app-universal-release.aab "DashBeam-${VERSION}-play.aab"
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: DashBeam-${{ env.VERSION }}-play-aab
+          path: DashBeam-${{ env.VERSION }}-play.aab
+          if-no-files-found: error
+          retention-days: 30
