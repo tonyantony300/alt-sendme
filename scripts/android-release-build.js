@@ -328,6 +328,20 @@ if (!fs.existsSync(buildGradle)) {
 	process.exit(1)
 }
 
+/**
+ * Play's developer-verification flow requires a token file inside the APK's
+ * assets. Written after the git restore so it survives `tauri android init`,
+ * and only when a token is supplied, so it stays out of shipped builds.
+ */
+const adiToken = process.env.ANDROID_ADI_TOKEN
+if (adiToken) {
+	const assetsDir = path.join(genAndroid, 'app/src/main/assets')
+	fs.mkdirSync(assetsDir, { recursive: true })
+	const adiFile = path.join(assetsDir, 'adi-registration.properties')
+	fs.writeFileSync(adiFile, `${adiToken.trim()}\n`)
+	console.log('android-release-build: wrote', adiFile)
+}
+
 const keyBase64 = process.env.ANDROID_KEY_BASE64
 const keyAlias = process.env.ANDROID_KEY_ALIAS
 const keyPassword = process.env.ANDROID_KEY_PASSWORD
