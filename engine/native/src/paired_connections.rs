@@ -472,11 +472,14 @@ impl PairedConnectionManager {
                         InviteResponse::Declined => "declined",
                     };
 
+                    // Always an already-paired peer here, so `paired_store`
+                    // has the name — no snapshot fallback needed.
                     emit_paired_invite_response(
                         &self.app_handle,
                         &self.paired_store,
                         &remote_id,
                         response_str,
+                        None,
                     );
                 }
                 ControlMessage::Recognition { signature } => {

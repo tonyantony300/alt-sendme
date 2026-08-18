@@ -771,3 +771,111 @@ async fn accepting_a_nearby_pair_request_leaves_both_sides_active() {
         );
     }
 }
+
+/// The initiator must store the peer's real name once its probe lands.
+///
+/// `request_nearby_pair` snapshots whatever Nearby knows at click time, and
+/// falls back to `endpoint_id[..8]` when the identity probe has not answered
+/// yet. `commit_nearby_pairing` persisted that stale snapshot verbatim, so a
+/// device paired while its probe was still in flight showed as "1cfbe158" in
+/// the paired list, the tray, and every invite toast — permanently, and only
+/// on the initiator's side (the acceptor probes at accept time).
+#[tokio::test]
+async fn the_initiator_stores_the_peer_name_when_the_probe_lands_late() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    // Clicked Pair while the identity probe was still in flight.
+    alice
+        .inject_nearby_device_for_tests(&bob.endpoint_id())
+        .await;
+    assert!(alice
+        .request_nearby_pair(&bob.endpoint_id())
+        .await
+        .expect("pair request should be delivered"));
+    common::wait_until(
+        "bob to observe alice's pair request",
+        Duration::from_secs(15),
+        || bob.events.has_event("nearby-pair-request-received"),
+    )
+    .await;
+
+    // Probe lands before bob gets round to accepting.
+    alice
+        .inject_identified_nearby_device_for_tests(&bob.endpoint_id())
+        .await
+        .expect("identity probe should succeed");
+
+    bob.accept_nearby_invite(&alice.endpoint_id())
+        .await
+        .expect("accept should succeed");
+    common::wait_until(
+        "alice to record bob as paired",
+        Duration::from_secs(15),
+        || paired_status(&alice, &bob.endpoint_id()).is_some(),
+    )
+    .await;
+
+    let stored = alice
+        .list_paired()
+        .expect("list_paired")
+        .into_iter()
+        .find(|d| d.endpoint_id.eq_ignore_ascii_case(&bob.endpoint_id()))
+        .expect("alice must have a record for bob");
+    assert_eq!(
+        stored.display_name, "bob",
+        "alice stored a stale endpoint-id prefix instead of bob's display name"
+    );
+}
+
+/// A declined nearby pair request must name the peer that declined.
+///
+/// `emit_paired_invite_response` resolved the display name from `paired_store`
+/// alone, and a decline never creates a record there — so the payload carried
+/// `display_name: null` and the UI fell back to an endpoint-id prefix
+/// ("96ea50e4…") for a device it had just listed by name under Nearby. The
+/// name is already in hand: `pending_nearby_invites` holds the snapshot taken
+/// when the invite was sent.
+#[tokio::test]
+async fn a_declined_nearby_pair_request_names_the_peer_that_declined() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    alice
+        .inject_identified_nearby_device_for_tests(&bob.endpoint_id())
+        .await
+        .expect("identity probe should succeed");
+
+    assert!(alice
+        .request_nearby_pair(&bob.endpoint_id())
+        .await
+        .expect("pair request should be delivered"));
+    common::wait_until(
+        "bob to observe alice's pair request",
+        Duration::from_secs(15),
+        || bob.events.has_event("nearby-pair-request-received"),
+    )
+    .await;
+
+    bob.decline_nearby_invite(&alice.endpoint_id(), false)
+        .await
+        .expect("decline should be delivered");
+
+    common::wait_until(
+        "alice to observe bob's decline",
+        Duration::from_secs(15),
+        || alice.events.has_event("paired-invite-response"),
+    )
+    .await;
+
+    let events = alice.events.events_with_name("paired-invite-response");
+    let payload: serde_json::Value =
+        serde_json::from_str(events[0].payload.as_deref().expect("payload")).unwrap();
+    assert_eq!(payload["response"], "declined");
+    assert_eq!(
+        payload["display_name"], "bob",
+        "the decline must name bob, not an endpoint-id prefix"
+    );
+}

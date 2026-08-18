@@ -303,6 +303,7 @@ impl ControlProtocol {
                         &self.ctx.paired_store,
                         &remote.to_string(),
                         response_str,
+                        None,
                     );
                 }
                 ControlMessage::Recognition { signature } => {
@@ -611,6 +612,10 @@ impl ControlProtocol {
                 // guarantee — anyone could dial in and claim to be answering
                 // an invite — so only act on it if it matches a nearby
                 // invite this node actually sent.
+                // Names the peer in the response event. A decline never
+                // creates a `PairedDevice`, so this snapshot is the only place
+                // the sender's own UI can learn who declined.
+                let mut invited_name = None;
                 if !peer_is_paired {
                     let pending = self
                         .ctx
@@ -624,6 +629,7 @@ impl ControlProtocol {
                         );
                         return false;
                     };
+                    invited_name = Some(pending.display_name.clone());
                     // Mirror what `accept_nearby_invite` does on the
                     // receiver's side: without this, the receiver's
                     // persistent presence connection back to us is rejected
@@ -646,6 +652,7 @@ impl ControlProtocol {
                     &self.ctx.paired_store,
                     &remote.to_string(),
                     response_str,
+                    invited_name,
                 );
             }
             ControlMessage::Recognition { signature } => {
@@ -724,12 +731,34 @@ impl ControlProtocol {
     /// presence/reconnect never established in that direction.
     async fn commit_nearby_pairing(&self, remote: &EndpointId, pending: PendingNearbyInvite) {
         let endpoint_id = remote.to_string();
+
+        // `pending` was snapshotted when the user clicked Pair, and falls back
+        // to an endpoint-id prefix when the identity probe had not answered by
+        // then. That prefix would be persisted as the device's name forever,
+        // so prefer whatever Nearby knows now — the probe commonly lands
+        // during the invite round trip.
+        let identified = {
+            let nearby = self.ctx.nearby.lock().await;
+            nearby
+                .list()
+                .into_iter()
+                .find(|d| d.identified && d.endpoint_id.eq_ignore_ascii_case(&endpoint_id))
+        };
+        let (display_name, device_type, os) = match identified {
+            Some(fresh) => (
+                fresh.display_name.unwrap_or(pending.display_name),
+                fresh.device_type.unwrap_or(pending.device_type),
+                fresh.os.unwrap_or(pending.os),
+            ),
+            None => (pending.display_name, pending.device_type, pending.os),
+        };
+
         let now = protocol::identity::unix_now_ms();
         if let Err(err) = self.ctx.paired_store.remember(PairedDevice {
             endpoint_id: endpoint_id.clone(),
-            display_name: pending.display_name,
-            device_type: pending.device_type,
-            os: pending.os,
+            display_name,
+            device_type,
+            os,
             paired_at: now,
             last_seen_at: now,
             relay_url: None,
@@ -1787,6 +1816,30 @@ impl NodeService {
     #[doc(hidden)]
     pub async fn inject_nearby_device_for_tests(&self, endpoint_id: &str) {
         self.nearby.lock().await.observe(endpoint_id, false);
+    }
+
+    /// Test-only: injects a nearby peer *and* runs the identity probe that
+    /// mDNS discovery normally triggers, so the device lands in the registry
+    /// identified — the state a user actually sees before clicking Pair.
+    #[doc(hidden)]
+    pub async fn inject_identified_nearby_device_for_tests(
+        &self,
+        endpoint_id: &str,
+    ) -> anyhow::Result<()> {
+        self.nearby.lock().await.observe(endpoint_id, false);
+        let info = probe_identity_via(&self.runtime, endpoint_id).await?;
+        let os = if info.os.is_empty() {
+            None
+        } else {
+            Some(info.os)
+        };
+        self.nearby.lock().await.set_identity(
+            endpoint_id,
+            info.display_name,
+            info.device_type,
+            os,
+        );
+        Ok(())
     }
 
     /// Test-only: simulates an mDNS rediscovery of an already-paired peer —
