@@ -327,11 +327,7 @@ function TicketDisplay({
 			</InputGroup>
 
 			<Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
-				<DialogContent
-					className="max-w-sm"
-					showCloseButton={false}
-					centered
-				>
+				<DialogContent className="max-w-sm" showCloseButton={false} centered>
 					<div className="flex flex-col items-center gap-4 p-8 text-center">
 						<DialogTitle>{t('common:sender.receiveQrTitle')}</DialogTitle>
 						<div className="rounded-xl bg-white p-3 shadow-sm">
