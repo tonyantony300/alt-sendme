@@ -35,6 +35,19 @@ pub fn should_publish_mdns(setting: Discoverability) -> bool {
     !matches!(setting, Discoverability::Off)
 }
 
+/// Whether this device has presence worth keeping alive while the app is not on
+/// screen — the gate for Android's foreground service.
+///
+/// Deliberately wider than [`should_publish_mdns`]. Discoverability only
+/// governs the mDNS publisher; presence for *paired* peers rides the persistent
+/// control connections in `native::paired_connections`, which keep running with
+/// discoverability `Off`. Gating the service on discoverability alone would let
+/// a paired device drop offline in the background whenever it had opted out of
+/// LAN discovery.
+pub fn should_run_background_presence(paired_count: usize, setting: Discoverability) -> bool {
+    paired_count > 0 || should_publish_mdns(setting)
+}
+
 /// Whether to accept an inbound control connection from a peer we have not
 /// paired with. Only `Everyone` does — under the other settings we would refuse
 /// to answer anyway, so the connection has no legitimate purpose.
@@ -150,6 +163,30 @@ mod tests {
             os: "macos".to_string(),
             signature: "sig".to_string(),
         }));
+    }
+
+    #[test]
+    fn background_presence_runs_while_any_device_is_paired() {
+        // Paired presence rides control connections, not mDNS, so it must
+        // survive discoverability being switched off entirely.
+        for setting in [
+            Discoverability::Everyone,
+            Discoverability::PairedOnly,
+            Discoverability::Off,
+        ] {
+            assert!(should_run_background_presence(1, setting));
+        }
+    }
+
+    #[test]
+    fn background_presence_runs_while_discoverable_without_pairs() {
+        assert!(should_run_background_presence(0, Discoverability::Everyone));
+        assert!(should_run_background_presence(0, Discoverability::PairedOnly));
+    }
+
+    #[test]
+    fn background_presence_idles_with_nothing_to_maintain() {
+        assert!(!should_run_background_presence(0, Discoverability::Off));
     }
 
     #[test]

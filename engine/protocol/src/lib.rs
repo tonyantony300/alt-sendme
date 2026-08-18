@@ -24,7 +24,7 @@ pub use pairing::{
 pub use pairing_auth::{export_connection_keying_material, sign_challenge, verify_challenge};
 pub use nearby::{
     allows_unpaired_control, should_answer_identity, should_publish_mdns,
-    unpaired_message_allowed, Discoverability,
+    should_run_background_presence, unpaired_message_allowed, Discoverability,
 };
 pub use receive::{download_to_store, fetch_metadata, DownloadToStoreResult};
 pub use relay::{

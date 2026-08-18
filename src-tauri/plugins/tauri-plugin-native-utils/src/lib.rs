@@ -46,6 +46,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::export_to_media_store,
             commands::open_download_target,
             commands::get_window_insets,
+            commands::start_presence_service,
+            commands::stop_presence_service,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]

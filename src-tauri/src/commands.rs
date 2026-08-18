@@ -1095,9 +1095,18 @@ pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), Strin
     .await
     .map_err(|e| format!("Failed to start device node: {e}"))?;
     let state = app_handle.state::<AppStateMutex>();
-    let mut guard = state.lock().await;
-    guard.node = Some(Arc::new(node));
-    guard.node_init_error = None;
+    {
+        let mut guard = state.lock().await;
+        guard.node = Some(Arc::new(node));
+        guard.node_init_error = None;
+    }
+
+    // Scoped above so the lock is released first: `refresh` takes it again.
+    #[cfg(target_os = "android")]
+    {
+        let state = state.inner().clone();
+        crate::presence_service::refresh(&app_handle, &state).await;
+    }
 
     Ok(())
 }
@@ -1343,6 +1352,7 @@ pub async fn list_paired_devices(
 pub async fn forget_paired_device(
     endpoint_id: String,
     state: State<'_, AppStateMutex>,
+    #[allow(unused_variables)] app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
     let node = {
         let guard = state.lock().await;
@@ -1351,6 +1361,14 @@ pub async fn forget_paired_device(
     node.forget_paired(&endpoint_id)
         .await
         .map_err(|e| e.to_string())?;
+
+    // A local forget emits no `device-unpaired` (only a remote one does), so
+    // the listener in `lib.rs` would not see this — refresh explicitly.
+    #[cfg(target_os = "android")]
+    {
+        let state = state.inner().clone();
+        crate::presence_service::refresh(&app_handle, &state).await;
+    }
 
     Ok(())
 }
@@ -1429,6 +1447,7 @@ pub async fn get_discoverability(
 pub async fn set_discoverability(
     setting: Discoverability,
     state: State<'_, AppStateMutex>,
+    #[allow(unused_variables)] app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
     let node = {
         let guard = state.lock().await;
@@ -1442,6 +1461,14 @@ pub async fn set_discoverability(
         );
         format!("Failed to update discoverability: {error}")
     })?;
+
+    // Turning discovery off can retire the background service, but only when
+    // no paired device still needs presence held open.
+    #[cfg(target_os = "android")]
+    {
+        let state = state.inner().clone();
+        crate::presence_service::refresh(&app_handle, &state).await;
+    }
 
     Ok(())
 }

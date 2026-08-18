@@ -7,6 +7,8 @@ const COMMANDS: &[&str] = &[
     "export_to_tree",
     "open_download_folder",
     "get_window_insets",
+    "start_presence_service",
+    "stop_presence_service",
 ];
 
 fn main() {

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-stop-presence-service"
+description = "Enables the stop_presence_service command without any pre-configured scope."
+commands.allow = ["stop_presence_service"]
+
+[[permission]]
+identifier = "deny-stop-presence-service"
+description = "Denies the stop_presence_service command without any pre-configured scope."
+commands.deny = ["stop_presence_service"]

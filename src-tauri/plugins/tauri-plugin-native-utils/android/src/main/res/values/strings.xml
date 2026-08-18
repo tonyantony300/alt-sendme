@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification copy for the background presence service.
+
+     These live in Android resources rather than the frontend's i18n
+     `common.json` because the notification is posted by a Service that can
+     outlive the WebView, so the translated strings are not reachable from
+     Kotlin. Translating means adding values-<lang>/strings.xml here.
+
+     Deliberately avoids the word "discoverable": the service also runs to hold
+     paired presence when discoverability is off. -->
+<resources>
+    <string name="presence_channel_name">Background presence</string>
+    <string name="presence_channel_description">Keeps this device reachable by your paired and nearby devices while DashBeam is in the background.</string>
+    <string name="presence_notification_title">DashBeam is running</string>
+    <string name="presence_notification_text">Staying reachable by your devices</string>
+</resources>

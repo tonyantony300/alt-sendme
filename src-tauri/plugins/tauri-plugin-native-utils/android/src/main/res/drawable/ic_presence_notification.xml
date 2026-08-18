@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar icons are masked to a single colour by the system, so this is a
+     flat white silhouette on transparent: a dot radiating two pairs of arcs.
+
+     Stroked arcs rather than filled ring outlines — a filled ring needs its
+     inner edge swept back the other way, which is easy to get subtly wrong and
+     impossible to eyeball without a device. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,12m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+
+    <!-- Inner pair: r=5, chord 7. Sweep 0 on the left bulges away from centre,
+         sweep 1 mirrors it on the right. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M8.5,8.5 A5,5 0 0 0 8.5,15.5" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M15.5,8.5 A5,5 0 0 1 15.5,15.5" />
+
+    <!-- Outer pair: r=9, chord 13. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M5.5,5.5 A9,9 0 0 0 5.5,18.5" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M18.5,5.5 A9,9 0 0 1 18.5,18.5" />
+</vector>

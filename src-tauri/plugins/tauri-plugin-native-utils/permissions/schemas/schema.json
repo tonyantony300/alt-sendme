@@ -415,10 +415,34 @@
           "markdownDescription": "Denies the select_send_folder command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`",
+          "description": "Enables the start_presence_service command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-start-presence-service",
+          "markdownDescription": "Enables the start_presence_service command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the start_presence_service command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-start-presence-service",
+          "markdownDescription": "Denies the start_presence_service command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the stop_presence_service command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-stop-presence-service",
+          "markdownDescription": "Enables the stop_presence_service command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the stop_presence_service command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-stop-presence-service",
+          "markdownDescription": "Denies the stop_presence_service command without any pre-configured scope."
+        },
+        {
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`\n- `allow-start-presence-service`\n- `allow-stop-presence-service`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`"
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`\n- `allow-start-presence-service`\n- `allow-stop-presence-service`"
         }
       ]
     }

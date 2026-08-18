@@ -1,3 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Background presence. Merged into the app manifest by AGP, which is why
+         it lives here rather than in gen/android: only that module's manifest
+         and res/ are tracked in git, its Kotlin is regenerated. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <!-- Required for WifiManager.MulticastLock; Android drops multicast to apps
+         that don't hold one, so mDNS needs this to answer reliably. -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <application>
+        <!-- connectedDevice, not dataSync: Android 15 caps dataSync foreground
+             services at roughly six hours a day, which would silently break
+             always-on presence. CHANGE_WIFI_MULTICAST_STATE is a qualifying
+             permission for connectedDevice, so the declared type is honest.
+
+             stopWithTask overrides Android's default of outliving the task:
+             swiping DashBeam away takes the device offline. -->
+        <service
+            android:name="com.dashbeam.plugin.native_utils.PresenceService"
+            android:foregroundServiceType="connectedDevice"
+            android:stopWithTask="true"
+            android:exported="false" />
+    </application>
 </manifest>

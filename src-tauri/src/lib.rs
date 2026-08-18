@@ -10,6 +10,8 @@ mod commands;
 mod features;
 mod logging;
 mod platform;
+#[cfg(target_os = "android")]
+mod presence_service;
 mod state;
 #[cfg(desktop)]
 mod tray;
@@ -244,6 +246,24 @@ pub fn run() {
                     app.listen(event, move |_| tray::refresh_presence(&handle));
                 }
                 tray::refresh_presence(&app.handle().clone());
+            }
+            #[cfg(target_os = "android")]
+            {
+                // Pairing can complete over a pairing code, over Nearby, or be
+                // undone remotely by the peer; all three land on these events,
+                // which is why presence hooks them rather than each command.
+                use tauri::Listener as _;
+                let handle = app.handle().clone();
+                for event in ["device-paired", "device-unpaired"] {
+                    let handle = handle.clone();
+                    app.listen(event, move |_| {
+                        let handle = handle.clone();
+                        tauri::async_runtime::spawn(async move {
+                            let state = handle.state::<state::AppStateMutex>().inner().clone();
+                            presence_service::refresh(&handle, &state).await;
+                        });
+                    });
+                }
             }
             #[cfg(desktop)]
             {

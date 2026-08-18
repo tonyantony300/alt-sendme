@@ -10,5 +10,7 @@ permissions = [
     "allow-open-download-folder",
     "allow-export-to-media-store",
     "allow-open-download-target",
-    "allow-get-window-insets"
+    "allow-get-window-insets",
+    "allow-start-presence-service",
+    "allow-stop-presence-service"
 ]

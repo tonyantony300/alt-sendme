@@ -107,3 +107,19 @@ impl<R: Runtime> NativeUtils<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn start_presence_service(&self) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("start_presence_service", ())
+            .map_err(Into::into)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn stop_presence_service(&self) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("stop_presence_service", ())
+            .map_err(Into::into)
+    }
+}

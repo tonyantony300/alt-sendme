@@ -151,6 +151,22 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         }
     }
 
+    /**
+     * Presence lifetime is decided in Rust, which knows the paired-device count
+     * and the discoverability setting; these two just relay the decision.
+     */
+    @Command
+    fun start_presence_service(invoke: Invoke) {
+        PresenceService.start(activity.applicationContext)
+        invoke.resolve()
+    }
+
+    @Command
+    fun stop_presence_service(invoke: Invoke) {
+        PresenceService.stop(activity.applicationContext)
+        invoke.resolve()
+    }
+
     @Command
     fun get_window_insets(invoke: Invoke) {
         activity.runOnUiThread {

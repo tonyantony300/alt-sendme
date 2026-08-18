@@ -76,3 +76,13 @@ pub(crate) async fn open_download_target<R: Runtime>(app: AppHandle<R>, uri: Str
     app.native_utils()
         .open_download_target(OpenDownloadTargetArgs { uri })
 }
+
+#[command]
+pub(crate) async fn start_presence_service<R: Runtime>(app: AppHandle<R>) -> Result<()> {
+    app.native_utils().start_presence_service()
+}
+
+#[command]
+pub(crate) async fn stop_presence_service<R: Runtime>(app: AppHandle<R>) -> Result<()> {
+    app.native_utils().stop_presence_service()
+}
