@@ -196,17 +196,13 @@ async fn mdns_rediscovery_does_not_flap_paired_presence() {
 async fn peer_outbound_flaps_do_not_clear_our_presence() {
     let (alice, bob) = common::spawn_paired_nodes().await;
 
-    common::wait_until(
-        "bob to see alice online",
-        PRESENCE_DEADLINE,
-        || is_online(&bob, &alice.endpoint_id()),
-    )
+    common::wait_until("bob to see alice online", PRESENCE_DEADLINE, || {
+        is_online(&bob, &alice.endpoint_id())
+    })
     .await;
-    common::wait_until(
-        "alice to see bob online",
-        PRESENCE_DEADLINE,
-        || is_online(&alice, &bob.endpoint_id()),
-    )
+    common::wait_until("alice to see bob online", PRESENCE_DEADLINE, || {
+        is_online(&alice, &bob.endpoint_id())
+    })
     .await;
 
     // Alice is the unfixed peer: force-abort her outbound to bob repeatedly.

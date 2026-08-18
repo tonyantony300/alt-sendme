@@ -68,37 +68,34 @@ export function NearbyDevices() {
 				unlistenPaired = stop
 			}
 		})
-		void listen(
-			'paired-invite-response',
-			(event: { payload: unknown }) => {
-				let payload: {
-					endpoint_id?: string
-					response?: string
-					display_name?: string | null
-				}
-				try {
-					payload = JSON.parse(String(event.payload)) as typeof payload
-				} catch {
-					return
-				}
-				const endpointId = payload.endpoint_id
-				if (!endpointId) return
-				setPairState((prev) => {
-					if (!(endpointId in prev)) return prev
-					const next = { ...prev }
-					delete next[endpointId]
-					return next
-				})
-				if (payload.response === 'declined') {
-					toastManager.add({
-						title: t('common:settings.devices.nearby.pairDeclined', {
-							name: payload.display_name || truncatedEndpointId(endpointId),
-						}),
-						type: 'info',
-					})
-				}
+		void listen('paired-invite-response', (event: { payload: unknown }) => {
+			let payload: {
+				endpoint_id?: string
+				response?: string
+				display_name?: string | null
 			}
-		).then((stop) => {
+			try {
+				payload = JSON.parse(String(event.payload)) as typeof payload
+			} catch {
+				return
+			}
+			const endpointId = payload.endpoint_id
+			if (!endpointId) return
+			setPairState((prev) => {
+				if (!(endpointId in prev)) return prev
+				const next = { ...prev }
+				delete next[endpointId]
+				return next
+			})
+			if (payload.response === 'declined') {
+				toastManager.add({
+					title: t('common:settings.devices.nearby.pairDeclined', {
+						name: payload.display_name || truncatedEndpointId(endpointId),
+					}),
+					type: 'info',
+				})
+			}
+		}).then((stop) => {
 			if (disposed) {
 				stop()
 			} else {
@@ -173,9 +170,7 @@ export function NearbyDevices() {
 		<Frame>
 			<FramePanel className="flex flex-col gap-4">
 				<div className="space-y-1">
-					<FrameTitle>
-						{t('common:settings.devices.nearby.heading')}
-					</FrameTitle>
+					<FrameTitle>{t('common:settings.devices.nearby.heading')}</FrameTitle>
 					<FrameDescription>
 						{t('common:settings.devices.nearby.hint')}
 					</FrameDescription>

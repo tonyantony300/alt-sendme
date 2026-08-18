@@ -73,8 +73,7 @@ function DialogPopup({
 			<DialogViewport
 				className={cn(
 					centered && 'grid-rows-[1fr_auto_1fr]',
-					stickToBottom &&
-						'max-sm:grid-rows-[1fr_auto] max-sm:p-0 max-sm:pt-12'
+					stickToBottom && 'max-sm:grid-rows-[1fr_auto] max-sm:p-0 max-sm:pt-12'
 				)}
 			>
 				<DialogPrimitive.Popup

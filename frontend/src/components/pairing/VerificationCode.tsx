@@ -34,9 +34,7 @@ export function VerificationCode({
 				{t('common:receiver.nearbyInvite.fingerprintLabel')}
 			</p>
 			<p className="font-mono text-sm tracking-wide">{code}</p>
-			{hint ? (
-				<p className="text-xs text-muted-foreground">{hint}</p>
-			) : null}
+			{hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
 		</div>
 	)
 }

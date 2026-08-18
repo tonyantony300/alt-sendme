@@ -237,9 +237,11 @@ async fn missed_forget_still_marks_unpaired_remotely() {
         || paired_status(&host, &joiner_id) == Some(PairingStatus::UnpairedRemotely),
     )
     .await;
-    wait_until("host device-unpaired event after missed Forget", SETTLE_DEADLINE, || {
-        host_events.has_event("device-unpaired")
-    })
+    wait_until(
+        "host device-unpaired event after missed Forget",
+        SETTLE_DEADLINE,
+        || host_events.has_event("device-unpaired"),
+    )
     .await;
 
     let (joiner_down, host_down) = tokio::join!(joiner.shutdown(), host.shutdown());
