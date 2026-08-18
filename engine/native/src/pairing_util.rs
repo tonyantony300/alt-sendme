@@ -85,10 +85,8 @@ pub fn emit_nearby_pair_request(
 
 /// Emit `paired-invite-response` so the sender UI can toast accept/decline.
 ///
-/// `fallback_name` covers the Nearby case: a peer that declines never becomes
-/// a `PairedDevice`, so `paired_store` has no name for it and the UI would
-/// fall back to an endpoint-id prefix for a device it just listed by name.
-/// Callers holding the invite's identity snapshot pass it here.
+/// `fallback_name` covers the Nearby decline case: a peer that declines never
+/// becomes a `PairedDevice`, so `paired_store` has no name to resolve.
 pub fn emit_paired_invite_response(
     app_handle: &AppHandle,
     paired_store: &PairedDeviceStore,

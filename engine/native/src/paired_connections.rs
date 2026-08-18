@@ -472,8 +472,8 @@ impl PairedConnectionManager {
                         InviteResponse::Declined => "declined",
                     };
 
-                    // Always an already-paired peer here, so `paired_store`
-                    // has the name — no snapshot fallback needed.
+                    // Always an already-paired peer, so `paired_store` has
+                    // the name.
                     emit_paired_invite_response(
                         &self.app_handle,
                         &self.paired_store,

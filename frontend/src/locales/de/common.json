@@ -392,7 +392,6 @@
 				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
 				"pair": "Pair",
 				"pairing": "Pairing…",
-				"pairSent": "Pairing request sent",
 				"pairDeclined": "{{name}} declined the pairing request"
 			}
 		}

@@ -612,9 +612,8 @@ impl ControlProtocol {
                 // guarantee — anyone could dial in and claim to be answering
                 // an invite — so only act on it if it matches a nearby
                 // invite this node actually sent.
-                // Names the peer in the response event. A decline never
-                // creates a `PairedDevice`, so this snapshot is the only place
-                // the sender's own UI can learn who declined.
+                // A decline never creates a `PairedDevice`, so this snapshot
+                // is the only name the response event can carry.
                 let mut invited_name = None;
                 if !peer_is_paired {
                     let pending = self
@@ -732,11 +731,9 @@ impl ControlProtocol {
     async fn commit_nearby_pairing(&self, remote: &EndpointId, pending: PendingNearbyInvite) {
         let endpoint_id = remote.to_string();
 
-        // `pending` was snapshotted when the user clicked Pair, and falls back
-        // to an endpoint-id prefix when the identity probe had not answered by
-        // then. That prefix would be persisted as the device's name forever,
-        // so prefer whatever Nearby knows now — the probe commonly lands
-        // during the invite round trip.
+        // `pending` was snapshotted at click time, and holds an endpoint-id
+        // prefix if the identity probe had not answered by then. Prefer
+        // whatever Nearby knows now rather than persisting that prefix.
         let identified = {
             let nearby = self.ctx.nearby.lock().await;
             nearby
@@ -1601,14 +1598,9 @@ impl NodeService {
         // undo — or report as failed — an accept that already happened.
         // We just met this peer — never a cached session to wait on.
         //
-        // Ordered before `paired_connections.refresh()` deliberately: refresh
-        // spawns an outbound `Recognition` dial, and until this response lands
-        // the sender still considers us unpaired — it would close that dial
-        // with "not permitted for unpaired peer", which our connect loop reads
-        // as a remote unpair (`close_implies_remote_unpair`). That collapsed
-        // both sides of a just-completed pairing to `UnpairedRemotely` within
-        // seconds. Telling the sender first leaves them a full connect
-        // handshake to commit their half before our Recognition arrives.
+        // Must precede `paired_connections.refresh()`: refresh dials a
+        // `Recognition` that a sender who has not committed yet closes as
+        // unpaired, and our connect loop reads that close as a remote unpair.
         if let Err(err) = self.deliver_invite_response(endpoint_id, true, false).await {
             tracing::debug!(
                 "accepted nearby invite from {endpoint_id} but could not notify the sender: {err:#}"

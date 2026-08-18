@@ -714,12 +714,9 @@ async fn accepting_a_nearby_pair_request_promotes_both_sides() {
 
 /// Accepting a nearby pair request must leave a durable pairing on BOTH sides.
 ///
-/// The regression this guards: `accept_nearby_invite` used to refresh
-/// `paired_connections` — spawning an outbound `Recognition` dial — before it
-/// delivered `InviteResponse::Accepted`. The sender still considered us
-/// unpaired, closed that dial with "not permitted for unpaired peer", and our
-/// connect loop read that close as a remote unpair. Both records collapsed to
-/// `UnpairedRemotely` within seconds of a successful accept.
+/// Regression: `accept_nearby_invite` refreshed `paired_connections` — dialing
+/// a `Recognition` the not-yet-committed sender closed as unpaired — before
+/// delivering the accept, and both sides read that close as a remote unpair.
 #[tokio::test]
 async fn accepting_a_nearby_pair_request_leaves_both_sides_active() {
     let alice = common::spawn_node("alice").await;
@@ -774,12 +771,10 @@ async fn accepting_a_nearby_pair_request_leaves_both_sides_active() {
 
 /// The initiator must store the peer's real name once its probe lands.
 ///
-/// `request_nearby_pair` snapshots whatever Nearby knows at click time, and
-/// falls back to `endpoint_id[..8]` when the identity probe has not answered
-/// yet. `commit_nearby_pairing` persisted that stale snapshot verbatim, so a
-/// device paired while its probe was still in flight showed as "1cfbe158" in
-/// the paired list, the tray, and every invite toast — permanently, and only
-/// on the initiator's side (the acceptor probes at accept time).
+/// Regression: `commit_nearby_pairing` persisted the click-time snapshot
+/// verbatim, so a device paired while its identity probe was still in flight
+/// kept an `endpoint_id[..8]` prefix as its stored name — forever, and only on
+/// the initiator's side (the acceptor probes at accept time).
 #[tokio::test]
 async fn the_initiator_stores_the_peer_name_when_the_probe_lands_late() {
     let alice = common::spawn_node("alice").await;
@@ -831,12 +826,9 @@ async fn the_initiator_stores_the_peer_name_when_the_probe_lands_late() {
 
 /// A declined nearby pair request must name the peer that declined.
 ///
-/// `emit_paired_invite_response` resolved the display name from `paired_store`
-/// alone, and a decline never creates a record there — so the payload carried
-/// `display_name: null` and the UI fell back to an endpoint-id prefix
-/// ("96ea50e4…") for a device it had just listed by name under Nearby. The
-/// name is already in hand: `pending_nearby_invites` holds the snapshot taken
-/// when the invite was sent.
+/// Regression: `emit_paired_invite_response` resolved the name from
+/// `paired_store` alone and a decline never creates a record there, so the UI
+/// showed an endpoint-id prefix for a device it had just listed by name.
 #[tokio::test]
 async fn a_declined_nearby_pair_request_names_the_peer_that_declined() {
     let alice = common::spawn_node("alice").await;

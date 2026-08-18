@@ -129,10 +129,8 @@ export function NearbyDevices() {
 				return
 			}
 			setPairState((prev) => ({ ...prev, [device.endpointId]: 'sent' }))
-			toastManager.add({
-				title: t('common:settings.devices.nearby.pairSent'),
-				type: 'success',
-			})
+			// The verification dialog already says the request is out and we're
+			// waiting on them, so a "request sent" toast on top of it is noise.
 			// Only once the request actually reached them — a code shown for a
 			// request that never arrived is worse than none. Nearby devices are
 			// unpaired by construction (the engine expires a peer from Nearby
