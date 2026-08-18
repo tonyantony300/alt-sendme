@@ -5,12 +5,21 @@
 mod common;
 
 use common::TestNode;
-use engine::{Discoverability, DiscoveryModeOption};
+use engine::{Discoverability, DiscoveryModeOption, PairingStatus};
 use iroh::endpoint::RelayMode;
 use std::time::Duration;
 
 const PRESENCE_DEADLINE: Duration = Duration::from_secs(60);
 const NETWORK_READY_DEADLINE: Duration = Duration::from_secs(30);
+
+/// `node`'s stored pairing status for `endpoint_id`, if it has a record.
+fn paired_status(node: &TestNode, endpoint_id: &str) -> Option<PairingStatus> {
+    node.list_paired()
+        .expect("list_paired")
+        .into_iter()
+        .find(|d| d.endpoint_id.eq_ignore_ascii_case(endpoint_id))
+        .map(|d| d.pairing_status)
+}
 
 /// `node`'s view of whether `endpoint_id` is currently online. Used to detect
 /// whether a probe connection clobbered the paired peer's real session.
@@ -701,4 +710,64 @@ async fn accepting_a_nearby_pair_request_promotes_both_sides() {
         },
     )
     .await;
+}
+
+/// Accepting a nearby pair request must leave a durable pairing on BOTH sides.
+///
+/// The regression this guards: `accept_nearby_invite` used to refresh
+/// `paired_connections` — spawning an outbound `Recognition` dial — before it
+/// delivered `InviteResponse::Accepted`. The sender still considered us
+/// unpaired, closed that dial with "not permitted for unpaired peer", and our
+/// connect loop read that close as a remote unpair. Both records collapsed to
+/// `UnpairedRemotely` within seconds of a successful accept.
+#[tokio::test]
+async fn accepting_a_nearby_pair_request_leaves_both_sides_active() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    alice
+        .inject_nearby_device_for_tests(&bob.endpoint_id())
+        .await;
+
+    assert!(
+        alice
+            .request_nearby_pair(&bob.endpoint_id())
+            .await
+            .expect("pair request should be delivered"),
+        "pair request must report delivered"
+    );
+    common::wait_until(
+        "bob to observe alice's pair request",
+        Duration::from_secs(15),
+        || bob.events.has_event("nearby-pair-request-received"),
+    )
+    .await;
+
+    bob.accept_nearby_invite(&alice.endpoint_id())
+        .await
+        .expect("accept should succeed");
+
+    common::wait_until(
+        "alice to record bob as paired",
+        Duration::from_secs(15),
+        || paired_status(&alice, &bob.endpoint_id()).is_some(),
+    )
+    .await;
+
+    // Poll rather than checking once: the unpair arrives asynchronously, from
+    // whichever side's Recognition dial loses the race.
+    for elapsed_ms in (250..=10_000).step_by(250) {
+        tokio::time::sleep(Duration::from_millis(250)).await;
+        assert_eq!(
+            paired_status(&bob, &alice.endpoint_id()),
+            Some(PairingStatus::Active),
+            "after {elapsed_ms}ms bob's record for alice must still be Active"
+        );
+        assert_eq!(
+            paired_status(&alice, &bob.endpoint_id()),
+            Some(PairingStatus::Active),
+            "after {elapsed_ms}ms alice's record for bob must still be Active"
+        );
+    }
 }

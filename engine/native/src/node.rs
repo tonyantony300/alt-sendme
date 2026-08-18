@@ -1562,7 +1562,6 @@ impl NodeService {
         // Now that a paired record exists, it must not also show under Nearby.
         self.nearby.lock().await.expire(endpoint_id);
         self.access.write().await.allowed.insert(endpoint_id.parse()?);
-        self.paired_connections.refresh().await;
 
         crate::pairing_util::emit_device_paired(&self.app_handle, &display_name);
 
@@ -1572,11 +1571,22 @@ impl NodeService {
         // (network blip, closed app) since sending the invite, that must not
         // undo — or report as failed — an accept that already happened.
         // We just met this peer — never a cached session to wait on.
+        //
+        // Ordered before `paired_connections.refresh()` deliberately: refresh
+        // spawns an outbound `Recognition` dial, and until this response lands
+        // the sender still considers us unpaired — it would close that dial
+        // with "not permitted for unpaired peer", which our connect loop reads
+        // as a remote unpair (`close_implies_remote_unpair`). That collapsed
+        // both sides of a just-completed pairing to `UnpairedRemotely` within
+        // seconds. Telling the sender first leaves them a full connect
+        // handshake to commit their half before our Recognition arrives.
         if let Err(err) = self.deliver_invite_response(endpoint_id, true, false).await {
             tracing::debug!(
                 "accepted nearby invite from {endpoint_id} but could not notify the sender: {err:#}"
             );
         }
+
+        self.paired_connections.refresh().await;
 
         Ok(())
     }
