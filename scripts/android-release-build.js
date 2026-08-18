@@ -14,6 +14,9 @@ const universalApkDir = path.join(
 )
 const extraSignedDir = path.join(rootDir, 'build/android-apks')
 
+const bundleDir = path.join(genAndroid, 'app/build/outputs/bundle')
+const signedAabDir = path.join(rootDir, 'build/android-aab')
+
 const REQUIRED_UNIVERSAL_ABIS = ['arm64-v8a', 'armeabi-v7a']
 
 /** @type {Record<string, { buildArgs: string[], signedFileName: string, signedDir: string }>} */
@@ -34,6 +37,18 @@ for (const [name, target] of Object.entries({
 		signedFileName: `app-${name}-release.apk`,
 		signedDir: extraSignedDir,
 	}
+}
+
+/**
+ * Play wants one universal bundle and splits it per device itself, so `--aab`
+ * runs without `--split-per-abi`.
+ */
+const AAB_PROFILES = {
+	universal: {
+		buildArgs: ['--aab'],
+		outputDir: path.join(bundleDir, 'universalRelease'),
+		signedFileName: 'app-universal-release.aab',
+	},
 }
 
 /** Tauri `--split-per-abi` Gradle output folder names (not jni lib ABI names). */
@@ -100,6 +115,60 @@ function verifyUniversalApk(apkPath) {
 	console.log(
 		`android-release-build: verified universal APK contains all ABIs (${REQUIRED_UNIVERSAL_ABIS.join(', ')})`
 	)
+}
+
+function findAabInDir(dir) {
+	if (!fs.existsSync(dir)) {
+		return null
+	}
+	const aab = fs.readdirSync(dir).find((f) => f.endsWith('.aab'))
+	return aab ? path.join(dir, aab) : null
+}
+
+function verifyBundleAbis(aabPath) {
+	const listing = spawnSync('unzip', ['-l', aabPath], { encoding: 'utf8' })
+	if (listing.status !== 0) {
+		console.error('android-release-build: failed to inspect AAB:', aabPath)
+		process.exit(1)
+	}
+	const missing = REQUIRED_UNIVERSAL_ABIS.filter(
+		(abi) => !listing.stdout.includes(`base/lib/${abi}/`)
+	)
+	if (missing.length > 0) {
+		console.error(
+			`android-release-build: AAB is missing native libs for: ${missing.join(', ')}`,
+			`\n  ${aabPath}`
+		)
+		process.exit(1)
+	}
+	console.log(
+		`android-release-build: verified AAB contains all ABIs (${REQUIRED_UNIVERSAL_ABIS.join(', ')})`
+	)
+}
+
+/**
+ * Gradle signs the bundle in place and keeps the same file name either way
+ * (unlike APKs, which get an `-unsigned` suffix), so the signature itself is
+ * the only reliable signal. Play rejects an unsigned upload.
+ */
+function verifyBundleSigned(aabPath) {
+	const r = spawnSync('jarsigner', ['-verify', aabPath], { encoding: 'utf8' })
+	if (r.error) {
+		console.error(
+			'android-release-build: jarsigner not found; cannot verify the AAB signature.',
+			'\n  Install a JDK, or drop keystore.properties to build an unsigned AAB.'
+		)
+		process.exit(1)
+	}
+	if (r.status !== 0 || !r.stdout.includes('jar verified')) {
+		console.error(
+			'android-release-build: AAB is not signed (Gradle release signingConfig did not apply):',
+			`\n  ${aabPath}`
+		)
+		console.error(r.stdout || r.stderr)
+		process.exit(1)
+	}
+	console.log('android-release-build: verified AAB signature')
 }
 
 function run(cmd, args, opts = {}) {
@@ -204,22 +273,25 @@ function signApk(unsignedApk, signedApk, keystore) {
 	console.log('\nSigned APK:', signedApk)
 }
 
-function selectedProfiles() {
-	const raw =
-		process.env.ANDROID_APK_PROFILES || 'universal,arm64,armv7,x86,x86_64'
+/**
+ * `??` rather than `||` so an explicitly empty list means "build none" — that
+ * is how the AAB-only CI job skips APKs.
+ */
+function selectProfiles(table, envVar, fallback) {
+	const raw = process.env[envVar] ?? fallback
 	const names = raw
 		.split(',')
 		.map((s) => s.trim())
 		.filter(Boolean)
-	const unknown = names.filter((n) => !APK_PROFILES[n])
+	const unknown = names.filter((n) => !table[n])
 	if (unknown.length > 0) {
 		console.error(
-			`android-release-build: unknown profile(s): ${unknown.join(', ')}`,
-			`(valid: ${Object.keys(APK_PROFILES).join(', ')})`
+			`android-release-build: unknown ${envVar} profile(s): ${unknown.join(', ')}`,
+			`(valid: ${Object.keys(table).join(', ')})`
 		)
 		process.exit(1)
 	}
-	return names.map((name) => ({ name, ...APK_PROFILES[name] }))
+	return names.map((name) => ({ name, ...table[name] }))
 }
 
 if (fs.existsSync(genAndroid)) {
@@ -275,7 +347,12 @@ if (keyBase64 && keyAlias && keyPassword) {
 run('node', [path.join(__dirname, 'apply-android-release-gradle-patches.js')])
 
 const keystore = readKeystoreProps()
-const profiles = selectedProfiles()
+const profiles = selectProfiles(
+	APK_PROFILES,
+	'ANDROID_APK_PROFILES',
+	'universal,arm64,armv7'
+)
+const aabProfiles = selectProfiles(AAB_PROFILES, 'ANDROID_AAB_PROFILES', '')
 
 for (const profile of profiles) {
 	console.log(`\nandroid-release-build: building profile "${profile.name}"`)
@@ -314,5 +391,41 @@ for (const profile of profiles) {
 
 	if (profile.name === 'universal') {
 		verifyUniversalApk(signedApk)
+	}
+}
+
+for (const profile of aabProfiles) {
+	console.log(`\nandroid-release-build: building AAB profile "${profile.name}"`)
+	run(
+		'npx',
+		['tauri', 'android', 'build', ...profile.buildArgs, '--', '--locked'],
+		{
+			noCi: true,
+		}
+	)
+
+	const built = findAabInDir(profile.outputDir)
+	if (!built) {
+		console.error(
+			`android-release-build: AAB not found for profile "${profile.name}"`,
+			`(checked ${profile.outputDir})`
+		)
+		process.exit(1)
+	}
+
+	const suffix = keystore ? '' : '-unsigned'
+	const dest = path.join(
+		signedAabDir,
+		profile.signedFileName.replace(/\.aab$/, `${suffix}.aab`)
+	)
+	fs.mkdirSync(path.dirname(dest), { recursive: true })
+	fs.copyFileSync(built, dest)
+
+	verifyBundleAbis(dest)
+	if (keystore) {
+		verifyBundleSigned(dest)
+		console.log('\nSigned AAB (Gradle):', dest)
+	} else {
+		console.log(`\nUnsigned AAB (no keystore): ${dest}`)
 	}
 }
