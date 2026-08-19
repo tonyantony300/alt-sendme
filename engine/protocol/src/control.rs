@@ -64,6 +64,27 @@ pub enum ControlMessage {
     },
 }
 
+impl ControlMessage {
+    /// Stable label for diagnostics, matching the serde tag.
+    ///
+    /// Deliberately the variant name and nothing else: the payloads carry
+    /// display names, blob tickets, and signatures, none of which belong in a
+    /// log file that users attach to bug reports.
+    pub fn kind(&self) -> &'static str {
+        match self {
+            Self::PairingInfo { .. } => "pairing-info",
+            Self::RememberVote { .. } => "remember-vote",
+            Self::Invite { .. } => "invite",
+            Self::InviteResponse { .. } => "invite-response",
+            Self::Recognition { .. } => "recognition",
+            Self::Forget { .. } => "forget",
+            Self::WhoAreYou => "who-are-you",
+            Self::Identity { .. } => "identity",
+            Self::PairRequest { .. } => "pair-request",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum RememberVote {
@@ -167,6 +188,11 @@ pub async fn write_message(
     let body = serde_json::to_vec(message)?;
     const MAX: usize = 1024 * 1024;
     anyhow::ensure!(body.len() <= MAX, "control message too large");
+    tracing::debug!(
+        target: "dashbeam::_events::control::msg_out",
+        kind = message.kind(),
+        bytes = body.len(),
+    );
     let len = (body.len() as u32).to_be_bytes();
     send.write_all(&len).await?;
     send.write_all(&body).await?;
@@ -184,7 +210,13 @@ pub async fn read_message(
     anyhow::ensure!(len > 0 && len <= 1024 * 1024, "invalid control message length");
     let mut body = vec![0u8; len];
     recv.read_exact(&mut body).await?;
-    Ok(serde_json::from_slice(&body)?)
+    let message: ControlMessage = serde_json::from_slice(&body)?;
+    tracing::debug!(
+        target: "dashbeam::_events::control::msg_in",
+        kind = message.kind(),
+        bytes = len,
+    );
+    Ok(message)
 }
 
 #[cfg(test)]
@@ -240,6 +272,62 @@ mod nearby_message_tests {
         })
         .unwrap();
         assert_eq!(identity["type"], "identity");
+    }
+
+    /// `kind()` feeds the diagnostic logs, so it must not drift from the wire
+    /// tag — a renamed variant would otherwise silently relabel every log line.
+    #[test]
+    fn kind_matches_the_serde_tag() {
+        let samples = [
+            ControlMessage::PairingInfo {
+                endpoint_id: String::new(),
+                display_name: String::new(),
+                device_type: String::new(),
+                os: String::new(),
+                signature: String::new(),
+            },
+            ControlMessage::RememberVote {
+                session_id: String::new(),
+                vote: super::RememberVote::Remember,
+            },
+            ControlMessage::Invite {
+                blob_ticket: String::new(),
+                file_count: 0,
+                total_size: 0,
+                sender_name: String::new(),
+            },
+            ControlMessage::InviteResponse {
+                session_id: String::new(),
+                response: super::InviteResponse::Accepted,
+            },
+            ControlMessage::Recognition {
+                signature: String::new(),
+            },
+            ControlMessage::Forget {
+                signature: String::new(),
+            },
+            ControlMessage::WhoAreYou,
+            ControlMessage::Identity {
+                endpoint_id: String::new(),
+                display_name: String::new(),
+                device_type: String::new(),
+                os: String::new(),
+            },
+            ControlMessage::PairRequest {
+                sender_name: String::new(),
+                device_type: String::new(),
+                os: String::new(),
+            },
+        ];
+
+        for message in samples {
+            let kind = message.kind();
+            let tag = serde_json::to_value(&message).unwrap()["type"]
+                .as_str()
+                .unwrap()
+                .to_string();
+            assert_eq!(kind, tag, "kind() drifted from the serde tag");
+        }
     }
 
     #[test]

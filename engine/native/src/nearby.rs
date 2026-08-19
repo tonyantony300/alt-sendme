@@ -36,6 +36,12 @@ pub enum ObserveOutcome {
     Invalid,
 }
 
+/// Fingerprint for logging. Malformed ids reach `observe` and `expire` from the
+/// network, so this must never panic or echo the raw value back into the log.
+fn fingerprint_or_invalid(endpoint_id: &str) -> String {
+    short_fingerprint(endpoint_id).unwrap_or_else(|| "invalid".to_string())
+}
+
 #[derive(Debug, Default)]
 pub struct NearbyRegistry {
     /// `BTreeMap` so `list()` is ordered without an explicit sort, which keeps
@@ -48,7 +54,21 @@ impl NearbyRegistry {
         Self::default()
     }
 
+    /// Logs the outcome of every sighting. `observe_inner` has four exit paths
+    /// and a wrapper records all of them without repeating the call at each
+    /// `return`.
     pub fn observe(&mut self, endpoint_id: &str, peer_is_paired: bool) -> ObserveOutcome {
+        let outcome = self.observe_inner(endpoint_id, peer_is_paired);
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::observe",
+            remote = %fingerprint_or_invalid(endpoint_id),
+            ?outcome,
+            tracked = self.devices.len(),
+        );
+        outcome
+    }
+
+    fn observe_inner(&mut self, endpoint_id: &str, peer_is_paired: bool) -> ObserveOutcome {
         let Some(fingerprint) = short_fingerprint(endpoint_id) else {
             return ObserveOutcome::Invalid;
         };
@@ -87,6 +107,15 @@ impl NearbyRegistry {
         device_type: String,
         os: Option<String>,
     ) -> bool {
+        // `display_name` is user-authored text, so only its presence is logged,
+        // never its content — these logs end up in shared bug reports.
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::identity",
+            remote = %fingerprint_or_invalid(endpoint_id),
+            device_type = %device_type,
+            os = os.as_deref().unwrap_or("unknown"),
+            tracked = self.devices.contains_key(endpoint_id),
+        );
         let Some(device) = self.devices.get_mut(endpoint_id) else {
             return false;
         };
@@ -99,7 +128,14 @@ impl NearbyRegistry {
 
     /// Returns `true` if a device was actually removed.
     pub fn expire(&mut self, endpoint_id: &str) -> bool {
-        self.devices.remove(endpoint_id).is_some()
+        let removed = self.devices.remove(endpoint_id).is_some();
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::expire",
+            remote = %fingerprint_or_invalid(endpoint_id),
+            removed,
+            tracked = self.devices.len(),
+        );
+        removed
     }
 
     pub fn list(&self) -> Vec<NearbyDevice> {
@@ -107,6 +143,10 @@ impl NearbyRegistry {
     }
 
     pub fn clear(&mut self) {
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::clear",
+            dropped = self.devices.len(),
+        );
         self.devices.clear();
     }
 }

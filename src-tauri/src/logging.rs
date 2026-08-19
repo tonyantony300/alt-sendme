@@ -347,3 +347,75 @@ impl Write for RollingWriter {
         self.file.flush()
     }
 }
+
+#[cfg(test)]
+mod filter_tests {
+    use super::DEBUG_FILTER;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+    use tracing_subscriber::layer::{Context, SubscriberExt as _};
+    use tracing_subscriber::{EnvFilter, Layer};
+
+    /// Counts events that survive the filter.
+    struct Hits(Arc<AtomicUsize>);
+
+    impl<S: tracing::Subscriber> Layer<S> for Hits {
+        fn on_event(&self, _event: &tracing::Event<'_>, _ctx: Context<'_, S>) {
+            self.0.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    /// Emits at each target and asserts it reached the layer. The target must be
+    /// a literal because `tracing` builds a `static` callsite from it, which is
+    /// why this is a macro rather than a loop over a slice.
+    macro_rules! assert_admitted {
+        ($hits:expr, $($target:literal),+ $(,)?) => {
+            $({
+                let before = $hits.load(Ordering::Relaxed);
+                tracing::debug!(target: $target, "filter probe");
+                assert!(
+                    $hits.load(Ordering::Relaxed) > before,
+                    "DEBUG_FILTER drops {}",
+                    $target,
+                );
+            })+
+        };
+    }
+
+    /// The filter is the single point of failure between an instrumented code path
+    /// and the log file a user attaches to a bug report: a target it drops is
+    /// silently invisible, with nothing at the call site to show it.
+    #[test]
+    fn debug_filter_admits_every_diagnostic_target() {
+        let hits = Arc::new(AtomicUsize::new(0));
+        let subscriber = tracing_subscriber::registry()
+            .with(Hits(hits.clone()).with_filter(EnvFilter::new(DEBUG_FILTER)));
+
+        tracing::subscriber::with_default(subscriber, || {
+            assert_admitted!(
+                hits,
+                // Pairing.
+                "dashbeam::_events::pairing::host_open",
+                "dashbeam::_events::pairing::join_attempt",
+                "dashbeam::_events::pairing::join_failed",
+                "dashbeam::_events::pairing::invite_sent",
+                "dashbeam::_events::pairing::invite_response",
+                "dashbeam::_events::pairing::forget",
+                // Nearby / mDNS.
+                "dashbeam::_events::nearby::mdns_advertising",
+                "dashbeam::_events::nearby::mdns_discovered",
+                "dashbeam::_events::nearby::mdns_expired",
+                "dashbeam::_events::nearby::mdns_unavailable",
+                "dashbeam::_events::nearby::observe",
+                "dashbeam::_events::nearby::identity",
+                "dashbeam::_events::nearby::expire",
+                "dashbeam::_events::nearby::probe_started",
+                "dashbeam::_events::nearby::probe_failed",
+                "dashbeam::_events::nearby::discoverability",
+                // Control plane, shared by pairing and nearby.
+                "dashbeam::_events::control::msg_in",
+                "dashbeam::_events::control::msg_out",
+            );
+        });
+    }
+}

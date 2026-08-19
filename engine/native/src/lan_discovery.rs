@@ -40,31 +40,67 @@ impl LanDiscovery {
             .context("endpoint has no address lookup registry")?
             .add(mdns.clone());
 
+        // The one log that answers "is this device advertising at all?", which
+        // is the first question for every "the other device can't see me"
+        // report. `start` returning `Err` is logged by the caller.
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::mdns_advertising",
+            local = %endpoint.id().fmt_short(),
+        );
+
         let task = tokio::spawn(async move {
             let mut events = mdns.subscribe().await;
             while let Some(event) = events.next().await {
                 let mapped = match event {
-                    DiscoveryEvent::Discovered { endpoint_info, .. } => LanEvent::Appeared {
-                        endpoint_id: endpoint_info.endpoint_id.to_string(),
-                    },
-                    DiscoveryEvent::Expired { endpoint_id } => LanEvent::Vanished {
-                        endpoint_id: endpoint_id.to_string(),
-                    },
+                    DiscoveryEvent::Discovered { endpoint_info, .. } => {
+                        tracing::debug!(
+                            target: "dashbeam::_events::nearby::mdns_discovered",
+                            remote = %endpoint_info.endpoint_id.fmt_short(),
+                        );
+                        LanEvent::Appeared {
+                            endpoint_id: endpoint_info.endpoint_id.to_string(),
+                        }
+                    }
+                    DiscoveryEvent::Expired { endpoint_id } => {
+                        tracing::debug!(
+                            target: "dashbeam::_events::nearby::mdns_expired",
+                            remote = %endpoint_id.fmt_short(),
+                        );
+                        LanEvent::Vanished {
+                            endpoint_id: endpoint_id.to_string(),
+                        }
+                    }
                     // `DiscoveryEvent` is `#[non_exhaustive]`; unknown future
-                    // variants carry nothing this module can act on.
-                    _ => continue,
+                    // variants carry nothing this module can act on. Logged
+                    // anyway so a silent upstream addition is visible rather
+                    // than looking like multicast went quiet.
+                    _ => {
+                        tracing::debug!(
+                            target: "dashbeam::_events::nearby::mdns_unhandled",
+                            "unrecognised mDNS discovery event",
+                        );
+                        continue;
+                    }
                 };
                 // Receiver gone means the node is shutting down.
                 if tx.send(mapped).is_err() {
                     break;
                 }
             }
+            tracing::debug!(
+                target: "dashbeam::_events::nearby::mdns_pump_stopped",
+                "mDNS event pump exited",
+            );
         });
 
         Ok(Self { task })
     }
 
     pub fn shutdown(self) {
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::mdns_shutdown",
+            "stopping mDNS advertising",
+        );
         self.task.abort();
     }
 }

@@ -1736,6 +1736,11 @@ impl NodeService {
     pub async fn set_discoverability(&self, setting: Discoverability) -> anyhow::Result<()> {
         let _guard = self.network_transition.lock().await;
 
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::discoverability",
+            requested = ?setting,
+        );
+
         let previous = {
             let mut access = self.access.write().await;
             let previous = access.discoverability;
@@ -1980,7 +1985,10 @@ fn start_lan_discovery(
             Some(LanDiscoveryHandle { pump, consumer })
         }
         Err(err) => {
-            tracing::debug!("mDNS discovery unavailable: {err:#}");
+            tracing::debug!(
+                target: "dashbeam::_events::nearby::mdns_unavailable",
+                error = %format!("{err:#}"),
+            );
             // Recorded *and* emitted: the event covers listeners that already
             // exist, the slot covers the cold-start case where this failure
             // happens before the frontend has mounted any listener at all —
@@ -2051,6 +2059,10 @@ fn spawn_identity_probe(
     app_handle: AppHandle,
 ) {
     tokio::spawn(async move {
+        tracing::debug!(
+            target: "dashbeam::_events::nearby::probe_started",
+            remote = %endpoint_id,
+        );
         match probe_identity_via(&runtime, &endpoint_id).await {
             Ok(info) => {
                 // `ControlMessage::Identity.os` is `#[serde(default)]`, so an
@@ -2073,7 +2085,11 @@ fn spawn_identity_probe(
                 }
             }
             Err(err) => {
-                tracing::debug!("identity probe for {endpoint_id} failed: {err:#}");
+                tracing::debug!(
+                    target: "dashbeam::_events::nearby::probe_failed",
+                    remote = %endpoint_id,
+                    error = %format!("{err:#}"),
+                );
             }
         }
     });
