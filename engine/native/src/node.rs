@@ -493,6 +493,11 @@ impl ControlProtocol {
             // all; this decides what may travel across it. An unpaired peer
             // sending a relationship message is buggy or hostile either way.
             if !peer_is_paired && !unpaired_message_allowed(&msg) {
+                tracing::debug!(
+                    target: "dashbeam::_events::control::rejected_unpaired",
+                    remote = %remote.fmt_short(),
+                    kind = msg.kind(),
+                );
                 conn.close(403u32.into(), b"not permitted for unpaired peer");
                 break;
             }
@@ -730,6 +735,10 @@ impl ControlProtocol {
     /// presence/reconnect never established in that direction.
     async fn commit_nearby_pairing(&self, remote: &EndpointId, pending: PendingNearbyInvite) {
         let endpoint_id = remote.to_string();
+        tracing::debug!(
+            target: "dashbeam::_events::pairing::nearby_commit",
+            remote = %remote.fmt_short(),
+        );
 
         // `pending` was snapshotted at click time, and holds an endpoint-id
         // prefix if the identity probe had not answered by then. Prefer
@@ -1607,6 +1616,10 @@ impl NodeService {
             );
         }
 
+        tracing::debug!(
+            target: "dashbeam::_events::pairing::nearby_accept",
+            remote = %short_remote(endpoint_id),
+        );
         self.paired_connections.refresh().await;
 
         Ok(())
@@ -1918,6 +1931,14 @@ fn nearby_peer_identity(endpoint_id: &str, probed: Option<DeviceInfo>) -> Device
         }
         None => fallback(),
     }
+}
+
+/// Endpoint id shortened to match `EndpointId::fmt_short` (and therefore the
+/// `remote_id=` field iroh's own connection events carry), so a diagnostics
+/// log can be read as one timeline instead of two. Takes a `&str` for the
+/// paths that only ever hold the id in string form.
+pub(crate) fn short_remote(endpoint_id: &str) -> String {
+    endpoint_id.chars().take(10).collect()
 }
 
 fn load_allowed_from_store(paired_store: &PairedDeviceStore) -> anyhow::Result<HashSet<EndpointId>> {

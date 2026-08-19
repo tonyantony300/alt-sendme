@@ -515,15 +515,41 @@ impl PairedConnectionManager {
     /// `device-unpaired`. Returns true when a previously-active record was updated.
     async fn apply_remote_unpair(&self, endpoint_id: &str) -> bool {
         let Ok(Some(existing)) = self.paired_store.get(endpoint_id) else {
+            tracing::debug!(
+                target: "dashbeam::_events::pairing::remote_unpair",
+                remote = %crate::node::short_remote(endpoint_id),
+                applied = false,
+                cause = "no stored record",
+            );
             return false;
         };
         if !existing.pairing_status.is_active() {
+            tracing::debug!(
+                target: "dashbeam::_events::pairing::remote_unpair",
+                remote = %crate::node::short_remote(endpoint_id),
+                applied = false,
+                cause = "record not active",
+            );
             return false;
         }
         let marked = self.paired_store.mark_unpaired_remotely(endpoint_id);
         let Ok(Some(device)) = marked else {
+            tracing::debug!(
+                target: "dashbeam::_events::pairing::remote_unpair",
+                remote = %crate::node::short_remote(endpoint_id),
+                applied = false,
+                cause = "store write failed",
+            );
             return false;
         };
+        // `age_ms` is what tells a genuine remote unpair apart from a peer that
+        // simply has not committed a pairing made moments ago.
+        tracing::debug!(
+            target: "dashbeam::_events::pairing::remote_unpair",
+            remote = %crate::node::short_remote(endpoint_id),
+            applied = true,
+            age_ms = protocol::identity::unix_now_ms().saturating_sub(existing.paired_at),
+        );
         if let Ok(id) = EndpointId::from_str(endpoint_id) {
             self.access.write().await.allowed.remove(&id);
         }

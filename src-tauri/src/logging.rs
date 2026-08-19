@@ -401,6 +401,9 @@ mod filter_tests {
                 "dashbeam::_events::pairing::invite_sent",
                 "dashbeam::_events::pairing::invite_response",
                 "dashbeam::_events::pairing::forget",
+                "dashbeam::_events::pairing::nearby_accept",
+                "dashbeam::_events::pairing::nearby_commit",
+                "dashbeam::_events::pairing::remote_unpair",
                 // Nearby / mDNS.
                 "dashbeam::_events::nearby::mdns_advertising",
                 "dashbeam::_events::nearby::mdns_discovered",
@@ -415,6 +418,7 @@ mod filter_tests {
                 // Control plane, shared by pairing and nearby.
                 "dashbeam::_events::control::msg_in",
                 "dashbeam::_events::control::msg_out",
+                "dashbeam::_events::control::rejected_unpaired",
             );
         });
     }
