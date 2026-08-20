@@ -28,7 +28,10 @@ import { copyTextToClipboard } from '../lib/utils'
 import { useSenderStore } from '../store/sender-store'
 import type { TransferMetadata, TransferProgress } from '../types/transfer'
 import type { AlertType } from '../types/ui'
-import { calculateETA, SpeedAverager } from '../utils/etaUtils'
+import {
+	parseCompletionPayload,
+	parseProgressPayload,
+} from '../lib/transfer-events'
 
 export type PairedInviteStatus = 'sending' | 'sent' | 'failed'
 
@@ -172,7 +175,6 @@ export function useSender(): UseSenderReturn {
 	const wasManuallyStoppedRef = useRef(false)
 	const selectedPathRef = useRef<string | null>(null)
 	const pathTypeRef = useRef<'file' | 'directory' | null>(null)
-	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 
 	useEffect(() => {
 		// console.log('[useSender] selectedPath changed, updating ref:', {
@@ -273,7 +275,6 @@ export function useSender(): UseSenderReturn {
 
 				transferStartTimeRef.current = Date.now()
 				latestProgressRef.current = null
-				speedAveragerRef.current.reset()
 
 				// In broadcast mode, stay in SHARING state instead of transitioning to TRANSPORTING
 				if (storeState.isBroadcastMode) {
@@ -330,35 +331,11 @@ export function useSender(): UseSenderReturn {
 							return
 						}
 
-						const rawPayload = event.payload as string
-
-						const parts = rawPayload.split(':')
-
-						if (parts.length === 3) {
-							const bytesTransferred = parseInt(parts[0], 10)
-							const totalBytes = parseInt(parts[1], 10)
-							const speedInt = parseInt(parts[2], 10)
-							const speedBps = Number.isFinite(speedInt)
-								? Math.max(speedInt / 1000, 0)
-								: 0
-							const percentage =
-								totalBytes > 0
-									? Math.min((bytesTransferred / totalBytes) * 100, 100)
-									: 0
-
-							// Add speed sample and calculate ETA
-							speedAveragerRef.current.addSample(speedBps)
-							const avgSpeed = speedAveragerRef.current.getAverage()
-							const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0)
-							const eta = calculateETA(bytesRemaining, avgSpeed)
-
-							latestProgressRef.current = {
-								bytesTransferred,
-								totalBytes,
-								speedBps,
-								percentage,
-								etaSeconds: eta ?? undefined,
-							}
+						// The engine already windows the speed and derives the ETA
+						// from it; averaging again here only adds lag.
+						const progress = parseProgressPayload(event.payload as string)
+						if (progress) {
+							latestProgressRef.current = progress
 						}
 					} catch (error) {
 						console.error('Failed to parse progress event:', error)
@@ -373,7 +350,7 @@ export function useSender(): UseSenderReturn {
 
 			const nextUnlistenComplete = await listen(
 				'transfer-completed',
-				async () => {
+				async (event: any) => {
 					const storeState = useSenderStore.getState()
 					// console.log('[useSender] transfer-completed event received:', {
 					// 	wasManuallyStopped: wasManuallyStoppedRef.current,
@@ -422,9 +399,14 @@ export function useSender(): UseSenderReturn {
 					await new Promise((resolve) => setTimeout(resolve, 10))
 
 					const endTime = Date.now()
-					const duration = transferStartTimeRef.current
-						? endTime - transferStartTimeRef.current
-						: 0
+					// Prefer the engine's wire time: the wall clock here also
+					// covers connection setup and the completion debounce.
+					const completion = parseCompletionPayload(event?.payload)
+					const duration =
+						completion?.durationMs ??
+						(transferStartTimeRef.current
+							? endTime - transferStartTimeRef.current
+							: 0)
 
 					const currentPath = selectedPathRef.current
 					const currentPathType = pathTypeRef.current
@@ -760,7 +742,6 @@ export function useSender(): UseSenderReturn {
 			transferStartTimeRef.current = null
 			wasManuallyStoppedRef.current = false
 			latestProgressRef.current = null
-			speedAveragerRef.current.reset()
 
 			setIsLoading(true)
 			const result = await invoke<string>('send_items', {
@@ -830,7 +811,6 @@ export function useSender(): UseSenderReturn {
 					resetForBroadcast()
 					latestProgressRef.current = null
 					transferStartTimeRef.current = null
-					speedAveragerRef.current.reset()
 				} else {
 					// console.log('[useSender] stopSharing: active transfer detected - setting SUCCESS with stopped metadata')
 					wasManuallyStoppedRef.current = true
@@ -860,7 +840,6 @@ export function useSender(): UseSenderReturn {
 					setViewState('SUCCESS')
 					latestProgressRef.current = null
 					transferStartTimeRef.current = null
-					speedAveragerRef.current.reset()
 				}
 			}
 
@@ -870,7 +849,6 @@ export function useSender(): UseSenderReturn {
 				resetToIdle()
 				transferStartTimeRef.current = null
 				latestProgressRef.current = null
-				speedAveragerRef.current.reset()
 
 				invoke('stop_sharing').catch((error) => {
 					console.warn('Background cleanup failed (non-critical):', error)
@@ -888,7 +866,6 @@ export function useSender(): UseSenderReturn {
 				resetToIdle()
 				transferStartTimeRef.current = null
 				latestProgressRef.current = null
-				speedAveragerRef.current.reset()
 				return
 			}
 
@@ -899,7 +876,6 @@ export function useSender(): UseSenderReturn {
 			setTransferProgress(null)
 			transferStartTimeRef.current = null
 			latestProgressRef.current = null
-			speedAveragerRef.current.reset()
 		} catch (error) {
 			console.error('Failed to stop sharing:', error)
 			showAlert(

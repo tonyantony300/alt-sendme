@@ -4,6 +4,7 @@ pub mod identity;
 pub mod nearby;
 pub mod pairing;
 pub mod pairing_auth;
+pub mod progress;
 pub mod receive;
 pub mod relay;
 pub mod send;

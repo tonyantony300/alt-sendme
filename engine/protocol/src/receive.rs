@@ -1,4 +1,8 @@
 use crate::send::METADATA_ALPN;
+use crate::progress::{
+    split_child_sizes, EmitThrottle, SpeedMeter, PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS,
+    SPEED_WINDOW_SECS,
+};
 use crate::time_compat::{sleep, timeout, Duration, Instant};
 use crate::types::{get_or_create_secret, AppHandle, DiscoveryModeOption, FileMetadata, ReceiveOptions};
 use iroh::endpoint::presets;
@@ -38,11 +42,8 @@ fn emit_progress_event(
     if let Some(handle) = app_handle {
         let event_name = "receive-progress";
 
-        // Convert speed to integer (multiply by 1000 to preserve 3 decimal places)
-        let speed_int = (speed_bps * 1000.0) as i64;
-
-        // Create payload data as colon-separated string
-        let payload = format!("{}:{}:{}", bytes_transferred, total_bytes, speed_int);
+        let payload =
+            crate::progress::format_progress_payload(bytes_transferred, total_bytes, speed_bps);
 
         // Emit the event with appropriate payload
         if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
@@ -115,6 +116,8 @@ pub struct DownloadToStoreResult {
     pub total_files: u64,
     pub payload_size: u64,
     pub stats: Stats,
+    /// Wire time for the payload, excluding connection setup and disk export.
+    pub download_duration_ms: u64,
 }
 
 /// Download ticket payload into the blob store (no filesystem export).
@@ -128,7 +131,7 @@ pub async fn download_to_store(
     let hash_and_format = ticket.hash_and_format();
     let local = db.remote().local(hash_and_format).await?;
 
-    let (stats, total_files, payload_size) = if !local.is_complete() {
+    let (stats, total_files, payload_size, download_duration_ms) = if !local.is_complete() {
         emit_event(app_handle, "receive-started");
 
         let connection = match endpoint
@@ -153,7 +156,7 @@ pub async fn download_to_store(
             get_hash_seq_and_sizes(&connection, &hash_and_format.hash, 1024 * 1024 * 32, None)
                 .await;
 
-        let (_hash_seq, sizes) = match sizes_result {
+        let (hash_seq, sizes) = match sizes_result {
             Ok((hash_seq, sizes)) => (hash_seq, sizes),
             Err(e) => {
                 tracing::error!("Failed to get sizes: {:?}", e);
@@ -161,7 +164,14 @@ pub async fn download_to_store(
                 return Err(show_get_error(e).into());
             }
         };
-        let payload_size = sizes.iter().skip(1).copied().sum::<u64>();
+        // `sizes` holds the children only: entry 0 is the collection metadata
+        // blob, the rest are the files. The get stream counts every payload
+        // byte it reads, including the hash-seq root and that metadata blob,
+        // so those are subtracted to leave the same "file bytes" the sender
+        // reports.
+        let root_bytes = (hash_seq.len() as u64).saturating_mul(32);
+        let split = split_child_sizes(root_bytes, &sizes);
+        let payload_size = split.payload_bytes;
         let total_files = (sizes.len().saturating_sub(1)) as u64;
 
         emit_progress_event(app_handle, 0, payload_size, 0.0);
@@ -169,27 +179,25 @@ pub async fn download_to_store(
         let get = db.remote().execute_get(connection, local.missing());
         let mut stats = Stats::default();
         let mut stream = get.stream();
-        let mut last_log_offset = 0u64;
         let transfer_start_time = Instant::now();
+        let mut speed = SpeedMeter::new(SPEED_WINDOW_SECS);
+        let mut throttle = EmitThrottle::new(PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS);
+        let mut download_duration_ms = 0u64;
 
         while let Some(item) = stream.next().await {
             match item {
                 GetProgressItem::Progress(offset) => {
-                    if offset - last_log_offset > 1_000_000 {
-                        last_log_offset = offset;
-
-                        let elapsed = transfer_start_time.elapsed().as_secs_f64();
-                        let speed_bps = if elapsed > 0.0 {
-                            offset as f64 / elapsed
-                        } else {
-                            0.0
-                        };
-
+                    let elapsed = transfer_start_time.elapsed().as_secs_f64();
+                    let received = offset
+                        .saturating_sub(split.overhead_bytes)
+                        .min(payload_size);
+                    speed.record(elapsed, received);
+                    if throttle.should_emit(elapsed, received) {
                         emit_progress_event(
                             app_handle,
-                            offset.min(payload_size),
+                            received,
                             payload_size,
-                            speed_bps,
+                            speed.bytes_per_sec_at(elapsed),
                         );
                     }
                 }
@@ -197,12 +205,14 @@ pub async fn download_to_store(
                     stats = value;
 
                     let elapsed = transfer_start_time.elapsed().as_secs_f64();
-                    let speed_bps = if elapsed > 0.0 {
-                        payload_size as f64 / elapsed
-                    } else {
-                        0.0
-                    };
-                    emit_progress_event(app_handle, payload_size, payload_size, speed_bps);
+                    download_duration_ms = (elapsed * 1000.0) as u64;
+                    speed.record(elapsed, payload_size);
+                    emit_progress_event(
+                        app_handle,
+                        payload_size,
+                        payload_size,
+                        speed.bytes_per_sec_at(elapsed),
+                    );
 
                     break;
                 }
@@ -212,7 +222,7 @@ pub async fn download_to_store(
                 }
             }
         }
-        (stats, total_files, payload_size)
+        (stats, total_files, payload_size, download_duration_ms)
     } else {
         let total_files = local.children().unwrap() - 1;
         let payload_bytes = 0;
@@ -220,7 +230,7 @@ pub async fn download_to_store(
         emit_event(app_handle, "receive-started");
         emit_event(app_handle, "receive-completed");
 
-        (Stats::default(), total_files, payload_bytes)
+        (Stats::default(), total_files, payload_bytes, 0)
     };
 
     let collection = Collection::load(hash_and_format.hash, db).await?;
@@ -241,6 +251,7 @@ pub async fn download_to_store(
         total_files,
         payload_size,
         stats,
+        download_duration_ms,
     })
 }
 

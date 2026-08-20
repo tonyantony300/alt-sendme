@@ -35,7 +35,10 @@ import type {
 	TransferProgress,
 } from '../types/transfer'
 import type { AlertDialogState, AlertType } from '../types/ui'
-import { calculateETA, SpeedAverager } from '../utils/etaUtils'
+import {
+	parseCompletionPayload,
+	parseProgressPayload,
+} from '../lib/transfer-events'
 
 interface BackendFileMetadata {
 	file_name: string
@@ -165,7 +168,6 @@ export function useReceiver(): UseReceiverReturn {
 	// SAF tree URI that can be opened after a successful Android export.
 	// Cleared when receive falls back to the app-private staging folder.
 	const androidOpenUriRef = useRef('')
-	const speedAveragerRef = useRef<SpeedAverager>(new SpeedAverager(10))
 	const previewRequestSeqRef = useRef(0)
 	const previewMetadataRef = useRef<TicketPreviewMetadata | null>(null)
 	const transferItemCountRef = useRef<number | undefined>(undefined)
@@ -360,38 +362,16 @@ export function useReceiver(): UseReceiverReturn {
 				setIsCompleted(false)
 				setTransferStartTime(Date.now())
 				setTransferProgress(null)
-				speedAveragerRef.current.reset()
 			})
 
 			await registerListener('receive-progress', (event: any) => {
 				if (transferSeqRef.current === 0) return
 				try {
-					const payload = event.payload as string
-					const parts = payload.split(':')
-
-					if (parts.length === 3) {
-						const bytesTransferred = parseInt(parts[0], 10)
-						const totalBytes = parseInt(parts[1], 10)
-						const speedInt = parseInt(parts[2], 10)
-						const speedBps = speedInt / 1000.0
-						const percentage =
-							totalBytes > 0
-								? Math.min((bytesTransferred / totalBytes) * 100, 100)
-								: 0
-
-						// Add speed sample and calculate ETA
-						speedAveragerRef.current.addSample(speedBps)
-						const avgSpeed = speedAveragerRef.current.getAverage()
-						const bytesRemaining = Math.max(totalBytes - bytesTransferred, 0)
-						const eta = calculateETA(bytesRemaining, avgSpeed)
-
-						setTransferProgress({
-							bytesTransferred,
-							totalBytes,
-							speedBps,
-							percentage,
-							etaSeconds: eta ?? undefined,
-						})
+					// The engine already windows the speed and derives the ETA
+					// from it; averaging again here only adds lag.
+					const progress = parseProgressPayload(event.payload as string)
+					if (progress) {
+						setTransferProgress(progress)
 					}
 				} catch (error) {
 					console.error('Failed to parse progress event:', error)
@@ -505,16 +485,21 @@ export function useReceiver(): UseReceiverReturn {
 				}
 			})
 
-			await registerListener('receive-completed', () => {
+			await registerListener('receive-completed', (event: any) => {
 				if (transferSeqRef.current === 0) return
 				setIsTransporting(false)
 				setIsCompleted(true)
 				setTransferProgress(null)
 
 				const endTime = Date.now()
-				const duration = transferStartTimeRef.current
-					? endTime - transferStartTimeRef.current
-					: 0
+				// Prefer the engine's wire time: the wall clock here also covers
+				// connection setup and writing the files out to disk.
+				const completion = parseCompletionPayload(event?.payload)
+				const duration =
+					completion?.durationMs ??
+					(transferStartTimeRef.current
+						? endTime - transferStartTimeRef.current
+						: 0)
 
 				const currentFileNames = fileNamesRef.current
 				const itemCount =
@@ -558,6 +543,7 @@ export function useReceiver(): UseReceiverReturn {
 					fileName: displayName,
 					fileSize: transferProgressRef.current?.totalBytes || 0,
 					duration,
+					writeMs: completion?.exportMs,
 					startTime: transferStartTimeRef.current || endTime,
 					endTime,
 					downloadPath: savePathRef.current,

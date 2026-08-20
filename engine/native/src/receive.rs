@@ -13,14 +13,6 @@ use crate::export::export_to_directory;
 use crate::storage;
 use crate::types::ReceiveResult;
 
-fn emit_event(app_handle: &AppHandle, event_name: &str) {
-    if let Some(handle) = app_handle {
-        if let Err(e) = handle.emit_event(event_name) {
-            tracing::warn!("Failed to emit event {}: {}", event_name, e);
-        }
-    }
-}
-
 fn emit_event_with_payload(app_handle: &AppHandle, event_name: &str, payload: &str) {
     if let Some(handle) = app_handle {
         if let Err(e) = handle.emit_event_with_payload(event_name, payload) {
@@ -86,14 +78,23 @@ pub async fn download(
         let downloaded =
             download_to_store(ticket, addr, &endpoint, db.as_ref(), &app_handle).await?;
 
+        let export_start = std::time::Instant::now();
         let conflicts = export_to_directory(&db, downloaded.collection, &output_dir).await?;
+        let export_duration_ms = export_start.elapsed().as_millis() as u64;
 
         if !conflicts.is_empty() {
             let payload = serde_json::to_string(&conflicts).unwrap_or_else(|_| "[]".to_string());
             emit_event_with_payload(&app_handle, "receive-conflicts", &payload);
         }
 
-        emit_event(&app_handle, "receive-completed");
+        // Writing the files out to disk is a separate cost from the transfer;
+        // report them apart so both ends can compare like with like.
+        let completion = serde_json::json!({
+            "durationMs": downloaded.download_duration_ms,
+            "exportMs": export_duration_ms,
+            "bytes": downloaded.payload_size,
+        });
+        emit_event_with_payload(&app_handle, "receive-completed", &completion.to_string());
 
         anyhow::Ok((
             downloaded.total_files,

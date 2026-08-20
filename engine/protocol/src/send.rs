@@ -1,3 +1,7 @@
+use crate::progress::{
+    EmitThrottle, ShareProgress, SpeedMeter, PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS,
+    SPEED_WINDOW_SECS,
+};
 use crate::time_compat::{sleep, timeout, Duration, Instant};
 use crate::types::{apply_options, AddrInfoOptions, AppHandle, FileMetadata};
 use iroh::protocol::{AcceptError, ProtocolHandler};
@@ -129,21 +133,11 @@ fn emit_progress_event(
     if let Some(handle) = app_handle {
         let event_name = "transfer-progress";
 
-        // Match receive-progress encoding: speed as fixed-point int (×1000).
-        let speed_int = (speed_bps * 1000.0) as i64;
-        let payload = format!("{}:{}:{}", bytes_transferred, total_size, speed_int);
+        let payload = crate::progress::format_progress_payload(bytes_transferred, total_size, speed_bps);
         if let Err(e) = handle.emit_event_with_payload(event_name, &payload) {
             tracing::warn!("Failed to emit progress event: {}", e);
         }
     }
-}
-
-fn speed_bps_from_elapsed(transferred: u64, elapsed_secs: f64) -> f64 {
-    const MIN_ELAPSED_SECS: f64 = 0.1;
-    if elapsed_secs < MIN_ELAPSED_SECS {
-        return 0.0;
-    }
-    transferred as f64 / elapsed_secs
 }
 
 fn emit_active_connection_count(app_handle: &AppHandle, count: usize) {
@@ -191,7 +185,6 @@ where
         progress_rx,
         app_handle.clone(),
         size,
-        entry_type.clone(),
     ));
 
     let router = iroh::protocol::Router::builder(endpoint)
@@ -243,7 +236,6 @@ pub async fn run_share_on_endpoint(
         progress_rx,
         app_handle.clone(),
         size,
-        entry_type.clone(),
     ));
 
     timeout(Duration::from_secs(30), async move {
@@ -289,11 +281,81 @@ fn transfer_payload_complete(bytes_sent: u64, total_size: u64) -> bool {
     bytes_sent.saturating_mul(100) >= total_size.saturating_mul(95)
 }
 
+/// Session-wide progress state shared by every request of one share.
+struct SessionProgress {
+    ledger: ShareProgress,
+    speed: SpeedMeter,
+    throttle: EmitThrottle,
+    start: Instant,
+    first_byte_secs: Option<f64>,
+    last_byte_secs: f64,
+}
+
+impl SessionProgress {
+    fn new(share_size: u64) -> Self {
+        Self {
+            ledger: ShareProgress::new(share_size),
+            speed: SpeedMeter::new(SPEED_WINDOW_SECS),
+            throttle: EmitThrottle::new(PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS),
+            start: Instant::now(),
+            first_byte_secs: None,
+            last_byte_secs: 0.0,
+        }
+    }
+
+    fn now_secs(&self) -> f64 {
+        self.start.elapsed().as_secs_f64()
+    }
+
+    /// Record the aggregate byte count, returning `true` when it is due to be emitted.
+    fn record(&mut self, at_secs: f64, bytes: u64) -> bool {
+        if self.first_byte_secs.is_none() && bytes > 0 {
+            self.first_byte_secs = Some(at_secs);
+        }
+        if bytes > 0 {
+            self.last_byte_secs = at_secs;
+        }
+        self.speed.record(at_secs, bytes);
+        self.throttle.should_emit(at_secs, bytes)
+    }
+
+    /// Time on the wire, excluding connection setup and the completion debounce.
+    fn wire_duration_ms(&self) -> u64 {
+        match self.first_byte_secs {
+            Some(first) => ((self.last_byte_secs - first).max(0.0) * 1000.0) as u64,
+            None => 0,
+        }
+    }
+}
+
+fn emit_session_progress(app_handle: &AppHandle, session: &SessionProgress, at_secs: f64) {
+    let snapshot = session.ledger.snapshot();
+    emit_progress_event(
+        app_handle,
+        snapshot.bytes,
+        snapshot.total,
+        session.speed.bytes_per_sec_at(at_secs),
+    );
+}
+
+fn emit_transfer_completed(app_handle: &AppHandle, session: &SessionProgress) {
+    let snapshot = session.ledger.snapshot();
+    let payload = serde_json::json!({
+        "durationMs": session.wire_duration_ms(),
+        "bytes": snapshot.bytes,
+        "totalBytes": snapshot.total,
+    });
+    if let Some(handle) = app_handle {
+        if let Err(e) = handle.emit_event_with_payload("transfer-completed", &payload.to_string()) {
+            tracing::warn!("Failed to emit transfer-completed: {}", e);
+        }
+    }
+}
+
 async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
     app_handle: AppHandle,
     total_collection_size: u64,
-    entry_type: String,
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -302,18 +364,8 @@ async fn show_provide_progress_with_logging(
 
     let mut tasks = FuturesUnordered::new();
 
-    #[derive(Clone)]
-    struct TransferState {
-        start_time: Instant,
-        total_size: u64,
-        accounted_payload_bytes: u64,
-        current_blob_size: u64,
-        current_blob_end_offset: u64,
-        ignore_current_blob: bool,
-    }
-
-    let transfer_states: Arc<Mutex<std::collections::HashMap<(u64, u64), TransferState>>> =
-        Arc::new(Mutex::new(std::collections::HashMap::new()));
+    let session: Arc<Mutex<SessionProgress>> =
+        Arc::new(Mutex::new(SessionProgress::new(total_collection_size)));
 
     let active_requests = Arc::new(AtomicUsize::new(0));
     let completed_requests = Arc::new(AtomicUsize::new(0));
@@ -351,6 +403,7 @@ async fn show_provide_progress_with_logging(
 
                         let connection_id = msg.connection_id;
                         let request_id = msg.request_id;
+                        let key = (connection_id, request_id);
 
                         if !is_sizes_probe_request {
                             active_requests.fetch_add(1, Ordering::SeqCst);
@@ -360,13 +413,12 @@ async fn show_provide_progress_with_logging(
                         }
 
                         let app_handle_task = app_handle.clone();
-                        let transfer_states_task = transfer_states.clone();
+                        let session_task = session.clone();
                         let active_requests_task = active_requests.clone();
                         let completed_requests_task = completed_requests.clone();
                         let has_emitted_started_task = has_emitted_started.clone();
                         let has_emitted_completed_task = has_emitted_completed.clone();
                         let last_request_time_task = last_request_time.clone();
-                        let entry_type_task = entry_type.clone();
                         let total_collection_size_task = total_collection_size;
 
                         let mut rx = msg.rx;
@@ -382,23 +434,13 @@ async fn show_provide_progress_with_logging(
                             while let Ok(Some(update)) = rx.recv().await {
                                 match update {
                                     iroh_blobs::provider::events::RequestUpdate::Started(m) => {
-                                        if !transfer_started {
-                                            let active_count = {
-                                                let mut states = transfer_states_task.lock().await;
-                                                states.insert(
-                                                    (connection_id, request_id),
-                                                    TransferState {
-                                                        start_time: Instant::now(),
-                                                        total_size: total_collection_size,
-                                                        accounted_payload_bytes: 0,
-                                                        current_blob_size: 0,
-                                                        current_blob_end_offset: 0,
-                                                        ignore_current_blob: false,
-                                                    }
-                                                );
-                                                states.len()
-                                            };
+                                        let active_count = {
+                                            let mut session = session_task.lock().await;
+                                            session.ledger.blob_started(key, m.index, m.size);
+                                            session.ledger.active_requests()
+                                        };
 
+                                        if !transfer_started {
                                             emit_active_connection_count(&app_handle_task, active_count);
 
                                             if !has_emitted_started_task.swap(true, Ordering::SeqCst) {
@@ -406,51 +448,14 @@ async fn show_provide_progress_with_logging(
                                             }
 
                                             transfer_started = true;
-                                        }
-
-                                        let is_metadata_blob =
-                                            (entry_type_task == "directory" || entry_type_task == "collection")
-                                                && m.index == 0;
-
-                                        {
-                                            let mut states = transfer_states_task.lock().await;
-                                            if let Some(state) = states.get_mut(&(connection_id, request_id)) {
-                                                let was_ignoring_current_blob = state.ignore_current_blob;
-
-                                                if !state.ignore_current_blob {
-                                                    state.accounted_payload_bytes = state
-                                                        .accounted_payload_bytes
-                                                        .saturating_add(state.current_blob_size)
-                                                        .min(state.total_size);
-                                                }
-
-                                                if was_ignoring_current_blob && !is_metadata_blob {
-                                                    state.start_time = Instant::now();
-                                                    state.accounted_payload_bytes = 0;
-                                                }
-
-                                                state.current_blob_size = m.size;
-                                                state.current_blob_end_offset = 0;
-                                                state.ignore_current_blob = is_metadata_blob;
-                                            }
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Progress(m) => {
                                         if !transfer_started {
                                             let active_count = {
-                                                let mut states = transfer_states_task.lock().await;
-                                                states.insert(
-                                                    (connection_id, request_id),
-                                                    TransferState {
-                                                        start_time: Instant::now(),
-                                                        total_size: total_collection_size,
-                                                        accounted_payload_bytes: 0,
-                                                        current_blob_size: 0,
-                                                        current_blob_end_offset: 0,
-                                                        ignore_current_blob: true,
-                                                    }
-                                                );
-                                                states.len()
+                                                let mut session = session_task.lock().await;
+                                                session.ledger.ensure_request(key);
+                                                session.ledger.active_requests()
                                             };
 
                                             emit_active_connection_count(&app_handle_task, active_count);
@@ -461,67 +466,30 @@ async fn show_provide_progress_with_logging(
                                             transfer_started = true;
                                         }
 
-                                        if let Some((transferred, total_size, elapsed)) = {
-                                            let mut states = transfer_states_task.lock().await;
-                                            states.get_mut(&(connection_id, request_id)).map(|state| {
-                                                if !state.ignore_current_blob {
-                                                    state.current_blob_end_offset = m
-                                                        .end_offset
-                                                        .min(state.current_blob_size)
-                                                        .max(state.current_blob_end_offset);
-                                                }
-
-                                                let transferred = if state.ignore_current_blob {
-                                                    state.accounted_payload_bytes
-                                                } else {
-                                                    state
-                                                        .accounted_payload_bytes
-                                                        .saturating_add(state.current_blob_end_offset)
-                                                        .min(state.total_size)
-                                                };
-
-                                                (
-                                                    transferred,
-                                                    state.total_size,
-                                                    state.start_time.elapsed().as_secs_f64(),
-                                                )
-                                            })
-                                        } {
-                                            let speed_bps = speed_bps_from_elapsed(
-                                                transferred.min(total_size),
-                                                elapsed,
-                                            );
-                                            emit_progress_event(
-                                                &app_handle_task,
-                                                transferred.min(total_size),
-                                                total_size,
-                                                speed_bps,
-                                            );
+                                        let mut session = session_task.lock().await;
+                                        session.ledger.blob_progress(key, m.end_offset);
+                                        let at_secs = session.now_secs();
+                                        let bytes = session.ledger.snapshot().bytes;
+                                        if session.record(at_secs, bytes) {
+                                            emit_session_progress(&app_handle_task, &session, at_secs);
                                         }
                                     }
                                     iroh_blobs::provider::events::RequestUpdate::Completed(_m) => {
                                         if transfer_started && !request_completed {
-                                            let bytes_sent = {
-                                                let mut states = transfer_states_task.lock().await;
-                                                if let Some(state) =
-                                                    states.get_mut(&(connection_id, request_id))
-                                                {
-                                                    if !state.ignore_current_blob {
-                                                        state.accounted_payload_bytes = state
-                                                            .accounted_payload_bytes
-                                                            .saturating_add(state.current_blob_size)
-                                                            .min(state.total_size);
-                                                    }
-                                                    Some(state.accounted_payload_bytes)
-                                                } else {
-                                                    None
-                                                }
-                                            };
-
-                                            let active_count = {
-                                                let mut states = transfer_states_task.lock().await;
-                                                states.remove(&(connection_id, request_id));
-                                                states.len()
+                                            let (bytes_sent, active_count) = {
+                                                let mut session = session_task.lock().await;
+                                                let bytes_sent = session.ledger.request_bytes(key);
+                                                // A peer that stopped far short of the payload
+                                                // is dropped from the totals rather than
+                                                // holding the share below 100% forever.
+                                                let credited = transfer_payload_complete(
+                                                    bytes_sent,
+                                                    total_collection_size_task,
+                                                );
+                                                session.ledger.retire(key, credited);
+                                                let at_secs = session.now_secs();
+                                                emit_session_progress(&app_handle_task, &session, at_secs);
+                                                (bytes_sent, session.ledger.active_requests())
                                             };
 
                                             emit_active_connection_count(&app_handle_task, active_count);
@@ -529,7 +497,7 @@ async fn show_provide_progress_with_logging(
                                             request_completed = true;
 
                                             if !transfer_payload_complete(
-                                                bytes_sent.unwrap_or(0),
+                                                bytes_sent,
                                                 total_collection_size_task,
                                             ) {
                                                 active_requests_task.fetch_sub(1, Ordering::SeqCst);
@@ -555,8 +523,8 @@ async fn show_provide_progress_with_logging(
                                                 let new_requests_arrived = active_after > active_before_wait;
 
                                                 let has_active_transfers = {
-                                                    let states = transfer_states_task.lock().await;
-                                                    !states.is_empty()
+                                                    let session = session_task.lock().await;
+                                                    session.ledger.active_requests() > 0
                                                 };
 
                                                 let last_request_recent = {
@@ -576,7 +544,8 @@ async fn show_provide_progress_with_logging(
                                                     if !has_emitted_completed_task
                                                         .swap(true, Ordering::SeqCst)
                                                     {
-                                                        emit_event(&app_handle_task, "transfer-completed");
+                                                        let session = session_task.lock().await;
+                                                        emit_transfer_completed(&app_handle_task, &session);
                                                     }
                                                 }
                                             }
@@ -587,9 +556,14 @@ async fn show_provide_progress_with_logging(
                                             connection_id, request_id);
                                         if transfer_started && !request_completed {
                                             let active_count = {
-                                                let mut states = transfer_states_task.lock().await;
-                                                states.remove(&(connection_id, request_id));
-                                                states.len()
+                                                let mut session = session_task.lock().await;
+                                                let bytes_sent = session.ledger.request_bytes(key);
+                                                let credited = transfer_payload_complete(
+                                                    bytes_sent,
+                                                    total_collection_size_task,
+                                                );
+                                                session.ledger.retire(key, credited);
+                                                session.ledger.active_requests()
                                             };
 
                                             emit_active_connection_count(&app_handle_task, active_count);
@@ -609,14 +583,18 @@ async fn show_provide_progress_with_logging(
 
                             if transfer_started && !request_completed {
                                 let bytes_sent = {
-                                    let states = transfer_states_task.lock().await;
-                                    states
-                                        .get(&(connection_id, request_id))
-                                        .map(|state| state.accounted_payload_bytes)
+                                    let mut session = session_task.lock().await;
+                                    let bytes_sent = session.ledger.request_bytes(key);
+                                    let credited = transfer_payload_complete(
+                                        bytes_sent,
+                                        total_collection_size_task,
+                                    );
+                                    session.ledger.retire(key, credited);
+                                    bytes_sent
                                 };
 
                                 if !transfer_payload_complete(
-                                    bytes_sent.unwrap_or(0),
+                                    bytes_sent,
                                     total_collection_size_task,
                                 ) {
                                     active_requests_task.fetch_sub(1, Ordering::SeqCst);
@@ -640,8 +618,8 @@ async fn show_provide_progress_with_logging(
                                     let new_requests_arrived = active_after > active_before_wait;
 
                                     let has_active_transfers = {
-                                        let states = transfer_states_task.lock().await;
-                                        !states.is_empty()
+                                        let session = session_task.lock().await;
+                                        session.ledger.active_requests() > 0
                                     };
 
                                     let last_request_recent = {
@@ -661,7 +639,8 @@ async fn show_provide_progress_with_logging(
                                         if !has_emitted_completed_task
                                             .swap(true, Ordering::SeqCst)
                                         {
-                                            emit_event(&app_handle_task, "transfer-completed");
+                                            let session = session_task.lock().await;
+                                            emit_transfer_completed(&app_handle_task, &session);
                                         }
                                     }
                                 }
@@ -686,7 +665,8 @@ async fn show_provide_progress_with_logging(
 
     if completed >= active && completed >= min_required && completed > 0 {
         if !has_emitted_completed.swap(true, Ordering::SeqCst) {
-            emit_event(&app_handle, "transfer-completed");
+            let session = session.lock().await;
+            emit_transfer_completed(&app_handle, &session);
         }
     }
 

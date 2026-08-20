@@ -145,6 +145,17 @@ export function TransferSuccessScreen({
 						</span>
 					</div>
 
+					{!wasStopped && metadata.writeMs !== undefined ? (
+						<div className="flex justify-between items-center">
+							<span className="text-sm font-medium mr-2">
+								{t('common:transfer.writeToDisk')}:
+							</span>
+							<span className="text-sm">
+								{formatDuration(metadata.writeMs)}
+							</span>
+						</div>
+					) : null}
+
 					<div className="flex justify-between items-center">
 						<span className="text-sm font-medium mr-2">
 							{t('common:transfer.avgSpeed')}:
