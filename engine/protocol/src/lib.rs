@@ -20,6 +20,7 @@ pub use identity::{
 pub use pairing::{
     pairing_host_is_persistent, PAIRING_VOTE_TIMEOUT_SECS, PAIRED_INVITE_WAIT_SECS,
     PAIRED_RECONNECT_MAX_SECS, PAIRED_RECONNECT_MIN_SECS, PRESENCE_CONNECT_TIMEOUT_SECS,
+    RECENT_PAIRING_GRACE_MS, SETTLING_PAIRING_RETRY_SECS,
 };
 pub use pairing_auth::{export_connection_keying_material, sign_challenge, verify_challenge};
 pub use nearby::{

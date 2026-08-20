@@ -6,11 +6,32 @@ mod common;
 
 use common::TestNode;
 use engine::{Discoverability, DiscoveryModeOption, PairingStatus};
-use iroh::endpoint::RelayMode;
+use iroh::endpoint::{Connection, RelayMode};
 use std::time::Duration;
 
 const PRESENCE_DEADLINE: Duration = Duration::from_secs(60);
 const NETWORK_READY_DEADLINE: Duration = Duration::from_secs(30);
+
+/// Dials `to`'s control ALPN as an unpaired peer and hands back the still-open
+/// connection. Retried because a stranger is only let in once the connection
+/// has a direct path, and that can take longer than the gate's three-second
+/// deadline on a loaded runner.
+async fn open_stranger_control_connection(from: &TestNode, to: &TestNode) -> Connection {
+    let mut last = String::new();
+    for _ in 0..5 {
+        match from
+            .open_control_connection_for_tests(&to.endpoint_id())
+            .await
+        {
+            Ok(conn) => return conn,
+            Err(err) => {
+                last = format!("{err:#}");
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }
+        }
+    }
+    panic!("could not open an unpaired control connection to a discoverable peer: {last}");
+}
 
 /// `node`'s stored pairing status for `endpoint_id`, if it has a record.
 fn paired_status(node: &TestNode, endpoint_id: &str) -> Option<PairingStatus> {
@@ -866,4 +887,114 @@ async fn a_declined_nearby_pair_request_names_the_peer_that_declined() {
         payload["display_name"], "bob",
         "the decline must name bob, not an endpoint-id prefix"
     );
+}
+
+/// A pairing that commits while a control connection is already open must
+/// apply to that connection too.
+///
+/// Regression: `handle_control_session` snapshotted "is this peer paired?"
+/// once, when the connection was accepted, and gated every later message on
+/// it. Nearby pairing opens two connections back to back — one carrying the
+/// `InviteResponse` that commits the pairing, one carrying the `Recognition`
+/// that establishes presence — so whenever the second was accepted before the
+/// first was processed (sub-millisecond apart in a release build), the peer's
+/// `Recognition` was rejected 403 by a session still snapshotted as unpaired.
+/// The dialer reads that close as a remote unpair, leaving the device paired
+/// on one side and unpaired-and-back-in-Nearby on the other.
+#[tokio::test]
+async fn a_pairing_that_commits_mid_session_is_not_rejected_as_unpaired() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    // Accepted while alice is still a stranger: bob's session for it is
+    // snapshotted unpaired, exactly like the connection that loses the race.
+    let conn = open_stranger_control_connection(&alice, &bob).await;
+
+    // Both halves of the pairing commit *after* that connection was accepted.
+    bob.remember_paired_device_for_tests(&alice.endpoint_id())
+        .await
+        .expect("bob commits the pairing");
+    alice
+        .remember_paired_device_for_tests(&bob.endpoint_id())
+        .await
+        .expect("alice commits the pairing");
+
+    alice
+        .send_recognition_for_tests(&conn)
+        .await
+        .expect("recognition should be written");
+
+    // Pre-fix bob closes with 403 "not permitted for unpaired peer" within
+    // milliseconds. Post-fix the session survives the commit and keeps serving.
+    let closed = tokio::time::timeout(Duration::from_secs(3), conn.closed()).await;
+    assert!(
+        closed.is_err(),
+        "bob must serve a Recognition from a peer it paired mid-session, got close: {closed:?}"
+    );
+}
+
+/// The mid-session re-check must not become a way in for actual strangers:
+/// a peer nobody paired still gets its `Recognition` refused.
+#[tokio::test]
+async fn a_strangers_recognition_is_still_rejected() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    let conn = open_stranger_control_connection(&alice, &bob).await;
+    alice
+        .send_recognition_for_tests(&conn)
+        .await
+        .expect("recognition should be written");
+
+    let closed = tokio::time::timeout(Duration::from_secs(10), conn.closed())
+        .await
+        .expect("bob must close an unpaired peer's Recognition");
+    assert!(
+        format!("{closed}").contains("not permitted for unpaired peer"),
+        "expected the unpaired-peer rejection, got: {closed}"
+    );
+}
+
+/// A `Recognition` refused while a fresh pairing is still settling means the
+/// peer has not committed its half yet — not that it unpaired us.
+///
+/// Regression: any 403 close was read as a remote unpair, so a peer that
+/// committed a beat late cost us the whole pairing — our record flipped to
+/// `UnpairedRemotely` and the device reappeared under Nearby. `age_ms` was
+/// logged as the thing that tells the two apart, but never acted on.
+#[tokio::test]
+async fn a_recognition_refused_while_the_pairing_settles_does_not_unpair() {
+    let alice = common::spawn_node("alice").await;
+    let bob = common::spawn_node("bob").await;
+    bob.set_discoverability(Discoverability::Everyone).await;
+
+    // Alice commits and starts dialing; bob has not committed, so he refuses
+    // her `Recognition` as an unpaired peer's.
+    alice
+        .remember_paired_device_for_tests(&bob.endpoint_id())
+        .await
+        .expect("alice commits the pairing");
+
+    // Long enough that alice's first dial has certainly been refused —
+    // `has_direct_path` alone can hold a stranger's connection for three
+    // seconds before the message gate ever sees it.
+    tokio::time::sleep(Duration::from_millis(3_500)).await;
+    bob.remember_paired_device_for_tests(&alice.endpoint_id())
+        .await
+        .expect("bob commits the pairing late");
+
+    // Poll: the unpair, if it comes, arrives asynchronously from the connect
+    // loop rather than at any single checkable instant. The window runs past
+    // the settling grace, so this also proves alice recovers into a healthy
+    // pairing rather than merely deferring the damage.
+    for elapsed_ms in (500..=15_000).step_by(500) {
+        tokio::time::sleep(Duration::from_millis(500)).await;
+        assert_eq!(
+            paired_status(&alice, &bob.endpoint_id()),
+            Some(PairingStatus::Active),
+            "after {elapsed_ms}ms alice's record for bob must still be Active"
+        );
+    }
 }

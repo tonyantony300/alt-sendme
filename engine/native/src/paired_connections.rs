@@ -11,7 +11,7 @@ use protocol::{
     export_connection_keying_material, read_message, sign_challenge, verify_challenge,
     write_message, ControlMessage, InviteResponse, PairedDevice, CONTROL_ALPN,
     PAIRED_INVITE_WAIT_SECS, PAIRED_RECONNECT_MAX_SECS, PAIRED_RECONNECT_MIN_SECS,
-    PRESENCE_CONNECT_TIMEOUT_SECS,
+    PRESENCE_CONNECT_TIMEOUT_SECS, RECENT_PAIRING_GRACE_MS, SETTLING_PAIRING_RETRY_SECS,
 };
 use tokio::sync::{Mutex, Notify, OnceCell, RwLock};
 use tokio::task::JoinHandle;
@@ -346,11 +346,25 @@ impl PairedConnectionManager {
                     // already dropped us (Everyone) accepts the dial then rejects
                     // Recognition — treat that close as remote unpair so we stop
                     // flapping online every reconnect tick.
+                    //
+                    // Unless the pairing is still settling: each side commits
+                    // its half independently, so a refusal this soon after we
+                    // stored ours says the peer hasn't stored theirs *yet*,
+                    // not that they dropped us. Retrying costs a dial; getting
+                    // it wrong costs the pairing.
                     let close_err = conn.closed().await;
-                    if close_implies_remote_unpair(&close_err)
-                        && self.apply_remote_unpair(endpoint_id).await
-                    {
-                        break;
+                    if close_implies_remote_unpair(&close_err) {
+                        if self.pairing_is_settling(endpoint_id) {
+                            tracing::debug!(
+                                target: "dashbeam::_events::pairing::remote_unpair",
+                                remote = %crate::node::short_remote(endpoint_id),
+                                applied = false,
+                                cause = "pairing still settling",
+                            );
+                            backoff_secs = SETTLING_PAIRING_RETRY_SECS;
+                        } else if self.apply_remote_unpair(endpoint_id).await {
+                            break;
+                        }
                     }
                 }
                 Err(_err) => {
@@ -509,6 +523,19 @@ impl PairedConnectionManager {
             }
         }
         false
+    }
+
+    /// True while our record for `endpoint_id` is new enough that a refused
+    /// `Recognition` is better explained by the peer not having committed its
+    /// half of the pairing yet than by a real unpair. A genuine remote unpair
+    /// still lands immediately through `Forget`, which is signed and explicit;
+    /// this only defers the *inference* drawn from a close reason.
+    fn pairing_is_settling(&self, endpoint_id: &str) -> bool {
+        let Ok(Some(existing)) = self.paired_store.get(endpoint_id) else {
+            return false;
+        };
+        protocol::identity::unix_now_ms().saturating_sub(existing.paired_at)
+            < RECENT_PAIRING_GRACE_MS
     }
 
     /// Marks the peer unpaired-remotely, drops allowlist + presence, emits

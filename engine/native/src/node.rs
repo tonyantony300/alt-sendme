@@ -457,10 +457,15 @@ impl ControlProtocol {
     /// control connection occupies. Only a message that implies an ongoing
     /// relationship (anything but `WhoAreYou`) marks this connection as the
     /// one to register — and only that connection gets unregistered again.
+    ///
+    /// `peer_is_paired` is only ever upgraded, never downgraded: it starts as
+    /// the caller's accept-time reading and is re-checked before refusing a
+    /// message, because a pairing can commit while this session is already
+    /// open (see the re-check below).
     async fn handle_control_session(
         &self,
         conn: Connection,
-        peer_is_paired: bool,
+        mut peer_is_paired: bool,
     ) -> anyhow::Result<()> {
         let remote = conn.remote_id();
         let endpoint_id = remote.to_string();
@@ -492,14 +497,26 @@ impl ControlProtocol {
             // The handshake gate decided whether to accept the connection at
             // all; this decides what may travel across it. An unpaired peer
             // sending a relationship message is buggy or hostile either way.
+            //
+            // Re-read the allowlist before refusing, though: the accept-time
+            // reading goes stale the moment a pairing commits, and nearby
+            // pairing commits on a *sibling* connection — the peer opens one
+            // for the `InviteResponse` that commits it and another for the
+            // `Recognition` that follows, microseconds apart, so this session
+            // can be accepted before the commit and used after it. Refusing
+            // then costs the whole pairing: the peer reads the close as us
+            // having unpaired them.
             if !peer_is_paired && !unpaired_message_allowed(&msg) {
-                tracing::debug!(
-                    target: "dashbeam::_events::control::rejected_unpaired",
-                    remote = %remote.fmt_short(),
-                    kind = msg.kind(),
-                );
-                conn.close(403u32.into(), b"not permitted for unpaired peer");
-                break;
+                peer_is_paired = self.is_allowed(&remote).await;
+                if !peer_is_paired {
+                    tracing::debug!(
+                        target: "dashbeam::_events::control::rejected_unpaired",
+                        remote = %remote.fmt_short(),
+                        kind = msg.kind(),
+                    );
+                    conn.close(403u32.into(), b"not permitted for unpaired peer");
+                    break;
+                }
             }
 
             // Every message an unpaired peer sends costs a token; an empty
@@ -1891,6 +1908,88 @@ impl NodeService {
             false,
         );
         Ok(())
+    }
+
+    /// Test-only: commit a pairing the way `commit_nearby_pairing` and
+    /// `accept_nearby_invite` do — durable record, allowlist entry, reconnect
+    /// refresh — without running a handshake first. Lets a test place the
+    /// commit at an exact point relative to a control connection, which is
+    /// what the accept-before-commit race turns on.
+    #[doc(hidden)]
+    pub async fn remember_paired_device_for_tests(&self, endpoint_id: &str) -> anyhow::Result<()> {
+        let now = protocol::identity::unix_now_ms();
+        self.paired_store.remember(PairedDevice {
+            endpoint_id: endpoint_id.to_string(),
+            display_name: short_remote(endpoint_id),
+            device_type: "laptop".to_string(),
+            os: "test".to_string(),
+            paired_at: now,
+            last_seen_at: now,
+            relay_url: None,
+            pairing_status: PairingStatus::default(),
+        })?;
+        self.access
+            .write()
+            .await
+            .allowed
+            .insert(EndpointId::from_str(endpoint_id)?);
+        self.paired_connections.refresh().await;
+        Ok(())
+    }
+
+    /// Test-only: dial a peer's control ALPN, complete an identity probe on
+    /// it, and hand the still-open connection back so a test controls exactly
+    /// when the *next* message lands. The probe matters: the reply proves the
+    /// peer's session loop is already running, and therefore that it has
+    /// already decided whether we count as paired. Pairs with
+    /// [`Self::send_recognition_for_tests`] to reproduce a session the peer
+    /// accepted before it committed a pairing.
+    #[doc(hidden)]
+    pub async fn open_control_connection_for_tests(
+        &self,
+        endpoint_id: &str,
+    ) -> anyhow::Result<Connection> {
+        let remote = EndpointId::from_str(endpoint_id)?;
+        let endpoint = {
+            let runtime = self.runtime.lock().await;
+            runtime.endpoint.clone()
+        };
+        let addr = build_control_connect_addr(&endpoint, remote, None);
+        let conn = tokio::time::timeout(
+            Duration::from_secs(PRESENCE_CONNECT_TIMEOUT_SECS),
+            endpoint.connect(addr, CONTROL_ALPN),
+        )
+        .await
+        .context("control connect timeout")?
+        .context("control connect failed")?;
+
+        let (mut send, mut recv) = conn.open_bi().await.context("open bi for probe")?;
+        write_message(&mut send, &ControlMessage::WhoAreYou).await?;
+        match tokio::time::timeout(
+            Duration::from_secs(PRESENCE_CONNECT_TIMEOUT_SECS),
+            read_message(&mut recv),
+        )
+        .await
+        .context("identity reply timed out")??
+        {
+            ControlMessage::Identity { .. } => Ok(conn),
+            other => anyhow::bail!("unexpected reply to WhoAreYou: {other:?}"),
+        }
+    }
+
+    /// Test-only: send a `Recognition` over an existing control connection —
+    /// the second half of `PairedConnectionManager::connect_and_recognize`,
+    /// split out so a test can delay it past a pairing commit.
+    #[doc(hidden)]
+    pub async fn send_recognition_for_tests(&self, conn: &Connection) -> anyhow::Result<()> {
+        let keying = export_connection_keying_material(conn).context("export keying")?;
+        let (mut send, _recv) = conn.open_bi().await.context("open bi for recognition")?;
+        let recognition = ControlMessage::Recognition {
+            signature: sign_challenge(&self.identity.secret_key, &keying),
+        };
+        write_message(&mut send, &recognition)
+            .await
+            .context("write recognition")
     }
 
     /// Dial a peer's control ALPN and ask who it is. Used for devices found on
