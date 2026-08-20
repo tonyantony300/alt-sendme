@@ -1,6 +1,6 @@
 [package]
 name = "dashbeam"
-version = "0.6.10"
+version = "0.7.0"
 description = "P2P file sharing with NAT hole punching"
 authors = ["Tony Antony"]
 license = "AGPL-3.0-only"
