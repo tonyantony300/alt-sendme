@@ -230,6 +230,13 @@ export function DevicesSettings() {
 	const [renameThisOpen, setRenameThisOpen] = useState(false)
 	const [renamePeerId, setRenamePeerId] = useState<string | null>(null)
 	const [searchQuery, setSearchQuery] = useState('')
+	// Removing a device waits on delivering `Forget` to the peer, which can
+	// take seconds when the peer is listed online but has actually gone away.
+	// Keyed by endpoint id rather than a single flag so removing one device
+	// doesn't freeze the buttons on all the others.
+	const [forgettingIds, setForgettingIds] = useState<ReadonlySet<string>>(
+		new Set()
+	)
 	const [copied, setCopied] = useState(false)
 
 	const sortedDevices = useMemo(
@@ -491,6 +498,9 @@ export function DevicesSettings() {
 											{filteredDevices.map((device) => {
 												const Icon = deviceTypeIcon(device.device_type)
 												const isActive = isPairedDeviceActive(device)
+												const isForgetting = forgettingIds.has(
+													device.endpoint_id
+												)
 												return (
 													<li
 														key={device.endpoint_id}
@@ -541,10 +551,20 @@ export function DevicesSettings() {
 																type="button"
 																variant="ghost"
 																size="icon-sm"
-																aria-label={t(
-																	'common:settings.devices.removeDevice'
-																)}
+																disabled={isForgetting}
+																aria-busy={isForgetting}
+																aria-label={
+																	isForgetting
+																		? t(
+																				'common:settings.devices.removingDevice'
+																			)
+																		: t('common:settings.devices.removeDevice')
+																}
 																onClick={async () => {
+																	if (isForgetting) return
+																	setForgettingIds((prev) =>
+																		new Set(prev).add(device.endpoint_id)
+																	)
 																	try {
 																		await forget(device.endpoint_id)
 																		toastManager.add({
@@ -561,10 +581,23 @@ export function DevicesSettings() {
 																			),
 																			type: 'error',
 																		})
+																	} finally {
+																		// The row unmounts on success, but this
+																		// state lives on the list, so the update
+																		// always lands somewhere mounted.
+																		setForgettingIds((prev) => {
+																			const next = new Set(prev)
+																			next.delete(device.endpoint_id)
+																			return next
+																		})
 																	}
 																}}
 															>
-																<Trash2 className="w-4 h-4" />
+																{isForgetting ? (
+																	<Loader2 className="w-4 h-4 animate-spin" />
+																) : (
+																	<Trash2 className="w-4 h-4" />
+																)}
 															</Button>
 														</div>
 													</li>

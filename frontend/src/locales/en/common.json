@@ -358,6 +358,7 @@
 			"deviceRemoved": "Device removed",
 			"removeFailed": "Could not remove device",
 			"removeDevice": "Remove device",
+			"removingDevice": "Removing device…",
 			"statusOnline": "Online",
 			"statusOffline": "Offline",
 			"statusConnecting": "Connecting...",
