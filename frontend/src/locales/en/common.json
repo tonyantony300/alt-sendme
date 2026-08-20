@@ -530,5 +530,61 @@
 			"unavailable": "Couldn't compute a verification code for this device. {{name}} won't be able to confirm it's you.",
 			"close": "Close"
 		}
+	},
+	"history": {
+		"title": "History",
+		"clearAll": "Clear all",
+		"clearAllConfirmTitle": "Clear all history?",
+		"clearAllConfirmBody": "This removes every transfer from this list and frees any leftover partial downloads. It does not delete files you have already received.",
+		"clearAllDone": "History cleared",
+		"clearAllFailed": "Could not clear history",
+		"removeFailed": "Could not remove that transfer",
+		"filters": {
+			"all": "All",
+			"completed": "Completed",
+			"failed": "Failed",
+			"cancelled": "Cancelled",
+			"interrupted": "Interrupted",
+			"count": "{{count}} shown"
+		},
+		"status": {
+			"inProgress": "In progress",
+			"completed": "Completed",
+			"failed": "Failed",
+			"cancelled": "Cancelled",
+			"interrupted": "Interrupted"
+		},
+		"empty": {
+			"title": "Nothing here yet",
+			"filtered": "No transfers match this filter.",
+			"description": "Files you send and receive will be listed here."
+		},
+		"row": {
+			"items": "{{count}} items",
+			"devices": "{{count}} devices",
+			"directionSent": "Sent",
+			"directionReceived": "Received",
+			"unknownItem": "Unknown item",
+			"unknownDevice": "Unknown device",
+			"duration": "Time taken",
+			"speed": "Speed",
+			"writeTime": "Time writing to disk",
+			"savedTo": "Saved to",
+			"error": "What went wrong",
+			"toggleDetails": "Show details",
+			"conflicts": "{{count}} files were renamed to avoid overwriting existing ones.",
+			"remove": "Remove from history"
+		},
+		"temp": {
+			"cleared": "Space freed",
+			"clearFailed": "Could not free that space",
+			"clearSized": "Free up {{size}}"
+		},
+		"settings": {
+			"title": "Transfer history",
+			"description": "Keep a record of what you send and receive on this device.",
+			"toggle": "Record transfers",
+			"toggleHint": "Turning this off stops new entries. Anything already recorded stays until you clear it."
+		}
 	}
 }

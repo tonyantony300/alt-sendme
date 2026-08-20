@@ -1,5 +1,6 @@
 pub mod device_identity;
 pub mod export;
+pub mod history;
 pub mod identity_store;
 pub mod import;
 pub mod lan_discovery;
@@ -23,6 +24,10 @@ pub use protocol::{
 };
 pub use device_identity::{
     load_or_create_identity, DeviceIdentity, DeviceInfo, PairedDeviceInfo, PairedDeviceStore,
+};
+pub use history::{
+    is_reclaimable_partial, partial_store_hash, reclaim_partial, TransferDirection,
+    TransferHistoryStore, TransferPathType, TransferPeer, TransferRecord, TransferStatus,
 };
 pub use nearby::{NearbyDevice, NearbyRegistry, ObserveOutcome};
 pub use node::NodeService;

@@ -44,6 +44,13 @@ export type AppSettingsState = {
 	 * platform that refused must not be re-asked on every startup.
 	 */
 	autostartInitialized: boolean
+	/**
+	 * Whether finished transfers are written to the history page.
+	 *
+	 * Read Rust-side at recorder construction, so turning it off stops new rows
+	 * immediately. Existing rows are left alone — disabling is not clearing.
+	 */
+	enableTransferHistory: boolean
 }
 
 export type AppSettingsActions = {
@@ -66,6 +73,7 @@ export type AppSettingsActions = {
 	setShowBroadcastToggle: (value: boolean) => void
 	setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') => void
 	setAutostartInitialized: (value: boolean) => void
+	setEnableTransferHistory: (value: boolean) => void
 }
 
 export type AppSettings = AppSettingsState & AppSettingsActions
@@ -150,6 +158,8 @@ export const useAppSettingStore = create<AppSettings>()(
 				set({ discoverability: value }),
 			setAutostartInitialized: (value: boolean) =>
 				set({ autostartInitialized: value }),
+			setEnableTransferHistory: (value: boolean) =>
+				set({ enableTransferHistory: value }),
 		}),
 		{
 			name: AppSettingsKey,

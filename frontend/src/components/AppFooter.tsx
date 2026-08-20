@@ -3,6 +3,7 @@ import {
 	CoffeeIcon,
 	GithubIcon,
 	GlobeIcon,
+	History as HistoryIcon,
 	MonitorSmartphone,
 	SettingsIcon,
 } from 'lucide-react'
@@ -16,7 +17,7 @@ import {
 import { Separator } from './ui/separator'
 import { Link } from 'react-router-dom'
 import { handleExternalLinkClick } from '@/lib/openExternalUrl'
-import { IS_PAIRING_CAPABLE } from '@/lib/platform'
+import { IS_PAIRING_CAPABLE, IS_TAURI } from '@/lib/platform'
 import { cn } from '@/lib/utils'
 import { useSenderStore } from '@/store/sender-store'
 import { RelayStatusButton } from './RelayStatusButton'
@@ -82,6 +83,34 @@ export function AppFooter() {
 				))}
 			</div>
 			<div className="flex flex-1 items-center justify-end gap-2">
+				{/* History exists wherever the Tauri commands do. Deliberately not
+				    gated on IS_PAIRING_CAPABLE — that resolves to the same set
+				    today but means something else. */}
+				{IS_TAURI ? (
+					isSharing ? (
+						<span
+							aria-disabled
+							className={cn(
+								buttonVariants({ variant: 'outline', size: 'sm' }),
+								'pointer-events-none opacity-64 text-xs sm:text-sm'
+							)}
+						>
+							<HistoryIcon />
+							{t('common:history.title')}
+						</span>
+					) : (
+						<Link
+							to="/history"
+							className={cn(
+								buttonVariants({ variant: 'outline', size: 'sm' }),
+								'text-xs sm:text-sm'
+							)}
+						>
+							<HistoryIcon />
+							{t('common:history.title')}
+						</Link>
+					)
+				) : null}
 				{IS_PAIRING_CAPABLE ? (
 					isSharing ? (
 						<span

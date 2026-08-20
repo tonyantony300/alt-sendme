@@ -8,6 +8,7 @@ mod autostart;
 mod autostart_portal;
 mod commands;
 mod features;
+mod history;
 mod logging;
 mod platform;
 #[cfg(target_os = "android")]
@@ -45,6 +46,34 @@ fn cleanup_orphaned_directories() {
             }
         }
     }
+}
+
+/// Brings up the history store and reconciles rows a crash left open.
+///
+/// Runs before any command can open a row, so an `InProgress` row seen here is
+/// necessarily from a previous process.
+///
+/// Partial-receive stores are deliberately *not* managed here:
+/// `cleanup_orphaned_directories` already clears them at every launch, which
+/// bounds temp usage and scopes resume to a single session. History reports
+/// whatever partial still exists — `get_transfer_temp_data` stats it live — so
+/// a row simply offers nothing to free once that sweep has run.
+fn init_transfer_history(app: &tauri::App) {
+    let data_dir = match app.path().app_data_dir() {
+        Ok(dir) => dir,
+        Err(e) => {
+            tracing::warn!("no app data dir; transfer history disabled: {e}");
+            return;
+        }
+    };
+
+    let history = Arc::new(engine::TransferHistoryStore::new(&data_dir));
+    match history.mark_interrupted() {
+        Ok(0) => {}
+        Ok(n) => tracing::info!("marked {n} unfinished transfer(s) as interrupted"),
+        Err(e) => tracing::warn!("could not reconcile unfinished transfers: {e}"),
+    }
+    app.manage(history);
 }
 
 /// Entry point for both desktop (from main.rs) and mobile (from native app via mobile_entry_point).
@@ -108,6 +137,11 @@ pub fn run() {
             stop_sharing,
             receive_file,
             cancel_receive,
+            list_transfer_history,
+            delete_transfer_record,
+            clear_transfer_history,
+            get_transfer_temp_data,
+            clear_transfer_temp_data,
             get_sharing_status,
             check_path_type,
             get_paths_mime_types,
@@ -391,6 +425,7 @@ fn init_logging(app: &tauri::AppHandle) {
 #[allow(unused_variables)]
 fn setup_common(app: &tauri::App) {
     cleanup_orphaned_directories();
+    init_transfer_history(app);
     tracing::debug!("File drop support enabled via dragDropEnabled config");
 
     #[cfg(target_os = "linux")]

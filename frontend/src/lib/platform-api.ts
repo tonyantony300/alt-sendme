@@ -239,6 +239,17 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return null as T
 		case 'list_paired_devices':
 			return [] as T
+		// Transfer history is desktop/Android only: the browser receive path
+		// writes through a directory handle or a zip download, so "where it
+		// saved" has no stable meaning to record.
+		case 'list_transfer_history':
+			return [] as T
+		case 'get_transfer_temp_data':
+			return { exists: false, sizeBytes: 0 } as T
+		case 'delete_transfer_record':
+		case 'clear_transfer_history':
+		case 'clear_transfer_temp_data':
+			return undefined as T
 		case 'start_pairing_host':
 		case 'join_pairing':
 		case 'forget_paired_device':

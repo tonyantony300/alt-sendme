@@ -28,6 +28,7 @@ pub use nearby::{
     allows_unpaired_control, should_answer_identity, should_publish_mdns,
     should_run_background_presence, unpaired_message_allowed, Discoverability,
 };
+pub use progress::duration_ms;
 pub use receive::{download_to_store, fetch_metadata, DownloadToStoreResult};
 pub use relay::{
     build_relay_mode, get_relay_status, relay_fallback_policy, resolve_relay_mode_with_fallback,

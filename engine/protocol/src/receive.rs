@@ -1,7 +1,7 @@
 use crate::send::METADATA_ALPN;
 use crate::progress::{
-    split_child_sizes, EmitThrottle, SpeedMeter, PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS,
-    SPEED_WINDOW_SECS,
+    duration_ms, split_child_sizes, EmitThrottle, SpeedMeter, PROGRESS_MIN_BYTES,
+    PROGRESS_MIN_SECS, SPEED_WINDOW_SECS,
 };
 use crate::time_compat::{sleep, timeout, Duration, Instant};
 use crate::types::{get_or_create_secret, AppHandle, DiscoveryModeOption, FileMetadata, ReceiveOptions};
@@ -205,7 +205,7 @@ pub async fn download_to_store(
                     stats = value;
 
                     let elapsed = transfer_start_time.elapsed().as_secs_f64();
-                    download_duration_ms = (elapsed * 1000.0) as u64;
+                    download_duration_ms = duration_ms(elapsed);
                     speed.record(elapsed, payload_size);
                     emit_progress_event(
                         app_handle,

@@ -130,6 +130,7 @@ pub async fn start_share_items(
             blobs_data_dir: AutoCleanupDir::new(outcome.cleanup_dir.expect("native cleanup dir")),
             _progress_handle: outcome.progress_handle,
             _store: outcome.store,
+            completed_peers: outcome.completed_peers,
         })
     };
 

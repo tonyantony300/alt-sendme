@@ -24,6 +24,7 @@ export const defaultAppSettings: AppSettingsState = {
 	showBroadcastToggle: false,
 	discoverability: 'everyone',
 	autostartInitialized: false,
+	enableTransferHistory: true,
 }
 
 const webSettingStorage: StateStorage = {

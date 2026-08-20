@@ -1,3 +1,4 @@
+use crate::history::HistoryRecordingEmitter;
 use engine::{NodeService, SendResult};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -13,6 +14,9 @@ pub struct AppState {
     pub is_transporting: bool,
     pub launch_intent: Option<String>,
     pub current_receive_cancel: Option<tokio::sync::oneshot::Sender<()>>,
+    /// Hash of the receive in flight, so history cannot delete the partial
+    /// store out from under an active download.
+    pub current_receive_hash: Option<String>,
     pub last_cancelled_recv_hash: Option<String>,
 }
 
@@ -26,6 +30,7 @@ impl Default for AppState {
             is_transporting: false,
             launch_intent: None,
             current_receive_cancel: None,
+            current_receive_hash: None,
             last_cancelled_recv_hash: None,
         }
     }
@@ -37,14 +42,23 @@ pub struct ShareHandle {
     pub ticket: String,
     pub _path: PathBuf,
     pub send_result: SendResult,
+    /// Present only while history recording is enabled. Held here so
+    /// `stop_sharing` can close the row a broadcast share left open.
+    pub recorder: Option<Arc<HistoryRecordingEmitter>>,
 }
 
 impl ShareHandle {
-    pub fn new(ticket: String, path: PathBuf, send_result: SendResult) -> Self {
+    pub fn new(
+        ticket: String,
+        path: PathBuf,
+        send_result: SendResult,
+        recorder: Option<Arc<HistoryRecordingEmitter>>,
+    ) -> Self {
         Self {
             ticket,
             _path: path,
             send_result,
+            recorder,
         }
     }
 

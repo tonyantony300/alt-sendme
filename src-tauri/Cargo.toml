@@ -46,6 +46,9 @@ reqwest = "0.13.2"
 tauri-plugin-deep-link = "2.4.6"
 tauri-plugin-autostart = "2.5.1"
 
+[dev-dependencies]
+tempfile = "3.8"
+
 [features]
 default = ["custom-protocol", "default-tls", "dialog-gtk3"]
 default-tls = ["reqwest/default-tls"]

@@ -219,3 +219,59 @@ async fn e2e_completion_events_carry_a_wire_duration() {
 
     drop(share);
 }
+
+#[tokio::test]
+async fn e2e_a_small_fast_transfer_still_reports_a_duration() {
+    // A payload written in a single go used to report a 0ms transfer, which
+    // the success screen renders as "NA" for both duration and average speed.
+    let fixture = TestFixture::new();
+    let source = fixture.create_file("tiny.txt", b"small enough to go out in one write");
+    let recv_dir = fixture.output_dir();
+
+    let sender_emitter = MockEventEmitter::new();
+    let receiver_emitter = MockEventEmitter::new();
+
+    let share = start_share(
+        source,
+        SendOptions::default(),
+        Some(sender_emitter.clone()),
+        None,
+    )
+    .await
+    .expect("start_share should succeed");
+
+    let (_cancel_tx, cancel_rx) = common::no_cancel();
+    download(
+        share.ticket.clone(),
+        ReceiveOptions {
+            output_dir: Some(recv_dir),
+            ..Default::default()
+        },
+        Some(receiver_emitter.clone()),
+        cancel_rx,
+    )
+    .await
+    .expect("download should succeed");
+
+    wait_for_event(&sender_emitter, "transfer-completed").await;
+
+    for (emitter, event_name) in [
+        (&sender_emitter, "transfer-completed"),
+        (&receiver_emitter, "receive-completed"),
+    ] {
+        let payload = emitter
+            .events_with_name(event_name)
+            .into_iter()
+            .find_map(|event| event.payload)
+            .unwrap_or_else(|| panic!("{event_name} should carry a payload"));
+        let json: serde_json::Value =
+            serde_json::from_str(&payload).expect("completion payload should be JSON");
+        let duration = json["durationMs"].as_u64().expect("durationMs");
+        assert!(
+            duration > 0,
+            "{event_name} reported {duration}ms, which the UI shows as NA"
+        );
+    }
+
+    drop(share);
+}

@@ -52,6 +52,15 @@ pub struct SendResult {
     pub _progress_handle: AbortOnDropHandle<anyhow::Result<()>>,
     pub _store: iroh_blobs::store::fs::FsStore,
     pub blobs_data_dir: AutoCleanupDir,
+    pub completed_peers: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+}
+
+impl SendResult {
+    /// Peers that pulled the entire payload during this share session.
+    pub fn completed_peers(&self) -> usize {
+        self.completed_peers
+            .load(std::sync::atomic::Ordering::SeqCst)
+    }
 }
 
 #[derive(Debug)]

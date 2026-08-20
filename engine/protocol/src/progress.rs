@@ -227,6 +227,54 @@ impl ShareProgress {
     }
 }
 
+/// Convert an elapsed span to whole milliseconds.
+///
+/// Anything that actually moved reports at least 1ms: a transfer small enough
+/// to finish inside a millisecond still happened, and 0 reads as "unknown".
+pub fn duration_ms(elapsed_secs: f64) -> u64 {
+    if elapsed_secs <= 0.0 {
+        return 0;
+    }
+    ((elapsed_secs * 1000.0).round() as u64).max(1)
+}
+
+/// Wall time a share session spent serving requests.
+///
+/// Measured from the first request to the last one finishing — not from the
+/// first payload byte, which for a small file lands in the same microsecond as
+/// the last one.
+#[derive(Debug, Default)]
+pub struct TransferClock {
+    started_secs: Option<f64>,
+    last_secs: f64,
+}
+
+impl TransferClock {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn mark_start(&mut self, at_secs: f64) {
+        if self.started_secs.is_none() {
+            self.started_secs = Some(at_secs);
+            self.last_secs = at_secs;
+        }
+    }
+
+    pub fn mark_activity(&mut self, at_secs: f64) {
+        if self.started_secs.is_some() {
+            self.last_secs = self.last_secs.max(at_secs);
+        }
+    }
+
+    pub fn duration_ms(&self) -> u64 {
+        match self.started_secs {
+            Some(started) => duration_ms((self.last_secs - started).max(0.0)).max(1),
+            None => 0,
+        }
+    }
+}
+
 /// Rate-limits progress emission so a transfer does not flood the UI bridge.
 pub struct EmitThrottle {
     min_bytes: u64,
@@ -534,6 +582,57 @@ mod tests {
             snapshot.bytes <= snapshot.total,
             "{snapshot:?} must not exceed 100%"
         );
+    }
+
+    #[test]
+    fn duration_ms_rounds_to_whole_milliseconds() {
+        assert_eq!(duration_ms(1.5), 1500);
+        assert_eq!(duration_ms(0.0), 0);
+    }
+
+    #[test]
+    fn duration_ms_never_reports_zero_for_a_span_that_elapsed() {
+        assert_eq!(
+            duration_ms(0.0004),
+            1,
+            "a sub-millisecond transfer still took time; 0 reads as unknown"
+        );
+    }
+
+    #[test]
+    fn transfer_clock_reports_nothing_before_a_request_arrives() {
+        assert_eq!(TransferClock::new().duration_ms(), 0);
+    }
+
+    #[test]
+    fn transfer_clock_measures_from_the_request_to_the_last_activity() {
+        let mut clock = TransferClock::new();
+        clock.mark_start(1.0);
+        clock.mark_activity(1.25);
+        clock.mark_activity(3.0);
+
+        assert_eq!(clock.duration_ms(), 2000);
+    }
+
+    #[test]
+    fn transfer_clock_reports_a_small_file_that_finished_immediately() {
+        // Regression: a payload written in one go left first == last byte, so
+        // the sender reported a 0ms transfer and the UI showed "NA".
+        let mut clock = TransferClock::new();
+        clock.mark_start(1.0);
+        clock.mark_activity(1.0);
+
+        assert_eq!(clock.duration_ms(), 1);
+    }
+
+    #[test]
+    fn transfer_clock_keeps_the_first_start_across_several_peers() {
+        let mut clock = TransferClock::new();
+        clock.mark_start(1.0);
+        clock.mark_start(2.0);
+        clock.mark_activity(5.0);
+
+        assert_eq!(clock.duration_ms(), 4000);
     }
 
     #[test]

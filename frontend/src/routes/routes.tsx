@@ -3,6 +3,7 @@ import { RootLayout } from '@/components/layouts/RootLayout'
 import { getRouterBasename } from '@/lib/router-basename'
 import { SettingLayout } from '../components/layouts/SettingLayout'
 import { IndexPage } from '.'
+import { HistoryPage } from './history'
 import { NotFoundPage } from './notfound'
 import { SettingsPage } from './settings'
 import { SettingDevicesPage } from './settings.devices'
@@ -27,6 +28,10 @@ export const routers = createBrowserRouter(
 				{
 					path: '/receive',
 					Component: IndexPage,
+				},
+				{
+					path: '/history',
+					Component: HistoryPage,
 				},
 				{
 					path: '/settings',

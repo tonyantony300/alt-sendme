@@ -1,4 +1,8 @@
 use crate::features::thumbnail::generate_thumbnail;
+use crate::history::{
+    history_enabled, partial_store_path_for, CompletionFacts, HistoryRecordingEmitter,
+    TransferContext,
+};
 use crate::state::{AppStateMutex, ShareHandle};
 use engine::{
     build_discovery_mode, download, fetch_metadata, get_relay_status as engine_get_relay_status,
@@ -6,7 +10,8 @@ use engine::{
     verify_discovery as engine_verify_discovery, verify_relays as engine_verify_relays,
     AddrInfoOptions, AppHandle, DeviceInfo, Discoverability, EventEmitter, FileMetadata,
     FilePreviewItem, NearbyDevice, NodeService, PairedDevice, PairedDeviceInfo, ReceiveOptions,
-    SendOptions,
+    SendOptions, TransferDirection, TransferHistoryStore, TransferPathType, TransferPeer,
+    TransferRecord, TransferStatus,
 };
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -38,6 +43,108 @@ pub async fn get_relay_status(
 // Wrapper for Tauri AppHandle that implements EventEmitter
 struct TauriEventEmitter {
     app_handle: tauri::AppHandle,
+}
+
+/// Builds the emitter the engine reports through, wrapping it in a history
+/// recorder unless the user turned recording off.
+///
+/// Returns the recorder separately so cancel paths, which see no engine event,
+/// can still close the row.
+fn build_emitter(
+    app_handle: &tauri::AppHandle,
+    history: &State<'_, Arc<TransferHistoryStore>>,
+    direction: TransferDirection,
+    context: TransferContext,
+) -> (AppHandle, Option<Arc<HistoryRecordingEmitter>>) {
+    let base: Arc<dyn engine::EventEmitter> = Arc::new(TauriEventEmitter {
+        app_handle: app_handle.clone(),
+    });
+
+    let Ok(data_dir) = app_handle.path().app_data_dir() else {
+        return (Some(base), None);
+    };
+    if !history_enabled(&data_dir) {
+        return (Some(base), None);
+    }
+
+    let recorder = Arc::new(HistoryRecordingEmitter::new(
+        base,
+        history.inner().clone(),
+        direction,
+        context,
+    ));
+    (Some(recorder.clone()), Some(recorder))
+}
+
+/// The node service, if pairing came up. Its absence is not fatal — history
+/// just records an endpoint id with no name.
+#[cfg(any(desktop, target_os = "android"))]
+async fn app_state_node(state: &State<'_, AppStateMutex>) -> Option<Arc<NodeService>> {
+    state.lock().await.node.clone()
+}
+
+#[cfg(not(any(desktop, target_os = "android")))]
+async fn app_state_node(_state: &State<'_, AppStateMutex>) -> Option<Arc<NodeService>> {
+    None
+}
+
+/// Names an endpoint id from the paired-device list.
+///
+/// A snapshot is stored alongside the id so a device that is later forgotten
+/// keeps its name in past rows; the UI still prefers the current name when the
+/// device is still known.
+fn name_peer(endpoint_id: String, node: &Option<Arc<NodeService>>) -> TransferPeer {
+    let known = node
+        .as_ref()
+        .and_then(|node| node.list_paired().ok())
+        .and_then(|devices| {
+            devices
+                .into_iter()
+                .find(|d| d.endpoint_id.eq_ignore_ascii_case(&endpoint_id))
+        });
+
+    match known {
+        Some(device) => TransferPeer {
+            endpoint_id,
+            display_name: Some(device.display_name),
+            device_type: Some(device.device_type),
+        },
+        None => TransferPeer {
+            endpoint_id,
+            display_name: None,
+            device_type: None,
+        },
+    }
+}
+
+/// The sender behind a ticket. Every ticket carries its origin endpoint id, so
+/// this works for a pasted ticket as well as a paired invite.
+fn sender_peer_from_ticket(ticket: &str, node: &Option<Arc<NodeService>>) -> Option<TransferPeer> {
+    use iroh_blobs::ticket::BlobTicket;
+    use std::str::FromStr;
+
+    let ticket = BlobTicket::from_str(ticket).ok()?;
+    let endpoint_id = ticket.addr().id.to_string();
+    Some(name_peer(endpoint_id, node))
+}
+
+/// Attributes the active share to a device, when the UI targeted one.
+fn note_share_peer(app_state: &crate::state::AppState, peer: TransferPeer) {
+    if let Some(recorder) = app_state
+        .current_share
+        .as_ref()
+        .and_then(|share| share.recorder.as_ref())
+    {
+        recorder.note_invited_peer(peer);
+    }
+}
+
+fn path_type_from_mime(mime: Option<&str>) -> Option<TransferPathType> {
+    match mime {
+        Some("inode/directory") => Some(TransferPathType::Directory),
+        Some(_) => Some(TransferPathType::File),
+        None => None,
+    }
 }
 
 impl EventEmitter for TauriEventEmitter {
@@ -98,9 +205,10 @@ pub async fn start_sharing(
     relay: Option<RelayConfigArg>,
     discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
+    history: State<'_, Arc<TransferHistoryStore>>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
-    send_items(vec![path], relay, discovery, state, app_handle).await
+    send_items(vec![path], relay, discovery, state, history, app_handle).await
 }
 
 /// New interface to start_sharing multiple items at once
@@ -110,6 +218,7 @@ pub async fn send_items(
     relay: Option<RelayConfigArg>,
     discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
+    history: State<'_, Arc<TransferHistoryStore>>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     // Validate input before doing any work.
@@ -149,11 +258,20 @@ pub async fn send_items(
             magic_ipv6_addr: None,
         };
 
-        // Wrap the app_handle in our EventEmitter implementation.
-        let emitter = Arc::new(TauriEventEmitter {
-            app_handle: app_handle.clone(),
-        });
-        let boxed_handle: AppHandle = Some(emitter);
+        // Everything the history row needs is known before the first byte
+        // moves; the row itself only opens once a peer actually starts pulling.
+        let (boxed_handle, recorder) = build_emitter(
+            &app_handle,
+            &history,
+            TransferDirection::Send,
+            TransferContext {
+                root_name: metadata.file_name.clone(),
+                payload_bytes: metadata.size,
+                item_count: metadata.item_count,
+                path_type: path_type_from_mime(metadata.mime_type.as_deref()),
+                ..Default::default()
+            },
+        );
 
         // Ephemeral share — relay settings apply per session (all platforms including Android).
         let result = start_share_items(path_bufs.clone(), options, &boxed_handle, Some(metadata))
@@ -173,12 +291,16 @@ pub async fn send_items(
             // actually started with the resolved relay mode.
             let _ = app_handle.emit("relay-fell-back", payload);
         }
-        Ok((result.ticket.clone(), path_bufs, result))
+        if let Some(recorder) = recorder.as_ref() {
+            let hash = result.hash.clone();
+            recorder.update_context(|context| context.blob_hash = Some(hash));
+        }
+        Ok((result.ticket.clone(), path_bufs, result, recorder))
     }
     .await;
 
     match start_result {
-        Ok((ticket, paths, result)) => {
+        Ok((ticket, paths, result, recorder)) => {
             let mut app_state = state.lock().await;
             app_state.is_share_starting = false;
 
@@ -188,7 +310,8 @@ pub async fn send_items(
 
             // Keep full send result alive to preserve router/temp_tag lifecycle.
             let primary = paths.first().cloned().unwrap_or_else(|| PathBuf::from("."));
-            app_state.current_share = Some(ShareHandle::new(ticket.clone(), primary, result));
+            app_state.current_share =
+                Some(ShareHandle::new(ticket.clone(), primary, result, recorder));
             Ok(ticket)
         }
         Err(e) => {
@@ -306,6 +429,11 @@ pub async fn stop_sharing(state: State<'_, AppStateMutex>) -> Result<(), String>
     let mut app_state = state.lock().await;
 
     if let Some(mut share) = app_state.current_share.take() {
+        if let Some(recorder) = share.recorder.as_ref() {
+            // No-op once a terminal event already closed the row; this only
+            // catches a share stopped before or between peer transfers.
+            recorder.finalize(TransferStatus::Cancelled, CompletionFacts::default(), None);
+        }
         if let Err(e) = share.stop().await {
             return Err(e);
         }
@@ -331,6 +459,7 @@ pub async fn receive_file(
     relay: Option<RelayConfigArg>,
     discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
+    history: State<'_, Arc<TransferHistoryStore>>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     use iroh_blobs::ticket::BlobTicket;
@@ -372,10 +501,25 @@ pub async fn receive_file(
         }
     }
 
-    let emitter = Arc::new(TauriEventEmitter {
-        app_handle: app_handle.clone(),
-    });
-    let boxed_handle: AppHandle = Some(emitter);
+    // The sender's endpoint id rides in the ticket, so the peer is known
+    // before the connection exists. `resumable_store_path` is set at open, not
+    // at finalize: a crash never reaches finalize, and without the pointer the
+    // partial store would be unreclaimable from the history page.
+    let sender_peer = sender_peer_from_ticket(&ticket, &app_state_node(&state).await);
+    let (boxed_handle, recorder) = build_emitter(
+        &app_handle,
+        &history,
+        TransferDirection::Receive,
+        TransferContext {
+            blob_hash: incoming_hash.clone(),
+            save_path: Some(output_dir.to_string_lossy().to_string()),
+            resumable_store_path: incoming_hash
+                .as_deref()
+                .map(|hash| partial_store_path_for(hash).to_string_lossy().to_string()),
+            peer: sender_peer,
+            ..Default::default()
+        },
+    );
 
     if let Some(payload) = relay_fallback_event_payload("receive", fell_back_to_public) {
         let _ = app_handle.emit("relay-fell-back", payload);
@@ -391,6 +535,7 @@ pub async fn receive_file(
             );
         }
         app_state.current_receive_cancel = Some(cancel_tx);
+        app_state.current_receive_hash = incoming_hash.clone();
     }
 
     let result = download(ticket, options, boxed_handle, cancel_rx).await;
@@ -399,6 +544,7 @@ pub async fn receive_file(
     {
         let mut app_state = state.lock().await;
         app_state.current_receive_cancel = None;
+        app_state.current_receive_hash = None;
         match &result {
             Err(e) if e.to_string() == "cancelled" => {
                 // Record the hash so the next receive can decide whether to delete this partial.
@@ -412,6 +558,21 @@ pub async fn receive_file(
                     app_state.last_cancelled_recv_hash = incoming_hash;
                 }
             }
+        }
+    }
+
+    if let Some(recorder) = recorder.as_ref() {
+        match &result {
+            // Success already closed the row from `receive-completed`.
+            Ok(_) => {}
+            Err(e) if e.to_string() == "cancelled" => {
+                recorder.finalize(TransferStatus::Cancelled, CompletionFacts::default(), None)
+            }
+            Err(e) => recorder.finalize(
+                TransferStatus::Failed,
+                CompletionFacts::default(),
+                Some(e.to_string()),
+            ),
         }
     }
 
@@ -1408,6 +1569,10 @@ pub async fn invite_paired_device(
 ) -> Result<InviteDelivered, String> {
     let node = {
         let guard = state.lock().await;
+        // The recipient is known here, before any connection exists — a better
+        // source for the history row than waiting for `share-peer-connected`,
+        // which carries an id and nothing else.
+        note_share_peer(&guard, name_peer(endpoint_id.clone(), &guard.node));
         require_node_arc(&guard)?
     };
     let delivered = node
@@ -1531,6 +1696,26 @@ pub async fn invite_nearby_device(
         let guard = state.lock().await;
         require_node_arc(&guard)?
     };
+
+    // A Nearby device is not in the paired store, so its name only exists in
+    // the node's discovery cache — and `list_nearby` is async, which the
+    // synchronous emitter path cannot reach.
+    let nearby_peer = node
+        .list_nearby()
+        .await
+        .into_iter()
+        .find(|d| d.endpoint_id.eq_ignore_ascii_case(&endpoint_id))
+        .map(|d| TransferPeer {
+            endpoint_id: d.endpoint_id,
+            display_name: d.display_name,
+            device_type: d.device_type,
+        })
+        .unwrap_or_else(|| TransferPeer {
+            endpoint_id: endpoint_id.clone(),
+            display_name: None,
+            device_type: None,
+        });
+    note_share_peer(&*state.lock().await, nearby_peer);
     let delivered = node
         .invite_nearby_device(&endpoint_id, &blob_ticket, file_count, total_size)
         .await
@@ -1797,4 +1982,117 @@ mod tests {
         drop(share);
         let _ = fs::remove_file(temp_path);
     }
+}
+
+// ---------------------------------------------------------------------------
+// Transfer history
+// ---------------------------------------------------------------------------
+
+/// Live report on a record's partial-receive store.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransferTempData {
+    pub exists: bool,
+    pub size_bytes: u64,
+}
+
+#[tauri::command]
+pub async fn list_transfer_history(
+    history: State<'_, Arc<TransferHistoryStore>>,
+) -> Result<Vec<TransferRecord>, String> {
+    history.list().map_err(|e| e.to_string())
+}
+
+/// Removes one row and the partial store it pointed at.
+///
+/// The cascade is the point: the row is the only pointer to that disk space,
+/// so dropping it without cleaning up would strand the bytes for good.
+#[tauri::command]
+pub async fn delete_transfer_record(
+    id: String,
+    history: State<'_, Arc<TransferHistoryStore>>,
+) -> Result<(), String> {
+    let removed = history.delete(&id).map_err(|e| e.to_string())?;
+    if let Some(record) = removed {
+        engine::reclaim_partial(&record, &std::env::temp_dir());
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn clear_transfer_history(
+    history: State<'_, Arc<TransferHistoryStore>>,
+) -> Result<(), String> {
+    let removed = history.clear().map_err(|e| e.to_string())?;
+    let temp_dir = std::env::temp_dir();
+    for record in &removed {
+        engine::reclaim_partial(record, &temp_dir);
+    }
+    Ok(())
+}
+
+/// Stats the record's partial store rather than trusting the record: the
+/// directory can be removed by the OS, by a later receive, or by hand.
+#[tauri::command]
+pub async fn get_transfer_temp_data(
+    id: String,
+    history: State<'_, Arc<TransferHistoryStore>>,
+) -> Result<TransferTempData, String> {
+    let record = history
+        .list()
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .find(|r| r.id == id);
+
+    let Some(path) = record.and_then(|r| r.resumable_store_path) else {
+        return Ok(TransferTempData {
+            exists: false,
+            size_bytes: 0,
+        });
+    };
+
+    let path = PathBuf::from(path);
+    if !engine::is_reclaimable_partial(&path, &std::env::temp_dir()) {
+        return Ok(TransferTempData {
+            exists: false,
+            size_bytes: 0,
+        });
+    }
+
+    let size_bytes = tokio::task::spawn_blocking(move || get_total_size(&path).unwrap_or(0))
+        .await
+        .map_err(|e| format!("Task join error: {}", e))?;
+
+    Ok(TransferTempData {
+        exists: true,
+        size_bytes,
+    })
+}
+
+/// Frees a record's partial store without removing the row.
+#[tauri::command]
+pub async fn clear_transfer_temp_data(
+    id: String,
+    history: State<'_, Arc<TransferHistoryStore>>,
+    state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let record = history
+        .list()
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .find(|r| r.id == id)
+        .ok_or_else(|| "Transfer not found".to_string())?;
+
+    // Deleting the store a running download is writing into would corrupt it.
+    if let Some(active) = state.lock().await.current_receive_hash.as_deref() {
+        if record.blob_hash.as_deref() == Some(active) {
+            return Err("That transfer is downloading right now.".to_string());
+        }
+    }
+
+    engine::reclaim_partial(&record, &std::env::temp_dir());
+    history
+        .update(&id, |r| r.resumable_store_path = None)
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }

@@ -80,7 +80,8 @@ pub async fn download(
 
         let export_start = std::time::Instant::now();
         let conflicts = export_to_directory(&db, downloaded.collection, &output_dir).await?;
-        let export_duration_ms = export_start.elapsed().as_millis() as u64;
+        let export_duration_ms =
+            protocol::duration_ms(export_start.elapsed().as_secs_f64());
 
         if !conflicts.is_empty() {
             let payload = serde_json::to_string(&conflicts).unwrap_or_else(|_| "[]".to_string());

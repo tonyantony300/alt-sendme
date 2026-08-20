@@ -1,5 +1,5 @@
 use crate::progress::{
-    EmitThrottle, ShareProgress, SpeedMeter, PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS,
+    EmitThrottle, ShareProgress, SpeedMeter, TransferClock, PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS,
     SPEED_WINDOW_SECS,
 };
 use crate::time_compat::{sleep, timeout, Duration, Instant};
@@ -15,6 +15,8 @@ use iroh_blobs::{
 use n0_future::{task::AbortOnDropHandle, StreamExt};
 use std::io::ErrorKind;
 use std::path::PathBuf;
+use std::sync::atomic::AtomicUsize;
+use std::sync::Arc;
 use tokio::sync::mpsc;
 
 // To avoid encoding thumbnail into ticket causing excessively long tickets, we use a custom metadata protocol to
@@ -162,6 +164,10 @@ pub struct ShareSessionOutcome<S> {
     pub store: S,
     pub progress_handle: AbortOnDropHandle<anyhow::Result<()>>,
     pub cleanup_dir: Option<PathBuf>,
+    /// Peers that pulled the entire payload. A broadcast share serves many,
+    /// and the count is the only way a history row can describe the session
+    /// rather than just its first peer.
+    pub completed_peers: Arc<AtomicUsize>,
 }
 
 pub async fn run_share_session<S>(
@@ -181,10 +187,12 @@ pub async fn run_share_session<S>(
 where
     S: Send + Sync + 'static,
 {
+    let completed_peers = Arc::new(AtomicUsize::new(0));
     let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
         progress_rx,
         app_handle.clone(),
         size,
+        completed_peers.clone(),
     ));
 
     let router = iroh::protocol::Router::builder(endpoint)
@@ -217,6 +225,7 @@ where
         store,
         progress_handle: AbortOnDropHandle::new(progress_handle),
         cleanup_dir,
+        completed_peers,
     })
 }
 
@@ -232,10 +241,12 @@ pub async fn run_share_on_endpoint(
     cleanup_dir: Option<PathBuf>,
     progress_rx: mpsc::Receiver<ProviderMessage>,
 ) -> anyhow::Result<ShareSessionOutcome<()>> {
+    let completed_peers = Arc::new(AtomicUsize::new(0));
     let progress_handle = n0_future::task::spawn(show_provide_progress_with_logging(
         progress_rx,
         app_handle.clone(),
         size,
+        completed_peers.clone(),
     ));
 
     timeout(Duration::from_secs(30), async move {
@@ -260,6 +271,7 @@ pub async fn run_share_on_endpoint(
         store: (),
         progress_handle: AbortOnDropHandle::new(progress_handle),
         cleanup_dir,
+        completed_peers,
     })
 }
 
@@ -286,9 +298,8 @@ struct SessionProgress {
     ledger: ShareProgress,
     speed: SpeedMeter,
     throttle: EmitThrottle,
+    clock: TransferClock,
     start: Instant,
-    first_byte_secs: Option<f64>,
-    last_byte_secs: f64,
 }
 
 impl SessionProgress {
@@ -297,9 +308,8 @@ impl SessionProgress {
             ledger: ShareProgress::new(share_size),
             speed: SpeedMeter::new(SPEED_WINDOW_SECS),
             throttle: EmitThrottle::new(PROGRESS_MIN_BYTES, PROGRESS_MIN_SECS),
+            clock: TransferClock::new(),
             start: Instant::now(),
-            first_byte_secs: None,
-            last_byte_secs: 0.0,
         }
     }
 
@@ -309,22 +319,15 @@ impl SessionProgress {
 
     /// Record the aggregate byte count, returning `true` when it is due to be emitted.
     fn record(&mut self, at_secs: f64, bytes: u64) -> bool {
-        if self.first_byte_secs.is_none() && bytes > 0 {
-            self.first_byte_secs = Some(at_secs);
-        }
-        if bytes > 0 {
-            self.last_byte_secs = at_secs;
-        }
+        self.clock.mark_activity(at_secs);
         self.speed.record(at_secs, bytes);
         self.throttle.should_emit(at_secs, bytes)
     }
 
-    /// Time on the wire, excluding connection setup and the completion debounce.
+    /// Time spent serving the transfer, excluding connection setup and the
+    /// completion debounce.
     fn wire_duration_ms(&self) -> u64 {
-        match self.first_byte_secs {
-            Some(first) => ((self.last_byte_secs - first).max(0.0) * 1000.0) as u64,
-            None => 0,
-        }
+        self.clock.duration_ms()
     }
 }
 
@@ -356,9 +359,10 @@ async fn show_provide_progress_with_logging(
     mut recv: mpsc::Receiver<iroh_blobs::provider::events::ProviderMessage>,
     app_handle: AppHandle,
     total_collection_size: u64,
+    completed_requests: Arc<AtomicUsize>,
 ) -> anyhow::Result<()> {
     use n0_future::FuturesUnordered;
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::atomic::Ordering;
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
@@ -368,7 +372,6 @@ async fn show_provide_progress_with_logging(
         Arc::new(Mutex::new(SessionProgress::new(total_collection_size)));
 
     let active_requests = Arc::new(AtomicUsize::new(0));
-    let completed_requests = Arc::new(AtomicUsize::new(0));
     let has_emitted_started = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let has_emitted_completed = Arc::new(std::sync::atomic::AtomicBool::new(false));
     let last_request_time: Arc<tokio::sync::Mutex<Option<Instant>>> =
@@ -436,6 +439,8 @@ async fn show_provide_progress_with_logging(
                                     iroh_blobs::provider::events::RequestUpdate::Started(m) => {
                                         let active_count = {
                                             let mut session = session_task.lock().await;
+                                            let at_secs = session.now_secs();
+                                            session.clock.mark_start(at_secs);
                                             session.ledger.blob_started(key, m.index, m.size);
                                             session.ledger.active_requests()
                                         };
@@ -454,6 +459,8 @@ async fn show_provide_progress_with_logging(
                                         if !transfer_started {
                                             let active_count = {
                                                 let mut session = session_task.lock().await;
+                                                let at_secs = session.now_secs();
+                                                session.clock.mark_start(at_secs);
                                                 session.ledger.ensure_request(key);
                                                 session.ledger.active_requests()
                                             };
@@ -488,6 +495,7 @@ async fn show_provide_progress_with_logging(
                                                 );
                                                 session.ledger.retire(key, credited);
                                                 let at_secs = session.now_secs();
+                                                session.clock.mark_activity(at_secs);
                                                 emit_session_progress(&app_handle_task, &session, at_secs);
                                                 (bytes_sent, session.ledger.active_requests())
                                             };
