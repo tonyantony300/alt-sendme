@@ -2,6 +2,7 @@
 
 import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
 import { XIcon } from 'lucide-react'
+import { useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { getWebAppOverlayContainer } from '@/lib/platformStyles'
 import { Button } from '@/components/ui/button'
@@ -63,19 +64,31 @@ function SheetPopup({
 	showCloseButton = true,
 	side = 'right',
 	inset = false,
+	focusPopupOnOpen = false,
+	initialFocus,
 	...props
 }: SheetPrimitive.Popup.Props & {
 	showCloseButton?: boolean
 	side?: 'right' | 'left' | 'top' | 'bottom'
 	inset?: boolean
+	/**
+	 * Focus the popup container itself instead of its first tabbable child.
+	 * Base UI only does this automatically for touch-opened dialogs; set it
+	 * explicitly for sheets opened programmatically on mobile, where landing
+	 * focus in a text field pops the virtual keyboard unasked.
+	 */
+	focusPopupOnOpen?: boolean
 }) {
 	const overlayContainer = getWebAppOverlayContainer()
+	const popupRef = useRef<HTMLDivElement>(null)
 
 	return (
 		<SheetPortal container={overlayContainer}>
 			<SheetBackdrop />
 			<SheetViewport inset={inset} side={side}>
 				<SheetPrimitive.Popup
+					ref={popupRef}
+					initialFocus={focusPopupOnOpen ? popupRef : initialFocus}
 					className={cn(
 						'relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[opacity,translate] duration-200 ease-in-out will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/6%)] data-ending-style:opacity-0 data-starting-style:opacity-0 max-sm:before:hidden dark:before:shadow-[0_-1px_--theme(--color-white/6%)]',
 						side === 'bottom' &&

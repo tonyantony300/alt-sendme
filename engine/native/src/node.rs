@@ -1842,7 +1842,10 @@ impl NodeService {
     /// on CI runners that block multicast.
     #[doc(hidden)]
     pub async fn inject_nearby_device_for_tests(&self, endpoint_id: &str) {
-        self.nearby.lock().await.observe(endpoint_id, false);
+        self.nearby
+            .lock()
+            .await
+            .observe(endpoint_id, false, protocol::identity::unix_now_ms());
     }
 
     /// Test-only: injects a nearby peer *and* runs the identity probe that
@@ -1853,7 +1856,10 @@ impl NodeService {
         &self,
         endpoint_id: &str,
     ) -> anyhow::Result<()> {
-        self.nearby.lock().await.observe(endpoint_id, false);
+        self.nearby
+            .lock()
+            .await
+            .observe(endpoint_id, false, protocol::identity::unix_now_ms());
         let info = probe_identity_via(&self.runtime, endpoint_id).await?;
         let os = if info.os.is_empty() {
             None
@@ -2136,10 +2142,28 @@ fn spawn_lan_event_loop(
             match event {
                 LanEvent::Appeared { endpoint_id } => {
                     let is_paired = is_paired_endpoint(&access, &endpoint_id).await;
-                    let outcome = nearby.lock().await.observe(&endpoint_id, is_paired);
+                    let outcome = nearby.lock().await.observe(
+                        &endpoint_id,
+                        is_paired,
+                        protocol::identity::unix_now_ms(),
+                    );
                     match outcome {
                         ObserveOutcome::ProbeNeeded => {
                             emit_nearby(&app_handle, "nearby-device-found", &endpoint_id);
+                            spawn_identity_probe(
+                                endpoint_id,
+                                runtime.clone(),
+                                nearby.clone(),
+                                app_handle.clone(),
+                            );
+                        }
+                        ObserveOutcome::RefreshNeeded => {
+                            // Deliberately no `nearby-device-found`: the row is
+                            // already on screen, and re-announcing it as an
+                            // arrival would make a rename look like a new
+                            // device. Only a probe that actually changes the
+                            // identity emits anything (see
+                            // `spawn_identity_probe`).
                             spawn_identity_probe(
                                 endpoint_id,
                                 runtime.clone(),

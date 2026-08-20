@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { IS_PAIRING_CAPABLE } from '@/lib/platform'
+import { IS_MOBILE, IS_PAIRING_CAPABLE } from '@/lib/platform'
 import { useTranslation } from '../../i18n/react-i18next-compat'
 import type { SharingControlsProps } from '../../types/sender'
 import {
@@ -34,7 +34,12 @@ export function SharingActiveCard({
 	onSetBroadcast,
 }: SharingControlsProps) {
 	const { t } = useTranslation()
-	const [devicesOpen, setDevicesOpen] = useState(IS_PAIRING_CAPABLE)
+	// Desktop opens the device list alongside the share link; a phone has no room
+	// for that, so mobile starts collapsed and waits for the "send to a device"
+	// button.
+	const [devicesOpen, setDevicesOpen] = useState(
+		IS_PAIRING_CAPABLE && !IS_MOBILE
+	)
 
 	return (
 		<>
@@ -57,7 +62,12 @@ export function SharingActiveCard({
 
 			{IS_PAIRING_CAPABLE ? (
 				<Sheet open={devicesOpen} onOpenChange={setDevicesOpen}>
-					<SheetContent side="right" inset className="sm:max-w-sm">
+					<SheetContent
+						side="right"
+						inset
+						className="sm:max-w-sm"
+						focusPopupOnOpen={IS_MOBILE}
+					>
 						<SheetHeader>
 							<SheetTitle>
 								{t('common:sender.sharingActive.devices.title')}

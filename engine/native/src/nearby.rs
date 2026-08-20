@@ -23,12 +23,23 @@ pub struct NearbyDevice {
     pub identified: bool,
 }
 
+/// How long an entry's identity is trusted before the next sighting re-probes
+/// it. Display names are *pulled* (`WhoAreYou` → `Identity`) and never pushed:
+/// mDNS carries only endpoint ids and addresses, and nothing tells a peer that
+/// we hold a name for it. So a device that renames itself keeps announcing the
+/// same id, and asking again is the only way anyone finds out.
+pub const NEARBY_IDENTITY_REFRESH_MS: u64 = 60_000;
+
 /// What the caller should do after an observation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObserveOutcome {
     /// New unpaired peer — run the identity probe.
     ProbeNeeded,
-    /// Already tracked; do nothing.
+    /// Already tracked, but the identity we hold is older than
+    /// [`NEARBY_IDENTITY_REFRESH_MS`] — probe again, without announcing it as
+    /// a new arrival.
+    RefreshNeeded,
+    /// Already tracked and recently probed; do nothing.
     Known,
     /// Already a paired device; Nearby ignores it and normal presence applies.
     Paired,
@@ -42,11 +53,23 @@ fn fingerprint_or_invalid(endpoint_id: &str) -> String {
     short_fingerprint(endpoint_id).unwrap_or_else(|| "invalid".to_string())
 }
 
+/// A registry entry: the device as the UI sees it, plus the probe bookkeeping
+/// that never leaves this module.
+#[derive(Debug, Clone)]
+struct TrackedDevice {
+    device: NearbyDevice,
+    /// When the last identity probe was *started*, not when one answered.
+    /// Stamping the attempt is what keeps a peer that never answers (old
+    /// build, refused probe, timeout) on the same unhurried retry cadence as
+    /// one that does, instead of re-probing it on every single sighting.
+    last_probe_at: u64,
+}
+
 #[derive(Debug, Default)]
 pub struct NearbyRegistry {
     /// `BTreeMap` so `list()` is ordered without an explicit sort, which keeps
     /// the UI from reshuffling rows on every discovery event.
-    devices: BTreeMap<String, NearbyDevice>,
+    devices: BTreeMap<String, TrackedDevice>,
 }
 
 impl NearbyRegistry {
@@ -54,11 +77,20 @@ impl NearbyRegistry {
         Self::default()
     }
 
-    /// Logs the outcome of every sighting. `observe_inner` has four exit paths
+    /// Logs the outcome of every sighting. `observe_inner` has five exit paths
     /// and a wrapper records all of them without repeating the call at each
     /// `return`.
-    pub fn observe(&mut self, endpoint_id: &str, peer_is_paired: bool) -> ObserveOutcome {
-        let outcome = self.observe_inner(endpoint_id, peer_is_paired);
+    ///
+    /// `now_ms` is passed in rather than read here: this module is pure state
+    /// (see the module docs), and a caller-supplied clock is what lets the
+    /// identity-refresh cadence be tested without waiting out a minute.
+    pub fn observe(
+        &mut self,
+        endpoint_id: &str,
+        peer_is_paired: bool,
+        now_ms: u64,
+    ) -> ObserveOutcome {
+        let outcome = self.observe_inner(endpoint_id, peer_is_paired, now_ms);
         tracing::debug!(
             target: "dashbeam::_events::nearby::observe",
             remote = %fingerprint_or_invalid(endpoint_id),
@@ -68,7 +100,12 @@ impl NearbyRegistry {
         outcome
     }
 
-    fn observe_inner(&mut self, endpoint_id: &str, peer_is_paired: bool) -> ObserveOutcome {
+    fn observe_inner(
+        &mut self,
+        endpoint_id: &str,
+        peer_is_paired: bool,
+        now_ms: u64,
+    ) -> ObserveOutcome {
         let Some(fingerprint) = short_fingerprint(endpoint_id) else {
             return ObserveOutcome::Invalid;
         };
@@ -77,25 +114,38 @@ impl NearbyRegistry {
             self.devices.remove(endpoint_id);
             return ObserveOutcome::Paired;
         }
-        if self.devices.contains_key(endpoint_id) {
-            return ObserveOutcome::Known;
+        if let Some(tracked) = self.devices.get_mut(endpoint_id) {
+            // mDNS re-announces a peer roughly once a second, and every one of
+            // those is a chance to notice it renamed itself. Pace them: the
+            // name we hold is only re-asked for once it's stale.
+            if now_ms.saturating_sub(tracked.last_probe_at) < NEARBY_IDENTITY_REFRESH_MS {
+                return ObserveOutcome::Known;
+            }
+            tracked.last_probe_at = now_ms;
+            return ObserveOutcome::RefreshNeeded;
         }
         self.devices.insert(
             endpoint_id.to_string(),
-            NearbyDevice {
-                endpoint_id: endpoint_id.to_string(),
-                fingerprint,
-                display_name: None,
-                device_type: None,
-                os: None,
-                identified: false,
+            TrackedDevice {
+                device: NearbyDevice {
+                    endpoint_id: endpoint_id.to_string(),
+                    fingerprint,
+                    display_name: None,
+                    device_type: None,
+                    os: None,
+                    identified: false,
+                },
+                last_probe_at: now_ms,
             },
         );
         ObserveOutcome::ProbeNeeded
     }
 
-    /// Returns `false` if the peer is not tracked, which happens when it expires
-    /// while its probe is still in flight.
+    /// Returns `true` when this actually changed the entry — either the first
+    /// identity for it, or a peer that renamed itself since the last probe.
+    /// `false` covers both a peer that is no longer tracked (it expired while
+    /// its probe was in flight) and a refresh that confirmed what we already
+    /// held, so a periodic re-probe stays silent instead of waking the UI.
     ///
     /// `os` is `None` for "unknown" (the caller's job to decide that — see
     /// `ControlMessage::Identity`'s `#[serde(default)]` `os: String`, where an
@@ -116,14 +166,19 @@ impl NearbyRegistry {
             os = os.as_deref().unwrap_or("unknown"),
             tracked = self.devices.contains_key(endpoint_id),
         );
-        let Some(device) = self.devices.get_mut(endpoint_id) else {
+        let Some(tracked) = self.devices.get_mut(endpoint_id) else {
             return false;
         };
+        let device = &mut tracked.device;
+        let changed = !device.identified
+            || device.display_name.as_deref() != Some(display_name.as_str())
+            || device.device_type.as_deref() != Some(device_type.as_str())
+            || device.os != os;
         device.display_name = Some(display_name);
         device.device_type = Some(device_type);
         device.os = os;
         device.identified = true;
-        true
+        changed
     }
 
     /// Returns `true` if a device was actually removed.
@@ -139,7 +194,10 @@ impl NearbyRegistry {
     }
 
     pub fn list(&self) -> Vec<NearbyDevice> {
-        self.devices.values().cloned().collect()
+        self.devices
+            .values()
+            .map(|tracked| tracked.device.clone())
+            .collect()
     }
 
     pub fn clear(&mut self) {
@@ -159,10 +217,17 @@ mod tests {
         byte.repeat(32)
     }
 
+    /// Fixed "now" for tests that don't care about the clock. Sightings that
+    /// need to look older or newer offset from this.
+    const T0: u64 = 1_700_000_000_000;
+
     #[test]
     fn first_sighting_requests_a_probe_and_lists_unidentified() {
         let mut reg = NearbyRegistry::new();
-        assert_eq!(reg.observe(&id("aa"), false), ObserveOutcome::ProbeNeeded);
+        assert_eq!(
+            reg.observe(&id("aa"), false, T0),
+            ObserveOutcome::ProbeNeeded
+        );
 
         let listed = reg.list();
         assert_eq!(listed.len(), 1);
@@ -175,31 +240,112 @@ mod tests {
     #[test]
     fn repeat_sighting_does_not_reprobe_or_duplicate() {
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("aa"), false);
-        assert_eq!(reg.observe(&id("aa"), false), ObserveOutcome::Known);
+        reg.observe(&id("aa"), false, T0);
+        assert_eq!(
+            reg.observe(&id("aa"), false, T0 + NEARBY_IDENTITY_REFRESH_MS - 1),
+            ObserveOutcome::Known
+        );
         assert_eq!(reg.list().len(), 1);
+    }
+
+    /// Names are pulled, never pushed, so a peer that renames itself is only
+    /// noticed by asking again — see [`NEARBY_IDENTITY_REFRESH_MS`].
+    #[test]
+    fn a_stale_sighting_asks_the_peer_who_it_is_again() {
+        let mut reg = NearbyRegistry::new();
+        reg.observe(&id("aa"), false, T0);
+        reg.set_identity(
+            &id("aa"),
+            "Old Name".to_string(),
+            "laptop".to_string(),
+            Some("macos".to_string()),
+        );
+
+        assert_eq!(
+            reg.observe(&id("aa"), false, T0 + NEARBY_IDENTITY_REFRESH_MS),
+            ObserveOutcome::RefreshNeeded,
+            "a sighting past the refresh interval must re-probe"
+        );
+        assert_eq!(
+            reg.list().len(),
+            1,
+            "re-probing must not duplicate or drop the row"
+        );
+
+        // The peer answers with its new name.
+        assert!(reg.set_identity(
+            &id("aa"),
+            "New Name".to_string(),
+            "laptop".to_string(),
+            Some("macos".to_string()),
+        ));
+        assert_eq!(reg.list()[0].display_name.as_deref(), Some("New Name"));
+    }
+
+    /// The refresh cadence is paced off the last *attempt*, so the seconds of
+    /// sightings that follow one don't each trigger their own probe.
+    #[test]
+    fn a_refresh_restarts_the_interval_even_if_the_probe_never_answers() {
+        let mut reg = NearbyRegistry::new();
+        reg.observe(&id("aa"), false, T0);
+        assert_eq!(
+            reg.observe(&id("aa"), false, T0 + NEARBY_IDENTITY_REFRESH_MS),
+            ObserveOutcome::RefreshNeeded
+        );
+        // No set_identity: the probe timed out or the peer refused it.
+        assert_eq!(
+            reg.observe(&id("aa"), false, T0 + NEARBY_IDENTITY_REFRESH_MS + 1),
+            ObserveOutcome::Known,
+            "the next sighting must not stack a second probe"
+        );
+    }
+
+    /// A re-probe that confirms what we already hold must stay silent, or the
+    /// UI would refetch the whole list once per interval per device.
+    #[test]
+    fn an_unchanged_identity_reports_no_change() {
+        let mut reg = NearbyRegistry::new();
+        reg.observe(&id("aa"), false, T0);
+        assert!(
+            reg.set_identity(
+                &id("aa"),
+                "Same".to_string(),
+                "laptop".to_string(),
+                Some("macos".to_string()),
+            ),
+            "the first identity is a change"
+        );
+        assert!(
+            !reg.set_identity(
+                &id("aa"),
+                "Same".to_string(),
+                "laptop".to_string(),
+                Some("macos".to_string()),
+            ),
+            "re-confirming the same identity is not"
+        );
     }
 
     #[test]
     fn paired_peers_are_never_listed_as_nearby() {
         let mut reg = NearbyRegistry::new();
-        assert_eq!(reg.observe(&id("bb"), true), ObserveOutcome::Paired);
+        assert_eq!(reg.observe(&id("bb"), true, T0), ObserveOutcome::Paired);
         assert!(reg.list().is_empty());
     }
 
     #[test]
     fn a_peer_that_becomes_paired_drops_out_of_the_list() {
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("cc"), false);
+        reg.observe(&id("cc"), false, T0);
         assert_eq!(reg.list().len(), 1);
-        assert_eq!(reg.observe(&id("cc"), true), ObserveOutcome::Paired);
+        assert_eq!(reg.observe(&id("cc"), true, T0), ObserveOutcome::Paired);
         assert!(reg.list().is_empty(), "pairing must remove it from Nearby");
     }
 
     #[test]
     fn set_identity_fills_fields_and_marks_identified() {
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("dd"), false);
+        reg.observe(&id("dd"), false, T0);
         assert!(reg.set_identity(
             &id("dd"),
             "Tony's MacBook".to_string(),
@@ -232,7 +378,7 @@ mod tests {
         // an old-build peer's empty-string reply to `None` before calling
         // here — this only proves the registry stores whatever it's given.
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("11"), false);
+        reg.observe(&id("11"), false, T0);
         assert!(reg.set_identity(
             &id("11"),
             "Old Build".to_string(),
@@ -248,7 +394,7 @@ mod tests {
     #[test]
     fn a_failed_probe_leaves_the_device_listed_but_unidentified() {
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("ff"), false);
+        reg.observe(&id("ff"), false, T0);
         // No set_identity call — the probe timed out or the peer is an old build.
         let listed = reg.list();
         assert_eq!(listed.len(), 1, "must remain sendable, not disappear");
@@ -258,7 +404,7 @@ mod tests {
     #[test]
     fn expire_removes_a_known_peer() {
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("aa"), false);
+        reg.observe(&id("aa"), false, T0);
         assert!(reg.expire(&id("aa")));
         assert!(reg.list().is_empty());
     }
@@ -272,17 +418,17 @@ mod tests {
     #[test]
     fn malformed_endpoint_ids_are_rejected() {
         let mut reg = NearbyRegistry::new();
-        assert_eq!(reg.observe("not-hex", false), ObserveOutcome::Invalid);
-        assert_eq!(reg.observe("", false), ObserveOutcome::Invalid);
+        assert_eq!(reg.observe("not-hex", false, T0), ObserveOutcome::Invalid);
+        assert_eq!(reg.observe("", false, T0), ObserveOutcome::Invalid);
         assert!(reg.list().is_empty());
     }
 
     #[test]
     fn list_is_sorted_by_endpoint_id_for_stable_ui_ordering() {
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("cc"), false);
-        reg.observe(&id("aa"), false);
-        reg.observe(&id("bb"), false);
+        reg.observe(&id("cc"), false, T0);
+        reg.observe(&id("aa"), false, T0);
+        reg.observe(&id("bb"), false, T0);
         let ids: Vec<_> = reg.list().into_iter().map(|d| d.endpoint_id).collect();
         assert_eq!(ids, vec![id("aa"), id("bb"), id("cc")]);
     }
@@ -290,7 +436,7 @@ mod tests {
     #[test]
     fn clear_empties_the_registry() {
         let mut reg = NearbyRegistry::new();
-        reg.observe(&id("aa"), false);
+        reg.observe(&id("aa"), false, T0);
         reg.clear();
         assert!(reg.list().is_empty());
     }
