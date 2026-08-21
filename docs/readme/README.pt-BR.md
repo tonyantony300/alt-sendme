@@ -1,5 +1,3 @@
-<img src="../../assets/rename-banner.svg" alt="Anúncio: AltSendme agora é DashBeam. O mesmo app, mais fácil de encontrar, lembrar e pronunciar." width="1200" />
-
 **Idioma:** [English](../../README.md) | [中文](README.zh-CN.md) | [Русский](README.ru.md) | Português | [Español](README.es.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Polski](README.pl.md) | [العربية](README.ar.md)
 
 <div align="center">
@@ -34,25 +32,28 @@ Uma ferramenta gratuita e de código aberto para transferência de arquivos que 
 
 Por que depender do WeTransfer, Dropbox ou Google Drive quando você pode transferir arquivos de forma confiável e fácil, diretamente, com criptografia de ponta a ponta e sem revelar informações pessoais?
 
+Escolha o caminho que estiver mais à mão: **enviar um link ou um QR code** que abre em qualquer dispositivo, **enviar para um dispositivo pareado uma vez** ou **enviar para um dispositivo que já está na sua rede**. Os três movem os mesmos bytes do mesmo jeito – diretamente e com criptografia de ponta a ponta.
+
 
 
 ## Recursos
 
-- **Envie para qualquer lugar, de qualquer dispositivo** — Desktop, Android, terminal ou navegador — comece em uma plataforma, receba em qualquer outra.
-- **Transfira qualquer coisa, de qualquer tamanho** — Arquivos ou pastas inteiras, verificados de ponta a ponta com checagens de integridade BLAKE3.
-- **Rápido o suficiente para fazer diferença** — Satura conexões multi-gigabit para transferências ultrarrápidas.
-- **Privado por padrão** — Sem contas, sem cadastros, sem rastreamento, sem anúncios.
-- **Transferência direta entre dispositivos** — Os arquivos circulam diretamente entre seus dispositivos, sem passar pelo armazenamento em nuvem corporativo onde os dados são a moeda de troca.
-- **Criptografia de ponta a ponta, sempre ativa** — Cada transferência usa QUIC com TLS 1.3; os relays veem apenas tráfego criptografado, mesmo quando estão envolvidos.
-- **Autenticação criptográfica** — Cada ticket verifica se você está conectado ao remetente correto antes de qualquer transferência de arquivos.
-- **Retomável e transmitível** — Transferências interrompidas retomam automaticamente; compartilhe o mesmo arquivo com quantos peers quiser ao mesmo tempo.
-- **Visualize antes de baixar** — Veja o que você está recebendo antes de baixar.
-- **Dispositivos pareados** — Pareie computadores e celulares Android uma vez em **Configurações → Dispositivos**, depois envie arquivos sem copiar tickets toda vez.
-- **Próximos na mesma rede** — Outros dispositivos DashBeam na sua LAN aparecem automaticamente (mDNS). Pareie nas Configurações ou envie ao compartilhar — sem colar ticket.
-- **Presença em segundo plano** — No desktop, continue rodando na bandeja ou barra de menus e, opcionalmente, inicie no login para que dispositivos pareados vejam você online.
-- **Notificações do sistema** — Pedidos de pareamento e convites de arquivo podem exibir notificações do SO quando o app não está em primeiro plano (desktop e Android).
-- **Ultraleve** — Instalações minúsculas, pegada web mínima.
-- **Gratuito e de código aberto** — Sem custos de upload, sem limites de tamanho, impulsionado pela comunidade.
+- **Multiplataforma** – Desktop, Android, CLI e navegador – sem instalação na web
+- **Qualquer arquivo, qualquer tamanho** – Arquivos ou pastas, verificados com BLAKE3
+- **Velocidades multigigabit** – Satura conexões rápidas
+- **Por perto** – Descoberta automática na LAN; Pair & Send
+- **Dispositivos pareados** – Pareie uma vez com um código (remotamente) ou via Nearby; envie sem tickets
+- **Retomável e multipar** – Retome transferências interrompidas; compartilhe com vários de uma vez
+- **Conexão por chave** – Conecte pela identidade do dispositivo, não pelo endereço IP
+- **Roaming** – Troque de Wi-Fi, rede móvel ou de rede no meio da transferência sem derrubá-la
+- **Código, link ou QR** – Quem recebe não precisa instalar nada (navegador ou app)
+- **Prévia e histórico** – Veja antes de baixar; registro local de transferências
+- **Modo de depuração avançado** – Diagnósticos opcionais para dar transparência ao que acontece por baixo dos panos
+- **Privado** – Sem contas, rastreamento ou anúncios; direto entre dispositivos
+- **Criptografado** – TLS 1.3 de ponta a ponta; tickets autenticados
+- **Relays próprios** – Transferências remotas sem limitação usando seu próprio relay (**Configurações → Infra**)
+- **Sempre acessível** – Serviço/bandeja em segundo plano, notificações, iniciar com o login
+- **Leve e gratuito** – Instalações pequenas; código aberto, sem limites
 
 
 ## Estatísticas do mundo real
@@ -82,26 +83,26 @@ A forma mais fácil de começar é baixar uma das seguintes versões para o seu 
   </tr>
   <tr>
     <td>💻 <b>Windows (x64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-setup.exe'>Setup.exe</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-portable.zip'>Portable ZIP</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-setup.exe'>Setup.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-portable.zip'>Portable ZIP</a></td>
     <td>~10 MB</td>
   </tr>
   <tr>
     <td>💻 <b>macOS (Universal)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_universal.dmg'>DashBeam.dmg</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64.dmg'>Intel</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_universal.dmg'>DashBeam.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64.dmg'>Intel</a></td>
     <td>~15 MB</td>
   </tr>
   <tr>
     <td>💻 <b>Linux (amd64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.deb'>DashBeam.deb</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-0.6.2-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.AppImage'>AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.deb'>DashBeam.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-0.7.0-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.AppImage'>AppImage</a></td>
     <td>~13 MB</td>
   </tr>
   <tr>
     <td>📱 <b>Android (arm64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-arm64.apk'>DashBeam.apk</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-universal.apk'>universal</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-arm64.apk'>DashBeam.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-universal.apk'>universal</a></td>
     <td>~50 MB</td>
   </tr>
   <tr>
@@ -119,6 +120,8 @@ A forma mais fácil de começar é baixar uma das seguintes versões para o seu 
 </table>
 
 Mais opções em [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) ou na página [Downloads](https://www.dashbeam.net/en/downloads).
+
+Teve problemas? Veja [Solução de problemas](../troubleshooting.md) para questões comuns e como coletar logs.
 
 
 
@@ -138,33 +141,23 @@ Estamos procurando Parceiros para se juntar à nossa missão! Faça parceria con
 
 
 ## Idiomas suportados
- 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭
+ 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭 🇺🇿
 
  
-## Como funciona
+## Formas de enviar
+### Dispositivos próximos (recomendado)
 
-1. Arraste seu arquivo ou pasta — DashBeam cria um código de compartilhamento único (chamado de "ticket").
-2. Compartilhe o ticket por chat, e-mail ou mensagem de texto, **ou** envie diretamente para um dispositivo pareado ou próximo (desktop / Android).
-3. Seu amigo cola o ticket no app (ou aceita um convite), e a transferência começa.
+Apps na mesma rede aparecem em **Nearby** em **Configurações → Dispositivos** e na lista **Send to a device** enquanto você compartilha. Escolha um dispositivo próximo e use **Pair & Send** para parear e iniciar a transferência em uma etapa só – você também pode parear pelas Configurações, sem compartilhar. O primeiro contato mostra um código de verificação nas duas telas. Defina quem pode encontrar você em **Configurações → Rede → Your discoverability**.
+
+Usa [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) – muitas vezes bloqueado em Wi-Fi de visitantes e VPNs. Veja [Solução de problemas](../troubleshooting.md#the-nearby-list-is-empty) se a lista continuar vazia.
 
 ### Dispositivos pareados
 
-No macOS, Windows, Linux e Android você pode parear dispositivos em **Configurações → Dispositivos** usando um código de pareamento, ou aceitando um pedido de pareamento Nearby na mesma rede local. Após o pareamento:
+Pareie em **Configurações → Dispositivos** com um código de pareamento (funciona remotamente, pela internet) ou por uma solicitação Nearby na mesma rede. Depois do pareamento, **Send** aparece ao lado do dispositivo enquanto você compartilha – sem ticket para copiar. Quem recebe vê um aviso dentro do app. No desktop, o DashBeam pode continuar rodando em segundo plano e mostrar na bandeja os dispositivos pareados online (**Configurações → Geral → Startup & background**). Tickets manuais e a [CLI sendme](https://www.iroh.computer/sendme) continuam funcionando.
 
-- Remetentes podem tocar em **Enviar** ao lado de um dispositivo pareado durante o compartilhamento: sem copiar ticket manualmente.
-- Destinatários recebem um prompt no app quando um remetente pareado os convida; com notificações do sistema ativadas, também podem receber um banner do SO quando a janela não está em foco.
-- No desktop, a bandeja / barra de menus pode mostrar quais dispositivos pareados estão online, e o DashBeam pode continuar rodando depois que você fecha a janela (**Configurações → Geral → Startup & background**).
-- Tickets manuais e o [sendme CLI](https://www.iroh.computer/sendme) ainda funcionam exatamente como antes.
+### Compartilhar ticket, link ou QR code (transferência única)
 
-### Dispositivos próximos
-
-Quando outros apps DashBeam estão na mesma Wi-Fi ou LAN, eles podem aparecer em **Nearby** em **Configurações → Dispositivos** e na folha **Send to a device** ao compartilhar:
-
-- **Pareie** nas Configurações para adicionar um dispositivo sem trocar um código de pareamento.
-- **Envie** pela folha de compartilhamento para convidar um dispositivo Nearby com o ticket atual; os destinatários confirmam um código de verificação curto antes de aceitar.
-- Controle se outros podem encontrá-lo em **Configurações → Rede → Your discoverability** (Everyone / Paired only / Off).
-
-Nearby depende de [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). Se sua rede bloquear multicast (Wi-Fi de convidados, muitas VPNs), use um ticket manual ou pareie pela internet — veja [Solução de problemas](../troubleshooting.md#the-nearby-list-is-empty).
+Enquanto compartilha: **QR** para escanear com a câmera, **Share** para a folha do sistema, **Copy** para o ticket bruto. Os links têm o formato `https://app.dashbeam.net/receive?ticket=…` – no Android abrem o app; nos demais casos, o app web, então não há nada para instalar (para arquivos grandes, prefira o app nativo). Cole um ticket, um link ou a mensagem de compartilhamento inteira em Receber.
 
 
 ## Comparação
@@ -190,6 +183,8 @@ Nearby depende de [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). Se sua re
 
 DashBeam é construído sobre [Iroh](https://www.iroh.computer), uma stack de rede peer-to-peer moderna que simplifica a comunicação direta entre dispositivos. Na prática, isso significa que os dispositivos se comunicam via QUIC criptografado, os arquivos circulam com blobs endereçados por conteúdo, e os relays ajudam quando um caminho direto não está disponível.
 
+> **A versão longa:** [Under the hood](https://dashbeam.net/en/under-the-hood) percorre essa mesma arquitetura como uma narrativa – impressões digitais no lugar de nomes de arquivo, nomes no lugar de endereços, hole punching, roaming e o que cada intermediário consegue ou não enxergar.
+
 ### Os blocos de construção
 
 | Peça | O que faz aqui |
@@ -198,9 +193,10 @@ DashBeam é construído sobre [Iroh](https://www.iroh.computer), uma stack de re
 | **Tickets** | Uma string que diz a um peer *quem* contatar e *o quê* buscar |
 | **Endpoints** | A identidade Iroh de cada dispositivo (chave Ed25519 → id de endpoint) |
 | **QUIC + TLS 1.3** | Transporte criptografado; multiplexação sem bloqueio head-of-line |
-| **Relays + hole punching** | Inicializam conexões através de NATs; preferem caminho direto, recuam para relay |
+| **Relays + hole punching** | Iniciam conexões através de NATs; o relay carrega os dados enquanto um caminho direto é negociado |
 | **Protocolo de controle** (pareamento) | Canal persistente para lembrar dispositivos e entregar convites de compartilhamento |
 | **Local discovery** (mDNS) | Anúncio opcional na LAN para que dispositivos Nearby se encontrem sem ticket |
+| **Links de recebimento** | Um ticket embrulhado em uma URL https comum – um App Link no Android e o app web em todo o resto |
 
 ### Blobs
 
@@ -209,6 +205,8 @@ Os arquivos não são enviados para um servidor. Eles são publicados como **blo
 - Um **link** é esse hash de 32 bytes: se o hash corresponder, o conteúdo corresponde.
 - Pastas e arquivos grandes usam um **HashSeq** (um blob que aponta para outros blobs).
 - O remetente é o **provider**; o destinatário é o **requester**. Qualquer lado pode ser os dois.
+
+Como esse hash é uma árvore BLAKE3, e não um único resumo do arquivo inteiro, cada bloco se verifica sozinho contra a raiz. É isso que torna a retomada barata: quem volta depois de uma queda de conexão sabe exatamente quais blocos já tem *e já verificou*, então pede apenas o que falta. Nada do que já foi recebido é reenviado, e nada do que chega é aceito na base da confiança.
 
 ### Tickets
 
@@ -220,6 +218,8 @@ Um **ticket** de compartilhamento é um token único que reúne:
 
 Você só se conecta a pessoas com quem compartilha um ticket: sem divulgar seu IP para estranhos. Esse é o modelo padrão de "cozy network" que o Iroh incentiva, em contraste com a descoberta inundada em todo o swarm.
 
+Tickets que carregam apenas um id de endpoint dependem da descoberta por chave pública (Pkarr) para achar endereços atuais. Esses registros são assinados pela própria chave do endpoint, então um registro adulterado falha na verificação em vez de te desviar – o serviço de busca é confiado quanto à **disponibilidade, não à integridade**.
+
 ### Conectando através de redes
 
 Quando dois dispositivos precisam se encontrar:
@@ -229,6 +229,14 @@ Quando dois dispositivos precisam se encontrar:
 3. Se um caminho direto funcionar, o tráfego vai de dispositivo a dispositivo. Se não, o relay permanece no caminho como um salto UDP de fallback.
 
 De qualquer forma, a carga útil é criptografada de ponta a ponta. Os relays veem ciphertext, não seus arquivos. [Saiba mais sobre relays Iroh →](https://docs.iroh.computer/about/faq)
+
+Essas etapas se sobrepõem em vez de entrarem na fila. O relay já está carregando seus dados enquanto o hole punching negocia, então nada espera o caminho direto dar certo – a transferência apenas fica mais rápida se e quando isso acontecer. Cerca de uma transferência em cada dez nunca consegue um caminho direto (NAT simétrico, redes corporativas fechadas) e vai pelo relay do início ao fim.
+
+### Roaming entre redes
+
+Uma conexão é ligada à chave do par, não ao endereço IP dele, então mudar de rede não a encerra. Troque do Wi-Fi para a rede móvel no meio de uma transferência e o iroh percebe a mudança de endereço, aprende os novos candidatos e os republica para o par. O relay carrega os dados o tempo todo, e o hole punching simplesmente roda de novo no caminho novo.
+
+Endereços são pistas descartáveis, não identidade. Esse é o ganho prático de nomear dispositivos por chave em vez de por localização.
 
 ### QUIC e criptografia
 
@@ -258,6 +266,8 @@ Na mesma rede local, o DashBeam pode anunciar e procurar peers com mDNS (desktop
 ### Auto-hospedagem de relays e descoberta
 
 Para saber como executar seu próprio relay e servidor de descoberta iroh, configurar o DashBeam para usá-los, e como configurações mistas públicas/auto-hospedadas se comportam, consulte [`../../infra/README.md`](../../infra/README.md) (relay: [`../../infra/relay/README.md`](../../infra/relay/README.md#using-self-hosted-relays-with-dashbeam), descoberta: [`../../infra/dns/README.md`](../../infra/dns/README.md)).
+
+Para a versão ilustrada de tudo acima – incluindo um relato completo do que o operador de um relay, seu provedor de internet e o serviço de busca aprendem de uma transferência – leia [Under the hood](https://dashbeam.net/en/under-the-hood).
 
 
 ## Desenvolvimento
@@ -312,7 +322,7 @@ Obrigado por conferir este projeto! Se achar útil, considere dar uma estrela e 
 <!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-dashbeam.net-orange
-[badge-version]: https://img.shields.io/badge/version-0.6.2-blue
+[badge-version]: https://img.shields.io/badge/version-0.7.0-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20CLI%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4

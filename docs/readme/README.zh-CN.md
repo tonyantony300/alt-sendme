@@ -1,5 +1,3 @@
-<img src="../../assets/rename-banner.svg" alt="公告：AltSendme 现已更名为 DashBeam。同一款应用，更易搜索、记忆和发音。" width="1200" />
-
 **语言：** [English](../../README.md) | 中文 | [Русский](README.ru.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Polski](README.pl.md) | [العربية](README.ar.md)
 
 <div align="center">
@@ -34,25 +32,28 @@
 
 既然可以可靠、轻松地直接传输文件，端到端加密且不泄露任何个人信息，又何必依赖 WeTransfer、Dropbox 或 Google Drive 呢？
 
+选择当下最顺手的方式：**发送链接或二维码**，在任意设备上打开；**发送给配对过一次的设备**；或**发送给已经在你网络中的设备**。三种方式传输的字节和路径完全一样 - 直连、端到端加密。
+
 
 
 ## 功能特性
 
-- **随处发送，任意设备** - 桌面、Android、终端或浏览器——在一个平台发起，在任意其他平台接收。
-- **传输任意内容，任意大小** - 文件或整个目录，通过 BLAKE3 完整性校验实现端到端验证。
-- **快到足以改变体验** - 可跑满多千兆连接，实现闪电般的传输速度。
-- **默认私密** - 无需账户、无需注册、无追踪、无广告。
-- **设备直连传输** - 文件直接在您的设备之间传输，避开以数据为代价的企业云存储。
-- **端到端加密，始终开启** - 每次传输均使用 QUIC 与 TLS 1.3；即使经过中继，中继也只能看到加密流量。
-- **加密身份验证** - 每张 ticket 在传输任何文件之前，都会验证您已连接到预期的发送方。
-- **可恢复且可广播** - 中断的传输自动恢复；同一文件可同时分享给任意数量的对等节点。
-- **下载前先预览** - 在下载之前查看您即将接收的内容。
-- **已配对设备** - 在 **设置 → 设备** 中将电脑与 Android 手机配对一次，之后发送文件无需每次复制 ticket。
-- **同一网络上的附近设备** - 局域网内的其他 DashBeam 设备会自动出现（mDNS）。可在设置中配对，或在分享时直接发送——无需粘贴 ticket。
-- **后台在线** - 在桌面端可在托盘或菜单栏保持运行，并可选择开机启动，以便已配对设备看到您在线。
-- **系统通知** - 配对请求与文件邀请可在应用不在前台时弹出系统通知（桌面与 Android）。
-- **轻如羽毛** - 安装包极小，Web 端占用极少。
-- **免费且开源** - 无上传费用、无大小限制、由社区驱动。
+- **跨平台** - 桌面、Android、CLI 和浏览器 - 网页端无需安装
+- **任意文件，任意大小** - 文件或文件夹，经 BLAKE3 校验
+- **多千兆速度** - 可跑满高速连接
+- **附近设备** - 局域网自动发现；Pair & Send
+- **已配对设备** - 用配对码（远程）或通过 Nearby 配对一次；之后无需 ticket 即可发送
+- **可续传、多接收方** - 续传中断的传输；同时分享给多人
+- **按密钥拨号** - 按设备身份连接，而非 IP 地址
+- **漫游** - 传输途中切换 Wi-Fi、蜂窝网络或其他网络也不会中断
+- **配对码、链接或二维码** - 接收方无需安装（浏览器或应用均可）
+- **预览与历史** - 下载前先看；本地传输记录
+- **高级调试模式** - 可选的诊断信息，让底层运行一目了然
+- **隐私** - 无账号、无追踪、无广告；设备到设备直连
+- **加密** - TLS 1.3 端到端；ticket 经过认证
+- **自托管 relay** - 通过自己的 relay 进行不限速的远程传输（**设置 → Infra**）
+- **随时可达** - 后台托盘/服务、通知、开机自启
+- **轻量且免费** - 安装包小；开源，无限制
 
 
 ## 真实使用数据
@@ -82,26 +83,26 @@
   </tr>
   <tr>
     <td>💻 <b>Windows (x64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-setup.exe'>Setup.exe</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-portable.zip'>Portable ZIP</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-setup.exe'>Setup.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-portable.zip'>Portable ZIP</a></td>
     <td>~10 MB</td>
   </tr>
   <tr>
     <td>💻 <b>macOS (Universal)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_universal.dmg'>DashBeam.dmg</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64.dmg'>Intel</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_universal.dmg'>DashBeam.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64.dmg'>Intel</a></td>
     <td>~15 MB</td>
   </tr>
   <tr>
     <td>💻 <b>Linux (amd64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.deb'>DashBeam.deb</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-0.6.2-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.AppImage'>AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.deb'>DashBeam.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-0.7.0-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.AppImage'>AppImage</a></td>
     <td>~13 MB</td>
   </tr>
   <tr>
     <td>📱 <b>Android (arm64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-arm64.apk'>DashBeam.apk</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-universal.apk'>universal</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-arm64.apk'>DashBeam.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-universal.apk'>universal</a></td>
     <td>~50 MB</td>
   </tr>
   <tr>
@@ -119,6 +120,8 @@
 </table>
 
 更多选项请见 [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) 或 [Downloads](https://www.dashbeam.net/en/downloads) 页面。
+
+遇到问题？请查看[故障排查](../troubleshooting.md)，其中列出了常见问题以及如何收集日志。
 
 
 
@@ -138,33 +141,23 @@
 
 
 ## 支持的语言
- 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭
+ 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭 🇺🇿
 
  
-## 工作原理
+## 发送方式
+### 附近设备（推荐）
 
-1. 拖放文件或文件夹——DashBeam 会创建一个一次性分享码（称为「ticket」）。
-2. 通过聊天、邮件或短信分享 ticket，**或**直接发送到已配对或附近设备（桌面 / Android）。
-3. 对方在应用中粘贴 ticket（或接受邀请），传输随即开始。
+同一网络中的应用会出现在**设置 → 设备**的 **Nearby** 下，以及分享时的 **Send to a device** 列表中。选择一台附近设备并点击 **Pair & Send**，即可一步完成配对并开始传输 - 你也可以不分享、直接在设置中配对。首次连接时两边屏幕都会显示一个验证码。可在**设置 → 网络 → Your discoverability** 中设置谁能发现你。
+
+使用 [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) - 访客 Wi-Fi 和 VPN 常常会屏蔽它。如果列表始终为空，请参阅[故障排查](../troubleshooting.md#the-nearby-list-is-empty)。
 
 ### 已配对设备
 
-在 macOS、Windows、Linux 和 Android 上，您可以使用配对码在 **设置 → 设备** 中配对设备，或在同一局域网上接受附近设备的配对请求。配对之后：
+在**设置 → 设备**中使用配对码配对（可远程、通过互联网），或在同一网络中通过 Nearby 请求配对。配对后，分享时该设备旁会出现 **Send** - 无需复制 ticket。接收方会在应用内收到提示。桌面端可以在后台持续运行，并在托盘中显示在线的已配对设备（**设置 → 通用 → Startup & background**）。手动 ticket 和 [sendme CLI](https://www.iroh.computer/sendme) 依然可用。
 
-- 分享时，发送方可在已配对设备旁点击 **Send**：无需手动复制 ticket。
-- 当已配对的发送方发出邀请时，接收方会收到应用内提示；若启用了系统通知，窗口未聚焦时也可收到系统横幅。
-- 在桌面端，托盘 / 菜单栏可显示哪些已配对设备在线，且关闭窗口后 DashBeam 仍可保持运行（**设置 → 通用 → 启动与后台**）。
-- 手动 ticket 与 [sendme CLI](https://www.iroh.computer/sendme) 仍与之前完全一致。
+### 分享 ticket、链接或二维码（一次性传输）
 
-### 附近设备
-
-当其他 DashBeam 应用位于同一 Wi-Fi 或局域网时，它们会出现在 **设置 → 设备** 的 **Nearby** 下，以及分享时的 **Send to a device** 面板中：
-
-- 在设置中 **配对**，无需交换配对码即可添加设备。
-- 从分享面板 **发送**，用当前 ticket 邀请附近设备；接收方在接受前会确认一段短验证码。
-- 在 **设置 → 网络 → Your discoverability** 中控制他人能否发现您（Everyone / Paired only / Off）。
-
-附近设备依赖 [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS)。若网络阻止组播（访客 Wi-Fi、许多 VPN），请改用手动 ticket 或通过互联网配对——参见 [故障排除](../troubleshooting.md#the-nearby-list-is-empty)。
+分享过程中：**QR** 供相机扫描，**Share** 调起系统分享面板，**Copy** 复制原始 ticket。链接形如 `https://app.dashbeam.net/receive?ticket=…` - 在 Android 上会直接打开应用，其他平台则打开网页版，因此无需安装任何东西（大文件建议使用原生应用）。在接收处粘贴 ticket、链接或整条分享消息均可。
 
 
 ## 对比
@@ -190,6 +183,8 @@
 
 DashBeam 基于 [Iroh](https://www.iroh.computer) 构建——这是一套现代的点对点网络栈，简化了设备之间的直接通信。实践中，这意味着设备通过加密的 QUIC 通信，文件以内容寻址 blob 形式传输，当直连不可用时，中继会协助建立连接。
 
+> **详细版本：**[Under the hood](https://dashbeam.net/en/under-the-hood) 以叙述的方式讲解同一套架构 - 用指纹代替文件名、用名字代替地址、打洞、漫游，以及每个中间环节分别能看到什么、看不到什么。
+
 ### 核心组件
 
 | 组件 | 在此的作用 |
@@ -198,9 +193,10 @@ DashBeam 基于 [Iroh](https://www.iroh.computer) 构建——这是一套现代
 | **Tickets** | 一个字符串，告诉对等节点该*拨号连接谁*、该*获取什么* |
 | **Endpoints** | 每台设备的 Iroh 身份（Ed25519 密钥 → endpoint id） |
 | **QUIC + TLS 1.3** | 加密传输；多路复用，无队头阻塞 |
-| **Relays + hole punching** | 穿越 NAT 建立连接；优先直连，中继作为回退 |
+| **Relays + hole punching** | 跨 NAT 建立连接；在协商直连路径的同时由 relay 承载数据 |
 | **Control protocol**（配对） | 长连接通道，用于记住设备并投递分享邀请 |
 | **Local discovery**（mDNS） | 可选的局域网广播，使附近设备无需 ticket 即可互相发现 |
+| **接收链接** | 包装在普通 https URL 中的 ticket - 在 Android 上是 App Link，其他平台则打开网页版 |
 
 ### Blobs
 
@@ -209,6 +205,8 @@ DashBeam 基于 [Iroh](https://www.iroh.computer) 构建——这是一套现代
 - **link** 即该 32 字节哈希：哈希匹配，内容即匹配。
 - 文件夹与大文件使用 **HashSeq**（指向其他 blob 的 blob）。
 - 发送方是 **provider**；接收方是 **requester**。任一方可同时扮演两种角色。
+
+由于这个哈希是一棵 BLAKE3 树，而不是对整个文件做一次摘要，每个分块都能独立地相对根节点完成校验。这正是续传成本低廉的原因：连接断开后重新回来的接收方，清楚地知道哪些分块已经拿到*并且已经校验过*，因此只请求缺失的部分。已经收到的内容不会重传，而新到达的内容也不会未经校验就被接受。
 
 ### Tickets
 
@@ -220,6 +218,8 @@ DashBeam 基于 [Iroh](https://www.iroh.computer) 构建——这是一套现代
 
 您只会与分享 ticket 的对象建立连接：不会向陌生人广播您的 IP。这是 Iroh 所倡导的默认「cozy network」模型，而非向整个 swarm 泛洪发现。
 
+只携带 endpoint id 的 ticket 依赖公钥发现（Pkarr）来查找当前地址。这些记录由 endpoint 密钥本身签名，因此被篡改的记录只会校验失败，而不会把你引向错误的地方 - 查找服务只需要在**可用性上被信任，而不是完整性**。
+
 ### 跨网络连接
 
 当两台设备需要建立连接时：
@@ -229,6 +229,14 @@ DashBeam 基于 [Iroh](https://www.iroh.computer) 构建——这是一套现代
 3. 若直连可用，流量在设备之间传输；否则，relay 作为回退 UDP 跳点保留在路径中。
 
 无论哪种方式，载荷均为端到端加密。Relay 看到的是密文，而非您的文件。[了解更多 Iroh relay →](https://docs.iroh.computer/about/faq)
+
+这些步骤是相互重叠的，而不是排队进行。在打洞协商的同时，relay 已经在承载你的数据，因此没有任何环节需要等待直连成功 - 直连一旦建立，传输只会变得更快。大约每十次传输就有一次始终无法建立直连（对称 NAT、管控严格的企业网络），全程通过 relay 传输。
+
+### 跨网络漫游
+
+连接绑定的是对端的密钥，而不是它的 IP 地址，因此切换网络不会中断连接。传输途中从 Wi-Fi 切到蜂窝网络，iroh 会察觉地址变化、获知新的候选地址，并重新发布给对端。整个过程中由 relay 承载数据，打洞则会在新路径上重新执行一次。
+
+地址只是可随时丢弃的线索，而不是身份。这正是用密钥而非位置来标识设备所带来的实际收益。
 
 ### QUIC 与加密
 
@@ -258,6 +266,8 @@ QUIC（基于 UDP，与 HTTP/3 同源）将 TLS 1.3 融入传输层。对 DashBe
 ### 自托管 relay 与 discovery
 
 关于如何运行您自己的 iroh relay 与 discovery 服务器、配置 DashBeam 使用它们，以及混合公共/自托管部署的行为，请参阅 [`infra/README.md`](../../infra/README.md)（relay：[`infra/relay/README.md`](../../infra/relay/README.md#using-self-hosted-relays-with-dashbeam)，discovery：[`infra/dns/README.md`](../../infra/dns/README.md)）。
+
+以上内容的图解版本 - 包括 relay 运营方、你的网络运营商以及查找服务各自能从一次传输中获知什么的完整说明 - 请阅读 [Under the hood](https://dashbeam.net/en/under-the-hood)。
 
 
 ## 开发
@@ -310,7 +320,7 @@ AGPL-3.0
 <!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-dashbeam.net-orange
-[badge-version]: https://img.shields.io/badge/version-0.6.2-blue
+[badge-version]: https://img.shields.io/badge/version-0.7.0-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20CLI%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4

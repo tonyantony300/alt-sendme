@@ -1,5 +1,3 @@
-<img src="../../assets/rename-banner.svg" alt="お知らせ: AltSendme は DashBeam になりました。同じアプリで、見つけやすく、覚えやすく、発音しやすくなりました。" width="1200" />
-
 **言語:** [English](../../README.md) | [中文](README.zh-CN.md) | [Русский](README.ru.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | 日本語 | [한국어](README.ko.md) | [Polski](README.pl.md) | [العربية](README.ar.md)
 
 <div align="center">
@@ -34,25 +32,28 @@
 
 WeTransfer、Dropbox、Google Drive に頼る必要はありますか？DashBeam なら、個人情報を明かすことなく、エンドツーエンド暗号化で、信頼性が高く簡単にファイルを直接転送できます。
 
+そのときいちばん手近な方法を選べます。どの端末でも開ける**リンクや QR コードを送る**、**一度ペアリングした端末に送る**、**すでに同じネットワークにいる端末に送る** — この 3 つはいずれも同じバイトを同じ方法で運びます。直接、エンドツーエンドで暗号化して。
+
 
 
 ## 機能
 
-- **どこからでも、何からでも送信** — デスクトップ、Android、ターミナル、ブラウザ — どのプラットフォームから始めても、他のどのプラットフォームでも受信できます。
-- **あらゆるものを、あらゆるサイズで転送** — ファイルもフォルダ全体も、BLAKE3 による整合性チェックでエンドツーエンド検証されます。
-- **体感できるほどの高速性** — マルチギガビット回線をフルに活用し、超高速転送を実現します。
-- **デフォルトでプライベート** — アカウント不要、サインアップ不要、トラッキングなし、広告なし。
-- **デバイス間の直接転送** — ファイルはデバイス間を直接移動し、データが代償となる企業のクラウドストレージを回避します。
-- **常時オンのエンドツーエンド暗号化** — すべての転送で QUIC と TLS 1.3 を使用。リレーが介在する場合でも、暗号化されたトラフィックしか見えません。
-- **暗号認証** — すべてのチケットで、ファイル転送前に意図した送信者に接続していることを検証します。
-- **再開可能＆ブロードキャスト可能** — 中断された転送は自動的に再開。同じファイルを複数のピアに同時に共有可能です。
-- **ダウンロード前にプレビュー** — ダウンロード前に受信内容を確認できます。
-- **ペアリング済みデバイス** — **設定 → デバイス**でコンピューターと Android 端末を一度ペアリングすれば、毎回チケットをコピーせずにファイルを送信できます。
-- **同一ネットワーク上の近くのデバイス** — LAN 上の他の DashBeam デバイスが自動的に表示されます（mDNS）。設定からペアリングするか、共有中に送信できます。チケットの貼り付けは不要です。
-- **バックグラウンドでのプレゼンス** — デスクトップではトレイまたはメニューバーで常駐し、必要に応じてログイン時に起動して、ペアリング済みデバイスからオンラインと見えるようにできます。
-- **システム通知** — ペアリング要求とファイル招待は、アプリがフォアグラウンドでないときに OS 通知を出せます（デスクトップと Android）。
-- **軽量** — インストールサイズは小さく、Web のフットプリントも最小限です。
-- **無料＆オープンソース** — アップロード費用なし、サイズ制限なし、コミュニティ主導。
+- **クロスプラットフォーム** — デスクトップ、Android、CLI、ブラウザ — ウェブ版はインストール不要
+- **どんなファイルでも、どんなサイズでも** — ファイルもフォルダも、BLAKE3 で検証
+- **マルチギガビットの速度** — 高速回線を使い切ります
+- **Nearby（近くの端末）** — LAN 上で自動検出。Pair & Send に対応
+- **ペアリング済みデバイス** — コード（リモート）または Nearby で一度ペアリングすれば、以降は ticket なしで送信
+- **再開・複数同時** — 中断した転送を再開。複数の相手に同時に共有
+- **鍵で接続** — IP アドレスではなく、デバイスの識別情報で接続
+- **ローミング** — 転送中に Wi-Fi・モバイル回線・ネットワークを切り替えても切断されません
+- **コード、リンク、QR** — 受け取る側はインストール不要（ブラウザでもアプリでも）
+- **プレビューと履歴** — ダウンロード前に確認。転送ログはローカルに保存
+- **高度なデバッグモード** — 内部の動きを見えるようにする任意の診断機能
+- **プライベート** — アカウント・トラッキング・広告なし。デバイス間で直接
+- **暗号化** — TLS 1.3 でエンドツーエンド。ticket は認証付き
+- **relay のセルフホスト** — 自前の relay を使えば、リモート転送も速度制限なし（**設定 → Infra**）
+- **常に到達可能** — バックグラウンドのトレイ/サービス、通知、ログイン時に起動
+- **軽量で無料** — インストールサイズは小さく、オープンソースで制限なし
 
 
 ## 実績
@@ -82,26 +83,26 @@ WeTransfer、Dropbox、Google Drive に頼る必要はありますか？DashBeam
   </tr>
   <tr>
     <td>💻 <b>Windows (x64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-setup.exe'>Setup.exe</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-portable.zip'>Portable ZIP</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-setup.exe'>Setup.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-portable.zip'>Portable ZIP</a></td>
     <td>~10 MB</td>
   </tr>
   <tr>
     <td>💻 <b>macOS (Universal)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_universal.dmg'>DashBeam.dmg</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64.dmg'>Intel</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_universal.dmg'>DashBeam.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64.dmg'>Intel</a></td>
     <td>~15 MB</td>
   </tr>
   <tr>
     <td>💻 <b>Linux (amd64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.deb'>DashBeam.deb</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-0.6.2-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.AppImage'>AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.deb'>DashBeam.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-0.7.0-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.AppImage'>AppImage</a></td>
     <td>~13 MB</td>
   </tr>
   <tr>
     <td>📱 <b>Android (arm64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-arm64.apk'>DashBeam.apk</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-universal.apk'>universal</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-arm64.apk'>DashBeam.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-universal.apk'>universal</a></td>
     <td>~50 MB</td>
   </tr>
   <tr>
@@ -119,6 +120,8 @@ WeTransfer、Dropbox、Google Drive に頼る必要はありますか？DashBeam
 </table>
 
 その他のオプションは [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) または [Downloads](https://www.dashbeam.net/en/downloads) ページをご覧ください。
+
+うまくいかないときは、よくある問題とログの取り方をまとめた[トラブルシューティング](../troubleshooting.md)をご覧ください。
 
 
 
@@ -138,33 +141,23 @@ WeTransfer、Dropbox、Google Drive に頼る必要はありますか？DashBeam
 
 
 ## 対応言語
- 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭
+ 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭 🇺🇿
 
  
-## 仕組み
+## 送信方法
+### 近くのデバイス（推奨）
 
-1. ファイルまたはフォルダをドロップ — DashBeam がワンタイムの共有コード（「チケット」と呼ばれます）を生成します。
-2. チャット、メール、テキストでチケットを共有するか、**または** ペアリング済みもしくは近くのデバイス（デスクトップ / Android）に直接送信します。
-3. 相手がアプリにチケットを貼り付ける（または招待を承認する）と、転送が開始されます。
+同じネットワーク上のアプリは、**設定 → デバイス**の **Nearby** と、共有中の **Send to a device** の一覧に表示されます。近くのデバイスを選んで **Pair & Send** を押せば、ペアリングと転送開始を一度に行えます — 共有せずに設定からペアリングすることもできます。初回の接続時には両方の画面に確認コードが表示されます。誰から見つけられるようにするかは**設定 → ネットワーク → Your discoverability** で設定します。
+
+[mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) を使用します — ゲスト用 Wi-Fi や VPN ではブロックされていることがよくあります。一覧が空のままの場合は[トラブルシューティング](../troubleshooting.md#the-nearby-list-is-empty)をご覧ください。
 
 ### ペアリング済みデバイス
 
-macOS、Windows、Linux、Android では、**設定 → デバイス**でペアリングコードを使ってデバイスをペアリングするか、同じローカルネットワーク上の Nearby ペアリング要求を承認できます。ペアリング後：
+**設定 → デバイス**でペアリングコードを使ってペアリングするか（インターネット越しのリモートでも可能）、同じネットワーク上で Nearby のリクエストからペアリングします。ペアリング後は、共有中にそのデバイスの横に **Send** が表示され、ticket をコピーする必要はありません。受け取る側にはアプリ内で通知が表示されます。デスクトップではバックグラウンドで動作を続け、オンラインのペアリング済みデバイスをトレイに表示できます（**設定 → 一般 → Startup & background**）。手動の ticket と [sendme CLI](https://www.iroh.computer/sendme) も引き続き使えます。
 
-- 送信者は共有中にペアリング済みデバイスの横の **送信** をタップできます。チケットを手動でコピーする必要はありません。
-- 受信者はペアリング済み送信者から招待されると、アプリ内プロンプトが表示されます。システム通知が有効な場合、ウィンドウにフォーカスがないときにも OS バナーを受け取れます。
-- デスクトップでは、トレイ / メニューバーでどのペアリング済みデバイスがオンラインかを表示でき、ウィンドウを閉じた後も DashBeam を実行し続けられます（**設定 → 一般 → Startup & background**）。
-- 手動チケットと [sendme CLI](https://www.iroh.computer/sendme) は、これまでどおりそのまま動作します。
+### ticket・リンク・QR コードで共有（単発の転送）
 
-### 近くのデバイス
-
-他の DashBeam アプリが同じ Wi-Fi または LAN 上にある場合、**設定 → デバイス**の **Nearby**、および共有中の **Send to a device** シートに表示されます：
-
-- 設定から **ペアリング** して、ペアリングコードを交換せずにデバイスを追加できます。
-- 共有シートから **送信** して、現在のチケットで Nearby デバイスを招待できます。受信者は承認前に短い検証コードを確認します。
-- **設定 → ネットワーク → Your discoverability** で、他者に見つかるかどうかを制御できます（Everyone / Paired only / Off）。
-
-Nearby は [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) に依存します。ネットワークがマルチキャストをブロックする場合（ゲスト Wi-Fi、多くの VPN）、手動チケットを使うかインターネット経由でペアリングしてください — [トラブルシューティング](../troubleshooting.md#the-nearby-list-is-empty) を参照。
+共有中は、カメラで読み取る **QR**、システムの共有シートを開く **Share**、ticket をそのままコピーする **Copy** が使えます。リンクは `https://app.dashbeam.net/receive?ticket=…` の形式です — Android ではアプリが開き、それ以外ではウェブ版が開くので、相手は何もインストールする必要がありません（大きなファイルにはネイティブアプリのほうが適しています）。受信欄には ticket、リンク、共有メッセージ全文のいずれを貼り付けても構いません。
 
 
 ## 比較
@@ -190,6 +183,8 @@ Nearby は [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) に依存しま�
 
 DashBeam は [Iroh](https://www.iroh.computer) 上に構築されています。Iroh は、デバイス間の直接通信を簡素化する最新のピアツーピアネットワーキングスタックです。実際には、デバイスは暗号化された QUIC 経由で通信し、ファイルはコンテンツアドレス指定の blob として移動し、直接経路が利用できない場合はリレーが支援します。
 
+> **詳しい解説:** [Under the hood](https://dashbeam.net/en/under-the-hood) では同じアーキテクチャを読み物として紹介しています — ファイル名ではなくフィンガープリント、アドレスではなく名前、ホールパンチング、ローミング、そして各中継者に何が見えて何が見えないのか。
+
 ### 構成要素
 
 | 要素 | DashBeam での役割 |
@@ -198,9 +193,10 @@ DashBeam は [Iroh](https://www.iroh.computer) 上に構築されています。
 | **Tickets** | ピアに *誰* に接続し *何* を取得するかを伝える 1 つの文字列 |
 | **Endpoints** | 各デバイスの Iroh ID（Ed25519 キー → エンドポイント ID） |
 | **QUIC + TLS 1.3** | 暗号化トランスポート。ヘッドオブラインブロッキングなしの多重化 |
-| **Relays + hole punching** | NAT を越えた接続のブートストラップ。直接接続を優先し、リレーにフォールバック |
+| **Relays + hole punching** | NAT を越えた接続のブートストラップ。直接経路を交渉している間も relay がデータを運ぶ |
 | **Control protocol** (pairing) | デバイスを記憶し、共有招待を配信する長寿命チャネル |
 | **Local discovery** (mDNS) | Nearby デバイスがチケットなしで互いに見つかるためのオプションの LAN 広告 |
+| **受信リンク** | 通常の https URL に包まれた ticket — Android では App Link、それ以外ではウェブ版が開く |
 
 ### Blobs
 
@@ -209,6 +205,8 @@ DashBeam は [Iroh](https://www.iroh.computer) 上に構築されています。
 - **link** はその 32 バイトのハッシュです。ハッシュが一致すれば、コンテンツも一致します。
 - フォルダや大容量ファイルは **HashSeq**（他の blob を指す blob）を使用します。
 - 送信者が **provider**、受信者が **requester** です。どちらも両方の役割を担えます。
+
+このハッシュはファイル全体に対する 1 つのダイジェストではなく BLAKE3 のツリーなので、チャンクごとに単独でルートに対して検証できます。再開が安上がりなのはこのためです。接続が切れた後に戻ってきた受信側は、すでに保持していて*検証も済んでいる*チャンクを正確に把握しているため、欠けた部分だけを要求します。受信済みのものが再送されることはなく、届いたものが無検証で受け入れられることもありません。
 
 ### Tickets
 
@@ -220,6 +218,8 @@ DashBeam は [Iroh](https://www.iroh.computer) 上に構築されています。
 
 チケットを共有した相手にのみ接続します。見知らぬ人に IP をブロードキャストすることはありません。これが Iroh が推奨するデフォルトの「cozy network」モデルであり、スワーム全体への flooding discovery とは異なります。
 
+endpoint id しか含まない ticket は、現在のアドレスを見つけるために公開鍵ディスカバリ（Pkarr）に頼ります。これらのレコードは endpoint の鍵自身で署名されているため、改ざんされたレコードは誤った相手に誘導するのではなく検証に失敗します — ルックアップサービスに求められる信頼は**可用性であって、完全性ではありません**。
+
 ### ネットワーク越しの接続
 
 2 台のデバイスが接続する必要がある場合：
@@ -229,6 +229,14 @@ DashBeam は [Iroh](https://www.iroh.computer) 上に構築されています。
 3. 直接経路が使えれば、トラフィックはデバイス間を直接流れます。使えなければ、リレーがフォールバックの UDP ホップとして経路に残ります。
 
 いずれの場合も、ペイロードはエンドツーエンド暗号化されます。リレーが見るのは暗号文であり、ファイルではありません。[Iroh リレーの詳細 →](https://docs.iroh.computer/about/faq)
+
+これらのステップは順番待ちではなく、重なり合って進みます。ホールパンチングの交渉中にも relay はすでにデータを運んでいるため、直接経路の成立を待つものは何もありません — 直接経路ができれば転送が速くなるだけです。およそ 10 回に 1 回の転送は直接経路をまったく確立できず（対称型 NAT や制限の厳しい企業ネットワークなど）、最初から最後まで relay を経由します。
+
+### ネットワークをまたぐローミング
+
+接続は相手の IP アドレスではなく鍵に結び付いているため、ネットワークが変わっても接続は途切れません。転送中に Wi-Fi からモバイル回線に切り替えると、iroh はアドレスの変化に気付き、新しい候補を把握して相手に再度公開します。その間ずっと relay がデータを運び、ホールパンチングは新しい経路であらためて実行されるだけです。
+
+アドレスは使い捨てのヒントであって、アイデンティティではありません。デバイスを場所ではなく鍵で名付けることの実際的な利点がここにあります。
 
 ### QUIC と暗号化
 
@@ -258,6 +266,8 @@ QUIC（UDP ベース、HTTP/3 と同じ基盤）は TLS 1.3 をトランスポ�
 ### リレーと discovery のセルフホスト
 
 独自の iroh リレーと discovery サーバーの運用方法、DashBeam での設定方法、パブリック / セルフホストの混在構成の挙動については、[`infra/README.md`](../../infra/README.md) を参照してください（リレー: [`../../infra/relay/README.md#using-self-hosted-relays-with-dashbeam`](../../infra/relay/README.md#using-self-hosted-relays-with-dashbeam)、discovery: [`../../infra/dns/README.md`](../../infra/dns/README.md)）。
+
+以上のすべてを図解したものは — relay の運営者、ISP、ルックアップサービスがそれぞれ転送から何を知り得るのかの詳細も含めて — [Under the hood](https://dashbeam.net/en/under-the-hood) をご覧ください。
 
 
 ## 開発
@@ -312,7 +322,7 @@ DashBeam がデータとプライバシーをどのように扱うかについ�
 <!-- <div align="center" style="color: gray;"></div> -->
 
 [badge-website]: https://img.shields.io/badge/website-dashbeam.net-orange
-[badge-version]: https://img.shields.io/badge/version-0.6.2-blue
+[badge-version]: https://img.shields.io/badge/version-0.7.0-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20CLI%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4

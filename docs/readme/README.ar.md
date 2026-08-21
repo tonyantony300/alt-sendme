@@ -1,5 +1,3 @@
-<img src="../../assets/rename-banner.svg" alt="إعلان: AltSendme أصبح الآن DashBeam. نفس التطبيق، أسهل في العثور عليه وتذكّره ونطقه." width="1200" />
-
 **اللغة:** [English](../../README.md) | [中文](README.zh-CN.md) | [Русский](README.ru.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Polski](README.pl.md) | العربية
 
 <div dir="rtl">
@@ -36,25 +34,28 @@
 
 لماذا الاعتماد على WeTransfer أو Dropbox أو Google Drive بينما يمكنك نقل الملفات بشكل موثوق وسهل، مع تشفير من طرف إلى طرف دون الكشف عن أي معلومات شخصية؟
 
+اختر الطريقة الأقرب إليك: **أرسل رابطًا أو رمز QR** يُفتح على أي جهاز، أو **أرسل إلى جهاز اقترنت به مرة واحدة**، أو **أرسل إلى جهاز موجود بالفعل على شبكتك**. الطرق الثلاث تنقل البايتات نفسها بالطريقة نفسها — مباشرةً ومشفّرة من طرف إلى طرف.
+
 
 
 ## الميزات
 
-- **أرسل من أي مكان ومن أي جهاز** — سطح المكتب أو Android أو الطرفية أو المتصفح — ابدأ على منصة واحدة واستقبل على أي منصة أخرى.
-- **انقل أي شيء بأي حجم** — ملفات أو مجلدات كاملة، مع التحقق من طرف إلى طرف عبر فحوصات سلامة BLAKE3.
-- **سريع بما يكفي ليُحدث فرقًا** — يشبع اتصالات متعددة الجيجابت لنقلات فائقة السرعة.
-- **خصوصية افتراضيًا** — لا حسابات، لا تسجيل، لا تتبع، لا إعلانات.
-- **نقل مباشر من جهاز إلى جهاز** — تنتقل الملفات مباشرة بين أجهزتك، دون الاعتماد على التخزين السحابي للشركات حيث تكون البيانات هي الثمن.
-- **تشفير من طرف إلى طرف، دائمًا مفعّل** — كل نقل يستخدم QUIC مع TLS 1.3؛ ولا يرى المرحّلون سوى حركة مرور مشفّرة حتى عند مشاركتهم.
-- **مصادقة تشفيرية** — كل تذكرة تتحقق من أنك متصل بالمرسل المقصود قبل نقل أي ملفات.
-- **قابل للاستئناف والبث** — تستأنف النقلات المتقطعة تلقائيًا؛ وشارك الملف نفسه مع أي عدد من الأقران دفعة واحدة.
-- **معاينة قبل التنزيل** — اطّلع على ما ستستقبله قبل تنزيله.
-- **أجهزة مقترنة** — اقترن بأجهزة الكمبيوتر وهواتف Android مرة واحدة في **الإعدادات → الأجهزة**، ثم أرسل الملفات دون نسخ التذاكر في كل مرة.
-- **أجهزة قريبة على نفس الشبكة** — تظهر أجهزة DashBeam الأخرى على شبكتك المحلية تلقائيًا (mDNS). اقترن من الإعدادات أو أرسل أثناء المشاركة — دون لصق تذكرة.
-- **الحضور في الخلفية** — على سطح المكتب، ابقَ يعمل في علبة النظام أو شريط القوائم واختياريًا ابدأ عند تسجيل الدخول حتى ترى الأجهزة المقترنة أنك متصل.
-- **إشعارات النظام** — يمكن لطلبات الاقتران ودعوات الملفات إظهار إشعارات نظام التشغيل عندما لا يكون التطبيق في المقدمة (سطح المكتب وAndroid).
-- **خفيف جدًا** — تثبيتات صغيرة وبصمة ويب ضئيلة.
-- **مجاني ومفتوح المصدر** — لا تكاليف رفع، لا حدود للحجم، مدفوع بالمجتمع.
+- **متعدد المنصات** — سطح المكتب وAndroid وسطر الأوامر والمتصفح — بلا تثبيت على الويب
+- **أي ملف وأي حجم** — ملفات أو مجلدات، موثّقة بـ BLAKE3
+- **سرعات بجيجابت متعددة** — يستغل الاتصالات السريعة بالكامل
+- **الأجهزة القريبة** — اكتشاف تلقائي على الشبكة المحلية؛ Pair & Send
+- **الأجهزة المقترنة** — اقترن مرة واحدة برمز (عن بُعد) أو عبر Nearby، ثم أرسل بلا تذاكر
+- **قابل للاستئناف ومتعدد الأقران** — استأنف عمليات النقل المتوقفة، وشارك مع عدة أشخاص في آن واحد
+- **الاتصال بالمفتاح** — اتصال بهوية الجهاز لا بعنوان IP
+- **التجوال** — بدّل بين Wi-Fi وبيانات الهاتف والشبكات أثناء النقل دون انقطاعه
+- **رمز أو رابط أو QR** — لا يحتاج المستقبِل إلى أي تثبيت (متصفح أو تطبيق)
+- **معاينة وسجل** — شاهد قبل التنزيل، مع سجل محلي لعمليات النقل
+- **وضع تصحيح متقدم** — تشخيصات اختيارية لشفافية ما يجري خلف الكواليس
+- **خصوصية** — بلا حسابات ولا تتبّع ولا إعلانات؛ مباشرة بين الأجهزة
+- **تشفير** — TLS 1.3 من طرف إلى طرف، وتذاكر موثّقة
+- **استضافة ذاتية للمرحّلات** — عمليات نقل عن بُعد بلا تقييد للسرعة عبر مرحّلك الخاص (**الإعدادات → Infra**)
+- **متاح دائمًا** — خدمة/أيقونة في الخلفية، وإشعارات، وبدء التشغيل عند تسجيل الدخول
+- **خفيف ومجاني** — حجم تثبيت صغير، مفتوح المصدر وبلا حدود
 
 
 ## إحصائيات من الواقع
@@ -84,26 +85,26 @@
   </tr>
   <tr>
     <td>💻 <b>Windows (x64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-setup.exe'>Setup.exe</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64-portable.zip'>Portable ZIP</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-setup.exe'>Setup.exe</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64_en-US.msi'>MSI</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64-portable.zip'>Portable ZIP</a></td>
     <td>~10 MB</td>
   </tr>
   <tr>
     <td>💻 <b>macOS (Universal)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_universal.dmg'>DashBeam.dmg</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_x64.dmg'>Intel</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_universal.dmg'>DashBeam.dmg</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_aarch64.dmg'>Apple Silicon</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_x64.dmg'>Intel</a></td>
     <td>~15 MB</td>
   </tr>
   <tr>
     <td>💻 <b>Linux (amd64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.deb'>DashBeam.deb</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-0.6.2-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam_0.6.2_amd64.AppImage'>AppImage</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.deb'>DashBeam.deb</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-0.7.0-1.x86_64.rpm'>.rpm</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam_0.7.0_amd64.AppImage'>AppImage</a></td>
     <td>~13 MB</td>
   </tr>
   <tr>
     <td>📱 <b>Android (arm64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-arm64.apk'>DashBeam.apk</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.6.2/DashBeam-v0.6.2-universal.apk'>universal</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-arm64.apk'>DashBeam.apk</a></td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.0/DashBeam-v0.7.0-universal.apk'>universal</a></td>
     <td>~50 MB</td>
   </tr>
   <tr>
@@ -121,6 +122,8 @@
 </table>
 
 خيارات إضافية في [GitHub Releases](https://github.com/tonyantony300/dashbeam/releases) أو في صفحة [Downloads](https://www.dashbeam.net/en/downloads).
+
+تواجه مشكلات؟ راجع [استكشاف الأخطاء](../troubleshooting.md) للمشكلات الشائعة وكيفية جمع السجلات.
 
 
 
@@ -140,33 +143,23 @@
 
 
 ## اللغات المدعومة
- 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭
+ 🇺🇸 🇷🇺 🇫🇷 🇨🇳 🇩🇪 🇯🇵 🇮🇳 🇹🇭 🇮🇹 🇨🇿 🇪🇸 🇧🇷 🇸🇦 🇮🇷 🇰🇷  🇵🇱 🇺🇦 🇹🇷 🇳🇴 🇧🇩 🇭🇺 🇷🇸 🇹🇼 🇰🇭 🇺🇿
 
  
-## كيف يعمل 
+## طرق الإرسال
+### الأجهزة القريبة (موصى به)
 
-1. أسقط ملفك أو مجلدك — ينشئ DashBeam رمز مشاركة لمرة واحدة (يُسمى «تذكرة»).
-2. شارك التذكرة عبر الدردشة أو البريد الإلكتروني أو الرسائل النصية، **أو** أرسل مباشرة إلى جهاز مقترن أو قريب (سطح المكتب / Android).
-3. يلصق صديقك التذكرة في تطبيقه (أو يقبل دعوة)، ويبدأ النقل.
+تظهر التطبيقات الموجودة على الشبكة نفسها ضمن **Nearby** في **الإعدادات → الأجهزة**، وفي قائمة **Send to a device** أثناء المشاركة. اختر جهازًا قريبًا ثم **Pair & Send** لتقترن به وتبدأ النقل في خطوة واحدة — ويمكنك أيضًا الاقتران من الإعدادات دون مشاركة. يعرض الاتصال الأول رمز تحقق على كلتا الشاشتين. حدّد من يمكنه العثور عليك من **الإعدادات → الشبكة → Your discoverability**.
+
+يعتمد على [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) — وكثيرًا ما يُحجب على شبكات Wi-Fi للضيوف وعلى شبكات VPN. راجع [استكشاف الأخطاء](../troubleshooting.md#the-nearby-list-is-empty) إذا بقيت القائمة فارغة.
 
 ### الأجهزة المقترنة
 
-على macOS وWindows وLinux وAndroid يمكنك اقتران الأجهزة في **الإعدادات → الأجهزة** باستخدام رمز اقتران، أو بقبول طلب اقتران Nearby على نفس الشبكة المحلية. بعد الاقتران:
+اقترن من **الإعدادات → الأجهزة** برمز اقتران (يعمل عن بُعد عبر الإنترنت) أو عبر طلب Nearby على الشبكة نفسها. بعد الاقتران يظهر **Send** بجوار ذلك الجهاز أثناء المشاركة — دون نسخ أي تذكرة. ويصل المستقبِل إشعار داخل التطبيق. على سطح المكتب يمكن للتطبيق أن يستمر في العمل في الخلفية وأن يعرض الأجهزة المقترنة المتصلة في شريط النظام (**الإعدادات → عام → Startup & background**). ولا تزال التذاكر اليدوية و[سطر أوامر sendme](https://www.iroh.computer/sendme) تعمل كما هي.
 
-- يمكن للمرسلين النقر على **Send** بجانب جهاز مقترن أثناء المشاركة: دون نسخ التذكرة يدويًا.
-- يتلقى المستقبلون مطالبة داخل التطبيق عندما يدعوهم مرسل مقترن؛ ومع تفعيل إشعارات النظام، يمكنهم أيضًا الحصول على لافتة نظام التشغيل عندما لا تكون النافذة في التركيز.
-- على سطح المكتب، يمكن لعلبة النظام / شريط القوائم إظهار الأجهزة المقترنة المتصلة، ويمكن لـ DashBeam الاستمرار في العمل بعد إغلاق النافذة (**الإعدادات → عام → Startup & background**).
-- تظل التذاكر اليدوية و[sendme CLI](https://www.iroh.computer/sendme) تعمل تمامًا كما كانت.
+### مشاركة تذكرة أو رابط أو رمز QR (نقل لمرة واحدة)
 
-### الأجهزة القريبة
-
-عندما تكون تطبيقات DashBeam الأخرى على نفس Wi-Fi أو الشبكة المحلية، يمكن أن تظهر تحت **Nearby** في **الإعدادات → الأجهزة** وفي ورقة **Send to a device** أثناء المشاركة:
-
-- **اقترن** من الإعدادات لإضافة جهاز دون تبادل رمز اقتران.
-- **أرسل** من ورقة المشاركة لدعوة جهاز Nearby بالتذكرة الحالية؛ يؤكد المستقبلون رمز تحقق قصيرًا قبل القبول.
-- تحكّم في ما إذا كان بإمكان الآخرين العثور عليك ضمن **الإعدادات → الشبكة → Your discoverability** (Everyone / Paired only / Off).
-
-يعتمد Nearby على [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS). إذا كانت شبكتك تحظر البث المتعدد (Wi-Fi للضيوف، العديد من شبكات VPN)، فاستخدم تذكرة يدوية أو اقترن عبر الإنترنت — انظر [استكشاف الأخطاء وإصلاحها](../troubleshooting.md#the-nearby-list-is-empty).
+أثناء المشاركة: **QR** للمسح بالكاميرا، و**Share** لفتح ورقة المشاركة في النظام، و**Copy** لنسخ التذكرة نفسها. تأخذ الروابط الشكل `https://app.dashbeam.net/receive?ticket=…` — على Android تفتح التطبيق، وفي غيره تفتح تطبيق الويب، فلا حاجة إلى تثبيت أي شيء (الملفات الكبيرة أفضل عبر التطبيق الأصلي). ويمكنك لصق تذكرة أو رابط أو رسالة المشاركة كاملة في خانة الاستقبال.
 
 
 ## المقارنة
@@ -196,6 +189,8 @@
 
 يُبنى DashBeam على [Iroh](https://www.iroh.computer)، وهي حزمة شبكات حديثة من نظير إلى نظير تُبسّط التواصل المباشر بين الأجهزة. عمليًا، يعني ذلك أن الأجهزة تتواصل عبر QUIC المشفّر، وتنتقل الملفات كـ blobs معنونة بالمحتوى، وتساعد المرحّلات عندما لا يتوفر مسار مباشر.
 
+> **النسخة المطوّلة:** يستعرض [Under the hood](https://dashbeam.net/en/under-the-hood) البنية نفسها في شكل سردي — بصمات بدل أسماء الملفات، وأسماء بدل العناوين، وثقب الجدران (hole punching)، والتجوال، وما الذي يمكن لكل وسيط أن يراه وما لا يمكنه.
+
 ### لبنات البناء
 
 | المكوّن | دوره هنا |
@@ -204,9 +199,10 @@
 | **Tickets** | سلسلة واحدة تخبر النظير *من* يتصل به و*ماذا* يجلب |
 | **Endpoints** | هوية Iroh لكل جهاز (مفتاح Ed25519 → endpoint id) |
 | **QUIC + TLS 1.3** | نقل مشفّر؛ تعدد القنوات دون حظر head-of-line |
-| **Relays + hole punching** | إقلاع الاتصالات عبر NAT؛ تفضيل المباشر والتراجع إلى المرحّل |
+| **Relays + hole punching** | تؤسس الاتصالات عبر NAT؛ ويحمل المرحّل البيانات ريثما يُتفاوض على مسار مباشر |
 | **Control protocol** (pairing) | قناة طويلة الأمد لتذكّر الأجهزة وتوصيل دعوات المشاركة |
 | **Local discovery** (mDNS) | إعلان اختياري على الشبكة المحلية حتى تجد أجهزة Nearby بعضها دون تذكرة |
+| **روابط الاستقبال** | تذكرة مغلّفة داخل رابط https عادي — App Link على Android، وتطبيق الويب في ما عداه |
 
 ### Blobs
 
@@ -215,6 +211,8 @@
 - **link** هو ذلك الـ hash البالغ 32 بايت: إذا تطابق الـ hash، تطابق المحتوى.
 - تستخدم المجلدات والملفات الكبيرة **HashSeq** (blob يشير إلى blobs أخرى).
 - المرسل هو **provider**؛ والمستقبل هو **requester**. يمكن لأي طرف القيام بالدورين.
+
+ولأن هذا التجزيء شجرة BLAKE3 لا بصمة واحدة للملف كله، فإن كل جزء يتحقق بنفسه في مقابل الجذر. وهذا ما يجعل الاستئناف رخيصًا: فالمستقبِل العائد بعد انقطاع الاتصال يعرف تمامًا أي الأجزاء لديه *وتحقق منها*، فيطلب الناقص وحده. فلا يُعاد إرسال ما وصل، ولا يُقبل ما يصل بناءً على الثقة.
 
 ### Tickets
 
@@ -226,6 +224,8 @@
 
 لا تتصل إلا بمن تشارك معهم تذكرة: دون بث عنوان IP الخاص بك للغرباء. هذا هو نموذج «cozy network» الافتراضي الذي يشجعه Iroh، مقابل اكتشاف يغمر السرب بأكمله.
 
+التذاكر التي لا تحمل سوى معرّف endpoint تعتمد على الاكتشاف بالمفتاح العام (Pkarr) للعثور على العناوين الحالية. وهذه السجلات موقّعة بمفتاح الـ endpoint نفسه، فالسجل المتلاعب به يفشل في التحقق بدل أن يضللك — فخدمة البحث مؤتمنة على **التوافر لا على السلامة**.
+
 ### الاتصال عبر الشبكات
 
 عندما يحتاج جهازان للالتقاء:
@@ -235,6 +235,14 @@
 3. إذا نجح مسار مباشر، تمر الحركة من جهاز إلى جهاز. وإلا، يبقى المرحّل في المسار كقفزة UDP احتياطية.
 
 في كلتا الحالتين، الحمولة مشفّرة من طرف إلى طرف. يرى المرحّلون ciphertext وليس ملفاتك. [المزيد عن مرحّلات Iroh ←](https://docs.iroh.computer/about/faq)
+
+وهذه الخطوات تتداخل بدل أن تتتابع. فالمرحّل ينقل بياناتك بالفعل بينما يجري التفاوض على hole punching، فلا شيء ينتظر نجاح المسار المباشر — وإنما يزداد النقل سرعة إن نجح ومتى نجح. ونحو عملية نقل من كل عشر لا تحصل على مسار مباشر إطلاقًا (NAT متماثل، أو شبكات مؤسسية مقيّدة) فتمضي عبر المرحّل من أولها إلى آخرها.
+
+### التجوال بين الشبكات
+
+يرتبط الاتصال بمفتاح الطرف الآخر لا بعنوان IP الخاص به، فتغيير الشبكة لا ينهيه. بدّل من Wi-Fi إلى بيانات الهاتف في منتصف النقل، فيلاحظ iroh تغيّر العنوان، ويتعرّف على المرشحين الجدد، وينشرهم من جديد للطرف الآخر. ويحمل المرحّل البيانات طوال ذلك، ويُعاد تشغيل hole punching ببساطة على المسار الجديد.
+
+فالعناوين تلميحات قابلة للاستبدال، لا هوية. وهذا هو المكسب العملي من تسمية الأجهزة بمفاتيحها بدل مواقعها.
 
 ### QUIC والتشفير
 
@@ -264,6 +272,8 @@
 ### استضافة المرحّلات والاكتشاف ذاتيًا
 
 لمعرفة كيفية تشغيل relay وخادم اكتشاف iroh خاص بك، وتكوين DashBeam لاستخدامهما، وكيف تتصرف الإعدادات المختلطة (عام / مستضاف ذاتيًا)، راجع [`infra/README.md`](../../infra/README.md) (relay: [`infra/relay/README.md`](../../infra/relay/README.md#using-self-hosted-relays-with-dashbeam)، discovery: [`infra/dns/README.md`](../../infra/dns/README.md)).
+
+وللاطلاع على النسخة المصوّرة لكل ما سبق — بما في ذلك بيان كامل لما يعرفه كلٌّ من مشغّل المرحّل ومزوّد خدمة الإنترنت وخدمة البحث من كل عملية نقل — اقرأ [Under the hood](https://dashbeam.net/en/under-the-hood).
 
 
 ## التطوير
@@ -320,7 +330,7 @@ AGPL-3.0
 </div>
 
 [badge-website]: https://img.shields.io/badge/website-dashbeam.net-orange
-[badge-version]: https://img.shields.io/badge/version-0.6.2-blue
+[badge-version]: https://img.shields.io/badge/version-0.7.0-blue
 [badge-discord]: https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20CLI%2C%20-green
 [badge-sponsor]: https://img.shields.io/badge/sponsor-ff69b4
