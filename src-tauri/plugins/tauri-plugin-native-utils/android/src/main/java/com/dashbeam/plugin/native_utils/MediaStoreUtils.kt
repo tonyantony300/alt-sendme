@@ -16,11 +16,9 @@ import java.io.IOException
 const val MEDIA_STORE_SUBDIR = "DashBeam"
 
 /**
- * Thrown when the running device predates scoped storage.
- *
- * `RELATIVE_PATH` arrived in API 29; below that there is no way to place a
- * file under `Download/` without a broad storage permission, so the caller
- * falls back to app-private staging.
+ * Thrown when the device predates scoped storage. `RELATIVE_PATH` arrived in
+ * API 29; below it, writing under `Download/` needs a broad storage permission,
+ * so the caller falls back to app-private staging.
  */
 class MediaStoreUnsupportedException : IOException("MediaStore exports require Android 10")
 
@@ -33,12 +31,10 @@ data class MediaStoreExportResult(
 )
 
 /**
- * Copy a staging directory into the public `Download/DashBeam` collection.
- *
- * On API 29+ an app may write its own files here with no storage permission
- * at all, which is what makes this viable as a zero-prompt default. Files stay
- * on the device after an uninstall; re-reading them after a reinstall would
- * need `READ_EXTERNAL_STORAGE`, but writing fresh ones never does.
+ * Copy a staging directory into the public `Download/DashBeam` collection. On
+ * API 29+ this needs no storage permission at all, which is what makes it
+ * viable as a zero-prompt default — writing fresh files never does, though
+ * re-reading them after a reinstall would.
  */
 fun exportDirectoryToMediaStore(
     context: Context,

@@ -108,8 +108,7 @@ export function TransferHistoryRow({
 
 	const savePath = record.savePath
 	const writeTime = formatTransferDuration(record.exportMs)
-	// Nothing to open when the transfer never got far enough to measure and
-	// landed nowhere — a chevron that reveals an empty panel is a dead control.
+	// A chevron revealing an empty panel is a dead control.
 	const hasDetails = Boolean(
 		duration ||
 			speed ||
@@ -160,9 +159,8 @@ export function TransferHistoryRow({
 				)}
 			</div>
 
-			{/* Collapsed, a row answers "what, with whom, when, how big". Timing,
-			    throughput and destination are follow-up questions, so they live
-			    behind the chevron rather than costing every row a line. */}
+			{/* Collapsed, a row answers "what, with whom, when, how big"; timing,
+			    throughput and destination live behind the chevron. */}
 			<div className="flex min-w-0 items-center gap-1.5 text-xs">
 				<PeerIcon
 					className="h-3.5 w-3.5 shrink-0 text-muted-foreground"

@@ -66,8 +66,7 @@ export function TransferHistorySettings() {
 					<Switch checked={enabled} onCheckedChange={setEnabled} />
 				</div>
 
-				{/* Kept next to the toggle, and separate from it: turning recording
-				    off is not the same as deleting what is already recorded. */}
+				{/* Separate from the toggle: turning recording off is not deleting. */}
 				<div className="flex items-center justify-between gap-4 border-t pt-4">
 					<div className="flex-1">
 						<FrameTitle>{t('common:history.clearAll')}</FrameTitle>

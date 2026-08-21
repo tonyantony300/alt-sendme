@@ -38,11 +38,8 @@ pub struct ExportToMediaStoreArgs {
     pub source_dir: String,
 }
 
-/// What to show for a MediaStore export, most specific first.
-///
-/// `uri` is a single exported file; an empty one falls through to
-/// `relative_path`, the folder the export landed in (e.g. `Download/DashBeam`).
-/// With neither, the system Downloads list is all that is left.
+/// What to show for a MediaStore export, most specific first: a single file's
+/// `uri`, else the `relative_path` it landed in, else the Downloads list.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenDownloadTargetArgs {
@@ -74,9 +71,8 @@ pub struct ExportToTreeResult {
     pub conflicts: Vec<ExportToTreeConflict>,
 }
 
-/// Error text the Android side returns when the device predates scoped
-/// storage, signalling that the caller should keep files in app-private
-/// staging rather than treat the export as a hard failure.
+/// Returned by the Android side on pre-scoped-storage devices: keep the files
+/// in app-private staging rather than treat the export as a hard failure.
 pub const MEDIA_STORE_UNSUPPORTED: &str = "MEDIA_STORE_UNSUPPORTED";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

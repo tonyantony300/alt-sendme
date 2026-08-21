@@ -230,10 +230,9 @@ export function DevicesSettings() {
 	const [renameThisOpen, setRenameThisOpen] = useState(false)
 	const [renamePeerId, setRenamePeerId] = useState<string | null>(null)
 	const [searchQuery, setSearchQuery] = useState('')
-	// Removing a device waits on delivering `Forget` to the peer, which can
-	// take seconds when the peer is listed online but has actually gone away.
-	// Keyed by endpoint id rather than a single flag so removing one device
-	// doesn't freeze the buttons on all the others.
+	// Removal waits on delivering `Forget`, which takes seconds when the peer is
+	// listed online but gone. Keyed by endpoint id so one removal doesn't freeze
+	// the other rows' buttons.
 	const [forgettingIds, setForgettingIds] = useState<ReadonlySet<string>>(
 		new Set()
 	)
@@ -583,8 +582,7 @@ export function DevicesSettings() {
 																		})
 																	} finally {
 																		// The row unmounts on success, but this
-																		// state lives on the list, so the update
-																		// always lands somewhere mounted.
+																		// state lives on the list.
 																		setForgettingIds((prev) => {
 																			const next = new Set(prev)
 																			next.delete(device.endpoint_id)

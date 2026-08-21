@@ -173,9 +173,8 @@ export function TransferSuccessScreen({
 
 			{onOpenFolder && !IS_WEB ? (
 				<div className="flex gap-3 w-full max-w-sm">
-					{/* Rendered from the first frame, disabled while the files
-					    are still on their way to the download folder — a button
-					    that appears late reads as the screen being broken. */}
+					{/* Rendered from the first frame, disabled until the files land —
+					    a button that appears late reads as broken. */}
 					<Button
 						type="button"
 						variant="secondary"

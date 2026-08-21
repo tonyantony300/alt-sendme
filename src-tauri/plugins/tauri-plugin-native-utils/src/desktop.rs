@@ -78,9 +78,7 @@ impl<R: Runtime> NativeUtils<R> {
 }
 
 impl<R: Runtime> NativeUtils<R> {
-    /// Desktop processes are not frozen when the window loses focus, so there
-    /// is no presence to prop up. A no-op rather than an error keeps the
-    /// caller free of platform branching.
+    /// No-op: desktop processes aren't frozen when the window loses focus.
     pub fn start_presence_service(&self) -> crate::Result<()> {
         Ok(())
     }

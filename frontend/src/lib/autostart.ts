@@ -2,27 +2,22 @@ import { invoke } from './platform-api'
 import { IS_DESKTOP } from './platform'
 
 /**
- * Whether the OS launches DashBeam at sign-in. The OS is the source of
- * truth, not the persisted setting — a login item removed through system
- * settings must be reflected in the UI.
+ * Whether the OS launches DashBeam at sign-in. The OS is the source of truth,
+ * not the persisted setting.
  *
- * Resolves to `null` when the platform cannot be asked. That is Flatpak — the
- * XDG Background portal has no read-only query, and requesting one just to
- * paint a toggle would show the user a consent dialog every time they opened
- * Settings — and also web/mobile, which have no login-item concept at all.
- * Callers keep their cached value on `null`.
+ * `null` when the platform can't be asked: Flatpak (the portal has no read-only
+ * query, and asking would pop a consent dialog every Settings visit) and
+ * web/mobile. Callers keep their cached value.
  */
 export async function isAutostartEnabled(): Promise<boolean | null> {
-	// `null`, not `false`: "cannot be asked" is not the same as "off", and
-	// reporting `off` here would let callers act on an answer nobody gave.
+	// `null`, not `false`: "cannot be asked" is not "off".
 	if (!IS_DESKTOP) return null
 	return invoke<boolean | null>('autostart_is_enabled')
 }
 
 /**
- * Request an autostart change. Resolves to the state the OS ended up in,
- * which can differ from `enabled` when the platform or the user (via the
- * Flatpak portal dialog) refuses.
+ * Request an autostart change. Resolves to the state the OS ended up in, which
+ * can differ from `enabled` when the platform or the user refuses.
  */
 export async function setAutostart(enabled: boolean): Promise<boolean> {
 	if (!IS_DESKTOP) return false

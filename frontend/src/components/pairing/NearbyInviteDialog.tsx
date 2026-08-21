@@ -30,11 +30,9 @@ import { VerificationCode } from './VerificationCode'
 
 /**
  * The receiver's prompt for an invite from a device that isn't paired yet.
- * `paired-invite-received` carries the same payload for both paired and
- * Nearby senders (see `emit_paired_invite_received` in
- * `engine/native/src/pairing_util.rs`) — this component only reacts to it
- * when the sender is NOT already a known paired device, leaving the routine
- * case to `PairedInviteDialog`.
+ * `paired-invite-received` carries both paired and Nearby senders, so this only
+ * reacts when the sender is not already known — the routine case goes to
+ * `PairedInviteDialog`.
  */
 export function NearbyInviteDialog() {
 	const { t } = useTranslation()
@@ -63,10 +61,8 @@ export function NearbyInviteDialog() {
 						return
 					}
 					void (async () => {
-						// `devices` starts empty on cold start — wait for it to
-						// hydrate before deciding, otherwise an invite from an
-						// already-paired sender can arrive first and get shown
-						// here as "unverified" instead of in `PairedInviteDialog`.
+						// Wait for `devices` to hydrate, or a paired sender's invite
+						// shows here as "unverified" instead of in `PairedInviteDialog`.
 						await pairingDataHydrated()
 						if (disposed) return
 						const { devices } = usePairingDataStore.getState()
@@ -101,11 +97,9 @@ export function NearbyInviteDialog() {
 	}
 
 	const decline = () => {
-		// AlertDialogClose's own `onClick` and the dialog's `onOpenChange` both
-		// fire from a single close click — read-and-clear atomically via the
-		// state updater (no store to re-read from `getState()` here, unlike
-		// `PairedInviteDialog`) so the second call is a no-op instead of
-		// double-sending the decline.
+		// One close click fires both `AlertDialogClose`'s `onClick` and
+		// `onOpenChange`, so read-and-clear atomically via the state updater and
+		// the second call becomes a no-op instead of a second decline.
 		setInvite((current) => {
 			if (!current) return current
 			notifyInviteResponse(current.remote_endpoint_id, false)
@@ -116,10 +110,8 @@ export function NearbyInviteDialog() {
 	const accept = async () => {
 		const current = invite
 		if (!current) return
-		// The verification code is the whole point of this dialog — never
-		// accept on its behalf if it couldn't be computed (malformed endpoint
-		// id). The button below is disabled for the same reason; this is the
-		// belt-and-suspenders check in case it's ever reached anyway.
+		// Never accept without a verification code (malformed endpoint id). The
+		// button below is disabled for the same reason.
 		if (!shortFingerprint(current.remote_endpoint_id)) return
 		if (!acceptPairedInvite) {
 			toastManager.add({

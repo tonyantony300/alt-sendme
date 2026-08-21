@@ -142,9 +142,7 @@ impl TestFixture {
     }
 }
 
-/// A temp file with fixed contents, for tests that need a real path to feed
-/// into a send/share call. Keeps its temp dir alive for as long as the value
-/// lives.
+/// A temp file with fixed contents, keeping its temp dir alive with it.
 pub struct TempFileWithContents {
     _dir: tempfile::TempDir,
     path: PathBuf,
@@ -156,8 +154,7 @@ impl TempFileWithContents {
     }
 }
 
-/// Creates a temp file containing `contents`, returning a handle whose
-/// `path_string()` is suitable for passing straight into a send/share call.
+/// Temp file containing `contents`; `path_string()` feeds a send/share call.
 pub async fn temp_file_with_contents(contents: &str) -> TempFileWithContents {
     let dir = tempfile::tempdir().expect("temp dir");
     let path = dir.path().join("nearby-invite.txt");
@@ -187,9 +184,7 @@ const PAIR_SETTLE_DEADLINE: Duration = Duration::from_secs(30);
 /// bind real endpoints. Keeps its temp data dir alive for the node's lifetime.
 pub struct TestNode {
     pub service: NodeService,
-    /// The emitter this node was started with, so tests can assert on
-    /// events (`events.has_event(...)`) without threading their own emitter
-    /// through separately.
+    /// The emitter this node started with, for `events.has_event(...)`.
     pub events: Arc<MockEventEmitter>,
     _dir: tempfile::TempDir,
 }
@@ -219,8 +214,7 @@ impl std::ops::Deref for TestNode {
     }
 }
 
-/// Start a node with a fixed display name (mirrors `start_node` in
-/// `test_pairing_e2e.rs`, generalized so other E2E suites can share it).
+/// Start a node with a fixed display name.
 pub async fn spawn_node(display_name: &str) -> TestNode {
     let dir = tempfile::tempdir().expect("node temp dir");
     let emitter = MockEventEmitter::new();
@@ -248,11 +242,9 @@ pub async fn spawn_node(display_name: &str) -> TestNode {
     }
 }
 
-/// Start a node for lan-discovery E2E tests. `Discoverability` defaults to
-/// `Everyone`, so mDNS starts automatically as part of `NodeService::start`.
-/// Relay is disabled so the two nodes can only reach each other via addresses
-/// mDNS supplies, making the test a real check of the LAN-discovery pipeline
-/// instead of a fallback through n0's public discovery infrastructure.
+/// Start a node for lan-discovery E2E tests. `Everyone` by default, so mDNS
+/// starts with the node; relay is disabled so the only route between the two is
+/// the addresses mDNS supplies.
 pub async fn spawn_node_with_lan_discovery(display_name: &str) -> TestNode {
     let dir = tempfile::tempdir().expect("node temp dir");
     let emitter = MockEventEmitter::new();
@@ -280,12 +272,9 @@ pub async fn spawn_node_with_lan_discovery(display_name: &str) -> TestNode {
     }
 }
 
-/// Polls `node`'s Nearby list every 500ms until `endpoint_id` shows up **and**
-/// its identity probe has completed, or `deadline` elapses. Waiting for
-/// `identified` (rather than returning on first sighting) avoids a race
-/// against the background probe task — the caller gets a stable result to
-/// assert against either way, since whatever was last observed (possibly
-/// `None`) is returned on timeout too.
+/// Polls `node`'s Nearby list until `endpoint_id` appears *and* its identity
+/// probe finished, or `deadline` elapses. Waiting for `identified` avoids
+/// racing the background probe; the last observation is returned on timeout.
 pub async fn wait_for_nearby(
     node: &TestNode,
     endpoint_id: &str,
@@ -309,11 +298,8 @@ pub async fn wait_for_nearby(
     }
 }
 
-/// Polls `node`'s Nearby list every 500ms until `endpoint_id` is no longer
-/// present, or `deadline` elapses. Returns whether it actually disappeared —
-/// used to confirm a peer really stopped advertising (mDNS sends an explicit
-/// "goodbye" when the last `MdnsAddressLookup` clone for it drops, so this
-/// resolves in seconds, not a slow TTL expiry).
+/// Polls `node`'s Nearby list until `endpoint_id` is gone, or `deadline`
+/// elapses. mDNS sends an explicit goodbye, so this resolves in seconds.
 pub async fn wait_until_absent(node: &TestNode, endpoint_id: &str, deadline: Duration) -> bool {
     let end = tokio::time::Instant::now() + deadline;
     loop {

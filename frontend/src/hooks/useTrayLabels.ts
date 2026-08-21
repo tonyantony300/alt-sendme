@@ -4,9 +4,8 @@ import { invoke } from '@/lib/platform-api'
 import { useTranslation } from '@/i18n'
 
 /**
- * Keeps the native tray menu in the app's language. The tray is built in
- * Rust before the webview exists, so it starts with English defaults and is
- * corrected here on mount and on every language change.
+ * Keeps the native tray menu in the app's language — it is built in Rust with
+ * English defaults before the webview exists.
  */
 export function useTrayLabels(): void {
 	const { t, i18n } = useTranslation()

@@ -26,9 +26,8 @@ import { toastManager } from '../../ui/toast'
 const TOAST_TIMEOUT_MS = 5000
 
 /**
- * Base UI pauses auto-dismiss while the window is blurred. Opening Finder
- * (revealItemInDir) or a native save dialog can leave the toast stuck, so we
- * always force-close after the timeout.
+ * Base UI pauses auto-dismiss while the window is blurred, so opening Finder or
+ * a save dialog can leave a toast stuck — force-close after the timeout.
  */
 function showToast(options: Parameters<typeof toastManager.add>[0]) {
 	const id = toastManager.add({ ...options, timeout: TOAST_TIMEOUT_MS })

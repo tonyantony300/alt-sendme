@@ -1,33 +1,25 @@
 //! Coarse per-endpoint-id rate limiting for unpaired control traffic.
 //!
-//! Under `Discoverability::Everyone` the control ALPN accepts connections from
-//! peers we have never paired with, and each of their messages (identity
-//! probes, nearby invites, invite responses) can surface UI or trigger dials.
-//! A classic token bucket per endpoint id keeps a stranger from popping invite
-//! dialogs or probing in a tight loop, while a legitimate first contact — a
-//! probe, an invite, and a response within a few seconds — always fits inside
-//! the burst allowance.
+//! Under `Discoverability::Everyone` an unpaired peer's messages can surface UI
+//! or trigger dials, so a token bucket per endpoint id stops a stranger probing
+//! or inviting in a tight loop. A legitimate first contact fits in the burst.
 //!
-//! Pure state with an injected clock, so it can be unit-tested without a
-//! socket. The consumer is `node::ControlProtocol::handle_control_session`,
-//! which charges one token per message read from an unpaired peer.
+//! Pure state with an injected clock. The consumer is
+//! `node::ControlProtocol::handle_control_session`, one token per message.
 
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-/// Max burst of unpaired control messages accepted from one endpoint id
-/// before refill kicks in. Sized well above the 2-3 messages a legitimate
-/// first contact needs, well below anything resembling a spam loop.
+/// Burst allowance per endpoint id — above the 2-3 messages a legitimate first
+/// contact needs, below anything resembling a spam loop.
 pub(crate) const UNPAIRED_BURST: u32 = 8;
 
 /// One token refills per this interval, so a stranger who exhausted the burst
 /// is throttled to one message every two seconds.
 pub(crate) const UNPAIRED_REFILL_INTERVAL: Duration = Duration::from_secs(2);
 
-/// Cap on distinct endpoint ids tracked at once. When full, fully-refilled
-/// (idle) buckets are pruned; if every tracked peer is still actively
-/// throttled, *new* strangers are refused outright rather than letting the
-/// map grow without bound.
+/// Cap on tracked endpoint ids. When full, idle buckets are pruned; if every
+/// peer is still throttled, new strangers are refused rather than growing it.
 pub(crate) const MAX_TRACKED_PEERS: usize = 512;
 
 #[derive(Debug)]

@@ -7,11 +7,9 @@ use crate::control::ControlMessage;
 use serde::{Deserialize, Serialize};
 
 /// Who may learn this device's human-readable identity over the local network.
-///
-/// Note what this does **not** control: mDNS publishes our node id and addresses
-/// whenever it runs at all, so `PairedOnly` hides our *name*, not our *presence*.
-/// Only `Off` stops the broadcast. `Off` stays asymmetric — we can still discover
-/// and send to others, matching AirDrop.
+/// mDNS publishes our node id and addresses whenever it runs, so `PairedOnly`
+/// hides our name, not our presence — only `Off` stops the broadcast. `Off` is
+/// asymmetric: we can still discover and send to others, matching AirDrop.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Discoverability {
@@ -35,48 +33,28 @@ pub fn should_publish_mdns(setting: Discoverability) -> bool {
     !matches!(setting, Discoverability::Off)
 }
 
-/// Whether this device has presence worth keeping alive while the app is not on
-/// screen — the gate for Android's foreground service.
-///
-/// Deliberately wider than [`should_publish_mdns`]. Discoverability only
-/// governs the mDNS publisher; presence for *paired* peers rides the persistent
-/// control connections in `native::paired_connections`, which keep running with
-/// discoverability `Off`. Gating the service on discoverability alone would let
-/// a paired device drop offline in the background whenever it had opted out of
-/// LAN discovery.
+/// Whether this device has presence worth keeping alive off screen — the gate
+/// for Android's foreground service. Wider than [`should_publish_mdns`]: paired
+/// presence rides the control connections, which keep running under `Off`.
 pub fn should_run_background_presence(paired_count: usize, setting: Discoverability) -> bool {
     paired_count > 0 || should_publish_mdns(setting)
 }
 
-/// Whether to accept an inbound control connection from a peer we have not
-/// paired with. Only `Everyone` does — under the other settings we would refuse
-/// to answer anyway, so the connection has no legitimate purpose.
-///
-/// This setting check is necessary but not sufficient: `Everyone` is a *local
-/// network* affordance, yet the endpoint is reachable from the whole internet
-/// via the relay. The native accept gate (`node::PairedOnlyHook`) therefore
-/// additionally requires an unpaired connection to present a direct (non-relay)
-/// path, and unpaired messages are rate-limited per endpoint id
-/// (`native::rate_limit`). Paired peers are exempt from both — their presence
-/// connections legitimately run relay-only.
+/// Whether to accept an inbound control connection from an unpaired peer. Only
+/// `Everyone` does. Necessary but not sufficient: the endpoint is reachable over
+/// the relay from anywhere, so `node::PairedOnlyHook` also requires a direct
+/// path and `native::rate_limit` throttles the messages. Paired peers are exempt.
 pub fn allows_unpaired_control(setting: Discoverability) -> bool {
     matches!(setting, Discoverability::Everyone)
 }
 
-/// Messages an *unpaired* peer is permitted to send over the control ALPN.
+/// Messages an unpaired peer may send over the control ALPN. Pairing votes,
+/// recognition and forget all presuppose a relationship, so sending one is
+/// buggy or hostile.
 ///
-/// Defence in depth: the handshake gate decides whether to accept the connection
-/// at all, and this decides what may be sent across it. Pairing votes,
-/// recognition, and forget all presuppose an established relationship, so an
-/// unpaired peer sending one is either buggy or hostile — drop the connection.
-///
-/// `InviteResponse` is allowed too: a nearby invite's sender has no
-/// `PairedDevice` record for the receiver either, so the receiver's
-/// accept/decline necessarily arrives over an unpaired connection. The
-/// message-level allowance only says the *shape* is legitimate — the caller
-/// still must not act on an `InviteResponse` from an unpaired peer unless it
-/// matches an outstanding nearby invite that peer was actually sent, or any
-/// unpaired stranger could spoof an acceptance.
+/// `InviteResponse` is allowed because a nearby accept/decline necessarily
+/// arrives over an unpaired connection — but the caller must still match it
+/// against an invite actually sent, or a stranger could spoof an acceptance.
 pub fn unpaired_message_allowed(msg: &ControlMessage) -> bool {
     matches!(
         msg,
@@ -167,8 +145,7 @@ mod tests {
 
     #[test]
     fn background_presence_runs_while_any_device_is_paired() {
-        // Paired presence rides control connections, not mDNS, so it must
-        // survive discoverability being switched off entirely.
+        // Paired presence rides control connections, not mDNS.
         for setting in [
             Discoverability::Everyone,
             Discoverability::PairedOnly,

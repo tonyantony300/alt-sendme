@@ -234,8 +234,7 @@ function TicketDisplay({
 		const shareMessage = formatReceiveShareMessage(intro, url)
 		try {
 			if (canNativeShare) {
-				// Keep `url` as its own field so the OS/share target can still
-				// render the receive-link preview; brand stays in title/text.
+				// `url` stays its own field so the share target renders a preview.
 				await navigator.share({ title: intro, text: intro, url })
 			} else {
 				await copyTextToClipboard(shareMessage)

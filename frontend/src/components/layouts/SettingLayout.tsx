@@ -13,8 +13,8 @@ export function SettingLayout() {
 		<SidebarProvider className={IS_WEB ? 'h-full min-h-0' : undefined}>
 			<SettingSidebar />
 			<SidebarInset className="min-h-0">
-				{/* The scrollbar is opacity-0 until hover/scroll by default; settings
-				    pages keep it pinned visible so the overflow is always obvious. */}
+				{/* Pin the scrollbar visible (opacity-0 until hover by default) so the
+				    overflow is always obvious. */}
 				<ScrollArea className="[&_[data-slot=scroll-area-scrollbar][data-orientation=vertical]]:opacity-100">
 					<motion.div
 						key={location.pathname}

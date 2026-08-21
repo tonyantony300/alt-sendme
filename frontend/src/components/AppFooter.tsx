@@ -83,9 +83,7 @@ export function AppFooter() {
 				))}
 			</div>
 			<div className="flex flex-1 items-center justify-end gap-2">
-				{/* History exists wherever the Tauri commands do. Deliberately not
-				    gated on IS_PAIRING_CAPABLE — that resolves to the same set
-				    today but means something else. */}
+				{/* Not gated on IS_PAIRING_CAPABLE: same set today, different meaning. */}
 				{IS_TAURI ? (
 					isSharing ? (
 						<span

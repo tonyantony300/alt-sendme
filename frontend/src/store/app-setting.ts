@@ -29,26 +29,22 @@ export type AppSettingsState = {
 	dnsOrigin: string
 	showBroadcastToggle: boolean
 	/**
-	 * Nearby/LAN discoverability. Mirrors the engine's `Discoverability` —
-	 * persisted here (like the relay settings) so it survives restarts;
-	 * `init_node_service` reads this store's file before the node starts so an
-	 * `Off` choice never registers mDNS even briefly, and `DeviceNodeSync`
-	 * re-applies it once the node is ready as a safety net.
+	 * Nearby/LAN discoverability, mirroring the engine's `Discoverability`.
+	 * `init_node_service` reads this store's file before the node starts, so an
+	 * `Off` choice never registers mDNS even briefly; `DeviceNodeSync` re-applies
+	 * it once the node is ready, as a safety net.
 	 */
 	discoverability: 'everyone' | 'paired-only' | 'off'
 	/**
-	 * One-shot: the first-run "enable autostart" step has already run.
-	 *
-	 * Records that we tried, not that it succeeded — a user who turns the
-	 * toggle off must never have it turned back on by a later launch, and a
-	 * platform that refused must not be re-asked on every startup.
+	 * One-shot: the first-run "enable autostart" step has run. Records that we
+	 * tried, not that it succeeded — neither a user who turned it back off nor a
+	 * platform that refused should be asked again.
 	 */
 	autostartInitialized: boolean
 	/**
-	 * Whether finished transfers are written to the history page.
-	 *
-	 * Read Rust-side at recorder construction, so turning it off stops new rows
-	 * immediately. Existing rows are left alone — disabling is not clearing.
+	 * Whether finished transfers are written to the history page. Read Rust-side
+	 * at recorder construction, so turning it off stops new rows immediately.
+	 * Existing rows are left alone — disabling is not clearing.
 	 */
 	enableTransferHistory: boolean
 }
@@ -84,27 +80,16 @@ const AppSettingsKey = 'app_settings'
 const AppSettingsVersion = MEDIA_STORE_DEFAULT_VERSION
 
 /**
- * v0 → v1: force `minimizeToTray` back to `true`.
+ * v0 → v1: force `minimizeToTray` back to `true`. Nothing read this key until
+ * the always-on-presence work landed, but `persist` has no `partialize`, so the
+ * dead `false` default was written to disk the first time any setting changed.
+ * Reading it as intent would turn "close hides to tray" into "close quits",
+ * killing in-flight transfers on the first upgrade.
  *
- * Until the always-on-presence work landed, nothing read this key — the
- * toggle was dead and the window-close handler hid to the tray
- * unconditionally. `persist` has no `partialize`, so the whole state object
- * (including the old hardcoded `minimizeToTray: false` default) was written
- * to disk the first time a user changed *any* setting. A persisted `false`
- * therefore records a dead default, never a user choice.
+ * v1 → v2: drop the stored Android download folder — see `migrateDownloadFolder`.
  *
- * Reading it as intent would flip "close hides to tray" — the behaviour
- * every install has always had — into "close quits", which shuts the node
- * down and kills in-flight transfers on the first upgrade.
- *
- * v1 → v2: drop the stored Android download folder. See
- * `migrateDownloadFolder` for why an explicitly picked folder is dropped
- * rather than kept.
- *
- * Only these keys are corrected; every other persisted value is carried
- * through untouched. The new version is written back to disk as part of
- * rehydration, so each step runs at most once per install: a user who turns
- * the tray toggle off — or picks a folder — *after* upgrading keeps it.
+ * Every other persisted value carries through untouched, and the new version is
+ * written back during rehydration, so each step runs at most once per install.
  */
 function migrateAppSettings(
 	persistedState: unknown,
@@ -171,11 +156,8 @@ export const useAppSettingStore = create<AppSettings>()(
 				...(persistedState as Partial<AppSettings>),
 			}),
 			// The Rust close handler seeds itself from `settings.json` during
-			// `setup()`, long before the webview rehydrates — so on the launch
-			// where the migration above corrects a stale value, the running
-			// process would still be using the old one. Push the hydrated value
-			// across so the correction applies to this session, not just the
-			// next one.
+			// `setup()`, before the webview rehydrates — push the hydrated value
+			// across so a migration applies to this session, not just the next.
 			onRehydrateStorage: () => (state) => {
 				if (!state || !IS_DESKTOP) return
 				void import('../lib/platform-api')

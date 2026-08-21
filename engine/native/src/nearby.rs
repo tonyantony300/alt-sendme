@@ -1,8 +1,7 @@
 //! Registry of devices seen on the local network but not yet paired.
 //!
-//! Deliberately free of I/O. It consumes observations that `lan_discovery`
-//! feeds it, which is what lets the whole state machine be tested without
-//! multicast — CI runners frequently block it.
+//! Deliberately free of I/O — it consumes observations from `lan_discovery`, so
+//! the state machine is testable without multicast, which CI often blocks.
 
 use protocol::identity::short_fingerprint;
 use serde::Serialize;
@@ -23,11 +22,9 @@ pub struct NearbyDevice {
     pub identified: bool,
 }
 
-/// How long an entry's identity is trusted before the next sighting re-probes
-/// it. Display names are *pulled* (`WhoAreYou` → `Identity`) and never pushed:
-/// mDNS carries only endpoint ids and addresses, and nothing tells a peer that
-/// we hold a name for it. So a device that renames itself keeps announcing the
-/// same id, and asking again is the only way anyone finds out.
+/// How long an entry's identity is trusted before a sighting re-probes it.
+/// Names are pulled (`WhoAreYou` → `Identity`), never pushed — mDNS carries only
+/// ids, so asking again is the only way to notice a rename.
 pub const NEARBY_IDENTITY_REFRESH_MS: u64 = 60_000;
 
 /// What the caller should do after an observation.
@@ -47,8 +44,8 @@ pub enum ObserveOutcome {
     Invalid,
 }
 
-/// Fingerprint for logging. Malformed ids reach `observe` and `expire` from the
-/// network, so this must never panic or echo the raw value back into the log.
+/// Fingerprint for logging. Malformed ids arrive from the network, so this must
+/// never panic or echo the raw value into the log.
 fn fingerprint_or_invalid(endpoint_id: &str) -> String {
     short_fingerprint(endpoint_id).unwrap_or_else(|| "invalid".to_string())
 }
@@ -58,17 +55,14 @@ fn fingerprint_or_invalid(endpoint_id: &str) -> String {
 #[derive(Debug, Clone)]
 struct TrackedDevice {
     device: NearbyDevice,
-    /// When the last identity probe was *started*, not when one answered.
-    /// Stamping the attempt is what keeps a peer that never answers (old
-    /// build, refused probe, timeout) on the same unhurried retry cadence as
-    /// one that does, instead of re-probing it on every single sighting.
+    /// When the last probe was *started*, not answered — so a peer that never
+    /// answers retries at the same cadence instead of on every sighting.
     last_probe_at: u64,
 }
 
 #[derive(Debug, Default)]
 pub struct NearbyRegistry {
-    /// `BTreeMap` so `list()` is ordered without an explicit sort, which keeps
-    /// the UI from reshuffling rows on every discovery event.
+    /// `BTreeMap` so `list()` is ordered and the UI doesn't reshuffle rows.
     devices: BTreeMap<String, TrackedDevice>,
 }
 
@@ -77,13 +71,9 @@ impl NearbyRegistry {
         Self::default()
     }
 
-    /// Logs the outcome of every sighting. `observe_inner` has five exit paths
-    /// and a wrapper records all of them without repeating the call at each
-    /// `return`.
-    ///
-    /// `now_ms` is passed in rather than read here: this module is pure state
-    /// (see the module docs), and a caller-supplied clock is what lets the
-    /// identity-refresh cadence be tested without waiting out a minute.
+    /// Logs the outcome of every sighting — a wrapper covers `observe_inner`'s
+    /// five exit paths at once. `now_ms` is injected so the refresh cadence is
+    /// testable without waiting out a minute.
     pub fn observe(
         &mut self,
         endpoint_id: &str,
@@ -115,9 +105,8 @@ impl NearbyRegistry {
             return ObserveOutcome::Paired;
         }
         if let Some(tracked) = self.devices.get_mut(endpoint_id) {
-            // mDNS re-announces a peer roughly once a second, and every one of
-            // those is a chance to notice it renamed itself. Pace them: the
-            // name we hold is only re-asked for once it's stale.
+            // mDNS re-announces roughly once a second; only re-ask for the name
+            // once the one we hold is stale.
             if now_ms.saturating_sub(tracked.last_probe_at) < NEARBY_IDENTITY_REFRESH_MS {
                 return ObserveOutcome::Known;
             }
@@ -141,15 +130,12 @@ impl NearbyRegistry {
         ObserveOutcome::ProbeNeeded
     }
 
-    /// Returns `true` when this actually changed the entry — either the first
-    /// identity for it, or a peer that renamed itself since the last probe.
-    /// `false` covers both a peer that is no longer tracked (it expired while
-    /// its probe was in flight) and a refresh that confirmed what we already
-    /// held, so a periodic re-probe stays silent instead of waking the UI.
+    /// `true` when this changed the entry — a first identity, or a rename.
+    /// `false` covers a peer that expired while its probe was in flight and a
+    /// refresh that confirmed what we held, so a re-probe doesn't wake the UI.
     ///
-    /// `os` is `None` for "unknown" (the caller's job to decide that — see
-    /// `ControlMessage::Identity`'s `#[serde(default)]` `os: String`, where an
-    /// old-build peer's reply deserializes to `""`, not this `None`).
+    /// `os` is `None` for "unknown"; normalizing an old-build peer's `""` reply
+    /// is the caller's job.
     pub fn set_identity(
         &mut self,
         endpoint_id: &str,
@@ -157,8 +143,8 @@ impl NearbyRegistry {
         device_type: String,
         os: Option<String>,
     ) -> bool {
-        // `display_name` is user-authored text, so only its presence is logged,
-        // never its content — these logs end up in shared bug reports.
+        // `display_name` is user-authored and these logs end up in bug reports,
+        // so log only its presence.
         tracing::debug!(
             target: "dashbeam::_events::nearby::identity",
             remote = %fingerprint_or_invalid(endpoint_id),
@@ -217,8 +203,7 @@ mod tests {
         byte.repeat(32)
     }
 
-    /// Fixed "now" for tests that don't care about the clock. Sightings that
-    /// need to look older or newer offset from this.
+    /// Fixed "now" for tests that don't care about the clock.
     const T0: u64 = 1_700_000_000_000;
 
     #[test]
@@ -374,9 +359,8 @@ mod tests {
 
     #[test]
     fn set_identity_with_none_os_leaves_it_unset() {
-        // The caller's job (see `node::spawn_identity_probe`) is to normalize
-        // an old-build peer's empty-string reply to `None` before calling
-        // here — this only proves the registry stores whatever it's given.
+        // Normalizing an old-build peer's `""` reply is the caller's job; this
+        // only proves the registry stores whatever it's given.
         let mut reg = NearbyRegistry::new();
         reg.observe(&id("11"), false, T0);
         assert!(reg.set_identity(

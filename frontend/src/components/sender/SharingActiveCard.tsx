@@ -34,9 +34,8 @@ export function SharingActiveCard({
 	onSetBroadcast,
 }: SharingControlsProps) {
 	const { t } = useTranslation()
-	// Desktop opens the device list alongside the share link; a phone has no room
-	// for that, so mobile starts collapsed and waits for the "send to a device"
-	// button.
+	// Desktop shows the device list alongside the share link; mobile has no room,
+	// so it starts collapsed behind the "send to a device" button.
 	const [devicesOpen, setDevicesOpen] = useState(
 		IS_PAIRING_CAPABLE && !IS_MOBILE
 	)

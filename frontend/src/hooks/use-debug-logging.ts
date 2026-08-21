@@ -24,8 +24,8 @@ export const debugLoggingQueryKeys = {
 export const DEBUG_LOGGING_SUPPORTED = IS_TAURI && (IS_DESKTOP || IS_ANDROID)
 
 /**
- * Verbosity is fixed at startup, so `enabled` and `activeThisSession` disagree between
- * toggling and restarting — that gap is what the "restart required" hint keys off.
+ * Verbosity is fixed at startup, so `enabled` and `activeThisSession` disagree
+ * between toggling and restarting — that gap drives the "restart required" hint.
  */
 export function useDebugLogging() {
 	return useQuery({
@@ -53,8 +53,7 @@ export function useSetDebugLogging() {
 
 export function useExportDebugBundle() {
 	return useMutation({
-		// Relay config comes from the UI because the app's settings store is the only
-		// place that knows what the user selected.
+		// Only the frontend's settings store knows which relay the user selected.
 		mutationFn: ({
 			destPath,
 			relay,

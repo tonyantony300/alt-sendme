@@ -30,14 +30,12 @@ export interface NearbyStoreApi {
 }
 
 /**
- * Plain factory holding the reducer logic, independent of zustand/React so it
- * can run under `node:test` (see `nearby-store.test.ts`). `useNearbyStore`
- * below wraps one instance of this for component consumption.
+ * Plain factory holding the reducer logic, free of zustand/React so it runs
+ * under `node:test`. `useNearbyStore` below wraps one instance for components.
  *
- * `platform-api` is imported lazily (inside `hydrate`, not at module scope):
- * that file's own dependency graph uses extensionless relative imports meant
- * for Vite, which plain `node --test` cannot resolve. Since the test suite
- * never calls `hydrate`, the dynamic import is never reached.
+ * `platform-api` is imported lazily inside `hydrate` — its dependency graph
+ * uses extensionless imports that plain `node --test` can't resolve, and the
+ * tests never call `hydrate`.
  */
 export function createNearbyStore(): NearbyStoreApi {
 	let devices: NearbyDevice[] = []
@@ -62,10 +60,8 @@ export function createNearbyStore(): NearbyStoreApi {
 		if (!IS_PAIRING_CAPABLE) return
 		const { invoke } = await import('../lib/platform-api.js')
 		const list = await invoke<NearbyDevice[]>('list_nearby')
-		// The `nearby-unavailable` event fires during node init — before this
-		// store has any listener — so the reason is (re)queried on every
-		// hydrate. This also *clears* a stale reason once discovery recovers
-		// (e.g. after a network rebuild brought mDNS back up).
+		// `nearby-unavailable` fires during node init, before this store listens,
+		// so re-query on every hydrate. Also clears a stale reason on recovery.
 		const status = await invoke<{ reason: string | null }>('nearby_status')
 		devices = [...list].sort(compareNearbyDevices)
 		unavailableReason = status.reason
@@ -122,10 +118,9 @@ export const useNearbyStore = create<NearbyState>((set) => {
 })
 
 /**
- * Refetches the full Nearby list and upserts just `endpointId` from it.
- * `nearby-device-found`/`nearby-device-identified` events only carry the
- * endpoint id (see `engine/native/src/node.rs::emit_nearby`) — the rest of
- * the row (fingerprint, name, type, os) has to come from `list_nearby`.
+ * Refetches the full Nearby list and upserts just `endpointId` from it — the
+ * discovery events carry only an endpoint id, so the rest of the row has to
+ * come from `list_nearby`.
  */
 async function refreshOne(endpointId: string): Promise<void> {
 	if (!IS_PAIRING_CAPABLE) return
@@ -152,8 +147,7 @@ function parseNearbyPayload<T>(payload: unknown): T | null {
 
 /**
  * Registers the Nearby discovery listeners. Scoped to the Devices settings
- * screen (via `NearbyDevices`'s mount/unmount) rather than app-wide, since
- * nothing else currently reads the Nearby list.
+ * screen rather than app-wide, since nothing else reads the Nearby list.
  */
 export async function startNearbyListeners(): Promise<() => void> {
 	const { listen } = await import('../lib/platform-api.js')
@@ -163,8 +157,7 @@ export async function startNearbyListeners(): Promise<() => void> {
 		await listen('nearby-device-found', (event: { payload: unknown }) => {
 			const payload = parseNearbyPayload<NearbyEventPayload>(event.payload)
 			if (payload?.endpointId) {
-				// A sighting proves discovery is working — drop any stale
-				// unavailable banner it may have raised before recovering.
+				// A sighting proves discovery works — drop any stale banner.
 				useNearbyStore.getState().setUnavailable(null)
 				void refreshOne(payload.endpointId)
 			}

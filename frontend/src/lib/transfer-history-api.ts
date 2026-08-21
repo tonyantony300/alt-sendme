@@ -1,8 +1,6 @@
 /**
- * Tauri surface for the transfer history the Rust shell records.
- *
- * Every call is stubbed on web (see `platform-api.ts`), so callers do not need
- * to branch on platform — the page itself is simply not reachable there.
+ * Tauri surface for the transfer history the Rust shell records. Stubbed on web
+ * (see `platform-api.ts`), so callers need no platform branch.
  */
 import { invoke } from './platform-api'
 import type { TransferRecord } from './transfer-history'

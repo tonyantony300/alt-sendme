@@ -17,17 +17,15 @@ use tauri::menu::ContextMenu;
 
 static TRAY_ACTIVE: AtomicBool = AtomicBool::new(false);
 
-/// Mirrors the frontend's `minimizeToTray` setting. Lives here rather than in
-/// `AppState` because the window-close handler is synchronous and cannot lock
-/// the async `AppStateMutex`.
+/// Mirrors the frontend's `minimizeToTray` setting. Not in `AppState` because
+/// the window-close handler is synchronous and can't lock `AppStateMutex`.
 static BACKGROUND_ON_CLOSE: AtomicBool = AtomicBool::new(true);
 
 pub fn is_active() -> bool {
     TRAY_ACTIVE.load(Ordering::Relaxed)
 }
 
-/// Only the Windows/Linux close handler consults this — macOS hides on close
-/// unconditionally (platform convention), so on macOS it would be dead code.
+/// Windows/Linux only — macOS hides on close unconditionally.
 #[cfg(not(target_os = "macos"))]
 pub fn background_on_close() -> bool {
     BACKGROUND_ON_CLOSE.load(Ordering::Relaxed)
@@ -37,9 +35,8 @@ pub fn set_background_on_close(enabled: bool) {
     BACKGROUND_ON_CLOSE.store(enabled, Ordering::Relaxed);
 }
 
-/// Tray strings, pushed from the frontend so the menu follows the app
-/// language. English defaults cover the window between process start and the
-/// webview's first `set_tray_labels` call.
+/// Tray strings, pushed from the frontend so the menu follows the app language.
+/// English defaults cover startup, before the first `set_tray_labels` call.
 #[derive(Clone, serde::Deserialize)]
 pub struct TrayLabels {
     pub open: String,
@@ -73,9 +70,8 @@ pub fn format_presence(labels: &TrayLabels, online: usize, total: usize) -> Stri
         .replace("{{total}}", &total.to_string())
 }
 
-/// Soft cap for the name portion of a tray row. Display names may be up to 64
-/// chars; native menus do not wrap, so without truncation a long name makes
-/// the whole menu as wide as the string. Keep enough room for " - Online".
+/// Soft cap for a tray row's name. Native menus don't wrap, so a 64-char
+/// display name would set the whole menu's width. Leaves room for " - Online".
 const TRAY_DEVICE_NAME_MAX_CHARS: usize = 36;
 
 fn truncate_device_name(name: &str) -> String {
@@ -144,8 +140,7 @@ struct PresenceState {
     online_names: Vec<String>,
 }
 
-/// Everything needed to mutate the tray after it is built. Managed in Tauri
-/// state because `setup_tray` returns before any presence event arrives.
+/// Everything needed to mutate the tray after `setup_tray` returns.
 pub struct TrayHandles {
     pub tray: tauri::tray::TrayIcon,
     pub menu: Menu<tauri::Wry>,
@@ -155,14 +150,11 @@ pub struct TrayHandles {
     pub open: MenuItem<tauri::Wry>,
     pub quit: MenuItem<tauri::Wry>,
     pub labels: Mutex<TrayLabels>,
-    /// Last known presence snapshot. Generation is stored alongside the
-    /// counts under the same lock so a stale refresh can never overwrite a
-    /// fresher one — see `refresh_presence`.
+    /// Last known presence snapshot. Generation shares the lock with the counts
+    /// so a stale refresh can't overwrite a fresher one — see `refresh_presence`.
     presence: Mutex<PresenceState>,
-    /// Source of monotonically increasing generation numbers handed out to
-    /// each `refresh_presence` call, in the order it was *requested* rather
-    /// than the order it *completes* (refreshes race on a blocking file
-    /// read and can finish out of order).
+    /// Monotonic generation handed to each `refresh_presence` in request order;
+    /// refreshes race on a blocking file read and can finish out of order.
     pub next_generation: AtomicU64,
 }
 
@@ -243,22 +235,6 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
         }
         "quit" => {
             tracing::info!("Quit requested from tray");
-
-            // If a confirmation dialog should be shown before quit:
-            // ----------------------------------------------
-            // let handle = app.clone();
-            // handle
-            //     .dialog()
-            //     .message("Are you sure you want to quit DashBeam?")
-            //     .title("Confirm exit")
-            //     .buttons(tauri_plugin_dialog::MessageDialogButtons::OkCancel)
-            //     .kind(tauri_plugin_dialog::MessageDialogKind::Warning)
-            //     .show(move |proceed| {
-            //         if proceed {
-            //             handle.exit(0);
-            //         }
-            //     });
-            // ----------------------------------------------
 
             app.exit(0);
         }
@@ -372,11 +348,8 @@ pub fn apply_labels(app: &AppHandle, labels: TrayLabels) {
 }
 
 /// Write a presence snapshot into `current` unless a newer generation already
-/// landed there. Returns whether the write happened.
-///
-/// Pure and free of any Tauri/async types so the ordering guarantee that
-/// `refresh_presence` relies on — a stale, late-finishing refresh must never
-/// clobber a fresher one — is unit-testable on its own.
+/// landed there. Returns whether the write happened. Kept free of Tauri/async
+/// types so the ordering guarantee is unit-testable on its own.
 fn apply_if_newer(
     current: &mut PresenceState,
     generation: u64,
@@ -397,17 +370,9 @@ fn apply_if_newer(
 /// Recompute presence from the node and re-render. Cheap enough to call on
 /// every presence event — `list_paired` is a store read, not a network call.
 ///
-/// Each call spawns an independent task, and that task does a *blocking*
-/// file read (`paired-devices.json`) off the async executor to get the
-/// counts. Tasks can therefore finish in a different order than the events
-/// that triggered them arrived in. A monotonic generation number is handed
-/// out synchronously, in call order, before the task is spawned; the task
-/// only writes presence if its generation is still the newest one seen,
-/// checked and written atomically under the `presence` lock via
-/// `apply_if_newer`. This guarantees the tray always ends up reflecting the
-/// most recently *requested* refresh, regardless of completion order —
-/// while a stale completion is dropped, the newest request is always the
-/// one that (eventually) writes, so it is never the one left out.
+/// Each call spawns a task doing a blocking file read, so tasks can finish out
+/// of order. A generation number handed out synchronously in call order, plus
+/// `apply_if_newer`, keeps the tray on the most recently *requested* refresh.
 pub fn refresh_presence(app: &AppHandle) {
     let app = app.clone();
     let Some(handles) = app.try_state::<TrayHandles>() else {
@@ -464,8 +429,7 @@ mod refresh_ordering_tests {
         ));
         assert_eq!(presence.generation, 2);
         assert_eq!(presence.online_names, vec!["A", "B"]);
-        // ...generation 1 (the earlier request) finishes after, and must
-        // not clobber the fresher value it lost the race to.
+        // ...generation 1 finishes after, and must not clobber it.
         assert!(!apply_if_newer(&mut presence, 1, 0, 1, vec!["Z".into()]));
         assert_eq!(presence.online_names, vec!["A", "B"]);
     }

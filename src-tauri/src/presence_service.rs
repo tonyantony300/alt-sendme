@@ -1,14 +1,11 @@
 //! Android background presence: decides when the foreground service should run.
 //!
-//! Presence for paired peers rides the persistent control connections held by
-//! `NodeService`, and Nearby visibility rides the mDNS publisher on the same
-//! endpoint. Both are tokio tasks in the app process, so when Android caches a
-//! backgrounded process they stall and peers see the device go offline. The
-//! foreground service exists purely to keep that process scheduled.
+//! Presence and Nearby visibility ride tokio tasks in the app process, which
+//! Android stalls once it caches a backgrounded app — the foreground service
+//! exists to keep that process scheduled.
 //!
-//! The decision lives here rather than at each call site so the two inputs —
-//! paired-device count and discoverability — cannot drift apart. [`refresh`] is
-//! idempotent, so callers only have to know that *something* changed.
+//! The decision lives here so its two inputs (paired-device count and
+//! discoverability) can't drift apart. [`refresh`] is idempotent.
 
 use std::sync::Arc;
 
@@ -18,12 +15,9 @@ use tauri_plugin_native_utils::NativeUtilsExt;
 
 use crate::state::AppStateMutex;
 
-/// Starts or stops the presence service to match the current state.
-///
-/// Never fails the caller: losing background presence degrades the app to
-/// today's behaviour, which is not worth failing pairing or discoverability
-/// changes over. Mirrors how `node_init_error` keeps send/receive working when
-/// the node itself cannot start.
+/// Starts or stops the presence service to match the current state. Never fails
+/// the caller — losing background presence isn't worth failing a pairing or
+/// discoverability change over.
 pub async fn refresh(app: &AppHandle, state: &AppStateMutex) {
     let node = {
         let guard = state.lock().await;
@@ -42,11 +36,9 @@ async fn wanted(node: Option<Arc<NodeService>>) -> bool {
         return false;
     };
 
-    // `is_connectable`, not `len`: `list_paired` returns stored records, which
-    // include peers that unpaired remotely. Those keep no presence loop, so
-    // counting them would pin the notification up forever with nothing to
-    // maintain. `is_connectable` is the same predicate the presence loops
-    // themselves use, so the service's lifetime tracks the work exactly.
+    // `is_connectable`, not `len`: `list_paired` includes remotely-unpaired
+    // peers, which keep no presence loop. Same predicate the loops use, so the
+    // service's lifetime tracks the work exactly.
     let paired_count = node
         .list_paired()
         .map(|devices| {

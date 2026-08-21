@@ -76,8 +76,7 @@ export function DiscoverabilitySetting() {
 
 		try {
 			await setDiscoverability(nextValue)
-			// Persist only what the node actually accepted, so the value
-			// re-applied on next startup never diverges from reality.
+			// Persist only what the node accepted, so the next startup matches.
 			useAppSettingStore.getState().setDiscoverability(nextValue)
 		} catch (error) {
 			console.error('Failed to set discoverability:', error)
@@ -118,9 +117,8 @@ export function DiscoverabilitySetting() {
 					</div>
 				) : (
 					<RadioGroup value={value} onValueChange={handleChange}>
-						{/* A label wrapping the radio makes the whole row one native
-						    activation target, so `onValueChange` above is the single
-						    trigger path — no parallel onClick that would double-fire. */}
+						{/* The wrapping label makes the row one native activation target,
+						    so `onValueChange` is the only trigger path. */}
 						{DISCOVERABILITY_OPTIONS.map((option) => (
 							<label
 								key={option.value}

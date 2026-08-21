@@ -125,17 +125,13 @@ impl PairedConnectionManager {
 
     }
 
-    /// Resets a paired device's reconnect backoff and connects immediately.
+    /// Resets a paired device's reconnect backoff and connects immediately —
+    /// used when mDNS reports it just appeared, rather than waiting out a
+    /// backoff that may be minutes long.
     ///
-    /// Used when mDNS reports the device just appeared on the local network —
-    /// the strongest possible signal that presence should be re-checked now
-    /// instead of waiting out an exponential backoff that may be minutes long.
-    ///
-    /// A no-op if the device isn't connectable (e.g. remotely unpaired), or if
-    /// a live session already exists. mDNS re-fires `Discovered` whenever a
-    /// peer's advertised addrs change; aborting an already-online session on
-    /// every rediscovery flaps presence (the peer's old inbound handler
-    /// unregisters the key and marks us offline).
+    /// A no-op if the device isn't connectable or a live session already
+    /// exists: mDNS re-fires `Discovered` often, and aborting a live session
+    /// each time flaps presence.
     pub async fn nudge_reconnect(&self, endpoint_id: &str) {
         let key = endpoint_id.to_lowercase();
         let Ok(Some(device)) = self.paired_store.get(endpoint_id) else {
@@ -145,8 +141,7 @@ impl PairedConnectionManager {
             return;
         }
 
-        // Already online — leave the live session alone. Only wake a task
-        // that's sleeping in reconnect backoff.
+        // Only wake a task sleeping in backoff; leave a live session alone.
         if self.sessions.read().await.contains_key(&key) {
             return;
         }
@@ -248,11 +243,9 @@ impl PairedConnectionManager {
 
     pub async fn register_inbound(&self, endpoint_id: &str, conn: Connection) {
         let key = endpoint_id.to_lowercase();
-        // If we already hold a session for this peer (almost always our own
-        // outbound), do not replace it. Presence stays true; the inbound is
-        // still served by `handle_control_session` for invites. Replacing
-        // would let the inbound's later unregister wipe our live outbound
-        // and flap the UI when the peer rediscovers us over mDNS.
+        // Don't replace a session we already hold (almost always our own
+        // outbound) — the inbound is still served for invites, and replacing
+        // would let its later unregister wipe our live outbound.
         if self.sessions.read().await.contains_key(&key) {
             set_presence(
                 &self.presence,
@@ -269,7 +262,6 @@ impl PairedConnectionManager {
     pub async fn unregister_inbound(&self, endpoint_id: &str, conn: &Connection) {
         let key = endpoint_id.to_lowercase();
         // Only clear presence if *this* connection is the one we stored.
-        // A peer flapping their outbound must not take down our outbound.
         self.remove_session_if(&key, conn).await;
     }
 
@@ -342,16 +334,13 @@ impl PairedConnectionManager {
                         break;
                     }
 
-                    // Forget notify is best-effort. If it never arrived, a peer that
-                    // already dropped us (Everyone) accepts the dial then rejects
-                    // Recognition — treat that close as remote unpair so we stop
-                    // flapping online every reconnect tick.
+                    // Forget notify is best-effort: a peer that already dropped
+                    // us accepts the dial then rejects Recognition, so treat
+                    // that close as a remote unpair.
                     //
-                    // Unless the pairing is still settling: each side commits
-                    // its half independently, so a refusal this soon after we
-                    // stored ours says the peer hasn't stored theirs *yet*,
-                    // not that they dropped us. Retrying costs a dial; getting
-                    // it wrong costs the pairing.
+                    // Unless the pairing is still settling — each side commits
+                    // independently, so a refusal this soon means the peer
+                    // hasn't stored their half yet.
                     let close_err = conn.closed().await;
                     if close_implies_remote_unpair(&close_err) {
                         if self.pairing_is_settling(endpoint_id) {
@@ -525,11 +514,9 @@ impl PairedConnectionManager {
         false
     }
 
-    /// True while our record for `endpoint_id` is new enough that a refused
-    /// `Recognition` is better explained by the peer not having committed its
-    /// half of the pairing yet than by a real unpair. A genuine remote unpair
-    /// still lands immediately through `Forget`, which is signed and explicit;
-    /// this only defers the *inference* drawn from a close reason.
+    /// True while our record is new enough that a refused `Recognition` more
+    /// likely means the peer hasn't committed yet than that it unpaired us.
+    /// A genuine unpair still lands immediately via the signed `Forget`.
     fn pairing_is_settling(&self, endpoint_id: &str) -> bool {
         let Ok(Some(existing)) = self.paired_store.get(endpoint_id) else {
             return false;
@@ -569,8 +556,7 @@ impl PairedConnectionManager {
             );
             return false;
         };
-        // `age_ms` is what tells a genuine remote unpair apart from a peer that
-        // simply has not committed a pairing made moments ago.
+        // `age_ms` separates a genuine unpair from a not-yet-committed pairing.
         tracing::debug!(
             target: "dashbeam::_events::pairing::remote_unpair",
             remote = %crate::node::short_remote(endpoint_id),
@@ -636,9 +622,8 @@ impl PairedConnectionManager {
         }
     }
 
-    /// Drop the stored session only when it is still `conn`. Prevents an old
-    /// inbound teardown (or a superseded outbound) from clearing a newer live
-    /// link and flapping presence.
+    /// Drop the stored session only when it is still `conn`, so an old teardown
+    /// can't clear a newer live link.
     async fn remove_session_if(&self, key: &str, conn: &Connection) {
         let removed = {
             let mut sessions = self.sessions.write().await;

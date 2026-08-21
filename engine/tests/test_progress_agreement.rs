@@ -1,7 +1,6 @@
 //! Both ends of a transfer must report the same bytes against the same total.
 //!
-//! Regression cover for issue #166, where the sender showed 150% of a 7 GB
-//! share while the receiver showed 66%.
+//! Regression cover for #166: sender showed 150% of a 7 GB share, receiver 66%.
 
 mod common;
 
@@ -222,8 +221,8 @@ async fn e2e_completion_events_carry_a_wire_duration() {
 
 #[tokio::test]
 async fn e2e_a_small_fast_transfer_still_reports_a_duration() {
-    // A payload written in a single go used to report a 0ms transfer, which
-    // the success screen renders as "NA" for both duration and average speed.
+    // A single-write payload used to report 0ms, which the success screen
+    // renders as "NA" for duration and average speed.
     let fixture = TestFixture::new();
     let source = fixture.create_file("tiny.txt", b"small enough to go out in one write");
     let recv_dir = fixture.output_dir();

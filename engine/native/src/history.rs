@@ -1,9 +1,8 @@
 //! Persistent transfer history for desktop and Android.
 //!
-//! Rows are written in two phases: opened when a transfer actually starts and
-//! finalized on every exit path. That is what lets a crash or force-quit leave
-//! a recoverable trace — a row still `InProgress` at the next launch is swept
-//! to `Interrupted`.
+//! Rows are written in two phases: opened when a transfer starts, finalized on
+//! every exit path. A row still `InProgress` at the next launch was interrupted
+//! by a crash or force-quit and is swept to `Interrupted`.
 //!
 //! Storage mirrors `PairedDeviceStore`: a mutex serializing read-modify-write
 //! cycles, a tmp file, and an atomic rename.
@@ -17,8 +16,7 @@ use serde::{Deserialize, Serialize};
 /// Rows kept before the oldest are dropped.
 pub const MAX_RECORDS: usize = 500;
 
-/// File names stored per record. A directory share can hold thousands; the
-/// list is for showing what moved, not for reconstructing the tree.
+/// File names stored per record — for showing what moved, not rebuilding a tree.
 pub const MAX_FILE_NAMES: usize = 20;
 
 /// Prefix `storage::create_recv_store` gives every partial-receive directory.
@@ -30,9 +28,8 @@ const PARTIAL_STORE_HASH_LEN: usize = 64;
 
 pub const HISTORY_FILE: &str = "transfer-history.json";
 
-/// A history file that fails to parse is moved aside under this name rather
-/// than being silently replaced, so a serialization bug cannot destroy a
-/// user's records irrecoverably.
+/// An unparseable history file is moved aside under this name rather than
+/// silently replaced, so a serialization bug can't destroy a user's records.
 pub const CORRUPT_HISTORY_FILE: &str = "transfer-history.corrupt.json";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -148,10 +145,8 @@ impl TransferRecord {
 }
 
 /// The BLAKE3 hash a partial-receive directory holds, if the path names one.
-///
-/// This doubles as the name guard for deletion: `transfer-history.json` is
-/// user-writable, so a tampered `resumable_store_path` must never become an
-/// arbitrary-delete primitive.
+/// Doubles as the name guard for deletion — `transfer-history.json` is
+/// user-writable, so a tampered path must not become an arbitrary-delete.
 pub fn partial_store_hash(path: &Path) -> Option<String> {
     let name = path.file_name()?.to_str()?;
     let hash = name.strip_prefix(PARTIAL_STORE_PREFIX)?;
@@ -163,11 +158,8 @@ pub fn partial_store_hash(path: &Path) -> Option<String> {
     Some(hash.to_string())
 }
 
-/// Whether `path` is a partial-receive store this app may delete.
-///
-/// Both halves matter: the name must be one we generate, and the directory
-/// must sit directly inside the temp dir. A record naming
-/// `/Users/someone/Documents` passes neither.
+/// Whether `path` is a partial-receive store this app may delete: the name must
+/// be one we generate *and* the directory must sit directly in the temp dir.
 pub fn is_reclaimable_partial(path: &Path, temp_dir: &Path) -> bool {
     if partial_store_hash(path).is_none() {
         return false;
@@ -181,10 +173,8 @@ pub fn is_reclaimable_partial(path: &Path, temp_dir: &Path) -> bool {
     }
 }
 
-/// Deletes a record's partial store, if it has one and it is safe to delete.
-///
-/// Returns whether anything was removed. Called when a row is deleted, so
-/// dropping a row cannot strand the disk space it was the only pointer to.
+/// Deletes a record's partial store, if it has one and it's safe to delete.
+/// Called when a row is deleted, which is the only pointer to that disk space.
 pub fn reclaim_partial(record: &TransferRecord, temp_dir: &Path) -> bool {
     let Some(raw) = record.resumable_store_path.as_deref() else {
         return false;
@@ -233,8 +223,7 @@ impl TransferHistoryStore {
         }
     }
 
-    /// The guard protects no in-memory state, so poisoning would only turn a
-    /// one-off panic into a permanently unusable store.
+    /// Guards no in-memory state, so poisoning would only make it unusable.
     fn lock_file(&self) -> std::sync::MutexGuard<'_, ()> {
         self.file_lock
             .lock()
@@ -259,9 +248,8 @@ impl TransferHistoryStore {
 
     /// Applies `f` to the row with `id` and persists the result.
     ///
-    /// Returns `None` when no such row exists — a finalize arriving after the
-    /// row was trimmed past the cap or deleted by the user is expected, not an
-    /// error.
+    /// `None` when no such row exists — a finalize after the row was trimmed or
+    /// deleted is expected, not an error.
     pub fn update<F>(&self, id: &str, f: F) -> anyhow::Result<Option<TransferRecord>>
     where
         F: FnOnce(&mut TransferRecord),
@@ -289,10 +277,8 @@ impl TransferHistoryStore {
         Ok(Some(removed))
     }
 
-    /// Removes every row, returning them so callers can reclaim temp data.
-    ///
-    /// Without the return value, clearing history would discard the only
-    /// pointer to any partial store and make that disk space unreclaimable.
+    /// Removes every row, returning them so callers can reclaim temp data —
+    /// the rows are the only pointers to those partial stores.
     pub fn clear(&self) -> anyhow::Result<Vec<TransferRecord>> {
         let _guard = self.lock_file();
         let mut file = self.read_file()?;
@@ -348,9 +334,8 @@ impl TransferHistoryStore {
             std::fs::create_dir_all(parent)?;
         }
         let tmp = self.path.with_extension("json.tmp");
-        // fsync before the rename: `write` + `rename` alone can surface the
-        // renamed file as zero-length after a hard power loss on some
-        // filesystems, which would lose the whole history rather than one row.
+        // fsync before the rename: on some filesystems `write` + `rename` can
+        // surface as a zero-length file after power loss, losing everything.
         {
             use std::io::Write;
             let mut handle = std::fs::File::create(&tmp)?;

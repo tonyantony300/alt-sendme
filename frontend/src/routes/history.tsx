@@ -66,8 +66,7 @@ export function HistoryPage() {
 		const rows = await listTransferHistory()
 		setRecords(rows)
 
-		// Partial stores are stat'd live rather than trusted from the row: the
-		// OS, a later receive, or the user can remove one at any time.
+		// Stat'd live, not trusted from the row — a store can vanish any time.
 		const reclaimable = rows.filter((row) => row.resumableStorePath)
 		const stats = await Promise.all(
 			reclaimable.map(async (row) => {
@@ -173,10 +172,9 @@ export function HistoryPage() {
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
-			{/* RootLayout paints an `absolute … h-10 z-10` drag region over the top
-			    40px on macOS. `z-20` puts these controls above it so presses reach
-			    them, and `pointer-events-none` on the row keeps the gap between
-			    them draggable. */}
+			{/* RootLayout paints a `z-10` drag region over the top 40px on macOS:
+			    `z-20` lets presses reach these controls, `pointer-events-none`
+			    keeps the gap between them draggable. */}
 			<div className="pointer-events-none relative z-20 flex items-center justify-between gap-2 px-4 pt-6">
 				{/* Arrow and title are one target, matching the settings header. */}
 				<Link
@@ -202,11 +200,8 @@ export function HistoryPage() {
 			</div>
 
 			<div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pt-3">
-				{/* Status narrows the list in place, and is usually left on "All" —
-				    a dropdown keeps it to one line instead of spending a row on
-				    five chips. Direction is not a filter here: sent and received
-				    share one timeline, and each row says which it was with its
-				    own arrow. */}
+				{/* A dropdown, not five chips: status is usually left on "All".
+				    Direction isn't a filter — one timeline, each row has its arrow. */}
 				<div className="flex items-center gap-2">
 					<Select value={status}>
 						<SelectTrigger size="sm" className="w-44">

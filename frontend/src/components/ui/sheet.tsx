@@ -72,10 +72,9 @@ function SheetPopup({
 	side?: 'right' | 'left' | 'top' | 'bottom'
 	inset?: boolean
 	/**
-	 * Focus the popup container itself instead of its first tabbable child.
-	 * Base UI only does this automatically for touch-opened dialogs; set it
-	 * explicitly for sheets opened programmatically on mobile, where landing
-	 * focus in a text field pops the virtual keyboard unasked.
+	 * Focus the popup container instead of its first tabbable child. Base UI only
+	 * does this for touch-opened dialogs, and a sheet opened programmatically on
+	 * mobile would otherwise land focus in a text field and pop the keyboard.
 	 */
 	focusPopupOnOpen?: boolean
 }) {

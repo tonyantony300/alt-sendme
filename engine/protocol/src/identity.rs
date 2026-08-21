@@ -428,9 +428,8 @@ mod fingerprint_tests {
 
     #[test]
     fn distinct_keys_give_distinct_fingerprints() {
-        // Vary an EARLY byte. The fingerprint is the first 60 bits of a
-        // 256-bit key, so keys differing only in a late byte collide by
-        // construction — that is inherent to truncation, not a defect.
+        // Vary an EARLY byte: the fingerprint is the first 60 bits, so keys
+        // differing only late collide by construction.
         let a = "00".repeat(32);
         let b = format!("01{}", "00".repeat(31));
         assert_ne!(short_fingerprint(&a), short_fingerprint(&b));
@@ -455,15 +454,12 @@ mod fingerprint_tests {
 }
 
 /// Human-comparable fingerprint of an endpoint id, shown on both screens when
-/// two devices meet on the local network for the first time.
+/// two devices first meet. iroh's TLS binds the connection to the peer's public
+/// key, so a matching fingerprint proves who you're talking to; display names
+/// are spoofable, this isn't.
 ///
-/// iroh's TLS already binds a connection to the peer's public key, so a matching
-/// fingerprint proves you are talking to the device you think you are. Display
-/// names are self-reported and spoofable; this is not.
-///
-/// 12 base32 characters is 60 bits. No hashing is needed — truncating a
-/// uniformly distributed public key stays uniformly distributed, and the key is
-/// not secret. Returns `None` for anything that is not a 64-character hex id.
+/// 12 base32 chars = 60 bits. No hashing needed: truncating a uniform public key
+/// stays uniform, and it isn't secret. `None` for a non-64-char-hex id.
 pub fn short_fingerprint(endpoint_id_hex: &str) -> Option<String> {
     let bytes = data_encoding::HEXLOWER_PERMISSIVE
         .decode(endpoint_id_hex.trim().as_bytes())

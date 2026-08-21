@@ -15,12 +15,9 @@ type NearbyVerificationState = {
 }
 
 /**
- * Drives the sender's verification-code dialog.
- *
- * A store rather than local state because the two paths that open it —
- * standalone pairing in Settings and picking a nearby device in the share
- * sheet — live in different trees from the dialog itself, which is mounted
- * once globally so it survives either surface closing underneath it.
+ * Drives the sender's verification-code dialog. A store rather than local state
+ * because the two paths that open it live in different trees from the dialog,
+ * which is mounted once globally so it survives either surface closing.
  */
 export const useNearbyVerificationStore = create<NearbyVerificationState>(
 	(set) => ({

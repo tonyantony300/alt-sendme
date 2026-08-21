@@ -1,9 +1,7 @@
 /**
- * Parsing for the engine's transfer telemetry.
- *
- * Both `transfer-progress` (sender) and `receive-progress` (receiver) use the
- * same `<bytes>:<total>:<speed x1000>` payload, and the engine now measures
- * both of them the same way — so the UI must not re-derive or re-smooth them.
+ * Parsing for the engine's transfer telemetry. Sender and receiver share the
+ * `<bytes>:<total>:<speed x1000>` payload and the engine measures both the same
+ * way, so the UI must not re-derive or re-smooth them.
  */
 
 export type TransferProgressUpdate = {

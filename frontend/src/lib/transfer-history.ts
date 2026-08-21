@@ -1,9 +1,7 @@
 /**
- * Reading side of the transfer history the Rust shell records.
- *
- * Rows store raw facts, never localized strings, so this module decides *what*
- * a row says and leaves the wording to the caller's `t()`. A row recorded in
- * German therefore reads correctly after the user switches to English.
+ * Reading side of the transfer history the Rust shell records. Rows store raw
+ * facts, never localized strings — this module decides what a row says and
+ * leaves the wording to the caller's `t()`, so rows re-localize.
  */
 
 export type TransferHistoryDirection = 'send' | 'receive'
@@ -82,11 +80,9 @@ export function filterTransferHistory(
 }
 
 /**
- * The device name to show for a row, or null when none is known.
- *
- * The current paired-device name wins so a rename updates past transfers; the
- * snapshot taken at transfer time covers devices since forgotten, which would
- * otherwise have their history rewritten to "unknown".
+ * The device name to show for a row, or null when none is known. The current
+ * paired-device name wins so a rename updates past rows; the transfer-time
+ * snapshot covers devices since forgotten.
  */
 export function resolvePeerLabel(
 	record: TransferRecord,
@@ -111,10 +107,8 @@ export type TransferItemSummary =
 	| { kind: 'unknown' }
 
 /**
- * What a row should call the thing that moved.
- *
- * `counted` and `unknown` are handed to `t()` by the caller — an interrupted
- * transfer often dies before the engine learns any file names.
+ * What a row should call the thing that moved. `counted` and `unknown` go to
+ * the caller's `t()` — an interrupted transfer often dies before file names land.
  */
 export function summarizeTransferItems(
 	record: TransferRecord
@@ -131,10 +125,8 @@ export function summarizeTransferItems(
 }
 
 /**
- * Engine wire time, or null when the transfer never got far enough to measure.
- *
- * Null rather than a placeholder string so the caller can localize "not
- * recorded" instead of showing an English literal in every language.
+ * Engine wire time, or null when the transfer never got far enough to measure —
+ * null rather than a string so the caller can localize "not recorded".
  */
 export function formatTransferDuration(ms: number | undefined): string | null {
 	if (!ms || !Number.isFinite(ms) || ms <= 0) {

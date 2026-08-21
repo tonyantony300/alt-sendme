@@ -10,12 +10,9 @@ type VerificationCodeProps = {
 }
 
 /**
- * The shared verification-code block.
- *
- * Both sides of a first-contact exchange render this, showing the *same*
- * string derived independently from the sender's endpoint id — that identical
- * rendering is the whole mechanism, so the markup lives in one place rather
- * than being copied into each dialog where it could quietly drift apart.
+ * The shared verification-code block. Both sides render the same string,
+ * derived independently from the sender's endpoint id — identical rendering is
+ * the whole mechanism, so the markup lives in one place and can't drift.
  */
 export function VerificationCode({
 	code,

@@ -126,12 +126,10 @@ export function NearbyDevices() {
 				return
 			}
 			setPairState((prev) => ({ ...prev, [device.endpointId]: 'sent' }))
-			// The verification dialog already says the request is out and we're
-			// waiting on them, so a "request sent" toast on top of it is noise.
-			// Only once the request actually reached them — a code shown for a
-			// request that never arrived is worse than none. Nearby devices are
-			// unpaired by construction (the engine expires a peer from Nearby
-			// the moment it is paired), so no extra check is needed here.
+			// The verification dialog already says the request is out.
+			// Only once the request reached them — a code for a request that never
+			// arrived is worse than none. Nearby devices are unpaired by
+			// construction, so no extra check is needed.
 			showVerification({
 				endpointId: device.endpointId,
 				name:

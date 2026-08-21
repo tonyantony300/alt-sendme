@@ -45,12 +45,9 @@ export async function selectDownloadFolder(): Promise<DownloadFolderSelectionRes
 }
 
 /**
- * Show a MediaStore-exported receive.
- *
- * Pass a single file's `content://` URI to open it directly, and
- * `relativePath` (e.g. `Download/DashBeam`) to open the folder a multi-file
- * export landed in. A MediaStore export has no tree URI, so there is no folder
- * to open the SAF way; the system Downloads list is the last resort.
+ * Show a MediaStore-exported receive: a single file's `content://` URI opens it
+ * directly, `relativePath` opens the folder a multi-file export landed in. With
+ * no tree URI there's no SAF folder to open, so Downloads is the last resort.
  */
 export async function openDownloadTarget(
 	uri: string,

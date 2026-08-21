@@ -63,10 +63,8 @@ class OpenDownloadTargetArgs {
     var uri: String = ""
 
     /**
-     * Destination relative to external storage, e.g. `Download/DashBeam`.
-     *
-     * Used to open the exact folder a receive landed in when there is no
-     * single file to show. Empty falls back to the system Downloads list.
+     * Destination relative to external storage, e.g. `Download/DashBeam`, for
+     * when there's no single file to show. Empty falls back to Downloads.
      */
     var relativePath: String = ""
 }
@@ -239,15 +237,10 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
     }
 
     /**
-     * Show a received file, the folder it landed in, or — failing both — the
-     * system Downloads list.
-     *
-     * A MediaStore export has no tree URI to hand back, so opening the folder
-     * the SAF way is not available here. `ACTION_VIEW_DOWNLOADS` accepts no
-     * target and can only ever show the Downloads root, which is why a
-     * document URI built from `relativePath` is tried first: that is the only
-     * form that lands the user inside `Download/DashBeam` rather than one
-     * level above it. Support varies by OEM file manager, hence the chain.
+     * Show a received file, the folder it landed in, or the system Downloads
+     * list. There's no tree URI for the SAF path and `ACTION_VIEW_DOWNLOADS`
+     * only ever opens the Downloads root, so a document URI built from
+     * `relativePath` is tried first — OEM file managers vary, hence the chain.
      */
     @Command
     fun open_download_target(invoke: Invoke) {
@@ -282,10 +275,8 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
     /**
      * `ACTION_VIEW` intents pointing at a storage folder, most specific first.
-     *
-     * Two document-URI shapes are tried because file managers disagree on
-     * which one they accept: some resolve a bare document URI, others only
-     * one built against a tree.
+     * Two document-URI shapes, because file managers disagree on which they
+     * accept — a bare document URI or one built against a tree.
      */
     private fun folderIntents(relativePath: String): List<Intent> {
         if (relativePath.isEmpty()) return emptyList()
@@ -307,9 +298,8 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
 
     /**
      * Fire the first intent something can handle, reporting whether any did.
-     *
-     * `resolveActivity` is unreliable under API 30 package visibility, so this
-     * simply attempts each one and moves on when nothing catches it.
+     * `resolveActivity` is unreliable under API 30 package visibility, so each
+     * is simply attempted in turn.
      */
     private fun startFirstResolvable(intents: List<Intent>): Boolean {
         for (intent in intents) {

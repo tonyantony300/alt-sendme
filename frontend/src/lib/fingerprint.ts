@@ -1,16 +1,13 @@
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 /**
- * TS port of `protocol::identity::short_fingerprint`
- * (`engine/protocol/src/identity.rs`). Both sides of a Nearby exchange derive
- * this locally from the endpoint id alone — no network round trip — so they
- * can be compared on screen during first-contact confirmation. Keep this in
- * lockstep with the Rust implementation; a divergence here would make two
- * honest devices show different codes for the same connection.
+ * TS port of `protocol::identity::short_fingerprint`. Both sides derive this
+ * locally from the endpoint id, with no round trip, so they can be compared on
+ * screen. Keep it in lockstep with the Rust version — a divergence makes two
+ * honest devices show different codes.
  *
- * 12 base32 characters is 60 bits: uniformly distributed truncation of a
- * uniformly distributed public key, no hashing needed. Returns `null` for
- * anything that isn't a 64-character hex endpoint id.
+ * 12 base32 chars = 60 bits, truncated from a uniform public key, no hashing.
+ * `null` for anything that isn't a 64-character hex endpoint id.
  */
 export function shortFingerprint(endpointIdHex: string): string | null {
 	const trimmed = endpointIdHex.trim().toLowerCase()

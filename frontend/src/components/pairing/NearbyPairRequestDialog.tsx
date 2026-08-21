@@ -107,9 +107,8 @@ export function NearbyPairRequestDialog() {
 	}
 
 	const typeLabel = request ? formatDeviceTypeLabel(request.device_type) : ''
-	// Pairing grants persistent access, so it warrants at least the same
-	// confirmation a one-off file invite already gets. Display only: Accept
-	// stays enabled, matching this dialog's existing behaviour.
+	// Pairing grants persistent access, so it gets at least the confirmation a
+	// one-off file invite does. Display only — Accept stays enabled.
 	const fingerprint = request
 		? shortFingerprint(request.remote_endpoint_id)
 		: null

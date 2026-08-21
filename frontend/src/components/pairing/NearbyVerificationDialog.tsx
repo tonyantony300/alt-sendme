@@ -18,16 +18,10 @@ import { Button } from '../ui/button'
 import { VerificationCode } from './VerificationCode'
 
 /**
- * The sender's half of first-contact verification.
- *
- * The receiver's dialog shows the *sender's* code and asks the user to check
- * it against the sender's screen. Until this existed there was no such
- * screen: `shortFingerprint` was computed nowhere on the sending side, so the
- * comparison the receiver was being asked to perform was impossible and
- * people simply accepted.
- *
- * Shows this device's own code — the same string the receiver is looking at,
- * derived independently from the endpoint id with no round trip.
+ * The sender's half of first-contact verification: this device's own code —
+ * the same string the receiver's dialog shows, derived independently from the
+ * endpoint id with no round trip. Without this screen the comparison the
+ * receiver is asked to make would be impossible.
  */
 export function NearbyVerificationDialog() {
 	const { t } = useTranslation()
@@ -71,12 +65,9 @@ export function NearbyVerificationDialog() {
 		void (async () => {
 			// They accepted: the code did its job, get out of the way.
 			//
-			// Closes on ANY pairing completing, not just this peer's, because
-			// `device-paired` carries only `display_name` — there is no
-			// endpoint id on it to match against. Two pairings finishing while
-			// this dialog is open would close it early; that needs an endpoint
-			// id added to the event, which is an engine change and out of scope
-			// here. The decline path below can match, and does.
+			// Closes on ANY pairing completing — `device-paired` carries only
+			// `display_name`, with no endpoint id to match on. The decline path
+			// below can match, and does.
 			await register('device-paired', () => true)
 			// They declined: nothing left to verify.
 			await register('paired-invite-response', (raw) =>

@@ -14,14 +14,10 @@ export function SystemTray() {
 			</FrameHeader>
 			<FramePanel className="space-y-4">
 				<StartOnStartup />
-				{/* macOS never quits on window close — platform convention, so
-				    there is nothing here for the user to decide. */}
+				{/* macOS never quits on window close, so there is nothing to decide. */}
 				{!IS_MACOS && <MinimizeSystemTray />}
-				{/* `ShowProgressOnIcon` is deliberately not rendered: nothing
-				    implements progress-on-icon yet, so the switch only wrote a
-				    value no code reads. The component and its `showProgressOnIcon`
-				    setting are kept so restoring it is a one-line change once
-				    the dock/taskbar progress feature exists. */}
+				{/* `ShowProgressOnIcon` is not rendered — nothing implements
+				    progress-on-icon yet. Kept so restoring it is a one-liner. */}
 				{IS_WINDOWS && <ContextMenuToggle />}
 			</FramePanel>
 		</Frame>

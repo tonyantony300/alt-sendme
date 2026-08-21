@@ -1,41 +1,32 @@
 //! Flatpak autostart via `org.freedesktop.portal.Background`.
 //!
-//! The portal both grants background-running permission and registers an
-//! autostart entry on the host, so no `--filesystem=xdg-config/autostart`
-//! hole is needed. The request is user-consented and CAN be denied; every
-//! function here returns what the portal actually granted. A denial is a
-//! normal outcome and comes back as `Ok(false)` — `Err` is reserved for the
-//! portal being unreachable or failing outright.
+//! The portal grants background permission and registers the host autostart
+//! entry, so no `--filesystem=xdg-config/autostart` hole is needed. A denial is
+//! normal and comes back as `Ok(false)`; `Err` means the portal itself failed.
 //!
-//! Everything here is `async` and must stay that way. The consent dialog is
-//! open until the user clicks it, so blocking on this future would park
-//! whichever thread awaited it; parking the main thread stalls the GTK loop
-//! and the window is reported as unresponsive.
+//! Everything here must stay `async` — the consent dialog is open until the
+//! user answers, and blocking the main thread stalls the GTK loop.
 //!
-//! Linux-only: `ashpd` is a `cfg(target_os = "linux")` dependency, so both
-//! this module and its call site in `autostart` are gated on the target as
-//! well as the `autostart-portal` feature.
+//! Linux-only: `ashpd` is a `cfg(target_os = "linux")` dependency, so this
+//! module and its call site are gated on the target as well as the feature.
 
 use ashpd::desktop::background::Background;
 
 const REASON: &str = "Stay online so your paired devices can reach you";
 
-/// The command the host will run at login. Resolved inside the sandbox, so
-/// the bare binary name from the Flatpak manifest's `command:` is correct —
-/// the host-side `/app/bin` path would not exist outside the sandbox.
+/// The command the host runs at login. The bare binary name from the Flatpak
+/// manifest is correct — a `/app/bin` path wouldn't exist outside the sandbox.
 fn command() -> Vec<String> {
     vec!["dashbeam".to_string(), "--hidden".to_string()]
 }
 
-/// Only called from an explicit user toggle. There is no read counterpart:
-/// the portal's only "query" is another request, which would pop a consent
-/// dialog every time Settings opened.
+/// Only called from an explicit user toggle. No read counterpart exists — the
+/// portal's only query is another request, which pops a consent dialog.
 pub async fn set(enabled: bool) -> Result<bool, String> {
     match request(enabled).await {
         Ok(granted) => Ok(granted),
-        // `Error::Response` means the portal ran to completion and the user
-        // did not grant it — denied, or dismissed the dialog. That is an
-        // answer, not a malfunction, so report the state we ended up in.
+        // `Error::Response` means the user denied or dismissed the dialog —
+        // an answer, not a malfunction.
         Err(ashpd::Error::Response(_)) => Ok(false),
         Err(e) => Err(format!("Background portal request failed: {e}")),
     }

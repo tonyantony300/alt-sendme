@@ -185,10 +185,9 @@ export async function getDiscoverability(): Promise<Discoverability> {
 }
 
 /**
- * IPC seam: the key MUST be the Rust parameter name of `set_discoverability`
- * in `src-tauri/src/commands.rs` (`setting: Discoverability`). Tauri matches
- * invoke payload keys to command parameters by name, so a mismatch fails at
- * runtime with "missing required key" — never rename one side alone.
+ * IPC seam: the key must match the `setting` parameter of
+ * `set_discoverability` in `src-tauri/src/commands.rs`. Tauri matches payload
+ * keys to parameter names, so renaming one side alone fails at runtime.
  */
 type SetDiscoverabilityArgs = {
 	setting: Discoverability
@@ -204,9 +203,8 @@ export async function setDiscoverability(
 
 export interface NearbyStatus {
 	/**
-	 * Why LAN discovery is unavailable (the mDNS pump failed to start), or
-	 * null when it is running or deliberately off. Queryable because the
-	 * `nearby-unavailable` event can fire during node init, before any
+	 * Why LAN discovery is unavailable, or null when running or off. Queryable
+	 * because `nearby-unavailable` can fire during node init, before any
 	 * frontend listener exists.
 	 */
 	reason: string | null
@@ -329,10 +327,8 @@ export function isPairedDeviceActive(
 }
 
 /**
- * True when `endpointId` already has a paired-device record. Nearby invites
- * from an already-paired sender route to the normal paired-invite dialog
- * instead of the Nearby fingerprint-confirmation one — see
- * `NearbyInviteDialog` and `DeviceNodeSync`.
+ * True when `endpointId` already has a paired-device record — routes an invite
+ * to the paired dialog rather than the Nearby fingerprint one.
  */
 export function isKnownPairedEndpoint(
 	devices: Pick<PairedDevice, 'endpoint_id'>[],

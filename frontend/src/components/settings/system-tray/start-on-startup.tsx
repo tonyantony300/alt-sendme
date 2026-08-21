@@ -35,12 +35,9 @@ export function StartOnStartup() {
 		setBusy(true)
 		void setAutostart(next)
 			.then((actual) => {
-				// setAutostart resolves to the state the OS actually ended up in,
-				// which can differ from what was requested (e.g. a denied Flatpak
-				// portal dialog). Compare requested vs actual to tell a normal
-				// toggle from a refusal: if they match, the OS did what we asked.
-				// If they don't, the OS/user refused — that's not an exception, so
-				// warn instead of treating it like a thrown error.
+				// `setAutostart` resolves to the state the OS ended up in, which can
+				// differ from the request (e.g. a denied Flatpak portal dialog). A
+				// mismatch is a refusal, not an exception — warn, don't throw.
 				setValue(actual)
 				setCached(actual)
 				if (actual !== next) {

@@ -157,11 +157,9 @@ async fn e2e_pairing_lifecycle() {
     host_down.expect("shutdown host");
 }
 
-/// When the unpair notify (`Forget`) never arrives — e.g. the fire-and-forget
-/// dial after local teardown fails on a real LAN — the remaining side used to
-/// keep the peer as `Active`/`offline` and flap online every reconnect tick
-/// against `Discoverability::Everyone`. It must instead detect the peer's
-/// "not permitted for unpaired peer" close and mark `UnpairedRemotely`.
+/// When `Forget` never arrives, the remaining side must detect the peer's
+/// "not permitted for unpaired peer" close and mark `UnpairedRemotely` —
+/// otherwise it keeps the peer `Active` and flaps online every reconnect tick.
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn missed_forget_still_marks_unpaired_remotely() {
     assert!(
@@ -227,8 +225,8 @@ async fn missed_forget_still_marks_unpaired_remotely() {
         "precondition: host has not received Forget"
     );
 
-    // Nudge a reconnect so we don't wait out backoff; joiner (Everyone) will
-    // accept the dial then reject Recognition as unpaired.
+    // Nudge a reconnect rather than wait out backoff; the joiner accepts the
+    // dial then rejects Recognition as unpaired.
     host.force_paired_reconnect_for_tests(&joiner_id).await;
 
     wait_until(

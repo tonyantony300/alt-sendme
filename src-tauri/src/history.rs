@@ -1,10 +1,9 @@
 //! Transfer-history recording for the Tauri shell.
 //!
-//! [`HistoryRecordingEmitter`] wraps the emitter the engine already reports
-//! through, so a row is opened and finalized from the same events the UI sees.
-//! The engine's emit sites are written `let _ = handle.emit_event(...)`, which
-//! discards the *return value* of a direct method call — the call itself always
-//! happens, so recording here cannot miss a terminal event.
+//! [`HistoryRecordingEmitter`] wraps the emitter the engine reports through, so
+//! rows open and finalize from the same events the UI sees. The engine's
+//! `let _ = handle.emit_event(...)` discards a return value, not the call, so
+//! recording can't miss a terminal event.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -15,13 +14,8 @@ use engine::{
     TransferPeer, TransferRecord, TransferStatus,
 };
 
-/// Extracts the persisted `enableTransferHistory` value from the raw contents
-/// of tauri-plugin-store's `settings.json`.
-///
-/// Same envelope shape and same reasoning as
-/// `commands::parse_persisted_minimize_to_tray`: loading the store Rust-side
-/// would register it without the frontend's `LazyStore` options, and the plugin
-/// silently reuses the first-registered instance.
+/// Reads `enableTransferHistory` out of `settings.json` — same envelope and
+/// same raw-read reasoning as `commands::parse_persisted_minimize_to_tray`.
 pub fn parse_persisted_history_enabled(raw: &str) -> Option<bool> {
     let file: serde_json::Value = serde_json::from_str(raw).ok()?;
     let envelope: serde_json::Value =
@@ -69,10 +63,8 @@ impl CompletionFacts {
     }
 }
 
-/// Bytes per second over the engine's wire time.
-///
-/// Wall-clock would also cover connection setup and disk export, which is why
-/// the engine's own duration is preferred everywhere.
+/// Bytes per second over the engine's wire time — wall-clock would also cover
+/// connection setup and disk export.
 pub fn average_speed_bps(payload_bytes: u64, duration_ms: Option<u64>) -> Option<f64> {
     match duration_ms {
         Some(ms) if ms > 0 => Some(payload_bytes as f64 / (ms as f64 / 1000.0)),
@@ -80,16 +72,11 @@ pub fn average_speed_bps(payload_bytes: u64, duration_ms: Option<u64>) -> Option
     }
 }
 
-/// What a receive turned out to contain, derived from the collection's file
-/// names.
-///
-/// The receiver learns this from `receive-file-names`, which arrives just
-/// before completion — the ticket preview the UI fetched earlier went through
-/// a different command, and a different emitter.
+/// What a receive contained, from `receive-file-names` — which arrives just
+/// before completion, unlike the ticket preview the UI fetched earlier.
 #[derive(Debug, Default, PartialEq)]
 pub struct ReceivedShape {
-    /// Raw, never localized: the UI formats "3 items" itself so a row
-    /// re-localizes when the user switches language.
+    /// Raw, never localized — the UI formats "3 items" so rows re-localize.
     pub root_name: String,
     pub item_count: u32,
     pub path_type: Option<TransferPathType>,
@@ -149,9 +136,8 @@ struct OpenRow {
     /// First terminal state wins. `stop_sharing` fires after a completed
     /// broadcast share, and must not rewrite it as cancelled.
     finalized: bool,
-    /// Last progress seen, so a cancel can say how far it got. Progress is not
-    /// written through on every tick — that would be a file rewrite per
-    /// megabyte, on the transfer's critical path.
+    /// Last progress seen, so a cancel can say how far it got. Not written
+    /// through per tick — that's a file rewrite per megabyte.
     bytes_transferred: u64,
     file_names: Vec<String>,
     peer_count: u32,
@@ -199,11 +185,8 @@ impl HistoryRecordingEmitter {
         f(&mut self.lock_context());
     }
 
-    /// Records the device a share was explicitly invited to.
-    ///
-    /// This beats resolving from `share-peer-connected`: the recipient is known
-    /// before the connection exists, and for Nearby devices it is the only
-    /// place the name is available synchronously.
+    /// Records the device a share was invited to — known before the connection
+    /// exists, and the only synchronous source of a Nearby device's name.
     pub fn note_invited_peer(&self, peer: TransferPeer) {
         self.lock_context().peer = Some(peer);
     }
@@ -277,15 +260,12 @@ impl HistoryRecordingEmitter {
                 record.path_type = shape.path_type;
             }
             record.peer_count = peer_count.max(u32::from(record.peer.is_some()));
-            // A broadcast share serves several peers; attributing one peer's
-            // timings to the session would be a lie, so the peer is dropped
-            // and only the count is kept.
+            // A broadcast serves several peers, so keep the count, not a peer.
             if record.peer_count > 1 {
                 record.peer = None;
             }
             if completed {
-                // The armed cleanup guard removed the partial store on success,
-                // so the pointer would only ever resolve to nothing.
+                // The cleanup guard removed the partial store on success.
                 record.resumable_store_path = None;
             }
             record.error = error;
@@ -357,8 +337,7 @@ mod tests {
     use engine::EventEmitter as _;
     use tempfile::TempDir;
 
-    /// Stands in for `TauriEventEmitter`: the recorder must pass every event
-    /// through untouched, and needs no Tauri app to be exercised.
+    /// Stands in for `TauriEventEmitter` so the recorder needs no Tauri app.
     struct SinkEmitter;
 
     impl EventEmitter for SinkEmitter {

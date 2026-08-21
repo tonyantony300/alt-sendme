@@ -40,10 +40,8 @@ export function DeviceNodeSync() {
 		if (!IS_PAIRING_CAPABLE) return
 		ensureNodeCapabilityLifecycle()
 		void preloadPairingData()
-		// Ask for notification permission here, while the app is on screen.
-		// Deferring it to the first notification would put Android's
-		// POST_NOTIFICATIONS dialog in front of a backgrounded Activity, which
-		// cannot show it. Self-guards to once per session.
+		// Asked while the app is on screen: a backgrounded Activity can't show
+		// Android's POST_NOTIFICATIONS dialog. Self-guards to once per session.
 		void ensureNotificationPermission()
 	}, [])
 
@@ -64,10 +62,8 @@ export function DeviceNodeSync() {
 			didSyncRelay.current = false
 			console.warn('Failed to sync node relay on startup:', error)
 		})
-		// The node already applied the persisted discoverability at startup
-		// (`init_node_service` reads this store's file before discovery
-		// starts); re-applying here is a safety net for the case where that
-		// read failed, mirroring how the relay settings sync above.
+		// `init_node_service` already applied this at startup; re-applying is a
+		// safety net for a failed read, mirroring the relay sync above.
 		void setDiscoverability(
 			useAppSettingStore.getState().discoverability
 		).catch((error) => {
@@ -95,13 +91,10 @@ export function DeviceNodeSync() {
 						return
 					}
 					void (async () => {
-						// Same event carries both paired and Nearby invites (see
-						// `emit_paired_invite_received`) — an unpaired sender's
-						// invite belongs to `NearbyInviteDialog`, which shows the
-						// fingerprint confirmation this dialog doesn't have. `devices`
-						// starts empty on cold start, so wait for it to hydrate before
-						// deciding — otherwise a genuinely paired sender's invite would
-						// briefly look unpaired and get misrouted there.
+						// One event carries both paired and Nearby invites; an unpaired
+						// sender's belongs to `NearbyInviteDialog`, which shows the
+						// fingerprint. Wait for `devices` to hydrate first, or a paired
+						// sender briefly looks unpaired and gets misrouted.
 						await pairingDataHydrated()
 						if (disposed) return
 						const { devices } = usePairingDataStore.getState()

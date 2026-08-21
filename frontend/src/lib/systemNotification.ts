@@ -36,12 +36,9 @@ async function getNotificationIconPath(): Promise<string | undefined> {
 }
 
 /**
- * Whether the user is currently looking at the app.
- *
- * Desktop uses the real window state — hidden-to-tray and merely-behind-
- * another-window both count as "not looking". Android's Tauri window focus
- * APIs are unreliable, and there the webview *is* the app, so page
- * visibility is the correct signal.
+ * Whether the user is looking at the app. Desktop reads the real window state;
+ * Android uses page visibility, since its focus APIs are unreliable and the
+ * webview is the app.
  */
 async function isAppInForeground(): Promise<boolean> {
 	if (IS_ANDROID) {
@@ -61,18 +58,11 @@ async function isAppInForeground(): Promise<boolean> {
 let permissionBootstrapped = false
 
 /**
- * Ask for notification permission once, at a moment the app is on screen.
+ * Ask for notification permission once, while the app is on screen.
  *
- * `sendSystemNotification` cannot do this itself: its foreground/settings
- * gate suppresses whenever the app *is* on screen, so any request made from
- * there necessarily happens while the app is backgrounded. On desktop that is
- * harmless (the plugin grants unconditionally), but on Android it maps to the
- * real `POST_NOTIFICATIONS` runtime dialog, which a non-resumed Activity
- * cannot show — the promise stalls and the notification is lost.
- *
- * Call this from a mounted component so the prompt lands while the user is
- * looking at the app. Safe to call repeatedly; it runs at most once per
- * session and never throws.
+ * `sendSystemNotification` can't do this itself — it only fires when the app is
+ * backgrounded, and Android's `POST_NOTIFICATIONS` dialog can't be shown by a
+ * non-resumed Activity. Call from a mounted component; safe to call repeatedly.
  */
 export async function ensureNotificationPermission(): Promise<boolean> {
 	if (!IS_TAURI || permissionBootstrapped) {
@@ -99,8 +89,7 @@ export async function sendSystemNotification(
 	}
 
 	try {
-		// Fail open: if the window state can't be read, a redundant
-		// notification is a smaller failure than a missed one.
+		// Fail open: a redundant notification beats a missed one.
 		let foreground = false
 		try {
 			foreground = await isAppInForeground()
@@ -117,8 +106,7 @@ export async function sendSystemNotification(
 			return false
 		}
 
-		// Fallback for the case where `ensureNotificationPermission` never ran.
-		// It normally has, from a foreground moment — see its doc comment for
+		// Fallback if `ensureNotificationPermission` never ran — see its doc for
 		// why requesting from here is a bad moment on Android.
 		let granted = await isPermissionGranted()
 		if (!granted) {
@@ -131,9 +119,8 @@ export async function sendSystemNotification(
 		}
 
 		const icon = await getNotificationIconPath()
-		// Desktop: plugin uses the OS default timeout (often ~2s). Our command
-		// sets Timeout::Never (Linux until dismissed; Windows longest toast).
-		// Android keeps the plugin path.
+		// Desktop goes through our command for `Timeout::Never`; the plugin would
+		// use the ~2s OS default. Android keeps the plugin path.
 		if (IS_DESKTOP) {
 			await invoke('show_system_notification', {
 				title: options.title,

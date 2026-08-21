@@ -1,15 +1,12 @@
 //! Shared transfer-progress accounting for both sides of a transfer.
 //!
-//! Sender and receiver used to compute "bytes transferred" and "speed" with
-//! independent, subtly different rules, so the two ends disagreed on the same
-//! transfer. Both now go through this module.
+//! Both ends compute "bytes transferred" and "speed" here, so they can't
+//! disagree about the same transfer.
 
 use std::collections::{BTreeMap, HashMap, VecDeque};
 
-/// Blob indices below this carry protocol overhead, not user payload:
-/// index 0 is the hash-seq root, index 1 is the collection metadata blob
-/// (file names). Every share is stored as a collection, so this holds for
-/// single-file shares too.
+/// Blob indices below this are overhead, not payload: 0 is the hash-seq root,
+/// 1 the collection metadata. Every share is a collection, single files included.
 pub const FIRST_PAYLOAD_BLOB_INDEX: u64 = 2;
 
 /// A window shorter than this is send-buffer noise rather than a transfer rate.
@@ -33,12 +30,9 @@ pub struct PayloadSizes {
     pub payload_bytes: u64,
 }
 
-/// Split a transfer into protocol overhead and user payload.
-///
-/// `child_sizes` is the children-only vector from `get_hash_seq_and_sizes`:
-/// entry 0 is the collection metadata blob, the rest are the shared files.
-/// `root_bytes` is the size of the hash-seq root blob, which is transferred
-/// before them and is not part of that vector.
+/// Split a transfer into protocol overhead and user payload. `child_sizes` is
+/// the children-only vector from `get_hash_seq_and_sizes` (entry 0 is the
+/// collection metadata); `root_bytes` is the root blob, not part of it.
 pub fn split_child_sizes(root_bytes: u64, child_sizes: &[u64]) -> PayloadSizes {
     let metadata_bytes = child_sizes.first().copied().unwrap_or(0);
     PayloadSizes {
@@ -47,10 +41,8 @@ pub fn split_child_sizes(root_bytes: u64, child_sizes: &[u64]) -> PayloadSizes {
     }
 }
 
-/// Sliding-window speed estimate fed with cumulative byte counts.
-///
-/// A cumulative average (`bytes_so_far / elapsed`) never recovers from a slow
-/// start and never drops on a stall; this reports the recent rate instead.
+/// Sliding-window speed estimate fed with cumulative byte counts — a cumulative
+/// average never recovers from a slow start nor drops on a stall.
 pub struct SpeedMeter {
     window_secs: f64,
     samples: VecDeque<(f64, u64)>,
@@ -99,10 +91,8 @@ impl SpeedMeter {
     }
 }
 
-/// Payload accounting for one get request, driven by provider events.
-///
-/// Only bytes the provider reported writing are counted: a blob is never
-/// credited with more than the highest offset seen for it.
+/// Payload accounting for one get request. Only bytes the provider reported
+/// writing count — a blob never exceeds the highest offset seen for it.
 #[derive(Debug, Default)]
 pub struct RequestProgress {
     current_index: Option<u64>,
@@ -148,10 +138,8 @@ pub struct ProgressSnapshot {
     pub total: u64,
 }
 
-/// Whole-share ledger across every request served by one share session.
-///
-/// Each request delivers the whole share, so serving N peers is N shares of
-/// work. Retired requests stay in the totals so the numbers never go backwards.
+/// Whole-share ledger for a share session. Each request delivers the whole
+/// share, so N peers is N shares of work; retired requests stay in the totals.
 pub struct ShareProgress {
     share_size: u64,
     active: HashMap<(u64, u64), RequestProgress>,
@@ -182,9 +170,9 @@ impl ShareProgress {
         }
     }
 
-    /// Retire a request. A credited request keeps its bytes and its share of
-    /// the total; an abandoned one is dropped from both, so a peer that gave up
-    /// at 5% cannot leave the session stuck below 100%.
+    /// Retire a request. A credited one keeps its bytes and its share of the
+    /// total; an abandoned one is dropped from both, so a peer that gave up at
+    /// 5% can't leave the session stuck below 100%.
     pub fn retire(&mut self, key: (u64, u64), credited: bool) -> u64 {
         let Some(request) = self.active.remove(&key) else {
             return 0;
@@ -227,10 +215,7 @@ impl ShareProgress {
     }
 }
 
-/// Convert an elapsed span to whole milliseconds.
-///
-/// Anything that actually moved reports at least 1ms: a transfer small enough
-/// to finish inside a millisecond still happened, and 0 reads as "unknown".
+/// Elapsed span in whole milliseconds, floored at 1 — 0 reads as "unknown".
 pub fn duration_ms(elapsed_secs: f64) -> u64 {
     if elapsed_secs <= 0.0 {
         return 0;
@@ -238,11 +223,8 @@ pub fn duration_ms(elapsed_secs: f64) -> u64 {
     ((elapsed_secs * 1000.0).round() as u64).max(1)
 }
 
-/// Wall time a share session spent serving requests.
-///
-/// Measured from the first request to the last one finishing — not from the
-/// first payload byte, which for a small file lands in the same microsecond as
-/// the last one.
+/// Wall time a share session spent serving requests — measured from the first
+/// request, not the first payload byte, which for a small file is the last one.
 #[derive(Debug, Default)]
 pub struct TransferClock {
     started_secs: Option<f64>,

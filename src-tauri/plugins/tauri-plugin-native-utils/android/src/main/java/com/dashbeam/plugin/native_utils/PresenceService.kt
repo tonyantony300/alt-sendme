@@ -17,21 +17,15 @@ import androidx.core.app.ServiceCompat
 
 /**
  * Keeps the app process at foreground importance so pairing presence and mDNS
- * survive the user navigating away.
+ * survive the user navigating away. Both ride tokio tasks in this process,
+ * which Android throttles once it caches a backgrounded app.
  *
- * Presence is derived from the live control connections the Rust `NodeService`
- * holds, and Nearby visibility from the mDNS publisher registered on the same
- * endpoint. Both are tokio tasks in *this* process, so once the Activity stops
- * and Android caches the process, they are throttled and eventually killed —
- * peers see the device drop offline. A foreground service is the only supported
- * way to keep them scheduled.
+ * The multicast lock matters even in the foreground: Android drops multicast to
+ * apps that don't hold one.
  *
- * The multicast lock is not incidental: Android drops multicast to apps that
- * don't hold one, so mDNS is unreliable without it even in the foreground.
- *
- * Lifetime is owned by Rust (`presence_service` in `src-tauri`), not by this
- * class — see [start] and [stop]. `android:stopWithTask="true"` in the manifest
- * means swiping the app away takes the device offline, which is deliberate.
+ * Lifetime is owned by Rust (`presence_service`), not this class — see [start]
+ * and [stop]. `android:stopWithTask="true"` means swiping the app away takes
+ * the device offline, deliberately.
  */
 class PresenceService : Service() {
     private var multicastLock: WifiManager.MulticastLock? = null
@@ -42,8 +36,7 @@ class PresenceService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForegroundNotification()
         acquireLocks()
-        // Never restart on our own: Rust decides when presence should run, and
-        // a process death means its state is gone anyway.
+        // Rust decides when presence runs; never restart on our own.
         return START_NOT_STICKY
     }
 
@@ -55,8 +48,7 @@ class PresenceService : Service() {
     private fun startForegroundNotification() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // IMPORTANCE_LOW: visible and ongoing, but silent — this is status,
-            // not an alert.
+            // IMPORTANCE_LOW: ongoing but silent — status, not an alert.
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.presence_channel_name),
@@ -102,11 +94,8 @@ class PresenceService : Service() {
             .build()
     }
 
-    /**
-     * Both locks are set non-reference-counted and released in [onDestroy], so
-     * repeated `startService` calls on an already-running service cannot leak
-     * them.
-     */
+    /** Non-reference-counted and released in [onDestroy], so repeated
+     * `startService` calls can't leak them. */
     private fun acquireLocks() {
         if (multicastLock != null || wifiLock != null) return
 
@@ -167,8 +156,7 @@ class PresenceService : Service() {
                     context.startService(intent)
                 }
             }.onFailure {
-                // ForegroundServiceStartNotAllowedException and friends: losing
-                // background presence must never take the app down with it.
+                // Losing background presence must not take the app down.
                 Log.w(TAG, "could not start presence service", it)
             }
         }

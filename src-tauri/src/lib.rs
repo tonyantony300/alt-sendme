@@ -48,16 +48,12 @@ fn cleanup_orphaned_directories() {
     }
 }
 
-/// Brings up the history store and reconciles rows a crash left open.
+/// Brings up the history store and reconciles rows a crash left open. Runs
+/// before any command can open a row, so an `InProgress` row here is from a
+/// previous process.
 ///
-/// Runs before any command can open a row, so an `InProgress` row seen here is
-/// necessarily from a previous process.
-///
-/// Partial-receive stores are deliberately *not* managed here:
-/// `cleanup_orphaned_directories` already clears them at every launch, which
-/// bounds temp usage and scopes resume to a single session. History reports
-/// whatever partial still exists — `get_transfer_temp_data` stats it live — so
-/// a row simply offers nothing to free once that sweep has run.
+/// Partial-receive stores aren't managed here — `cleanup_orphaned_directories`
+/// already clears them at every launch, and history stats whatever survives.
 fn init_transfer_history(app: &tauri::App) {
     let data_dir = match app.path().app_data_dir() {
         Ok(dir) => dir,
@@ -94,9 +90,8 @@ pub fn run() {
         builder
     } else {
         builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
-            // A duplicate autostart trigger (e.g. a Linux autostart entry
-            // plus a systemd user unit) re-invokes an already-running
-            // instance with `--hidden`; do not force the window open then.
+            // A duplicate autostart trigger re-invokes a running instance with
+            // `--hidden`; don't force the window open then.
             if !wants_hidden_launch(args.iter().cloned()) {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
@@ -220,20 +215,15 @@ pub fn run() {
             ));
             #[cfg(desktop)]
             {
-                // The window is configured `visible: false` so an autostart
-                // launch never flashes. Show it here — ahead of node init,
-                // which blocks on relay resolution — so a slow network never
-                // delays the window.
+                // The window is `visible: false` so an autostart launch never
+                // flashes. Shown here, ahead of node init, so relay resolution
+                // can't delay it.
                 //
-                // Android has no equivalent show step and would stay invisible
-                // forever. It is safe only because `tauri.android.conf.json`
-                // redeclares the whole `app.windows` array, and Tauri merges
-                // platform configs with RFC 7396 JSON Merge Patch, which
-                // *replaces* arrays rather than merging their members — so the
-                // global `visible: false` never reaches Android. That block
-                // looks redundant; it is load-bearing and must not be removed.
-                // (Tauri's config structs are `deny_unknown_fields` strict
-                // JSON, so the note cannot live in the file itself.)
+                // Android has no equivalent show step. It stays visible only
+                // because `tauri.android.conf.json` redeclares the whole
+                // `app.windows` array and RFC 7396 merge *replaces* arrays, so
+                // `visible: false` never reaches it. That block looks
+                // redundant; it is load-bearing.
                 if !wants_hidden_launch(std::env::args().skip(1)) {
                     if let Some(window) = app.get_webview_window("main") {
                         if let Err(error) = window.show() {
@@ -283,9 +273,8 @@ pub fn run() {
             }
             #[cfg(target_os = "android")]
             {
-                // Pairing can complete over a pairing code, over Nearby, or be
-                // undone remotely by the peer; all three land on these events,
-                // which is why presence hooks them rather than each command.
+                // Pairing code, Nearby, and remote unpair all land on these
+                // events, so presence hooks them rather than each command.
                 use tauri::Listener as _;
                 let handle = app.handle().clone();
                 for event in ["device-paired", "device-unpaired"] {
@@ -301,14 +290,11 @@ pub fn run() {
             }
             #[cfg(desktop)]
             {
-                // Autostart asked for a hidden window, but without a tray icon
-                // there is no way back to the app. Show it rather than leave a
-                // running process the user cannot reach.
+                // Without a tray icon there's no way back to a hidden window.
                 if wants_hidden_launch(std::env::args().skip(1)) && !tray::is_active() {
                     if let Some(window) = app.get_webview_window("main") {
                         if let Err(error) = window.show() {
-                            // No tray and no window: the process is running but
-                            // completely unreachable. Worth a loud log line.
+                            // No tray and no window: the process is unreachable.
                             tracing::warn!(
                                 %error,
                                 "failed to show window after tray setup failed; app may be unreachable"
@@ -333,10 +319,8 @@ pub fn run() {
                 }
             }
 
-            // Windows/Linux: hide only when there is a tray icon to get back
-            // from AND the user wants background running. Otherwise fall
-            // through to a real close, which triggers RunEvent::Exit and
-            // shuts the node down.
+            // Windows/Linux: hide only with a tray icon to get back from and
+            // background running on. Otherwise fall through to a real close.
             #[cfg(not(target_os = "macos"))]
             {
                 if !tray::is_active() || !tray::background_on_close() {
@@ -381,9 +365,8 @@ fn first_non_flag_arg(args: impl IntoIterator<Item = String>) -> Option<String> 
     args.into_iter().find(|arg| !arg.starts_with('-'))
 }
 
-/// True when the process was launched by autostart and should not show a
-/// window. Exact match only, so a future `--hidden-something` cannot silently
-/// trigger it.
+/// True when autostart launched us and no window should show. Exact match, so a
+/// future `--hidden-something` can't silently trigger it.
 #[cfg(desktop)]
 fn wants_hidden_launch(args: impl IntoIterator<Item = String>) -> bool {
     args.into_iter().any(|arg| arg == "--hidden")
@@ -397,9 +380,8 @@ fn app_state_initial() -> AppState {
     }
 }
 
-/// Install the global tracing subscriber. Shared by the desktop binary and the mobile
-/// entry point — before this moved here, Android had no subscriber at all and every
-/// `tracing::` call there was a silent no-op.
+/// Install the global tracing subscriber. Shared by the desktop binary and the
+/// mobile entry point, which would otherwise have none at all.
 ///
 /// Any failure degrades to stdout-only logging; it must never block startup.
 fn init_logging(app: &tauri::AppHandle) {

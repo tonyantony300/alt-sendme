@@ -120,10 +120,8 @@ export function useReceiver(): UseReceiverReturn {
 	const [isCompleted, setIsCompleted] = useState(false)
 	/**
 	 * Android is still copying the received files out of app-private staging.
-	 *
-	 * The success screen goes up on `receive-completed`, which the engine
-	 * emits before that copy starts, so "Open" has no destination to point at
-	 * until `receive-export-finished` lands.
+	 * The success screen goes up on `receive-completed`, which fires before that
+	 * copy starts, so "Open" has nowhere to point until the export finishes.
 	 */
 	const [isExportPending, setIsExportPending] = useState(false)
 	const [savePath, setSavePath] = useState('')
@@ -151,10 +149,9 @@ export function useReceiver(): UseReceiverReturn {
 	})
 	const pendingConflictNoticeRef = useRef<string | null>(null)
 	/**
-	 * `content://` URIs of the files a MediaStore export just published.
-	 *
-	 * A MediaStore export yields no tree URI, so these are what "Open" has to
-	 * work with — one file opens directly, several open the folder below.
+	 * `content://` URIs a MediaStore export just published. There's no tree URI,
+	 * so these are what "Open" works with — one file opens directly, several
+	 * open the folder below.
 	 */
 	const androidMediaStoreUrisRef = useRef<string[]>([])
 	/** Where that export landed, relative to storage: `Download/DashBeam`. */
@@ -425,9 +422,8 @@ export function useReceiver(): UseReceiverReturn {
 				}
 			})
 
-			// Files reached the public Downloads collection. Nothing to warn
-			// about — the success screen shows the new path, and the URIs make
-			// "Open" work without a tree URI.
+			// Files reached the public Downloads collection; the success screen
+			// shows the path and the URIs make "Open" work without a tree URI.
 			await registerListener('receive-download-mediastore', (event: any) => {
 				if (!IS_ANDROID) return
 				try {
@@ -450,8 +446,7 @@ export function useReceiver(): UseReceiverReturn {
 				}
 			})
 
-			// The export is done — whatever it produced, "Open" now has
-			// somewhere to go, so the button can leave its pending state.
+			// The export is done, so "Open" now has somewhere to go.
 			await registerListener('receive-export-finished', () => {
 				setIsExportPending(false)
 			})
@@ -492,8 +487,8 @@ export function useReceiver(): UseReceiverReturn {
 				setTransferProgress(null)
 
 				const endTime = Date.now()
-				// Prefer the engine's wire time: the wall clock here also covers
-				// connection setup and writing the files out to disk.
+				// Prefer the engine's wire time — the wall clock here also covers
+				// connection setup and the disk write.
 				const completion = parseCompletionPayload(event?.payload)
 				const duration =
 					completion?.durationMs ??
@@ -784,9 +779,8 @@ export function useReceiver(): UseReceiverReturn {
 	}
 
 	const handleOpenFolder = async () => {
-		// The export still has files in flight; its destination is not yet
-		// somewhere the user could be sent. The button is disabled while this
-		// holds, so reaching here means a stray call.
+		// Files still in flight: no destination to send the user to. The button is
+		// disabled while this holds, so reaching here means a stray call.
 		if (IS_WEB || isExportPending || folderOpenTriggeredRef.current) {
 			return
 		}

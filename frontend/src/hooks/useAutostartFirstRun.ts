@@ -5,19 +5,13 @@ import { shouldRunAutostartFirstRun } from '@/lib/autostart-first-run'
 import { useAppSettingStore } from '@/store/app-setting'
 
 /**
- * Turns on start-at-login once, on the very first launch.
+ * Turns on start-at-login once, on the very first launch — paired devices only
+ * see each other online while DashBeam runs. Registers a real login item, since
+ * the Settings switch reads the OS rather than a cached flag.
  *
- * Paired devices can only see each other as online while DashBeam is
- * running, so the app opts itself in rather than hiding the capability
- * behind a setting most people never open. It is a real login item, not a
- * cached flag — the switch in Settings reads the OS, so anything less would
- * paint "on" over a system that has nothing registered.
- *
- * Runs at most once per install. `autostartInitialized` records that the
- * attempt happened, not that it succeeded: a user who turns the toggle off
- * must never have it turned back on by a later launch, and a platform that
- * refused (or a Flatpak user who denied the portal) must not be re-asked on
- * every startup.
+ * `autostartInitialized` records that the attempt happened, not that it
+ * succeeded — neither a user who turned it back off nor a platform that
+ * refused should be asked again.
  */
 export function useAutostartFirstRun(): void {
 	useEffect(() => {

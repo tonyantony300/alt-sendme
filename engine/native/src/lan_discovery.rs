@@ -1,8 +1,7 @@
 //! mDNS lifecycle. The only module in the engine that touches multicast.
 //!
 //! Everything downstream consumes `NearbyRegistry`, which takes injected
-//! observations — that is what keeps the rest of the feature testable on CI
-//! runners that block multicast.
+//! observations — so the rest of the feature is testable without multicast.
 
 use anyhow::Context;
 use iroh::Endpoint;
@@ -10,9 +9,8 @@ use iroh_mdns_address_lookup::{DiscoveryEvent, MdnsAddressLookup};
 use n0_future::StreamExt;
 use tokio::sync::mpsc;
 
-/// What the mDNS pump observed. Deliberately dumb — this module knows nothing
-/// about pairing, probing, or events, so all policy stays in `node.rs` and this
-/// file stays free of anything that needs a network to test.
+/// What the mDNS pump observed. Deliberately dumb: all policy lives in
+/// `node.rs`, so nothing here needs a network to test.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LanEvent {
     Appeared { endpoint_id: String },
@@ -26,10 +24,8 @@ pub struct LanDiscovery {
 impl LanDiscovery {
     /// Registers the mDNS publisher on `endpoint` and pumps sightings into `tx`.
     ///
-    /// Failure is **not** fatal: no multicast, an active VPN, or an isolated
-    /// guest network all produce an error here, and the app must keep working
-    /// with pairing codes and relays. Mirrors how `node_init_error` treats a
-    /// failed `NodeService`.
+    /// Failure is not fatal (no multicast, VPN, isolated guest network) — the
+    /// app keeps working with pairing codes and relays.
     pub fn start(endpoint: &Endpoint, tx: mpsc::UnboundedSender<LanEvent>) -> anyhow::Result<Self> {
         let mdns = MdnsAddressLookup::builder()
             .build(endpoint.id())
@@ -40,9 +36,8 @@ impl LanDiscovery {
             .context("endpoint has no address lookup registry")?
             .add(mdns.clone());
 
-        // The one log that answers "is this device advertising at all?", which
-        // is the first question for every "the other device can't see me"
-        // report. `start` returning `Err` is logged by the caller.
+        // Answers "is this device advertising at all?" — the first question in
+        // every "the other device can't see me" report.
         tracing::debug!(
             target: "dashbeam::_events::nearby::mdns_advertising",
             local = %endpoint.id().fmt_short(),
@@ -70,10 +65,8 @@ impl LanDiscovery {
                             endpoint_id: endpoint_id.to_string(),
                         }
                     }
-                    // `DiscoveryEvent` is `#[non_exhaustive]`; unknown future
-                    // variants carry nothing this module can act on. Logged
-                    // anyway so a silent upstream addition is visible rather
-                    // than looking like multicast went quiet.
+                    // `DiscoveryEvent` is `#[non_exhaustive]`. Logged so an
+                    // upstream addition doesn't look like multicast went quiet.
                     _ => {
                         tracing::debug!(
                             target: "dashbeam::_events::nearby::mdns_unhandled",

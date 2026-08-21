@@ -15,11 +15,9 @@ import { formatFileSize } from '@/lib/utils'
 import { useTranslation } from '@/i18n'
 
 /**
- * Raises OS notifications for pairing and invite events.
- *
- * Deliberately a separate listener from the dialogs that handle the same
- * events: the dialogs own user interaction, this owns attention. Keeping them
- * apart means notification changes can't break the accept/decline path.
+ * Raises OS notifications for pairing and invite events. A separate listener
+ * from the dialogs on the same events — they own interaction, this owns
+ * attention — so notification changes can't break accept/decline.
  *
  * Mounted once, from `DeviceNodeSync`.
  */
@@ -38,8 +36,7 @@ export function useInviteNotifications(): void {
 				formatSize: formatFileSize,
 			})
 			if (!content) return
-			// Best-effort: a notification failure must never touch the invite
-			// flow, which is the actual feature.
+			// Best-effort: a notification failure must not touch the invite flow.
 			void sendSystemNotification(content)
 		}
 
@@ -76,9 +73,8 @@ export function useInviteNotifications(): void {
 
 			await register('paired-invite-received', (payload) => {
 				void (async () => {
-					// `devices` is empty on cold start; without this wait an
-					// invite from a paired sender briefly looks unpaired and
-					// would be announced as "nearby". Same guard the two
+					// Without this wait a paired sender's invite briefly looks
+					// unpaired and gets announced as "nearby". Same guard the
 					// dialog listeners use.
 					await pairingDataHydrated()
 					if (disposed) return
@@ -92,8 +88,7 @@ export function useInviteNotifications(): void {
 			})
 
 			await register('paired-invite-response', (payload) => {
-				// Accepts lead straight into a transfer that reports its own
-				// progress and completion; only declines need announcing.
+				// An accept leads into a transfer that reports itself.
 				if (payload.response !== 'declined') return
 				notify('invite-declined', payload)
 			})

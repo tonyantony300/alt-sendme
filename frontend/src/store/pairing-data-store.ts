@@ -93,20 +93,16 @@ export async function preloadPairingData() {
 	await usePairingDataStore.getState().hydrate()
 }
 
-/** Bounds how long an invite-routing decision waits on cold start before
- * proceeding with whatever `devices` snapshot exists — matches the spirit of
- * `node-capability-store`'s own `WAIT_MAX_MS` fallback. */
+/** How long an invite-routing decision waits on cold start before proceeding
+ * with whatever `devices` snapshot exists. */
 const HYDRATION_WAIT_MAX_MS = 10_000
 
 /**
  * Resolves once pairing data has hydrated (immediately if it already has).
  *
- * `devices` starts empty and `preloadPairingData` populates it without being
- * awaited by any mounted component — an invite can arrive from an
- * already-paired sender before that resolves. Callers that route an incoming
- * invite based on `devices` (`DeviceNodeSync`, `NearbyInviteDialog`) must
- * await this first so a paired sender is never misrouted to the Nearby
- * fingerprint dialog just because hydration hadn't finished yet.
+ * `devices` starts empty and nothing awaits `preloadPairingData`, so an invite
+ * can arrive first. Callers that route on `devices` must await this, or a
+ * paired sender gets misrouted to the Nearby fingerprint dialog.
  */
 export function pairingDataHydrated(): Promise<void> {
 	if (usePairingDataStore.getState().hasHydrated) return Promise.resolve()

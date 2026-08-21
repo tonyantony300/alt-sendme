@@ -24,13 +24,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Longest peer name allowed into notification copy.
- *
- * Display names are chosen by the remote device, so an unpaired LAN peer
- * controls this string outright. The only thing separating a stranger's
- * banner from a trusted device's is the word "nearby" that follows the name;
- * a long enough name pushes it past the OS truncation point and the two read
- * identically. Capping keeps the qualifier on screen.
+ * Longest peer name allowed into notification copy. The name is chosen by the
+ * remote device, and only the "nearby" qualifier after it separates a
+ * stranger's banner from a trusted device's — a long name would push that past
+ * the OS truncation point.
  */
 export const MAX_PEER_NAME_LENGTH = 40
 
@@ -43,14 +40,12 @@ function name(value: unknown, t: Translate): string {
 }
 
 /**
- * Turns a pairing/invite event payload into notification copy.
+ * Turns a pairing/invite event payload into notification copy. Pure by design
+ * — `t` and `formatSize` are injected, so routing and string assembly are
+ * testable under `pnpm test:lib`.
  *
- * Pure by design: zero imports — `t` and `formatSize` are injected — so the
- * routing and string assembly can be unit tested under `pnpm test:lib`,
- * which is where the mistakes in this feature will actually be.
- *
- * Returns `null` for payloads that cannot be read, so callers can skip the
- * notification rather than showing a half-built one.
+ * `null` for unreadable payloads, so callers skip rather than show a half-built
+ * notification.
  */
 export function buildInviteNotification(
 	kind: NotificationKind,

@@ -88,11 +88,8 @@ async fn app_state_node(_state: &State<'_, AppStateMutex>) -> Option<Arc<NodeSer
     None
 }
 
-/// Names an endpoint id from the paired-device list.
-///
-/// A snapshot is stored alongside the id so a device that is later forgotten
-/// keeps its name in past rows; the UI still prefers the current name when the
-/// device is still known.
+/// Names an endpoint id from the paired-device list. The snapshot is stored
+/// alongside the id so a forgotten device keeps its name in past rows.
 fn name_peer(endpoint_id: String, node: &Option<Arc<NodeService>>) -> TransferPeer {
     let known = node
         .as_ref()
@@ -258,8 +255,7 @@ pub async fn send_items(
             magic_ipv6_addr: None,
         };
 
-        // Everything the history row needs is known before the first byte
-        // moves; the row itself only opens once a peer actually starts pulling.
+        // Known before the first byte moves; the row opens on first pull.
         let (boxed_handle, recorder) = build_emitter(
             &app_handle,
             &history,
@@ -277,8 +273,7 @@ pub async fn send_items(
         let result = start_share_items(path_bufs.clone(), options, &boxed_handle, Some(metadata))
             .await
             .map_err(|error| {
-                // The send path had no failure logging, so sender-side bug reports
-                // showed connection setup and then nothing.
+                // Without this, sender-side bug reports end at connection setup.
                 tracing::error!(
                     target: "dashbeam::_events::transfer::send_failed",
                     item_count = path_bufs.len(),
@@ -430,8 +425,7 @@ pub async fn stop_sharing(state: State<'_, AppStateMutex>) -> Result<(), String>
 
     if let Some(mut share) = app_state.current_share.take() {
         if let Some(recorder) = share.recorder.as_ref() {
-            // No-op once a terminal event already closed the row; this only
-            // catches a share stopped before or between peer transfers.
+            // No-op if a terminal event already closed the row.
             recorder.finalize(TransferStatus::Cancelled, CompletionFacts::default(), None);
         }
         if let Err(e) = share.stop().await {
@@ -501,10 +495,9 @@ pub async fn receive_file(
         }
     }
 
-    // The sender's endpoint id rides in the ticket, so the peer is known
-    // before the connection exists. `resumable_store_path` is set at open, not
-    // at finalize: a crash never reaches finalize, and without the pointer the
-    // partial store would be unreclaimable from the history page.
+    // The sender's endpoint id rides in the ticket, so the peer is known before
+    // the connection exists. `resumable_store_path` is set at open, not finalize
+    // — a crash never reaches finalize, stranding the partial store.
     let sender_peer = sender_peer_from_ticket(&ticket, &app_state_node(&state).await);
     let (boxed_handle, recorder) = build_emitter(
         &app_handle,
@@ -601,12 +594,9 @@ pub async fn receive_file(
 
 /// Move a finished receive out of staging, bracketed by a completion event.
 ///
-/// `receive-completed` fires when the engine finishes writing app-private
-/// staging, which is *before* the export below re-copies every byte out of it.
-/// The success screen is therefore already up while the destination — the
-/// path, and the `content://` URIs "Open" needs — does not exist yet. Emitting
-/// on the way out, after whichever payload event the chosen path produced,
-/// gives the UI a single signal for "the files are now where they belong".
+/// `receive-completed` fires before this re-copies the bytes out, so the
+/// success screen is up while the destination doesn't exist yet. Emitting on
+/// the way out gives the UI one signal for "the files are where they belong".
 #[cfg(target_os = "android")]
 fn finalize_android_receive(
     app_handle: &tauri::AppHandle,
@@ -662,12 +652,10 @@ fn export_android_receive(
     }
 }
 
-/// Export a finished receive into the public `Download/DashBeam` collection.
-///
-/// This is the zero-configuration path — no folder picked, no permission
-/// prompt. Files left in app-private staging are invisible to every file
-/// manager and cannot be opened, so anything short of a successful export
-/// falls back to the old behaviour and tells the user where they ended up.
+/// Export a finished receive into the public `Download/DashBeam` collection —
+/// the zero-configuration path, no folder picked or permission prompted. Files
+/// left in app-private staging can't be opened, so a failed export falls back
+/// and tells the user where they ended up.
 #[cfg(target_os = "android")]
 fn finalize_android_media_store_receive(
     app_handle: &tauri::AppHandle,
@@ -915,11 +903,9 @@ pub fn is_windows_portable() -> bool {
     crate::platform::windows::portable::is_portable()
 }
 
-/// State of the debug-logging toggle.
-///
-/// `enabled` is the persisted marker; `active_this_session` is whether the file sink was
-/// actually installed at launch. They disagree between toggling and restarting, which is
-/// what the UI's "restart required" hint keys off.
+/// State of the debug-logging toggle. `enabled` is persisted;
+/// `active_this_session` is whether the file sink was installed at launch —
+/// they disagree between toggling and restarting, which drives the UI hint.
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DebugLoggingState {
@@ -952,10 +938,9 @@ pub fn get_debug_logging(app: tauri::AppHandle) -> Result<DebugLoggingState, Str
     })
 }
 
-/// Takes effect on the next launch — the subscriber is never reconfigured while running.
-///
-/// Turning it off also purges immediately rather than waiting for a relaunch, so
-/// "off" means the logs are gone even if the app is never reopened.
+/// Takes effect next launch; the subscriber is never reconfigured while
+/// running. Turning it off purges immediately, so "off" means the logs are gone
+/// even if the app is never reopened.
 #[tauri::command]
 pub fn set_debug_logging(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
     let config_dir = app_config_dir(&app)?;
@@ -964,8 +949,8 @@ pub fn set_debug_logging(app: tauri::AppHandle, enabled: bool) -> Result<(), Str
 
     if !enabled {
         if let Ok(log_dir) = app_log_dir(&app) {
-            // Best-effort: the file for the current session may still be open on
-            // Windows, and startup pruning finishes the job either way.
+            // Best-effort: the current session's file may still be open on
+            // Windows, and startup pruning finishes the job.
             let _ = crate::logging::clear(&log_dir);
         }
     }
@@ -982,10 +967,8 @@ pub fn clear_debug_logs(app: tauri::AppHandle) -> Result<(), String> {
 /// Largest bundle we will write. Comfortably under GitHub's attachment limit.
 const MAX_BUNDLE_BYTES: usize = 5 * 1024 * 1024;
 
-/// Write a metadata header plus captured logs to `dest_path`.
-///
-/// Everything is assembled here rather than in the frontend so the file is complete even
-/// if the UI is partly broken.
+/// Write a metadata header plus captured logs to `dest_path`. Assembled here
+/// rather than in the frontend so a partly broken UI still produces a full file.
 #[tauri::command]
 pub async fn export_debug_bundle(
     app: tauri::AppHandle,
@@ -1002,8 +985,7 @@ pub async fn export_debug_bundle(
         "App version: {}\n",
         crate::version::get_app_version()
     ));
-    // `std::env::consts::OS` alone gives "macos" with no version, which is not enough
-    // to triage platform-specific bugs.
+    // `std::env::consts::OS` gives "macos" with no version.
     out.push_str(&format!(
         "OS: {} {} ({})\n",
         tauri_plugin_os::platform(),
@@ -1015,8 +997,7 @@ pub async fn export_debug_bundle(
         crate::logging::is_active()
     ));
 
-    // Relay configuration is the first question for any connectivity report, and the
-    // frontend is the only place that knows what the user selected.
+    // Only the frontend knows which relay the user selected.
     match relay.as_ref() {
         Some(config) => {
             out.push_str(&format!("Relay mode: {}\n", config.mode));
@@ -1188,11 +1169,9 @@ pub async fn verify_discovery(
     engine_verify_discovery(discovery).await
 }
 
-/// Extracts the persisted `discoverability` value from the raw contents of
-/// tauri-plugin-store's `settings.json` — the same file the frontend's
-/// `useAppSettingStore` writes (a zustand `persist` envelope, JSON-stringified
-/// under the `app_settings` key). `None` when the file, key, or field is
-/// missing or malformed; callers fall back to the default.
+/// Reads `discoverability` out of the raw `settings.json` the frontend's
+/// `useAppSettingStore` writes (zustand `persist` envelope under
+/// `app_settings`). `None` when missing or malformed — callers default.
 #[cfg(any(desktop, target_os = "android", test))]
 fn parse_persisted_discoverability(raw: &str) -> Option<Discoverability> {
     let file: serde_json::Value = serde_json::from_str(raw).ok()?;
@@ -1201,16 +1180,13 @@ fn parse_persisted_discoverability(raw: &str) -> Option<Discoverability> {
     serde_json::from_value(envelope.get("state")?.get("discoverability")?.clone()).ok()
 }
 
-/// Reads the user's persisted discoverability choice so it reaches
-/// `NodeService::start` *before* LAN discovery starts — an `Off`-persisted
-/// start must never register mDNS at all, not even for the moment it takes
-/// the webview to load and sync settings (`DeviceNodeSync` re-applies it
-/// then, as a safety net, the same way relay settings are re-applied).
+/// Reads the persisted discoverability choice before `NodeService::start`, so
+/// an `Off` install never registers mDNS even briefly (`DeviceNodeSync`
+/// re-applies it once the webview loads).
 ///
-/// A deliberate raw read of the store file rather than `StoreExt::store`:
-/// loading the store Rust-side would register it without the frontend's
-/// `LazyStore` options (defaults, autoSave), and the plugin silently reuses
-/// the first-registered instance.
+/// A raw file read, not `StoreExt::store`: loading the store Rust-side would
+/// register it without the frontend's `LazyStore` options, and the plugin
+/// reuses whichever instance registered first.
 #[cfg(any(desktop, target_os = "android"))]
 fn load_persisted_discoverability(app_handle: &tauri::AppHandle) -> Discoverability {
     let Ok(data_dir) = app_handle.path().app_data_dir() else {
@@ -1222,10 +1198,8 @@ fn load_persisted_discoverability(app_handle: &tauri::AppHandle) -> Discoverabil
     parse_persisted_discoverability(&raw).unwrap_or_default()
 }
 
-/// Extracts the persisted `minimizeToTray` value from the raw contents of
-/// tauri-plugin-store's `settings.json`. Same envelope shape as
-/// `parse_persisted_discoverability` — see its doc comment for why this is a
-/// raw file read rather than `StoreExt::store`.
+/// Reads `minimizeToTray` out of `settings.json` — same envelope and same
+/// raw-read reasoning as `parse_persisted_discoverability`.
 #[cfg(any(desktop, test))]
 fn parse_persisted_minimize_to_tray(raw: &str) -> Option<bool> {
     let file: serde_json::Value = serde_json::from_str(raw).ok()?;
@@ -1234,10 +1208,8 @@ fn parse_persisted_minimize_to_tray(raw: &str) -> Option<bool> {
     envelope.get("state")?.get("minimizeToTray")?.as_bool()
 }
 
-/// The user's "keep running in the background" choice, read before the first
-/// window-close can happen. Defaults to `true`: closing to the tray is the
-/// behaviour every existing install already has (the old close handler hid
-/// unconditionally), so a missing key must not silently start quitting.
+/// The "keep running in the background" choice, read before the first window
+/// close. Defaults to `true` — every existing install already closes to tray.
 #[cfg(desktop)]
 pub fn load_persisted_minimize_to_tray(app_handle: &tauri::AppHandle) -> bool {
     let Ok(data_dir) = app_handle.path().app_data_dir() else {
@@ -1569,9 +1541,7 @@ pub async fn invite_paired_device(
 ) -> Result<InviteDelivered, String> {
     let node = {
         let guard = state.lock().await;
-        // The recipient is known here, before any connection exists — a better
-        // source for the history row than waiting for `share-peer-connected`,
-        // which carries an id and nothing else.
+        // The recipient is known here; `share-peer-connected` carries only an id.
         note_share_peer(&guard, name_peer(endpoint_id.clone(), &guard.node));
         require_node_arc(&guard)?
     };
@@ -1697,9 +1667,8 @@ pub async fn invite_nearby_device(
         require_node_arc(&guard)?
     };
 
-    // A Nearby device is not in the paired store, so its name only exists in
-    // the node's discovery cache — and `list_nearby` is async, which the
-    // synchronous emitter path cannot reach.
+    // A Nearby device's name lives only in the discovery cache, and
+    // `list_nearby` is async — out of reach of the synchronous emitter path.
     let nearby_peer = node
         .list_nearby()
         .await
@@ -1764,13 +1733,9 @@ pub async fn respond_nearby_invite(
     result.map_err(|e| e.to_string())
 }
 
-/// Show a desktop notification that stays as long as the OS allows.
-///
-/// The Tauri notification plugin always uses the default timeout (often a
-/// couple of seconds) and does not expose a timeout API. Invite toasts need
-/// to be readable/actionable, so desktop goes through notify-rust with
-/// `Timeout::Never` (Linux: until dismissed; Windows: longest toast; macOS
-/// ignores timeout — banner length is system-controlled).
+/// Show a desktop notification that stays as long as the OS allows. The Tauri
+/// notification plugin exposes no timeout API and defaults to a couple of
+/// seconds, so invite toasts go through notify-rust with `Timeout::Never`.
 #[cfg(desktop)]
 #[tauri::command]
 pub fn show_system_notification(
@@ -1854,14 +1819,11 @@ pub fn autostart_is_enabled(app_handle: tauri::AppHandle) -> Result<Option<bool>
     crate::autostart::is_enabled(&app_handle)
 }
 
-/// Request an autostart change. Returns the state the OS ended up in, which
-/// may differ from `enabled` when the platform (or the user, via a portal
-/// dialog) refuses.
+/// Request an autostart change. Returns the state the OS ended up in, which may
+/// differ from `enabled` when the platform or the user refuses.
 ///
-/// `async` on purpose: Tauri runs synchronous commands on the main thread, and
-/// the Flatpak path blocks on a portal consent dialog until the user answers
-/// it. As an async command Tauri drives this off the main thread, so the
-/// window keeps painting while the dialog is up.
+/// `async` on purpose: the Flatpak path blocks on a portal consent dialog, and
+/// Tauri runs synchronous commands on the main thread.
 #[cfg(desktop)]
 #[tauri::command]
 pub async fn autostart_set(app_handle: tauri::AppHandle, enabled: bool) -> Result<bool, String> {
@@ -1884,9 +1846,8 @@ mod tests {
         std::env::temp_dir().join(format!("{}-{}-{}.txt", name_prefix, std::process::id(), ts))
     }
 
-    /// Locks the persisted-settings seam: the raw `settings.json` layout this
-    /// parses is written by the frontend's `useAppSettingStore` (zustand
-    /// `persist` envelope, stringified under `app_settings`).
+    /// Locks the seam with the frontend's `useAppSettingStore`, which writes
+    /// this `settings.json` layout.
     #[test]
     fn parse_persisted_discoverability_reads_the_zustand_envelope() {
         let envelope = serde_json::json!({ "state": { "discoverability": "off", "darkMode": true }, "version": 0 });
@@ -2003,10 +1964,8 @@ pub async fn list_transfer_history(
     history.list().map_err(|e| e.to_string())
 }
 
-/// Removes one row and the partial store it pointed at.
-///
-/// The cascade is the point: the row is the only pointer to that disk space,
-/// so dropping it without cleaning up would strand the bytes for good.
+/// Removes one row and the partial store it pointed at — the row is the only
+/// pointer to that disk space, so dropping it alone strands the bytes.
 #[tauri::command]
 pub async fn delete_transfer_record(
     id: String,

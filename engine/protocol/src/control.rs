@@ -37,13 +37,11 @@ pub enum ControlMessage {
     Forget {
         signature: String,
     },
-    /// Asks an unpaired peer discovered on the local network to identify itself.
-    /// mDNS advertises only node ids and addresses, so this probe is the only
-    /// source of a human-readable name.
+    /// Asks an unpaired LAN peer to identify itself — mDNS carries only node
+    /// ids and addresses, so this is the only source of a readable name.
     WhoAreYou,
-    /// Reply to `WhoAreYou`. Deliberately unsigned and self-reported — the trust
-    /// anchor is the connection's public-key binding, shown to the user as
-    /// `short_fingerprint`, not anything asserted in this payload.
+    /// Reply to `WhoAreYou`. Unsigned and self-reported — the trust anchor is
+    /// the connection's public-key binding, shown as `short_fingerprint`.
     Identity {
         endpoint_id: String,
         display_name: String,
@@ -53,9 +51,8 @@ pub enum ControlMessage {
         os: String,
     },
     /// Asks an unpaired LAN peer to become a paired contact (no file share).
-    /// Receiver UI confirms on display name + device type; accept replies with
-    /// `InviteResponse` and both sides commit `PairedDevice` records the same
-    /// way a nearby file-invite accept does.
+    /// Accept replies with `InviteResponse` and both sides commit records, as a
+    /// nearby file-invite accept does.
     PairRequest {
         sender_name: String,
         device_type: String,
@@ -65,11 +62,8 @@ pub enum ControlMessage {
 }
 
 impl ControlMessage {
-    /// Stable label for diagnostics, matching the serde tag.
-    ///
-    /// Deliberately the variant name and nothing else: the payloads carry
-    /// display names, blob tickets, and signatures, none of which belong in a
-    /// log file that users attach to bug reports.
+    /// Stable label for diagnostics, matching the serde tag. The variant name
+    /// and nothing else — payloads carry names, tickets and signatures.
     pub fn kind(&self) -> &'static str {
         match self {
             Self::PairingInfo { .. } => "pairing-info",
