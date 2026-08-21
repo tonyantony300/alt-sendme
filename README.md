@@ -165,17 +165,20 @@ While sharing: **QR** for a camera scan, **Share** for the system sheet, **Copy*
 
 | | **DashBeam** | **Blip** | **LocalSend** | **Magic Wormhole** | **PairDrop** |
 |:---|:---:|:---:|:---:|:---:|:---:|
-| Networking stack | QUIC via Iroh | Unknown | HTTPS/REST over TCP | encrypted TCP | WebRTC/DTLS (SCTP) |
+| Networking | QUIC via Iroh | Unknown | HTTPS/REST over TCP | encrypted TCP | WebRTC/DTLS (SCTP) |
 | Works over the internet | ✅ | ✅ | LAN only | ✅ | ✅ |
-| Saturates gigabit connections | ✅ | ✅ | ✅ (LAN only) | ✅ | ❌ (SCTP/browser ceiling) |
+| Saturates gigabit connections | ✅ | ✅ | LAN only | ✅ | ❌ (SCTP/browser ceiling) |
+| Discover devices on LAN | ✅ | ❌ | ✅ | ❌ | ❌ |
+| Persistent paired devices | ✅  | ✅ (account) | ❌ | ❌ | ✅ |
+| Send folders | ✅ | ✅ | ✅ | ✅ | ✅ (CLI only, not in browser) |
+| Resumable transfers | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Roaming mid-transfer | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Send to multiple receivers | ✅ (broadcast) | ❌ | ✅ | ✅ | ❌ |
+| Unlimited file size | ✅ | ✅ | ✅ | ✅ | Limited by browser memory |
 | Open source | ✅ | ❌ | ✅ | ✅ | ✅ |
 | No account required | ✅ | ❌ | ✅ | ✅ | ✅ |
 | End-to-end encryption | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Send folders | ✅ | ✅ | ✅ | ✅ | ✅ (CLI only, not in browser) |
-| Resumable transfers | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Unlimited file size | ✅ | ✅ | ✅ | ✅ | Limited by browser memory |
 | Platforms | CLI + desktop + mobile + web | Desktop + mobile (no web/CLI) | Desktop + mobile (no web/CLI) | CLI only | Web/PWA + Android app + CLI |
-| Discover devices on LAN | ✅ | ❌ | ✅ | ❌ | ✅ |
 | The catch | WIP | Closed source; data handling cannot be audited | Same-network only, no resume | CLI-only; GUI front-ends are separate, community-maintained | WebRTC/SCTP throughput ceiling; browser memory limits |
 
 [Know more →](https://www.dashbeam.net/en/compare)
