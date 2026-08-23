@@ -30,7 +30,10 @@ use tauri::{Emitter as _, Manager as _, RunEvent};
 
 /// Clean up any orphaned .sendme-* directories from previous runs
 fn cleanup_orphaned_directories() {
-    let scan_dirs = vec![std::env::current_dir().ok(), Some(std::env::temp_dir())];
+    let scan_dirs = vec![
+        std::env::current_dir().ok(),
+        Some(engine::storage::temp_dir()),
+    ];
     for base_dir in scan_dirs.into_iter().flatten() {
         if let Ok(entries) = fs::read_dir(&base_dir) {
             for entry in entries.flatten() {
@@ -207,6 +210,19 @@ pub fn run() {
             respond_nearby_invite,
         ])
         .setup(|app| {
+            let _ = engine::storage::TEMP_DIR.set({
+                #[cfg(target_os = "android")]
+                let path = app.path().app_cache_dir().map(|f| f.join("DashBeamTemp")).unwrap_or_else(|_|
+                    {
+                        tracing::error!("Could not resolve app_cache_dir; using invalid placeholder path");
+                        std::path::PathBuf::from("/__dashbeam_invalid_cache_dir__")
+                    }
+                );
+                #[cfg(not(target_os = "android"))]
+                let path = std::env::temp_dir().join("DashBeam");
+
+                path
+            });
             init_logging(app.handle());
             setup_common(app);
             #[cfg(desktop)]

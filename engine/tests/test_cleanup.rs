@@ -7,7 +7,7 @@ use std::str::FromStr;
 /// Where the receiver keeps blobs for this ticket — the path comes from its hash.
 fn receiver_temp_dir(ticket: &str) -> std::path::PathBuf {
     let parsed = iroh_blobs::ticket::BlobTicket::from_str(ticket).unwrap();
-    std::env::temp_dir().join(format!(
+    native::storage::temp_dir().join(format!(
         ".sendme-recv-{}",
         data_encoding::HEXLOWER.encode(parsed.hash().as_bytes())
     ))

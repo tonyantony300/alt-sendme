@@ -328,7 +328,7 @@ fn parse_file_names(payload: &str) -> Option<Vec<String>> {
 
 /// Where a partial receive for `hash` would live.
 pub fn partial_store_path_for(hash: &str) -> PathBuf {
-    std::env::temp_dir().join(format!(".sendme-recv-{hash}"))
+    engine::storage::temp_dir().join(format!(".sendme-recv-{hash}"))
 }
 
 #[cfg(test)]
