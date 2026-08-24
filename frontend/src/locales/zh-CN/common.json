@@ -304,7 +304,7 @@
 			},
 			"debugMode": {
 				"label": "调试日志",
-				"description": "记录有关传输、连接、中继和配对的详细诊断信息，以便附加到错误报告中。默认情况下是关闭的，并在开启的 7 天后自动关闭。",
+				"description": "记录有关传输、连接、中继和配对的详细诊断信息，以便附加到错误报告中。默认情况下是关闭的，且在开启的 7 天后自动关闭。",
 				"restartTitle": "需要重启",
 				"restartDescription": "请退出重启 DashBeam 以使更改生效。",
 				"pendingOn": "重启 DashBeam 后，调试日志才会开始记录。",
