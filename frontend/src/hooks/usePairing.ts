@@ -216,8 +216,9 @@ export function usePairing() {
 
 	const trustDevice = useCallback(
 		async (endpoindId: string, trust: boolean) => {
-			await trustPairedDevice(endpoindId, trust)
+			const updated = await trustPairedDevice(endpoindId, trust)
 			await hydrate()
+			return updated
 		},
 		[hydrate]
 	)

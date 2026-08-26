@@ -154,8 +154,8 @@ export async function renamePairedDevice(
 export async function trustPairedDevice(
 	endpointId: string,
 	trust: boolean
-): Promise<void> {
-	await invoke('trust_paired_device', { endpointId, trust})
+): Promise<PairedDevice> {
+	return await invoke('trust_paired_device', { endpointId, trust})
 }
 
 export async function invitePairedDevice(
