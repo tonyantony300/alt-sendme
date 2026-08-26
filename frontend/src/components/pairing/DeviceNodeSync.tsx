@@ -119,15 +119,17 @@ export function DeviceNodeSync() {
 								})
 								return
 							}
-							void respondPairedInvite(payload.remote_endpoint_id, true).catch(() => {})
+							void respondPairedInvite(payload.remote_endpoint_id, true).catch(
+								() => {}
+							)
 							if (location.pathname !== '/') {
 								navigate('/')
 							}
 							try {
-									await acceptPairedInvite(payload)
-								} catch {
-									// receiveWithTicket / accept path surfaces its own errors
-								}
+								await acceptPairedInvite(payload)
+							} catch {
+								// receiveWithTicket / accept path surfaces its own errors
+							}
 							return
 						}
 						setInvite(payload)

@@ -155,7 +155,7 @@ export async function trustPairedDevice(
 	endpointId: string,
 	trust: boolean
 ): Promise<PairedDevice> {
-	return await invoke('trust_paired_device', { endpointId, trust})
+	return await invoke('trust_paired_device', { endpointId, trust })
 }
 
 export async function invitePairedDevice(
@@ -334,19 +334,19 @@ export function isPairedDeviceActive(
 	return (device.pairing_status ?? 'active') === 'active'
 }
 
-export function isTrustedDevice(
-	device: Pick<PairedDevice, 'trusted'>
-) : boolean;
+export function isTrustedDevice(device: Pick<PairedDevice, 'trusted'>): boolean
 
 export function isTrustedDevice(
 	devices: Pick<PairedDevice, 'endpoint_id' | 'trusted'>[],
 	endpointId: string
-) : boolean;
+): boolean
 
 export function isTrustedDevice(
-	deviceOrDevices: Pick<PairedDevice, 'trusted'> | Pick<PairedDevice, 'endpoint_id' | 'trusted'>[],
+	deviceOrDevices:
+		| Pick<PairedDevice, 'trusted'>
+		| Pick<PairedDevice, 'endpoint_id' | 'trusted'>[],
 	endpoindId?: string
-) : boolean {
+): boolean {
 	if (Array.isArray(deviceOrDevices)) {
 		if (!endpoindId) return false
 		const id = endpoindId.toLowerCase()

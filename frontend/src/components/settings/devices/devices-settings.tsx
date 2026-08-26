@@ -551,7 +551,9 @@ export function DevicesSettings() {
 															/>
 															<Switch
 																checked={isTrustedDevice(device)}
-																onCheckedChange={(trust) => trustDevice(device.endpoint_id, trust)}
+																onCheckedChange={(trust) =>
+																	trustDevice(device.endpoint_id, trust)
+																}
 																//aria-label={t('common:settings.devices.trustedDevice')}
 															/>
 															<Button

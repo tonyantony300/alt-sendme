@@ -1418,7 +1418,8 @@ pub async fn trust_paired_device(
 ) -> Result<PairedDevice, String> {
     let guard = state.lock().await;
     let node = require_node(&guard)?;
-    let device = node.trust_paired(&endpoint_id, trust)
+    let device = node
+        .trust_paired(&endpoint_id, trust)
         .map_err(|e| e.to_string())?;
 
     Ok(device)
