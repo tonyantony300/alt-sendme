@@ -37,5 +37,9 @@ pub fn recv_cleanup_guard(path: PathBuf) -> AutoCleanupDir {
 }
 
 pub fn temp_dir() -> PathBuf {
+   if cfg!(test) {
+    std::env::temp_dir()
+   } else {
     TEMP_DIR.get().cloned().unwrap()
+   }
 }
