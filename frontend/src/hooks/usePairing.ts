@@ -8,6 +8,7 @@ import {
 	setDeviceDisplayName,
 	startPairingHost,
 	stopPairingHost,
+	trustPairedDevice,
 	type DeviceUnpairedPayload,
 } from '@/lib/pairing-api'
 import { useTranslation } from '../i18n/react-i18next-compat'
@@ -213,6 +214,14 @@ export function usePairing() {
 		[hydrate]
 	)
 
+	const trustDevice = useCallback(
+		async (endpoindId: string, trust: boolean) => {
+			await trustPairedDevice(endpoindId, trust)
+			await hydrate()
+		},
+		[hydrate]
+	)
+
 	const isPairingDataPending =
 		IS_PAIRING_CAPABLE && (isNodeStatusPending || (isNodeReady && !hasHydrated))
 
@@ -238,5 +247,6 @@ export function usePairing() {
 		forget,
 		renameThisDevice,
 		renameDevice,
+		trustDevice,
 	}
 }

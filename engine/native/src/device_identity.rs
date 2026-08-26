@@ -140,6 +140,21 @@ impl PairedDeviceStore {
         Ok(saved)
     }
 
+    pub fn trust_paired_device(&self, endpoint_id: &str, trust: bool) -> anyhow::Result<PairedDevice> {
+        let _guard = self.lock_file();
+        let mut file = self.read_file()?;
+        let id = endpoint_id.to_lowercase();
+        let existing = file
+            .devices
+            .iter_mut()
+            .find(|d| d.endpoint_id.to_lowercase() == id)
+            .context("paired device not found")?;
+        existing.trusted = trust;
+        let saved = existing.clone();
+        self.write_file(&file)?;
+        Ok(saved)
+    }
+
     pub fn forget(&self, endpoint_id: &str) -> anyhow::Result<()> {
         let _guard = self.lock_file();
         let mut file = self.read_file()?;
@@ -310,6 +325,8 @@ pub struct PairedDeviceInfo {
     pub relay_url: Option<String>,
     #[serde(default)]
     pub pairing_status: PairingStatus,
+    #[serde(default)]
+    pub trusted: bool,
     pub online: bool,
 }
 
@@ -324,6 +341,7 @@ impl PairedDeviceInfo {
             last_seen_at: device.last_seen_at,
             relay_url: device.relay_url,
             pairing_status: device.pairing_status,
+            trusted: device.trusted,
             online,
         }
     }
@@ -375,6 +393,7 @@ mod presence_summary_tests {
             last_seen_at: 0,
             relay_url: None,
             pairing_status: status,
+            trusted: false,
             online,
         }
     }

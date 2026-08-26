@@ -188,6 +188,8 @@ pub fn run() {
             #[cfg(any(desktop, target_os = "android"))]
             rename_paired_device,
             #[cfg(any(desktop, target_os = "android"))]
+            trust_paired_device,
+            #[cfg(any(desktop, target_os = "android"))]
             invite_paired_device,
             #[cfg(any(desktop, target_os = "android"))]
             respond_paired_invite,

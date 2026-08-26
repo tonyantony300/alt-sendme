@@ -84,6 +84,8 @@ pub struct PairedDevice {
     pub relay_url: Option<String>,
     #[serde(default)]
     pub pairing_status: PairingStatus,
+    #[serde(default)]
+    pub trusted: bool
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

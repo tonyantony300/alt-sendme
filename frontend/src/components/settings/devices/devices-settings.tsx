@@ -19,6 +19,7 @@ import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import {
 	deviceSubtitle,
 	isPairedDeviceActive,
+	isTrustedDevice,
 	matchesPairedDeviceSearch,
 	sortPairedDevicesForSettings,
 } from '@/lib/pairing-api'
@@ -28,6 +29,7 @@ import { copyTextToClipboard } from '@/lib/utils'
 import { DevicePairingStatus } from '../../pairing/DevicePairingStatus'
 import { NearbyDevices } from '../../pairing/NearbyDevices'
 import { PairedDevicesSearchField } from '../../pairing/PairedDevicesSearchField'
+import { Switch } from '../../ui/switch'
 
 function PairJoinModal({
 	open,
@@ -225,6 +227,7 @@ export function DevicesSettings() {
 		forget,
 		renameThisDevice,
 		renameDevice,
+		trustDevice,
 	} = usePairing()
 	const [joinOpen, setJoinOpen] = useState(false)
 	const [renameThisOpen, setRenameThisOpen] = useState(false)
@@ -545,6 +548,11 @@ export function DevicesSettings() {
 															<DevicePairingStatus
 																device={device}
 																namespace="settings"
+															/>
+															<Switch
+																checked={isTrustedDevice(device)}
+																onCheckedChange={(trust) => trustDevice(device.endpoint_id, trust)}
+																//aria-label={t('common:settings.devices.trustedDevice')}
 															/>
 															<Button
 																type="button"

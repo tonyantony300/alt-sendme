@@ -5,7 +5,9 @@ import { getRelayConfigArg } from '@/lib/relay'
 import { getDiscoveryConfigArg } from '@/lib/discovery'
 import {
 	isKnownPairedEndpoint,
+	isTrustedDevice,
 	reconfigureNodeRelay,
+	respondPairedInvite,
 	setDiscoverability,
 } from '@/lib/pairing-api'
 import { useAppSettingStore } from '@/store/app-setting'
@@ -25,6 +27,8 @@ import { useInviteNotifications } from '@/hooks/useInviteNotifications'
 import { ensureNotificationPermission } from '@/lib/systemNotification'
 import { useTranslation } from '@/i18n'
 import { toastManager } from '../ui/toast'
+import { useReceiverActionsStore } from '@/store/receiver-actions-store'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 /** Syncs relay settings to the device node and listens for paired invites globally. */
 export function DeviceNodeSync() {
@@ -71,6 +75,9 @@ export function DeviceNodeSync() {
 		})
 	}, [isNodeReady])
 
+	const location = useLocation()
+	const navigate = useNavigate()
+
 	useEffect(() => {
 		if (!IS_PAIRING_CAPABLE) return
 
@@ -99,6 +106,28 @@ export function DeviceNodeSync() {
 						if (disposed) return
 						const { devices } = usePairingDataStore.getState()
 						if (!isKnownPairedEndpoint(devices, payload.remote_endpoint_id)) {
+							return
+						}
+						if (isTrustedDevice(devices, payload.remote_endpoint_id)) {
+							if (!payload) return
+							const { acceptPairedInvite } = useReceiverActionsStore.getState()
+							if (!acceptPairedInvite) {
+								toastManager.add({
+									title: t('common:errors.receiveFailed'),
+									description: t('common:openReceiveTabHint'),
+									type: 'warning',
+								})
+								return
+							}
+							void respondPairedInvite(payload.remote_endpoint_id, true).catch(() => {})
+							if (location.pathname !== '/') {
+								navigate('/')
+							}
+							try {
+									await acceptPairedInvite(payload)
+								} catch {
+									// receiveWithTicket / accept path surfaces its own errors
+								}
 							return
 						}
 						setInvite(payload)
@@ -158,7 +187,7 @@ export function DeviceNodeSync() {
 			unlistenResponse?.()
 			unlistenExpired?.()
 		}
-	}, [setInvite, refreshNodeStatus, t])
+	}, [setInvite, refreshNodeStatus, t, navigate, location])
 
 	return null
 }

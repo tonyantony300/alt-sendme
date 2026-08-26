@@ -24,6 +24,7 @@ export interface PairedDevice {
 	last_seen_at: number
 	pairing_status: PairingStatus
 	online: boolean
+	trusted: boolean
 }
 
 export interface DevicePresencePayload {
@@ -148,6 +149,13 @@ export async function renamePairedDevice(
 		endpointId,
 		displayName,
 	})
+}
+
+export async function trustPairedDevice(
+	endpointId: string,
+	trust: boolean
+): Promise<void> {
+	await invoke('trust_paired_device', { endpointId, trust})
 }
 
 export async function invitePairedDevice(
@@ -324,6 +332,30 @@ export function isPairedDeviceActive(
 	device: Pick<PairedDevice, 'pairing_status'>
 ): boolean {
 	return (device.pairing_status ?? 'active') === 'active'
+}
+
+export function isTrustedDevice(
+	device: Pick<PairedDevice, 'trusted'>
+) : boolean;
+
+export function isTrustedDevice(
+	devices: Pick<PairedDevice, 'endpoint_id' | 'trusted'>[],
+	endpointId: string
+) : boolean;
+
+export function isTrustedDevice(
+	deviceOrDevices: Pick<PairedDevice, 'trusted'> | Pick<PairedDevice, 'endpoint_id' | 'trusted'>[],
+	endpoindId?: string
+) : boolean {
+	if (Array.isArray(deviceOrDevices)) {
+		if (!endpoindId) return false
+		const id = endpoindId.toLowerCase()
+		return deviceOrDevices.some(
+			(device) => device.endpoint_id.toLowerCase() === id && device.trusted
+		)
+	}
+
+	return deviceOrDevices.trusted
 }
 
 /**

@@ -1410,6 +1410,21 @@ pub async fn rename_paired_device(
 }
 
 #[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn trust_paired_device(
+    endpoint_id: String,
+    trust: bool,
+    state: State<'_, AppStateMutex>,
+) -> Result<(), String> {
+    let guard = state.lock().await;
+    let node = require_node(&guard)?;
+    node.trust_paired(&endpoint_id, trust)
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[cfg(any(desktop, target_os = "android"))]
 fn require_node(guard: &crate::state::AppState) -> Result<&NodeService, String> {
     guard.node.as_deref().ok_or_else(|| {
         guard

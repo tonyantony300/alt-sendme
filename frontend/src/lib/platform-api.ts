@@ -254,6 +254,7 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 		case 'join_pairing':
 		case 'forget_paired_device':
 		case 'rename_paired_device':
+		case 'trust_paired_device':
 		case 'invite_paired_device':
 		case 'stop_pairing_host':
 		case 'reconfigure_node_relay':
