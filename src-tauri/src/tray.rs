@@ -184,13 +184,18 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let menu = Menu::with_items(app, &[&status, &separator, &open, &quit])?;
 
     // macOS/Windows: attach the context menu so the platform opens it natively.
-    // Left-click focuses the window (screen is: left = primary action, right =
-    // context menu). macOS ignores show_menu_on_left_click and always opens the
-    // menu on click, so its right-click handler still focuses the window only.
+    // On Windows left-click focuses the window (left = primary action, right =
+    // context menu), so left-click must not open the menu. macOS keeps its native
+    // left-click-to-open-menu behavior, so there only right-click focuses the window.
+    #[cfg(target_os = "windows")]
+    let show_menu_on_left_click = false;
+    #[cfg(target_os = "macos")]
+    let show_menu_on_left_click = true;
+
     #[cfg(any(target_os = "macos", target_os = "windows"))]
     let mut builder = TrayIconBuilder::new()
         .menu(&menu)
-        .show_menu_on_left_click(false)
+        .show_menu_on_left_click(show_menu_on_left_click)
         .tooltip("DashBeam")
         .on_tray_icon_event(move |tray, event| {
             #[cfg(target_os = "windows")]
