@@ -74,6 +74,7 @@ fn assert_pairing_status_roundtrip(
         last_seen_at: 2,
         relay_url: None,
         pairing_status: status,
+        trusted: false,
     };
     assert_eq!(device.pairing_status.is_active(), active);
     assert_eq!(device.pairing_status.is_connectable(), connectable);
