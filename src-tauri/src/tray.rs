@@ -183,27 +183,38 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let quit = MenuItem::with_id(app, "quit", &labels.quit, true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&status, &separator, &open, &quit])?;
 
-    // macOS/Windows: attach the menu so the platform places it correctly
-    // (under the status item / TPM_BOTTOMALIGN above the tray icon).
-    // Linux: left-click menu attach is unsupported — pop manually.
+    // macOS/Windows: attach the context menu so the platform opens it natively.
+    // On Windows left-click focuses the window (left = primary action, right =
+    // context menu), so left-click must not open the menu. macOS keeps its native
+    // left-click-to-open-menu behavior, so there only right-click focuses the window.
+    #[cfg(target_os = "windows")]
+    let show_menu_on_left_click = false;
+    #[cfg(target_os = "macos")]
+    let show_menu_on_left_click = true;
+
     #[cfg(any(target_os = "macos", target_os = "windows"))]
     let mut builder = TrayIconBuilder::new()
         .menu(&menu)
-        .show_menu_on_left_click(true)
+        .show_menu_on_left_click(show_menu_on_left_click)
         .tooltip("DashBeam")
         .on_tray_icon_event(move |tray, event| {
-            // Right-click shows/focuses the window. tray-icon 0.21 still opens
-            // the attached menu on right-click as well; left-click is menu-only.
+            #[cfg(target_os = "windows")]
+            let focus_button = MouseButton::Left;
+            #[cfg(target_os = "macos")]
+            let focus_button = MouseButton::Right;
             if let TrayIconEvent::Click {
-                button: MouseButton::Right,
+                button,
                 button_state: MouseButtonState::Up,
                 ..
             } = event
             {
-                let _ = open_and_focus(tray.app_handle());
+                if button == focus_button {
+                    let _ = open_and_focus(tray.app_handle());
+                }
             }
         });
 
+    // Linux: left-click menu attach is unsupported — pop manually.
     #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     let mut builder = {
         let menu_for_click = menu.clone();
