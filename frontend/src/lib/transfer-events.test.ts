@@ -53,3 +53,25 @@ test('falls back to no duration when a completion carries no payload', () => {
 	assert.equal(parseCompletionPayload('not json'), null)
 	assert.equal(parseCompletionPayload('{"bytes":10}'), null)
 })
+
+test('carries the receiver output directory when present', () => {
+	assert.deepEqual(
+		parseCompletionPayload(
+			'{"durationMs":4200,"exportMs":800,"outputDir":"/Users/t/Downloads/Studio Mac"}'
+		),
+		{
+			durationMs: 4200,
+			exportMs: 800,
+			outputDir: '/Users/t/Downloads/Studio Mac',
+		}
+	)
+})
+
+test('omits the output directory when absent or not a string', () => {
+	assert.deepEqual(parseCompletionPayload('{"durationMs":10}'), {
+		durationMs: 10,
+	})
+	assert.deepEqual(parseCompletionPayload('{"durationMs":10,"outputDir":7}'), {
+		durationMs: 10,
+	})
+})

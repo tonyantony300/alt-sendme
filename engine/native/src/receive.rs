@@ -90,10 +90,14 @@ pub async fn download(
 
         // Writing the files out to disk is a separate cost from the transfer;
         // report them apart so both ends can compare like with like.
+        // `outputDir` is where the bytes actually landed. The UI cannot re-derive
+        // it once an auto-accepted transfer files itself under a per-device
+        // subfolder, so "Open" would otherwise reveal the wrong directory.
         let completion = serde_json::json!({
             "durationMs": downloaded.download_duration_ms,
             "exportMs": export_duration_ms,
             "bytes": downloaded.payload_size,
+            "outputDir": output_dir.to_string_lossy(),
         });
         emit_event_with_payload(&app_handle, "receive-completed", &completion.to_string());
 

@@ -17,6 +17,12 @@ export type TransferCompletion = {
 	durationMs: number
 	/** Receiver only: time spent writing the files out to disk. */
 	exportMs?: number
+	/**
+	 * Receiver only: the directory the files were written to. Differs from the
+	 * chosen download folder when an auto-accepted transfer used a per-device
+	 * subfolder, so "Open" must prefer this over the base path.
+	 */
+	outputDir?: string
 }
 
 export function parseProgressPayload(
@@ -67,10 +73,16 @@ export function parseCompletionPayload(
 		if (typeof durationMs !== 'number' || !Number.isFinite(durationMs)) {
 			return null
 		}
+		const completion: TransferCompletion = { durationMs }
 		const exportMs = parsed.exportMs
-		return typeof exportMs === 'number' && Number.isFinite(exportMs)
-			? { durationMs, exportMs }
-			: { durationMs }
+		if (typeof exportMs === 'number' && Number.isFinite(exportMs)) {
+			completion.exportMs = exportMs
+		}
+		const outputDir = parsed.outputDir
+		if (typeof outputDir === 'string' && outputDir) {
+			completion.outputDir = outputDir
+		}
+		return completion
 	} catch {
 		return null
 	}
