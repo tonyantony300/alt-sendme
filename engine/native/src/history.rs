@@ -20,7 +20,7 @@ pub const MAX_RECORDS: usize = 500;
 pub const MAX_FILE_NAMES: usize = 20;
 
 /// Prefix `storage::create_recv_store` gives every partial-receive directory.
-const PARTIAL_STORE_PREFIX: &str = ".sendme-recv-";
+const PARTIAL_STORE_PREFIX: &str = crate::storage::RECV_DIR_PREFIX;
 
 /// BLAKE3 hash, hex encoded.
 const PARTIAL_STORE_HASH_LEN: usize = 64;
@@ -519,7 +519,7 @@ mod tests {
         "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
     fn partial_dir(root: &Path, hash: &str) -> PathBuf {
-        let dir = root.join(format!(".sendme-recv-{hash}"));
+        let dir = root.join(format!(".dashbeam-recv-{hash}"));
         std::fs::create_dir_all(&dir).expect("create partial");
         dir
     }
@@ -550,15 +550,15 @@ mod tests {
 
     #[test]
     fn partial_store_hash_reads_a_well_formed_dir_name() {
-        let path = PathBuf::from(format!("/tmp/.sendme-recv-{HASH_A}"));
+        let path = PathBuf::from(format!("/tmp/.dashbeam-recv-{HASH_A}"));
         assert_eq!(partial_store_hash(&path).as_deref(), Some(HASH_A));
     }
 
     #[test]
     fn partial_store_hash_rejects_a_foreign_dir_name() {
         assert!(partial_store_hash(Path::new("/tmp/important-documents")).is_none());
-        assert!(partial_store_hash(Path::new("/tmp/.sendme-recv-short")).is_none());
-        assert!(partial_store_hash(Path::new("/tmp/.sendme-send-abc")).is_none());
+        assert!(partial_store_hash(Path::new("/tmp/.dashbeam-recv-short")).is_none());
+        assert!(partial_store_hash(Path::new("/tmp/.dashbeam-send-abc")).is_none());
     }
 
     #[test]
