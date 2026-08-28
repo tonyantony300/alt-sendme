@@ -140,7 +140,11 @@ impl PairedDeviceStore {
         Ok(saved)
     }
 
-    pub fn trust_paired_device(&self, endpoint_id: &str, trust: bool) -> anyhow::Result<PairedDevice> {
+    pub fn trust_paired_device(
+        &self,
+        endpoint_id: &str,
+        trust: bool,
+    ) -> anyhow::Result<PairedDevice> {
         let _guard = self.lock_file();
         let mut file = self.read_file()?;
         let id = endpoint_id.to_lowercase();

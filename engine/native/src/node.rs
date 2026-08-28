@@ -1076,7 +1076,7 @@ impl NodeService {
     pub fn trust_paired(
         &self,
         endpoint_id: &str,
-        trust: bool
+        trust: bool,
     ) -> anyhow::Result<PairedDevice> {
         let device = self.paired_store.trust_paired_device(endpoint_id, trust)?;
 
