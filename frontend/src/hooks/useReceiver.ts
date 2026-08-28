@@ -22,6 +22,7 @@ import {
 	selectDownloadFolder,
 } from '@/plugins/nativeUtils'
 import { useAppSettingStore } from '@/store/app-setting'
+import { isReceiveSessionBusy } from '@/lib/receive-session'
 import {
 	useReceiverActionsStore,
 	type AcceptPairedInviteOptions,
@@ -707,12 +708,22 @@ export function useReceiver(): UseReceiverReturn {
 		await receiveWithTicket(ticket)
 	}
 
+	// `isReceiving` stays true after a transfer finishes so the success screen
+	// survives until the user clicks Done — see `isReceiveSessionBusy`. Reading
+	// it directly here refused the next transfer until a screen was dismissed.
+	const isSessionBusy = isReceiveSessionBusy({
+		isReceiving,
+		isTransporting,
+		isCompleted,
+		isExportPending,
+	})
+
 	const acceptPairedInvite = useCallback(
 		async (
 			invite: PairedInvitePayload,
 			options?: AcceptPairedInviteOptions
 		) => {
-			if (isReceiving || isTransporting) {
+			if (isSessionBusy) {
 				showAlert(
 					t('common:receiver.receiveBusyTitle'),
 					t('common:receiver.receiveBusyDescription'),
@@ -739,7 +750,7 @@ export function useReceiver(): UseReceiverReturn {
 
 			await receiveWithTicket(invite.blob_ticket, options?.subFolder ?? null)
 		},
-		[isReceiving, isTransporting, receiveWithTicket, showAlert, t]
+		[isSessionBusy, receiveWithTicket, showAlert, t]
 	)
 
 	const registerAcceptPairedInvite = useReceiverActionsStore(
@@ -770,8 +781,8 @@ export function useReceiver(): UseReceiverReturn {
 	}, [savePath, setReceiverSavePath])
 
 	useEffect(() => {
-		setReceiverBusy(isReceiving || isTransporting)
-	}, [isReceiving, isTransporting, setReceiverBusy])
+		setReceiverBusy(isSessionBusy)
+	}, [isSessionBusy, setReceiverBusy])
 
 	const resetForNewTransfer = async () => {
 		// Zero the seq first so in-flight events from the cancelled transfer are ignored.
