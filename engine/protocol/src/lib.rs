@@ -16,7 +16,7 @@ pub use control::{ControlMessage, PairingTicket, CONTROL_ALPN, RememberVote, Inv
 pub use identity::{
     default_device_type, default_display_name, detect_os, device_type_from_chassis,
     device_type_from_mac_model, is_placeholder_display_name, normalize_display_name,
-    DeviceMetaFile, PairedDevice, PairedDeviceList, PairingStatus,
+    sanitize_folder_name, DeviceMetaFile, PairedDevice, PairedDeviceList, PairingStatus,
 };
 pub use pairing::{
     pairing_host_is_persistent, PAIRING_VOTE_TIMEOUT_SECS, PAIRED_INVITE_WAIT_SECS,

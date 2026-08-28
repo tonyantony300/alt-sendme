@@ -85,7 +85,7 @@ pub struct PairedDevice {
     #[serde(default)]
     pub pairing_status: PairingStatus,
     #[serde(default)]
-    pub trusted: bool
+    pub trusted: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -494,4 +494,122 @@ pub fn normalize_display_name(name: &str) -> Result<String, String> {
         ));
     }
     Ok(trimmed.to_string())
+}
+
+/// Characters that are illegal in a Windows path component, or that would split
+/// a path on any platform.
+const FORBIDDEN_FOLDER_CHARS: [char; 9] = ['/', '\\', ':', '<', '>', '"', '|', '?', '*'];
+
+/// Windows reserved device names. Reserved with or without an extension.
+const RESERVED_FOLDER_NAMES: [&str; 22] = [
+    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+    "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+];
+
+/// Longest per-device folder name, in characters.
+const MAX_FOLDER_NAME_CHARS: usize = 64;
+
+/// Turn a peer-supplied device name into one safe path component.
+///
+/// Names of files *inside* a received collection already go through
+/// `validate_path_component` in the native export path. The per-device folder is
+/// the one component that does not, and `normalize_display_name` only trims and
+/// length-caps, so a peer calling itself `../../..` would otherwise pick a
+/// directory outside the download folder.
+///
+/// Returns `fallback` when nothing usable survives.
+pub fn sanitize_folder_name(name: &str, fallback: &str) -> String {
+    // Leading dots hide the folder on Unix; trailing dots and spaces are
+    // rejected by Windows. Trimming both ends also collapses `.` and `..`.
+    fn trim_edges(value: &str) -> &str {
+        value.trim_matches(|c: char| c == '.' || c.is_whitespace())
+    }
+
+    let stripped: String = name
+        .chars()
+        .filter(|c| !c.is_control() && !FORBIDDEN_FOLDER_CHARS.contains(c))
+        .collect();
+
+    let truncated: String = trim_edges(&stripped)
+        .chars()
+        .take(MAX_FOLDER_NAME_CHARS)
+        .collect();
+    let cleaned = trim_edges(&truncated);
+
+    if cleaned.is_empty() {
+        return fallback.to_string();
+    }
+
+    let stem = cleaned.split('.').next().unwrap_or(cleaned);
+    if RESERVED_FOLDER_NAMES
+        .iter()
+        .any(|reserved| stem.eq_ignore_ascii_case(reserved))
+    {
+        return fallback.to_string();
+    }
+
+    cleaned.to_string()
+}
+
+#[cfg(test)]
+mod folder_name_tests {
+    use super::sanitize_folder_name;
+
+    #[test]
+    fn keeps_ordinary_names() {
+        assert_eq!(
+            sanitize_folder_name("Tony's MacBook", "fb"),
+            "Tony's MacBook"
+        );
+        assert_eq!(sanitize_folder_name("  Studio Mac  ", "fb"), "Studio Mac");
+        assert_eq!(sanitize_folder_name("\u{65e5}\u{672c}\u{8a9e}", "fb"), "\u{65e5}\u{672c}\u{8a9e}");
+    }
+
+    #[test]
+    fn blocks_traversal_and_separators() {
+        assert_eq!(sanitize_folder_name("..", "fb"), "fb");
+        assert_eq!(sanitize_folder_name(".", "fb"), "fb");
+        assert_eq!(sanitize_folder_name("../../etc", "fb"), "etc");
+        assert_eq!(sanitize_folder_name("a/b", "fb"), "ab");
+        assert_eq!(sanitize_folder_name("a\\b", "fb"), "ab");
+        assert_eq!(sanitize_folder_name("C:\\Users", "fb"), "CUsers");
+    }
+
+    #[test]
+    fn strips_control_and_windows_illegal_characters() {
+        assert_eq!(sanitize_folder_name("Dev\u{7}ice", "fb"), "Device");
+        assert_eq!(sanitize_folder_name("Dev\0ice", "fb"), "Device");
+        assert_eq!(sanitize_folder_name("a<b>c\"d|e?f*g", "fb"), "abcdefg");
+    }
+
+    #[test]
+    fn rejects_windows_reserved_names() {
+        assert_eq!(sanitize_folder_name("CON", "fb"), "fb");
+        assert_eq!(sanitize_folder_name("con", "fb"), "fb");
+        assert_eq!(sanitize_folder_name("nul.txt", "fb"), "fb");
+        assert_eq!(sanitize_folder_name("COM9", "fb"), "fb");
+        assert_eq!(sanitize_folder_name("LPT1.tar.gz", "fb"), "fb");
+        // Reserved only on its own, never as a prefix.
+        assert_eq!(sanitize_folder_name("Console", "fb"), "Console");
+    }
+
+    #[test]
+    fn trims_windows_invalid_trailing_characters() {
+        assert_eq!(sanitize_folder_name("Laptop.", "fb"), "Laptop");
+        assert_eq!(sanitize_folder_name("Laptop ", "fb"), "Laptop");
+        assert_eq!(sanitize_folder_name("...", "fb"), "fb");
+    }
+
+    #[test]
+    fn falls_back_on_empty_input() {
+        assert_eq!(sanitize_folder_name("", "fb"), "fb");
+        assert_eq!(sanitize_folder_name("   ", "fb"), "fb");
+        assert_eq!(sanitize_folder_name("///", "fb"), "fb");
+    }
+
+    #[test]
+    fn caps_length_on_a_character_boundary() {
+        let long = "\u{e9}".repeat(200);
+        assert_eq!(sanitize_folder_name(&long, "fb").chars().count(), 64);
+    }
 }
