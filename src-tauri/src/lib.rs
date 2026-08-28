@@ -210,20 +210,22 @@ pub fn run() {
             respond_nearby_invite,
         ])
         .setup(|app| {
-            let _ = engine::storage::TEMP_DIR.set({
-                #[cfg(target_os = "android")]
-                let path = app.path().app_cache_dir().map(|f| f.join("DashBeamTemp")).unwrap_or_else(|_|
-                    {
-                        tracing::error!("Could not resolve app_cache_dir; using invalid placeholder path");
-                        std::path::PathBuf::from("/__dashbeam_invalid_cache_dir__")
-                    }
-                );
-                #[cfg(not(target_os = "android"))]
-                let path = std::env::temp_dir().join("DashBeam");
-
-                path
-            });
             init_logging(app.handle());
+            // Before Android 13 `std::env::temp_dir()` is `/data/local/tmp`,
+            // which the app cannot write, so blob stores go in the app cache
+            // dir instead. That is also where `TMPDIR` points on 13+, so
+            // partial receives from earlier builds stay resumable. Desktop
+            // keeps the unmodified `std::env::temp_dir()` fallback for the
+            // same reason. Must run before `setup_common`, which scans it.
+            #[cfg(target_os = "android")]
+            match app.path().app_cache_dir() {
+                Ok(dir) => {
+                    let _ = engine::storage::TEMP_DIR.set(dir);
+                }
+                Err(e) => tracing::error!(
+                    "Could not resolve app_cache_dir; falling back to std::env::temp_dir(): {e}"
+                ),
+            }
             setup_common(app);
             #[cfg(desktop)]
             tray::set_background_on_close(commands::load_persisted_minimize_to_tray(
