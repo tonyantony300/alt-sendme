@@ -151,11 +151,17 @@ export async function renamePairedDevice(
 	})
 }
 
+/**
+ * IPC seam: `endpointId` / `trust` must match the parameter names of
+ * `trust_paired_device` in `src-tauri/src/commands.rs`. Tauri maps payload keys
+ * to parameter names, so renaming one side alone fails at runtime.
+ */
 export async function trustPairedDevice(
 	endpointId: string,
 	trust: boolean
-): Promise<PairedDevice> {
-	return await invoke('trust_paired_device', { endpointId, trust })
+): Promise<PairedDevice | null> {
+	if (!pairingCapable()) return null
+	return invoke<PairedDevice>('trust_paired_device', { endpointId, trust })
 }
 
 export async function invitePairedDevice(

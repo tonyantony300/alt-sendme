@@ -1077,10 +1077,17 @@ impl NodeService {
         &self,
         endpoint_id: &str,
         trust: bool,
-    ) -> anyhow::Result<PairedDevice> {
+    ) -> anyhow::Result<PairedDeviceInfo> {
         let device = self.paired_store.trust_paired_device(endpoint_id, trust)?;
+        let online = self
+            .presence
+            .read()
+            .expect("presence lock")
+            .get(&device.endpoint_id.to_lowercase())
+            .copied()
+            .unwrap_or(false);
 
-        Ok(device)
+        Ok(PairedDeviceInfo::from_device(device, online))
     }
 
     pub fn list_paired(&self) -> anyhow::Result<Vec<PairedDeviceInfo>> {

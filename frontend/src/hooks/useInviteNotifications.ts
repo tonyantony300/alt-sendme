@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { IS_PAIRING_CAPABLE } from '@/lib/platform'
 import { listen } from '@/lib/platform-api'
 import { isKnownPairedEndpoint } from '@/lib/pairing-api'
+import { shouldAutoAccept } from '@/lib/auto-accept'
 import {
 	pairingDataHydrated,
 	usePairingDataStore,
@@ -79,11 +80,19 @@ export function useInviteNotifications(): void {
 					await pairingDataHydrated()
 					if (disposed) return
 					const { devices } = usePairingDataStore.getState()
-					const paired = isKnownPairedEndpoint(
-						devices,
-						String(payload.remote_endpoint_id ?? '')
+					const endpointId = String(payload.remote_endpoint_id ?? '')
+					if (!isKnownPairedEndpoint(devices, endpointId)) {
+						notify('invite-nearby', payload)
+						return
+					}
+					// A trusted device's transfer starts with nobody watching, so
+					// the banner says it is already happening rather than asking.
+					notify(
+						shouldAutoAccept(devices, endpointId)
+							? 'invite-auto-accepted'
+							: 'invite-paired',
+						payload
 					)
-					notify(paired ? 'invite-paired' : 'invite-nearby', payload)
 				})()
 			})
 

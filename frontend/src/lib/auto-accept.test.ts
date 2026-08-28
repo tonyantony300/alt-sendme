@@ -35,7 +35,10 @@ describe('shouldAutoAccept', () => {
 
 	it('refuses a device that is no longer actively paired', () => {
 		assert.equal(
-			shouldAutoAccept([device({ pairing_status: 'unpaired-remotely' })], 'aaaa'),
+			shouldAutoAccept(
+				[device({ pairing_status: 'unpaired-remotely' })],
+				'aaaa'
+			),
 			false
 		)
 		assert.equal(
@@ -95,7 +98,11 @@ describe('subFolderFor', () => {
 
 	it('falls back when the stored name is blank', () => {
 		assert.equal(
-			subFolderFor([device({ display_name: '   ' })], 'aaaa', 'Peer Advertised'),
+			subFolderFor(
+				[device({ display_name: '   ' })],
+				'aaaa',
+				'Peer Advertised'
+			),
 			'Peer Advertised'
 		)
 	})

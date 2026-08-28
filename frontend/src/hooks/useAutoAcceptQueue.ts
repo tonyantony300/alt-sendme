@@ -21,7 +21,9 @@ import { useReceiverActionsStore } from '@/store/receiver-actions-store'
 export function useAutoAcceptQueue(): void {
 	const queued = useAutoAcceptQueueStore((s) => s.queue.length)
 	const isBusy = useReceiverActionsStore((s) => s.isBusy)
-	const acceptPairedInvite = useReceiverActionsStore((s) => s.acceptPairedInvite)
+	const acceptPairedInvite = useReceiverActionsStore(
+		(s) => s.acceptPairedInvite
+	)
 	const draining = useRef(false)
 
 	useEffect(() => {

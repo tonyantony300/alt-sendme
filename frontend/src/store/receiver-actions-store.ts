@@ -14,7 +14,7 @@ type ReceiverActionsState = {
 		| ((
 				invite: PairedInvitePayload,
 				options?: AcceptPairedInviteOptions
-			) => Promise<void>)
+		  ) => Promise<void>)
 		| null
 	browseSaveFolder: (() => Promise<void>) | null
 	savePath: string
@@ -28,7 +28,7 @@ type ReceiverActionsState = {
 			| ((
 					invite: PairedInvitePayload,
 					options?: AcceptPairedInviteOptions
-				) => Promise<void>)
+			  ) => Promise<void>)
 			| null
 	) => void
 	registerBrowseSaveFolder: (handler: (() => Promise<void>) | null) => void

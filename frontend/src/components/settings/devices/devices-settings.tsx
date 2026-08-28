@@ -542,6 +542,13 @@ export function DevicesSettings() {
 																		{t('common:settings.devices.unpairedHint')}
 																	</p>
 																) : null}
+																{isActive && isTrustedDevice(device) ? (
+																	<p className="mt-1 text-xs text-muted-foreground">
+																		{t(
+																			'common:settings.devices.autoAcceptHint'
+																		)}
+																	</p>
+																) : null}
 															</div>
 														</div>
 														<div className="flex shrink-0 items-center gap-2">
@@ -551,10 +558,25 @@ export function DevicesSettings() {
 															/>
 															<Switch
 																checked={isTrustedDevice(device)}
-																onCheckedChange={(trust) =>
-																	trustDevice(device.endpoint_id, trust)
-																}
-																//aria-label={t('common:settings.devices.trustedDevice')}
+																disabled={!isActive}
+																aria-label={t(
+																	'common:settings.devices.autoAcceptAria',
+																	{ name: device.display_name }
+																)}
+																onCheckedChange={(trust: boolean) => {
+																	void trustDevice(
+																		device.endpoint_id,
+																		trust
+																	).catch((error) => {
+																		console.error(error)
+																		toastManager.add({
+																			title: t(
+																				'common:settings.devices.autoAcceptFailed'
+																			),
+																			type: 'error',
+																		})
+																	})
+																}}
 															/>
 															<Button
 																type="button"

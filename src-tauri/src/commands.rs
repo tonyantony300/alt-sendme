@@ -1448,7 +1448,7 @@ pub async fn trust_paired_device(
     endpoint_id: String,
     trust: bool,
     state: State<'_, AppStateMutex>,
-) -> Result<PairedDevice, String> {
+) -> Result<PairedDeviceInfo, String> {
     let guard = state.lock().await;
     let node = require_node(&guard)?;
     let device = node

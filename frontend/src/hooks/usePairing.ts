@@ -215,12 +215,27 @@ export function usePairing() {
 	)
 
 	const trustDevice = useCallback(
-		async (endpoindId: string, trust: boolean) => {
-			const updated = await trustPairedDevice(endpoindId, trust)
-			await hydrate()
-			return updated
+		async (endpointId: string, trust: boolean) => {
+			const apply = (value: boolean) =>
+				setDevices((prev) =>
+					prev.map((entry) =>
+						entry.endpoint_id === endpointId
+							? { ...entry, trusted: value }
+							: entry
+					)
+				)
+
+			// Paint first: a full refetch per toggle leaves the switch showing the
+			// old value for a round trip.
+			apply(trust)
+			try {
+				await trustPairedDevice(endpointId, trust)
+			} catch (error) {
+				apply(!trust)
+				throw error
+			}
 		},
-		[hydrate]
+		[setDevices]
 	)
 
 	const isPairingDataPending =
