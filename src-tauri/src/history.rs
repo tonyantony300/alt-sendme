@@ -328,7 +328,7 @@ fn parse_file_names(payload: &str) -> Option<Vec<String>> {
 
 /// Where a partial receive for `hash` would live.
 pub fn partial_store_path_for(hash: &str) -> PathBuf {
-    engine::storage::temp_dir().join(format!(".sendme-recv-{hash}"))
+    engine::storage::temp_dir().join(format!("{}{hash}", engine::storage::RECV_DIR_PREFIX))
 }
 
 #[cfg(test)]
@@ -489,7 +489,7 @@ mod tests {
         let (store, emitter) = recorder(
             &dir,
             TransferDirection::Receive,
-            receive_context("/tmp/.sendme-recv-hash"),
+            receive_context("/tmp/.dashbeam-recv-hash"),
         );
 
         emitter.emit_event("receive-started").expect("emit");
@@ -523,7 +523,7 @@ mod tests {
         let (store, emitter) = recorder(
             &dir,
             TransferDirection::Receive,
-            receive_context("/tmp/.sendme-recv-hash"),
+            receive_context("/tmp/.dashbeam-recv-hash"),
         );
 
         emitter.emit_event("receive-started").expect("emit");
@@ -537,7 +537,7 @@ mod tests {
         assert_eq!(row.status, TransferStatus::InProgress);
         assert_eq!(
             row.resumable_store_path.as_deref(),
-            Some("/tmp/.sendme-recv-hash"),
+            Some("/tmp/.dashbeam-recv-hash"),
             "the pointer written at open is what makes the partial reclaimable"
         );
 
@@ -554,7 +554,7 @@ mod tests {
         let (store, emitter) = recorder(
             &dir,
             TransferDirection::Receive,
-            receive_context("/tmp/.sendme-recv-hash"),
+            receive_context("/tmp/.dashbeam-recv-hash"),
         );
 
         emitter.emit_event("receive-started").expect("emit");

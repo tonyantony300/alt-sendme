@@ -29,6 +29,7 @@ tmp2/
 *.temp
 
 # Application specific
+.dashbeam-*
 .sendme-*
 .keystore.jks
 

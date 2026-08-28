@@ -28,7 +28,9 @@ use std::sync::Arc;
 
 use tauri::{Emitter as _, Manager as _, RunEvent};
 
-/// Clean up any orphaned .sendme-* directories from previous runs
+/// Clean up any orphaned blob store directories from previous runs. Also
+/// sweeps the `.sendme-*` names older builds used, so an upgrade leaves
+/// nothing behind.
 fn cleanup_orphaned_directories() {
     let scan_dirs = vec![
         std::env::current_dir().ok(),
@@ -38,9 +40,12 @@ fn cleanup_orphaned_directories() {
         if let Ok(entries) = fs::read_dir(&base_dir) {
             for entry in entries.flatten() {
                 if let Some(name) = entry.file_name().to_str() {
-                    if (name.starts_with(".sendme-send-") || name.starts_with(".sendme-recv-"))
-                        && entry.path().is_dir()
-                    {
+                    let ours = name.starts_with(engine::storage::SEND_DIR_PREFIX)
+                        || name.starts_with(engine::storage::RECV_DIR_PREFIX)
+                        || engine::storage::LEGACY_DIR_PREFIXES
+                            .iter()
+                            .any(|p| name.starts_with(p));
+                    if ours && entry.path().is_dir() {
                         if let Err(e) = fs::remove_dir_all(&entry.path()) {
                             tracing::warn!("Failed to clean up orphaned directory {}: {}", name, e);
                         }
