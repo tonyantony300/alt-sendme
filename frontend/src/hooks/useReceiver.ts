@@ -22,7 +22,10 @@ import {
 	selectDownloadFolder,
 } from '@/plugins/nativeUtils'
 import { useAppSettingStore } from '@/store/app-setting'
-import { useReceiverActionsStore } from '@/store/receiver-actions-store'
+import {
+	useReceiverActionsStore,
+	type AcceptPairedInviteOptions,
+} from '@/store/receiver-actions-store'
 import { useTransferTabStore } from '@/store/transfer-tab-store'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import { getRelayConfigArg } from '../lib/relay'
@@ -172,6 +175,12 @@ export function useReceiver(): UseReceiverReturn {
 	// capture this value and ignore events whose seq no longer matches — preventing
 	// ghost completions from a just-cancelled download.
 	const transferSeqRef = useRef(0)
+	/**
+	 * Where the last completed receive actually wrote. Differs from `savePath`
+	 * when an auto-accepted transfer filed itself under a per-device subfolder,
+	 * so "Open" must prefer it.
+	 */
+	const completedOutputDirRef = useRef<string>('')
 
 	const resolveRevealPath = async (basePath: string, names: string[]) => {
 		if (!basePath) return null
@@ -490,6 +499,7 @@ export function useReceiver(): UseReceiverReturn {
 				// Prefer the engine's wire time — the wall clock here also covers
 				// connection setup and the disk write.
 				const completion = parseCompletionPayload(event?.payload)
+				completedOutputDirRef.current = completion?.outputDir ?? ''
 				const duration =
 					completion?.durationMs ??
 					(transferStartTimeRef.current
@@ -619,7 +629,7 @@ export function useReceiver(): UseReceiverReturn {
 	}, [isReceiving, setDownloadsPath, setDownloadsUri, showAlert, t])
 
 	const receiveWithTicket = useCallback(
-		async (ticketValue: string) => {
+		async (ticketValue: string, subFolder?: string | null) => {
 			if (!ticketValue.trim()) return
 
 			try {
@@ -638,6 +648,7 @@ export function useReceiver(): UseReceiverReturn {
 				setIsPreviewLoading(false)
 				pendingConflictNoticeRef.current = null
 				folderOpenTriggeredRef.current = false
+				completedOutputDirRef.current = ''
 				androidMediaStoreUrisRef.current = []
 				androidMediaStorePathRef.current = ''
 				// Every Android receive ends in an export, so the target is
@@ -658,6 +669,7 @@ export function useReceiver(): UseReceiverReturn {
 					ticket: ticketValue.trim(),
 					outputPath,
 					treeUri: IS_ANDROID ? downloadsUriRef.current.trim() || null : null,
+					subFolder: subFolder?.trim() || null,
 					relay: getRelayConfigArg(),
 					discovery: getDiscoveryConfigArg(),
 				})
@@ -696,7 +708,10 @@ export function useReceiver(): UseReceiverReturn {
 	}
 
 	const acceptPairedInvite = useCallback(
-		async (invite: PairedInvitePayload) => {
+		async (
+			invite: PairedInvitePayload,
+			options?: AcceptPairedInviteOptions
+		) => {
 			if (isReceiving || isTransporting) {
 				showAlert(
 					t('common:receiver.receiveBusyTitle'),
@@ -722,7 +737,7 @@ export function useReceiver(): UseReceiverReturn {
 			previewRequestSeqRef.current += 1
 			setIsPreviewLoading(false)
 
-			await receiveWithTicket(invite.blob_ticket)
+			await receiveWithTicket(invite.blob_ticket, options?.subFolder ?? null)
 		},
 		[isReceiving, isTransporting, receiveWithTicket, showAlert, t]
 	)
@@ -735,6 +750,9 @@ export function useReceiver(): UseReceiverReturn {
 	)
 	const setReceiverSavePath = useReceiverActionsStore(
 		(state) => state.setReceiverSavePath
+	)
+	const setReceiverBusy = useReceiverActionsStore(
+		(state) => state.setReceiverBusy
 	)
 
 	useEffect(() => {
@@ -750,6 +768,10 @@ export function useReceiver(): UseReceiverReturn {
 	useEffect(() => {
 		setReceiverSavePath(savePath)
 	}, [savePath, setReceiverSavePath])
+
+	useEffect(() => {
+		setReceiverBusy(isReceiving || isTransporting)
+	}, [isReceiving, isTransporting, setReceiverBusy])
 
 	const resetForNewTransfer = async () => {
 		// Zero the seq first so in-flight events from the cancelled transfer are ignored.
@@ -816,12 +838,16 @@ export function useReceiver(): UseReceiverReturn {
 				return
 			}
 
-			if (!savePath) {
+			const revealBase = completedOutputDirRef.current || savePath
+			if (!revealBase) {
 				folderOpenTriggeredRef.current = false
 				return
 			}
 
-			const targetPath = await resolveRevealPath(savePath, fileNamesRef.current)
+			const targetPath = await resolveRevealPath(
+				revealBase,
+				fileNamesRef.current
+			)
 			if (targetPath) {
 				await revealItemInDir(targetPath)
 			}

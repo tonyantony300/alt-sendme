@@ -5,11 +5,10 @@ import { getRelayConfigArg } from '@/lib/relay'
 import { getDiscoveryConfigArg } from '@/lib/discovery'
 import {
 	isKnownPairedEndpoint,
-	isTrustedDevice,
 	reconfigureNodeRelay,
-	respondPairedInvite,
 	setDiscoverability,
 } from '@/lib/pairing-api'
+import { shouldAutoAccept } from '@/lib/auto-accept'
 import { useAppSettingStore } from '@/store/app-setting'
 import type {
 	PairedInvitePayload,
@@ -27,13 +26,14 @@ import { useInviteNotifications } from '@/hooks/useInviteNotifications'
 import { ensureNotificationPermission } from '@/lib/systemNotification'
 import { useTranslation } from '@/i18n'
 import { toastManager } from '../ui/toast'
-import { useReceiverActionsStore } from '@/store/receiver-actions-store'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useAutoAcceptQueueStore } from '@/store/auto-accept-queue-store'
+import { useAutoAcceptQueue } from '@/hooks/useAutoAcceptQueue'
 
 /** Syncs relay settings to the device node and listens for paired invites globally. */
 export function DeviceNodeSync() {
 	const { t } = useTranslation()
 	useInviteNotifications()
+	useAutoAcceptQueue()
 	const { isNodeReady, refreshNodeStatus } = useNodeCapability()
 	const setInvite = usePairedInviteStore((s) => s.setInvite)
 	const didSyncRelay = useRef(false)
@@ -75,9 +75,6 @@ export function DeviceNodeSync() {
 		})
 	}, [isNodeReady])
 
-	const location = useLocation()
-	const navigate = useNavigate()
-
 	useEffect(() => {
 		if (!IS_PAIRING_CAPABLE) return
 
@@ -108,28 +105,12 @@ export function DeviceNodeSync() {
 						if (!isKnownPairedEndpoint(devices, payload.remote_endpoint_id)) {
 							return
 						}
-						if (isTrustedDevice(devices, payload.remote_endpoint_id)) {
-							if (!payload) return
-							const { acceptPairedInvite } = useReceiverActionsStore.getState()
-							if (!acceptPairedInvite) {
-								toastManager.add({
-									title: t('common:errors.receiveFailed'),
-									description: t('common:openReceiveTabHint'),
-									type: 'warning',
-								})
-								return
-							}
-							void respondPairedInvite(payload.remote_endpoint_id, true).catch(
-								() => {}
-							)
-							if (location.pathname !== '/') {
-								navigate('/')
-							}
-							try {
-								await acceptPairedInvite(payload)
-							} catch {
-								// receiveWithTicket / accept path surfaces its own errors
-							}
+						// A trusted device skips the dialog. The queue exists because
+						// an invite can land mid-transfer, when nobody is here to
+						// retry it — and because navigating the user away from
+						// whatever they were doing would defeat unattended receiving.
+						if (shouldAutoAccept(devices, payload.remote_endpoint_id)) {
+							useAutoAcceptQueueStore.getState().enqueue(payload)
 							return
 						}
 						setInvite(payload)
@@ -189,7 +170,7 @@ export function DeviceNodeSync() {
 			unlistenResponse?.()
 			unlistenExpired?.()
 		}
-	}, [setInvite, refreshNodeStatus, t, navigate, location])
+	}, [setInvite, refreshNodeStatus, t])
 
 	return null
 }

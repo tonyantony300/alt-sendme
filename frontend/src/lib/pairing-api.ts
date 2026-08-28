@@ -334,28 +334,17 @@ export function isPairedDeviceActive(
 	return (device.pairing_status ?? 'active') === 'active'
 }
 
-export function isTrustedDevice(device: Pick<PairedDevice, 'trusted'>): boolean
-
+/**
+ * Whether this device's shares are accepted without prompting.
+ *
+ * Reads the stored flag only — routing an incoming invite must also check that
+ * the pairing is still active, which `shouldAutoAccept` in `lib/auto-accept.ts`
+ * does.
+ */
 export function isTrustedDevice(
-	devices: Pick<PairedDevice, 'endpoint_id' | 'trusted'>[],
-	endpointId: string
-): boolean
-
-export function isTrustedDevice(
-	deviceOrDevices:
-		| Pick<PairedDevice, 'trusted'>
-		| Pick<PairedDevice, 'endpoint_id' | 'trusted'>[],
-	endpoindId?: string
+	device: Pick<PairedDevice, 'trusted'>
 ): boolean {
-	if (Array.isArray(deviceOrDevices)) {
-		if (!endpoindId) return false
-		const id = endpoindId.toLowerCase()
-		return deviceOrDevices.some(
-			(device) => device.endpoint_id.toLowerCase() === id && device.trusted
-		)
-	}
-
-	return deviceOrDevices.trusted
+	return device.trusted === true
 }
 
 /**
