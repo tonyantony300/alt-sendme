@@ -6,15 +6,15 @@
 		"transferUnavailable": "Web 预览不支持文件传输。请下载桌面应用以发送和接收文件。"
 	},
 	"webPromo": {
-		"buyMeACoffee": "Buy me a coffee",
+		"platforms": "DashBeam 提供桌面版、Android 版、CLI 版和 Web 版。",
+		"notice": "Web 版不支持直连 - 流量经由加密的公共中继转发，速度受限。无论如何，您的文件始终保持加密。建议使用桌面/CLI 应用或自定义中继以获得更好体验。",
+		"linksLabel": "获取桌面应用和项目链接",
+		"buyMeACoffee": "请我喝奶茶～",
 		"community": "社区",
 		"compare": "与其他 P2P 工具比较",
 		"download": "查看下载选项",
-		"github": "GitHub",
-		"linksLabel": "获取桌面应用和项目链接",
-		"notice": "Web 版不支持直连 - 流量经由加密的公共中继转发，速度受限。无论如何，您的文件始终保持加密。建议使用桌面/CLI 应用或自定义中继以获得更好体验。",
-		"platforms": "DashBeam 提供桌面版、Android 版、CLI 版和 Web 版。",
-		"website": "网站"
+		"website": "网站",
+		"github": "GitHub"
 	},
 	"receive": "接收",
 	"ok": "确定",
@@ -34,11 +34,12 @@
 	},
 	"sender": {
 		"title": "发送",
-		"subtitle": "通过加密的点对点连接共享文件或文件夹。",
+		"subtitle": "通过加密的点对点传输连接共享文件或文件夹。",
 		"stoppingTransmission": "正在停止传输...",
 		"startSharing": "开始共享",
 		"startingShare": "正在启动共享...",
 		"stopSharing": "停止共享",
+		"exitSharing": "退出共享",
 		"shareThisTicket": "一次性分享票据",
 		"sendThisTicket": "将此票据发送给想要接收您文件的人",
 		"keepAppOpen": "在其他人下载您的文件时请保持应用打开",
@@ -58,32 +59,39 @@
 		"multipleFilesSelected": "{{name}} ... 等 {{count}} 项",
 		"browseFile": "浏览文件",
 		"browseFolder": "浏览文件夹",
+		"pairDevice": "配对设备",
 		"addMoreFiles": "添加更多文件",
 		"addMoreFolders": "添加更多文件夹",
+		"addFile": "添加文件",
+		"addFolder": "添加文件夹",
+		"addMore": "添加更多",
+		"clearSelection": "清除选择",
 		"multipleItemsSelected": "{{firstName}} 等 {{count}} 项",
 		"removeFromSelection": "从选择中移除",
 		"copyToClipboard": "复制到剪贴板",
+		"shareReceiveLink": "分享接收链接",
+		"copyReceiveLink": "复制接收链接",
+		"showReceiveQr": "显示接收二维码",
+		"receiveQrTitle": "接收二维码",
+		"scanToReceive": "扫码以接收",
+		"shareMessageIntro": "私密传输 - 使用 DashBeam 发送",
 		"description": "描述（可选）",
 		"broadcastMode": {
 			"index": "广播",
 			"on": {
 				"label": "您正在广播",
-				"description": "持有票据的多人可以在广播模式下同时下载文件。"
+				"description": "持有票据的人可以在广播模式下「同时」下载文件。"
 			},
 			"off": {
 				"label": "私人共享",
 				"description": "只有您与之共享票据的人才能下载文件。"
 			}
 		},
-		"addFile": "添加文件",
-		"addFolder": "添加文件夹",
-		"clearSelection": "清除选择",
-		"exitSharing": "退出共享",
-		"pairDevice": "配对设备",
 		"pairedDevices": {
 			"connectedTitle": "已连接的设备",
+			"yourDevicesTitle": "发送到配对设备",
 			"deviceOffline": "设备已离线 - 请改用手动票据。",
-			"deviceUnreachable": "此设备仍处于配对状态。请在其上线后重试，或使用手动票据。两台设备可能需要兼容的中继设置。",
+			"deviceUnreachable": "此设备仍处于配对状态。请在其上线后重试，或使用手动票据。设备的中继设置可能不兼容。",
 			"failed": "重试",
 			"inviteFailed": "无法连接设备",
 			"inviteSent": "邀请已发送",
@@ -93,53 +101,89 @@
 			"send": "发送",
 			"sending": "发送中…",
 			"sent": "已发送",
-			"statusOffline": "离线",
+			"inviteDeclined": "{{name}} 拒绝了你的邀请",
+			"inviteDeclinedDesc": "对方准备好时你可以再次发送。",
 			"statusOnline": "在线",
-			"statusRePairRequired": "需要重新配对",
+			"statusOffline": "离线",
+			"statusConnecting": "连接中...",
 			"statusUnpaired": "已取消配对",
-			"unknownPeer": "未知设备",
-			"yourDevicesTitle": "发送到配对设备"
+			"statusRePairRequired": "需要重新配对",
+			"unknownPeer": "未知设备"
 		},
 		"sharingActive": {
+			"devicesButton": "发送到设备",
+			"or": "或",
 			"devices": {
-				"emptyHint": "Pair devices in Settings, or send to a nearby device below.",
+				"title": "发送到设备",
+				"hint": "选择配对或附近的设备 - 对方接受后开始传输。",
+				"pairedSection": "配对设备",
+				"nearbySection": "附近设备 - 配对并发送",
+				"nearbyEmpty": "附近没有设备。",
 				"emptyTitle": "尚无配对设备",
-				"hint": "Choose a paired or nearby device - the transfer starts when they accept.",
-				"manageInSettings": "在设置中配对设备",
+				"emptyHint": "在设置中配对设备，也可以在下方发送给附近设备。",
 				"nodeUnavailable": "设备发送当前不可用。您仍可在另一标签页使用一次性传输。",
-				"searchNoResults": "没有与搜索匹配的配对设备。",
+				"manageInSettings": "在设置中配对设备",
 				"searchPlaceholder": "搜索配对设备",
-				"title": "Send to a device",
-				"pairedSection": "Paired",
-				"nearbySection": "Nearby - Pair & Send",
-				"nearbyEmpty": "No devices nearby."
+				"searchNoResults": "没有与搜索匹配的配对设备。"
 			},
-			"devicesButton": "Send to a device",
 			"link": {
+				"waiting": "等待有人使用您的链接",
 				"hint": "拥有此链接的任何人都可以接收您的文件。",
-				"transferInProgress": "传输进行中 - 打开「一次性传输」查看详情。",
-				"waiting": "等待有人使用您的链接"
-			},
-			"or": "或"
+				"transferInProgress": "传输进行中 - 打开「一次性传输」查看详情。"
+			}
 		}
 	},
 	"receiver": {
 		"title": "接收文件",
+		"receiveFromPairedTitle": "来自配对设备的文件",
+		"receiveFromPairedDescription": "{{sender}} 想向您发送 {{count}} 个文件（{{size}}）。接受后开始下载。",
+		"receiveFromPairedDescriptionNoSize": "{{sender}} 想向您发送 {{count}} 个文件。接受后开始下载。",
+		"acceptInvite": "接受",
+		"declineInvite": "拒绝",
+		"pairedInvite": {
+			"saveTo": "保存到",
+			"changeFolder": "更改文件夹"
+		},
+		"receiveFromNearbyTitle": "附近设备传来文件",
+		"receiveFromNearbyDescription": "{{sender}} (未验证) 想要发送给你 {{count}} 个文件 ({{size}})。",
+		"receiveFromNearbyDescriptionNoSize": "{{sender}} (未验证) 想要发送给你 {{count}} 个文件。",
+		"nearbyInvite": {
+			"unverifiedSender": "未验证 — 尚未与这台设备配对",
+			"fingerprintLabel": "验证码",
+			"fingerprintHint": "在接受之前，请检查此代码是否与 {{sender}} 在屏幕上看到的代码一致。",
+			"fingerprintUnavailable": "无法为此设备计算验证码，因此无法安全确认。请拒绝并让发送者再试一次。"
+		},
+		"nearbyPairRequest": {
+			"title": "配对请求",
+			"description": "{{sender}} 想要与这台设备配对。",
+			"descriptionWithType": "{{sender}} ({{deviceType}}) 想要与这台设备配对。"
+		},
+		"receiveBusyTitle": "已有下载正在进行",
+		"receiveBusyDescription": "请等待当前下载完成后再接受其他文件。",
+		"openReceiveTabHint": "请先打开一次「接收」标签页，然后再试。",
 		"subtitle": "通过加密的点对点连接从发送者下载文件。",
 		"saveToFolder": "保存到文件夹：",
+		"saveLocation": "保存位置：",
 		"noFolderSelected": "未选择文件夹",
+		"browserDownloadsFallback": "浏览器下载文件夹",
+		"browserDownloadsHint": "此浏览器无法选择保存文件夹。文件将下载到您的默认下载位置。",
+		"appDownloadsDefault": "App 下载 (默认)",
+		"appDownloadsHint": "你还没有选择文件夹，文件将保存在 App 内。选择一个文件夹，以便轻松找到文件。",
+		"downloadFallbackTitle": "正在使用 App 下载文件夹",
+		"downloadFallbackDescription": "文件已保存到 App 下载文件夹：{{path}}",
+		"downloadFallbackSafDescription": "无法写入到选定的文件夹。文件已保存在 App 下载文件夹：{{path}}",
 		"conflictsMore": "... 等 {{count}} 项",
-		"pasteTicket": "在此处粘贴票据：",
+		"pasteTicket": "在此处粘贴「一次性票据」：",
 		"ticketPlaceholder": "DashBeam 接收票据...",
 		"howToReceive": "如何接收文件",
-		"instruction1": "发送者必须在线并正在共享文件",
-		"instruction2": "从发送者处获取票据",
+		"instruction1": "发送者必须在线并维持共享状态",
+		"instruction2": "从发送者处获取「一次性票据」",
 		"instruction3": "将票据粘贴到文本区域",
 		"instruction4": "点击下载开始接收",
 		"instruction5": "文件将保存到您选择的文件夹",
 		"keepAppOpen": "在下载文件时请保持应用打开",
 		"connectingToSender": "正在连接到发送者",
-		"previewMultipleItems": "{{name}} ... 等{{count}}个项目",
+		"previewMultipleItems": "{{name}} ... 等 {{count}} 个项目",
 		"multipleFilesFound": "找到多个文件",
 		"expandPreviewList": "显示文件列表",
 		"collapsePreviewList": "隐藏文件列表",
@@ -148,32 +192,12 @@
 		"downloadCompletedWithConflicts": "下载完成，已处理重名冲突",
 		"downloadedFile": "已下载文件",
 		"stopReceiving": "停止接收",
-		"download": "下载",
-		"acceptInvite": "接受",
-		"browserDownloadsFallback": "浏览器下载文件夹",
-		"browserDownloadsHint": "此浏览器无法选择保存文件夹。文件将下载到您的默认下载位置。",
-		"declineInvite": "拒绝",
-		"openReceiveTabHint": "请先打开一次「接收」标签页，然后再试。",
-		"pairedInvite": {
-			"changeFolder": "更改文件夹",
-			"saveTo": "保存到"
-		},
-		"receiveBusyDescription": "请等待当前下载完成后再接受其他文件。",
-		"receiveBusyTitle": "已有下载正在进行",
-		"receiveFromPairedDescription": "{{sender}} 想向您发送 {{count}} 个文件（{{size}}）。接受后开始下载。",
-		"receiveFromPairedDescriptionNoSize": "{{sender}} 想向您发送 {{count}} 个文件。接受后开始下载。",
-		"receiveFromPairedTitle": "来自配对设备的文件",
-		"saveLocation": "保存位置：",
-		"nearbyPairRequest": {
-			"title": "Pairing request",
-			"description": "{{sender}} wants to pair with this device.",
-			"descriptionWithType": "{{sender}} ({{deviceType}}) wants to pair with this device."
-		}
+		"download": "下载"
 	},
 	"transfer": {
 		"progress": "传输进度",
 		"speed": "速度",
-		"eta": "ETA",
+		"eta": "预计时间",
 		"timeRemaining": "剩余时间",
 		"calculating": "计算中...",
 		"complete": "传输完成！",
@@ -191,6 +215,7 @@
 		"folderSize": "文件夹大小",
 		"downloadPath": "下载路径",
 		"duration": "持续时间",
+		"writeToDisk": "写入磁盘",
 		"avgSpeed": "平均速度",
 		"multipleFiles": "{{count}} 个文件",
 		"donatePrompt": "如果喜欢这次体验，请考虑{{link}}。谢谢！",
@@ -210,17 +235,17 @@
 		"receiveFailed": "接收失败",
 		"receiveFailedDesc": "无法接收文件",
 		"openFolderFailed": "打开文件夹失败",
-		"openFolderFailedDesc": "无法打开下载文件夹"
+		"openFolderFailedDesc": "无法打开下载文件夹",
+		"openFolderUnavailableDesc": "文件已保存到 App 的私有文件夹，无法通过文件管理器打开。要在此处打开，请在接收前选择一个下载文件夹。"
 	},
 	"settings": {
 		"title": "设置",
 		"navItems": {
 			"appearance": "主题与语言",
 			"general": "通用",
-			"network": "网络",
-			"notification": "通知",
 			"devices": "设备",
-			"infra": "基础设施"
+			"infra": "基础架构",
+			"network": "网络"
 		},
 		"theme": {
 			"description": "选择您喜欢的主题",
@@ -242,17 +267,23 @@
 			},
 			"systembar": {
 				"title": "系统托盘",
+				"runOnSystemStartup": {
+					"label": "开机时启动",
+					"description": "系统启动时自动运行本应用"
+				},
+				"runOnSystemStartupFailed": "无法更改启动设置",
 				"minimizeToTray": {
 					"label": "最小化到系统托盘",
 					"description": "关闭时最小化应用而非退出"
 				},
+				"trayOpen": "打开",
+				"trayQuit": "退出",
+				"trayNoDevices": "无配对的设备",
+				"trayDevicesOnline": "{{online}} / {{total}} 台设备在线",
+				"trayDeviceOnline": "{{name}} - 在线",
 				"showProgressOnIcon": {
 					"label": "在应用图标上显示传输进度",
 					"description": "在应用图标上叠加进度条以显示传输进度"
-				},
-				"runOnSystemStartup": {
-					"label": "开机时启动",
-					"description": "系统启动时自动运行本应用"
 				},
 				"contextMenu": {
 					"label": "资源管理器右键菜单",
@@ -265,6 +296,98 @@
 					"label": "共享时显示广播开关",
 					"description": "在共享界面显示广播开关，以便多个接收者同时下载相同文件。"
 				}
+			},
+			"notifications": {
+				"title": "通知",
+				"label": "显示系统通知",
+				"description": "即使 DashBeam 不在前台，也可以收到配对请求、传入文件和下载完成的通知"
+			},
+			"debugMode": {
+				"label": "调试日志",
+				"description": "记录有关传输、连接、中继和配对的详细诊断信息，以便附加到错误报告中。默认情况下是关闭的，且在开启的 7 天后自动关闭。",
+				"restartTitle": "需要重启",
+				"restartDescription": "请退出重启 DashBeam 以使更改生效。",
+				"pendingOn": "重启 DashBeam 后，调试日志才会开始记录。",
+				"pendingOff": "重启 DashBeam 后，调试日志才会停止记录。",
+				"save": "保存诊断信息…",
+				"savedTitle": "已保存诊断信息",
+				"savedDescription": "请将此文件附加到你的错误报告。请先检查一遍，因为其中包含 IP 地址、设备 ID、设备名称以及你分享的文件名。",
+				"clear": "清除日志",
+				"clearedTitle": "已清除日志"
+			}
+		},
+		"devices": {
+			"title": "配对设备",
+			"description": "配对设备一次，即可无需复制票据发送文件。",
+			"desktopOnly": "设备配对可在桌面和 Android 应用中使用。",
+			"nodeUnavailableTitle": "设备配对不可用",
+			"nodeUnavailableHint": "手动票据和文件共享仍可正常使用。",
+			"relayChangePairedHint": "已配对设备仍会保留在列表中。在新的网络配置下，两台设备能够互相连接之前，配对发送可能无法使用。",
+			"thisDevice": "此设备",
+			"thisDeviceHint": "显示给配对设备的名称。操作系统和设备类型会自动检测。",
+			"deviceName": "设备名称",
+			"deviceNamePlaceholder": "例如：Tony 的 MacBook",
+			"rename": "重命名",
+			"renameThisDevice": "重命名此设备",
+			"renameThisDeviceHint": "选择一个便于在配对时识别此电脑的名称。",
+			"renameDevice": "重命名配对设备",
+			"renameDeviceHint": "这只会更改本设备上的名称 - 不会更改对方设备的名称。",
+			"saveName": "保存名称",
+			"nameSaved": "设备名称已保存",
+			"nameSaveFailed": "无法保存设备名称",
+			"pairNewDevice": "配对新设备",
+			"showQrCode": "显示配对码",
+			"enterCode": "输入配对码",
+			"hostHint": "在您要配对的设备上扫描或复制此码。您可以关闭此对话框 - 配对将保持有效直至过期。",
+			"hostExpiresIn": "{{seconds}} 秒后过期。",
+			"hostStillOpen": "等待设备加入 - 配对将在 {{seconds}} 秒内保持开放。",
+			"hostOpenedToast": "配对将在 {{seconds}} 秒内保持开放",
+			"hostClosedToast": "配对停止开放",
+			"copyOpensPairingHint": "复制配对码后，配对会保持开放 3 分钟。请在另一台设备上粘贴。",
+			"cancelPairing": "取消配对",
+			"joinHint": "粘贴您其他设备上的配对码。",
+			"codePlaceholder": "粘贴配对码",
+			"pairingCode": "配对码",
+			"pairDevice": "配对",
+			"pairing": "配对中…",
+			"noPairedDevices": "尚无配对设备",
+			"noPairedDevicesHint": "配对另一部手机或电脑，即可每次无需分享票据发送文件。",
+			"searchPlaceholder": "搜索配对设备",
+			"searchNoResults": "没有与搜索匹配的配对设备。",
+			"devicePaired": "设备已配对",
+			"pairFailed": "配对失败",
+			"deviceRemoved": "设备已移除",
+			"removeFailed": "无法移除设备",
+			"removeDevice": "移除设备",
+			"removingDevice": "移除设备…",
+			"statusOnline": "在线",
+			"statusOffline": "离线",
+			"statusConnecting": "连接中...",
+			"statusUnpaired": "已取消配对",
+			"statusRePairRequired": "需要重新配对",
+			"unpairedHint": "此设备已取消配对。请从列表中移除。",
+			"deviceUnpairedToast": "{{name}} 已取消与此设备的配对",
+			"copied": "配对码已复制",
+			"nearby": {
+				"heading": "附近",
+				"hint": "本地网络上的设备尚未配对。在此配对，或创建共享并使用“发送到设备”发送文件。",
+				"empty": "附近没有找到设备。",
+				"unverified": "未验证",
+				"pair": "配对",
+				"pairing": "配对中…",
+				"pairDeclined": "{{name}} 拒绝了配对请求",
+				"inviteFailed": "无法连接这台设备",
+				"unavailableTitle": "附近不可用",
+				"discoverabilityPairedOnlyHint": "附近的设备可以看到这台设备存在，但看不到其名称。",
+				"discoverabilityOffHint": "这台设备不会出现在本地网络中。你依然可以查找并发送到其他设备。",
+				"discoverabilityTitle": "可发现性",
+				"discoverabilityDescription": "控制本地网络上的其他设备如何找到此设备。",
+				"discoverabilityEveryone": "所有设备",
+				"discoverabilityEveryoneDesc": "你的设备及其名称对本地网络上的所有附近的设备可见。",
+				"discoverabilityPairedOnly": "仅限配对",
+				"discoverabilityPairedOnlyDesc": "附近的设备可以看到这台设备存在，但看不到其名称。",
+				"discoverabilityOff": "关",
+				"discoverabilityOffDesc": "这台设备不会出现在本地网络中。你依然可以查找并发送到其他设备。"
 			}
 		},
 		"network": {
@@ -275,6 +398,7 @@
 				"modeDefaultDesc": "使用默认的公共 iroh 中继。适合大多数用户。",
 				"modeCustom": "自定义（自托管）",
 				"modeCustomDesc": "使用您自己的中继服务器。请参阅",
+				"docsLink": "基础架构/中继",
 				"modeDisabled": "已禁用",
 				"modeDisabledDesc": "不使用中继。仅直接连接；在严格 NAT 下可能失败。",
 				"urlsLabel": "中继 URL",
@@ -292,6 +416,12 @@
 				"authTokenDescription": "当中继配置使用 access.shared_token 时需要填写。",
 				"showAuthToken": "显示",
 				"hideAuthToken": "隐藏",
+				"fallbackLabel": "回退策略",
+				"fallbackDescription": "选择自定义中继无法连接时的处理方式。",
+				"fallbackStrict": "仅使用自定义中继",
+				"fallbackStrictDesc": "不切换到公共中继，直接使传输失败。适合私有部署。",
+				"fallbackPublic": "必要时使用公共中继",
+				"fallbackPublicDesc": "自定义中继不可达时回退到公共 iroh 中继。",
 				"privacyNote": "如需完全私密的设置，请在发送端和接收端设备上配置相同的中继 URL。",
 				"testConnection": "测试连接",
 				"verifySuccess": "中继连接正常",
@@ -305,15 +435,8 @@
 				"confirmDisableDescription": "您已选择禁用中继。如果您尝试与本地网络之外的人共享文件，文件传输可能会失败。中继可帮助设备在困难的网络条件下相互发现并连接，而您的传输始终保持端到端加密。",
 				"confirmCustomTitle": "使用自定义中继？",
 				"confirmCustomDescription": "您已选择使用自己托管的自定义中继。如果您的自定义中继无法访问，传输将自动回退到公共中继，并会通知您。中继仅帮助您的设备在困难的网络条件下连接，而您的传输始终保持端到端加密。",
-				"confirmContinue": "继续",
 				"confirmCustomDescriptionWithPolicy": "您已选择使用自定义自托管中继。如果无法连接，DashBeam 将遵循中继设置中选择的回退策略。中继仅帮助设备在复杂网络环境下建立连接，传输始终端到端加密。",
-				"fallbackDescription": "选择自定义中继无法连接时的处理方式。",
-				"fallbackLabel": "回退策略",
-				"fallbackPublic": "必要时使用公共中继",
-				"fallbackPublicDesc": "自定义中继不可达时回退到公共 iroh 中继。",
-				"fallbackStrict": "仅使用自定义中继",
-				"fallbackStrictDesc": "不切换到公共中继，直接使传输失败。适合私有部署。",
-				"docsLink": "infra/relay"
+				"confirmContinue": "继续"
 			},
 			"discovery": {
 				"title": "发现服务器",
@@ -322,7 +445,7 @@
 				"modeDefaultDesc": "使用 iroh 的默认公共发现服务器。适合大多数用户。",
 				"modeCustom": "自定义（自托管）",
 				"modeCustomDesc": "通过您自己的 pkarr 服务器以 HTTPS 发布和解析设备地址。请参阅",
-				"docsLink": "infra/dns",
+				"docsLink": "基础架构/dns",
 				"urlLabel": "发现（pkarr）URL",
 				"urlDescription": "发现服务器的 HTTPS pkarr 端点，例如 https://dns.example.com/pkarr。",
 				"urlInvalidHint": "请输入有效的 HTTPS URL",
@@ -340,65 +463,11 @@
 				"confirmCustomDescription": "您选择了自定义自托管发现服务器。发送端和接收端需要使用相同的发现 URL（若已设置，还需相同的 DNS 源），设备才能通过公钥互相找到。发现仅用于定位端点；传输始终保持端到端加密。",
 				"confirmContinue": "继续"
 			}
-		},
-		"devices": {
-			"cancelPairing": "取消配对",
-			"codePlaceholder": "粘贴配对码",
-			"copied": "配对码已复制",
-			"description": "配对设备一次，即可无需复制票据发送文件。",
-			"desktopOnly": "设备配对可在桌面和 Android 应用中使用。",
-			"deviceName": "设备名称",
-			"deviceNamePlaceholder": "例如：Tony 的 MacBook",
-			"devicePaired": "设备已配对",
-			"deviceRemoved": "设备已移除",
-			"deviceUnpairedToast": "{{name}} 已取消与此设备的配对",
-			"enterCode": "输入配对码",
-			"hostExpiresIn": "{{seconds}} 秒后过期。",
-			"hostHint": "在您要配对的设备上扫描或复制此码。您可以关闭此对话框 - 配对将保持有效直至过期。",
-			"hostStillOpen": "等待设备加入 - 配对将在 {{seconds}} 秒内保持开放。",
-			"joinHint": "粘贴您其他设备上的配对码。",
-			"nameSaveFailed": "无法保存设备名称",
-			"nameSaved": "设备名称已保存",
-			"noPairedDevices": "尚无配对设备",
-			"noPairedDevicesHint": "配对另一部手机或电脑，即可每次无需分享票据发送文件。",
-			"nodeUnavailableHint": "手动票据和文件共享仍可正常使用。",
-			"nodeUnavailableTitle": "设备配对不可用",
-			"pairDevice": "配对",
-			"pairFailed": "配对失败",
-			"pairNewDevice": "配对新设备",
-			"pairing": "配对中…",
-			"pairingCode": "配对码",
-			"relayChangePairedHint": "已配对设备仍会保留在列表中。在新的网络配置下，两台设备能够互相连接之前，配对发送可能无法使用。",
-			"removeDevice": "移除设备",
-			"removeFailed": "无法移除设备",
-			"rename": "重命名",
-			"renameDevice": "重命名配对设备",
-			"renameDeviceHint": "这只会更改本设备上的名称 - 不会更改对方设备的名称。",
-			"renameThisDevice": "重命名此设备",
-			"renameThisDeviceHint": "选择一个便于在配对时识别此电脑的名称。",
-			"saveName": "保存名称",
-			"searchNoResults": "没有与搜索匹配的配对设备。",
-			"searchPlaceholder": "搜索配对设备",
-			"showQrCode": "显示配对码",
-			"statusOffline": "离线",
-			"statusOnline": "在线",
-			"statusRePairRequired": "需要重新配对",
-			"statusUnpaired": "已取消配对",
-			"thisDevice": "此设备",
-			"thisDeviceHint": "显示给配对设备的名称。操作系统和设备类型会自动检测。",
-			"title": "配对设备",
-			"unpairedHint": "此设备已取消配对。请从列表中移除。",
-			"nearby": {
-				"hint": "Devices on your local network that aren't paired yet. Pair here, or start a share and use Send to a device for files.",
-				"pair": "Pair",
-				"pairing": "Pairing…",
-				"pairDeclined": "{{name}} declined the pairing request"
-			}
 		}
 	},
 	"updater": {
-		"newUpdateTitle": "有新更新！",
-		"newVersionAvailable": "新版本 {{version}} 可用。",
+		"newUpdateTitle": "有新版本！",
+		"newVersionAvailable": "新版本 {{version}} 可下载。",
 		"newVersionAvailableInline": "有新版本可用 - {{version}}",
 		"updateNow": "立即更新",
 		"later": "稍后",
@@ -408,10 +477,24 @@
 		"checkFailed": "检查失败",
 		"checkFailedDesc": "无法检查更新",
 		"installFailed": "安装失败",
-		"installFailedDesc": "无法安装更新"
+		"installFailedDesc": "无法安装更新",
+		"portableTitle": "便携版构建",
+		"portableDescription": "你正在运行的是便携版 ZIP 文件。无法自动更新——如需升级，请从 GitHub Releases 页面下载最新的便携版。"
 	},
 	"android": {
 		"preparingFile": "正在准备文件..."
+	},
+	"notifications": {
+		"pairRequestTitle": "{{sender}} 想要配对",
+		"pairRequestBody": "打开 DashBeam 以接受或拒绝",
+		"inviteTitle": "{{sender}} 正向你发送文件",
+		"nearbyInviteTitle": "附近的 {{sender}} 想要给你发送文件",
+		"inviteBody": "{{count}} 个文件 · {{size}}",
+		"inviteBodyNoSize": "{{count}} 个文件",
+		"declinedTitle": "{{sender}} 拒绝了",
+		"declinedBody": "你的请求未被接受",
+		"pairedTitle": "设备已配对",
+		"pairedBody": "{{name}} 现已配对"
 	},
 	"footer": {
 		"relay": {
@@ -440,5 +523,68 @@
 			"disabledNote": "中继已禁用。仅限直接连接，因此在严格的防火墙或 NAT 环境下传输可能失败。"
 		}
 	},
-	"comingSoon": "即将推出"
+	"pairing": {
+		"verification": {
+			"title": "确认是你本人",
+			"description": "请等待 {{name}} 接受。",
+			"unavailable": "无法为此设备计算验证码。{{name}} 将无法确认是你本人。",
+			"close": "关闭"
+		}
+	},
+	"history": {
+		"title": "历史记录",
+		"clearAll": "清空",
+		"clearAllConfirmTitle": "清除所有历史记录？",
+		"clearAllConfirmBody": "此操作会移除列表中所有的传输，并释放剩余的未完成下载。已收到的文件不会被删除。",
+		"clearAllDone": "已清除历史记录",
+		"clearAllFailed": "无法清除历史记录",
+		"removeFailed": "无法移除该传输",
+		"filters": {
+			"all": "全部",
+			"completed": "已完成",
+			"failed": "已失败",
+			"cancelled": "已取消",
+			"interrupted": "已中断",
+			"count": "已显示 {{count}} 项"
+		},
+		"status": {
+			"inProgress": "进行中",
+			"completed": "已完成",
+			"failed": "已失败",
+			"cancelled": "已取消",
+			"interrupted": "已中断"
+		},
+		"empty": {
+			"title": "暂无内容",
+			"filtered": "没有符合筛选条件的传输。",
+			"description": "你发送和接收的文件将在此处列出。"
+		},
+		"row": {
+			"items": "{{count}} 个项目",
+			"devices": "{{count}} 台设备",
+			"directionSent": "已发送",
+			"directionReceived": "已接收",
+			"unknownItem": "未知项目",
+			"unknownDevice": "未知设备",
+			"duration": "用时",
+			"speed": "速度",
+			"writeTime": "写入磁盘用时",
+			"savedTo": "保存位置",
+			"error": "什么出了问题",
+			"toggleDetails": "显示详情",
+			"conflicts": "为避免覆盖现有文件，已重命名 {{count}} 个文件。",
+			"remove": "从历史记录移除"
+		},
+		"temp": {
+			"cleared": "已释放空间",
+			"clearFailed": "无法释放该空间",
+			"clearSized": "释放了 {{size}}"
+		},
+		"settings": {
+			"title": "传输历史记录",
+			"description": "记录你在此设备上发送和接收的内容。",
+			"toggle": "记录传输",
+			"toggleHint": "关闭后将不再新增条目。已记录的内容将保留，直到你将其清除。"
+		}
+	}
 }
