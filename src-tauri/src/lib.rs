@@ -28,16 +28,24 @@ use std::sync::Arc;
 
 use tauri::{Emitter as _, Manager as _, RunEvent};
 
-/// Clean up any orphaned .sendme-* directories from previous runs
+/// Clean up any orphaned blob store directories from previous runs. Also
+/// sweeps the `.sendme-*` names older builds used, so an upgrade leaves
+/// nothing behind.
 fn cleanup_orphaned_directories() {
-    let scan_dirs = vec![std::env::current_dir().ok(), Some(std::env::temp_dir())];
+    let scan_dirs = vec![
+        std::env::current_dir().ok(),
+        Some(engine::storage::temp_dir()),
+    ];
     for base_dir in scan_dirs.into_iter().flatten() {
         if let Ok(entries) = fs::read_dir(&base_dir) {
             for entry in entries.flatten() {
                 if let Some(name) = entry.file_name().to_str() {
-                    if (name.starts_with(".sendme-send-") || name.starts_with(".sendme-recv-"))
-                        && entry.path().is_dir()
-                    {
+                    let ours = name.starts_with(engine::storage::SEND_DIR_PREFIX)
+                        || name.starts_with(engine::storage::RECV_DIR_PREFIX)
+                        || engine::storage::LEGACY_DIR_PREFIXES
+                            .iter()
+                            .any(|p| name.starts_with(p));
+                    if ours && entry.path().is_dir() {
                         if let Err(e) = fs::remove_dir_all(&entry.path()) {
                             tracing::warn!("Failed to clean up orphaned directory {}: {}", name, e);
                         }
@@ -208,6 +216,21 @@ pub fn run() {
         ])
         .setup(|app| {
             init_logging(app.handle());
+            // Before Android 13 `std::env::temp_dir()` is `/data/local/tmp`,
+            // which the app cannot write, so blob stores go in the app cache
+            // dir instead. That is also where `TMPDIR` points on 13+, so
+            // partial receives from earlier builds stay resumable. Desktop
+            // keeps the unmodified `std::env::temp_dir()` fallback for the
+            // same reason. Must run before `setup_common`, which scans it.
+            #[cfg(target_os = "android")]
+            match app.path().app_cache_dir() {
+                Ok(dir) => {
+                    let _ = engine::storage::TEMP_DIR.set(dir);
+                }
+                Err(e) => tracing::error!(
+                    "Could not resolve app_cache_dir; falling back to std::env::temp_dir(): {e}"
+                ),
+            }
             setup_common(app);
             #[cfg(desktop)]
             tray::set_background_on_close(commands::load_persisted_minimize_to_tray(
