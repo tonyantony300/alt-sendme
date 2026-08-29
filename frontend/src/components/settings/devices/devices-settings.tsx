@@ -207,6 +207,76 @@ function RenameDeviceModal({
 	)
 }
 
+/** A one-click action that is hard to undo gets a confirmation step. */
+function ConfirmModal({
+	open,
+	title,
+	description,
+	confirmLabel,
+	errorTitle,
+	onClose,
+	onConfirm,
+}: {
+	open: boolean
+	title: string
+	description: string
+	confirmLabel: string
+	errorTitle: string
+	onClose: () => void
+	onConfirm: () => Promise<void>
+}) {
+	const { t } = useTranslation()
+	const [saving, setSaving] = useState(false)
+
+	const handleConfirm = async () => {
+		setSaving(true)
+		try {
+			await onConfirm()
+			onClose()
+		} catch (error) {
+			console.error(error)
+			toastManager.add({ title: errorTitle, type: 'error' })
+		} finally {
+			setSaving(false)
+		}
+	}
+
+	return (
+		<AlertDialog
+			open={open}
+			onOpenChange={(next) => {
+				if (!next) onClose()
+			}}
+		>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>{title}</AlertDialogTitle>
+					<AlertDialogDescription>{description}</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<Button
+						type="button"
+						variant="outline"
+						disabled={saving}
+						onClick={onClose}
+					>
+						{t('common:cancel')}
+					</Button>
+					<Button
+						type="button"
+						variant="destructive"
+						disabled={saving}
+						onClick={handleConfirm}
+					>
+						{saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+						{confirmLabel}
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+	)
+}
+
 export function DevicesSettings() {
 	const { t } = useTranslation()
 	const {
@@ -232,6 +302,8 @@ export function DevicesSettings() {
 	const [joinOpen, setJoinOpen] = useState(false)
 	const [renameThisOpen, setRenameThisOpen] = useState(false)
 	const [renamePeerId, setRenamePeerId] = useState<string | null>(null)
+	const [trustPeerId, setTrustPeerId] = useState<string | null>(null)
+	const [forgetPeerId, setForgetPeerId] = useState<string | null>(null)
 	const [searchQuery, setSearchQuery] = useState('')
 	// Removal waits on delivering `Forget`, which takes seconds when the peer is
 	// listed online but gone. Keyed by endpoint id so one removal doesn't freeze
@@ -279,6 +351,24 @@ export function DevicesSettings() {
 		)
 	}
 
+	const handleForget = async (endpointId: string) => {
+		setForgettingIds((prev) => new Set(prev).add(endpointId))
+		try {
+			await forget(endpointId)
+			toastManager.add({
+				title: t('common:settings.devices.deviceRemoved'),
+				type: 'success',
+			})
+		} finally {
+			// The row unmounts on success, but this state lives on the list.
+			setForgettingIds((prev) => {
+				const next = new Set(prev)
+				next.delete(endpointId)
+				return next
+			})
+		}
+	}
+
 	const copyPairingCode = async () => {
 		try {
 			const code = pairingCode ?? pairingTicket
@@ -317,6 +407,8 @@ export function DevicesSettings() {
 	}
 
 	const renamePeer = devices.find((d) => d.endpoint_id === renamePeerId)
+	const trustPeer = devices.find((d) => d.endpoint_id === trustPeerId)
+	const forgetPeer = devices.find((d) => d.endpoint_id === forgetPeerId)
 	const ThisDeviceIcon = deviceTypeIcon(thisDevice?.device_type)
 	const readyToPaint = !isPairingDataPending
 	const displayPairingCode = pairingCode ?? pairingTicket
@@ -506,13 +598,13 @@ export function DevicesSettings() {
 												return (
 													<li
 														key={device.endpoint_id}
-														className="flex items-center justify-between gap-3 py-3 first:pt-4"
+														className="flex items-center gap-3 py-3 first:pt-4"
 													>
-														<div className="flex min-w-0 items-center gap-3">
-															<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-																<Icon className="h-4 w-4" />
-															</div>
-															<div className="min-w-0">
+														<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+															<Icon className="h-4 w-4" />
+														</div>
+														<div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
+															<div className="min-w-0 flex-1">
 																<div className="flex min-w-0 items-center gap-1">
 																	<p className="text-sm font-medium truncate">
 																		{device.display_name}
@@ -542,93 +634,72 @@ export function DevicesSettings() {
 																		{t('common:settings.devices.unpairedHint')}
 																	</p>
 																) : null}
-																{isActive && isTrustedDevice(device) ? (
-																	<p className="mt-1 text-xs text-muted-foreground">
-																		{t(
-																			'common:settings.devices.autoAcceptHint'
-																		)}
-																	</p>
-																) : null}
 															</div>
-														</div>
-														<div className="flex shrink-0 items-center gap-2">
-															<DevicePairingStatus
-																device={device}
-																namespace="settings"
-															/>
-															<Switch
-																checked={isTrustedDevice(device)}
-																disabled={!isActive}
-																aria-label={t(
-																	'common:settings.devices.autoAcceptAria',
-																	{ name: device.display_name }
-																)}
-																onCheckedChange={(trust: boolean) => {
-																	void trustDevice(
-																		device.endpoint_id,
-																		trust
-																	).catch((error) => {
-																		console.error(error)
-																		toastManager.add({
-																			title: t(
-																				'common:settings.devices.autoAcceptFailed'
-																			),
-																			type: 'error',
+															<div className="flex shrink-0 items-center gap-1.5">
+																<span className="text-xs text-muted-foreground">
+																	{t('common:settings.devices.trust')}
+																</span>
+																<Switch
+																	checked={isTrustedDevice(device)}
+																	disabled={!isActive}
+																	aria-label={t(
+																		'common:settings.devices.trustAria',
+																		{ name: device.display_name }
+																	)}
+																	onCheckedChange={(trust: boolean) => {
+																		// Turning trust on is confirmed in a
+																		// dialog; turning it off is not.
+																		if (trust) {
+																			setTrustPeerId(device.endpoint_id)
+																			return
+																		}
+																		void trustDevice(
+																			device.endpoint_id,
+																			false
+																		).catch((error) => {
+																			console.error(error)
+																			toastManager.add({
+																				title: t(
+																					'common:settings.devices.trustFailed'
+																				),
+																				type: 'error',
+																			})
 																		})
-																	})
-																}}
-															/>
-															<Button
-																type="button"
-																variant="ghost"
-																size="icon-sm"
-																disabled={isForgetting}
-																aria-busy={isForgetting}
-																aria-label={
-																	isForgetting
-																		? t(
-																				'common:settings.devices.removingDevice'
-																			)
-																		: t('common:settings.devices.removeDevice')
-																}
-																onClick={async () => {
-																	if (isForgetting) return
-																	setForgettingIds((prev) =>
-																		new Set(prev).add(device.endpoint_id)
-																	)
-																	try {
-																		await forget(device.endpoint_id)
-																		toastManager.add({
-																			title: t(
-																				'common:settings.devices.deviceRemoved'
-																			),
-																			type: 'success',
-																		})
-																	} catch (error) {
-																		console.error(error)
-																		toastManager.add({
-																			title: t(
-																				'common:settings.devices.removeFailed'
-																			),
-																			type: 'error',
-																		})
-																	} finally {
-																		// The row unmounts on success, but this
-																		// state lives on the list.
-																		setForgettingIds((prev) => {
-																			const next = new Set(prev)
-																			next.delete(device.endpoint_id)
-																			return next
-																		})
+																	}}
+																/>
+															</div>
+															<div className="flex w-full shrink-0 items-center justify-between gap-4 sm:w-auto sm:justify-normal">
+																<DevicePairingStatus
+																	device={device}
+																	namespace="settings"
+																/>
+																<Button
+																	type="button"
+																	variant="ghost"
+																	size="icon-sm"
+																	disabled={isForgetting}
+																	aria-busy={isForgetting}
+																	aria-label={
+																		isForgetting
+																			? t(
+																					'common:settings.devices.removingDevice'
+																				)
+																			: t(
+																					'common:settings.devices.removeDevice'
+																				)
 																	}
-																}}
-															>
-																{isForgetting ? (
-																	<Loader2 className="w-4 h-4 animate-spin" />
-																) : (
-																	<Trash2 className="w-4 h-4" />
-																)}
-															</Button>
+																	onClick={() => {
+																		if (isForgetting) return
+																		setForgetPeerId(device.endpoint_id)
+																	}}
+																>
+																	{isForgetting ? (
+																		<Loader2 className="w-4 h-4 animate-spin" />
+																	) : (
+																		<Trash2 className="w-4 h-4" />
+																	)}
+																</Button>
+															</div>
 														</div>
 													</li>
 												)
@@ -669,6 +740,36 @@ export function DevicesSettings() {
 							onClose={() => setRenamePeerId(null)}
 							onSave={async (name) => {
 								await renameDevice(renamePeer.endpoint_id, name)
+							}}
+						/>
+					) : null}
+					{trustPeer ? (
+						<ConfirmModal
+							open
+							title={t('common:settings.devices.trustConfirmTitle', {
+								name: trustPeer.display_name,
+							})}
+							description={t('common:settings.devices.trustConfirmBody')}
+							confirmLabel={t('common:settings.devices.trustConfirmAction')}
+							errorTitle={t('common:settings.devices.trustFailed')}
+							onClose={() => setTrustPeerId(null)}
+							onConfirm={async () => {
+								await trustDevice(trustPeer.endpoint_id, true)
+							}}
+						/>
+					) : null}
+					{forgetPeer ? (
+						<ConfirmModal
+							open
+							title={t('common:settings.devices.removeConfirmTitle', {
+								name: forgetPeer.display_name,
+							})}
+							description={t('common:settings.devices.removeConfirmBody')}
+							confirmLabel={t('common:settings.devices.removeConfirmAction')}
+							errorTitle={t('common:settings.devices.removeFailed')}
+							onClose={() => setForgetPeerId(null)}
+							onConfirm={async () => {
+								await handleForget(forgetPeer.endpoint_id)
 							}}
 						/>
 					) : null}
