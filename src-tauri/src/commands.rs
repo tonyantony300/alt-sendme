@@ -524,13 +524,21 @@ pub async fn receive_file(
     // the connection exists. `resumable_store_path` is set at open, not finalize
     // — a crash never reaches finalize, stranding the partial store.
     let sender_peer = sender_peer_from_ticket(&ticket, &app_state_node(&state).await);
+    // Android receives into app-private staging and only learns where the files
+    // really land when the export finishes, so the row stays silent until
+    // `note_destination` fills it in. Recording staging here would leave every
+    // failed export pointing at a path no file manager can reach.
+    #[cfg(target_os = "android")]
+    let recorded_save_path: Option<String> = None;
+    #[cfg(not(target_os = "android"))]
+    let recorded_save_path = Some(output_dir.to_string_lossy().to_string());
     let (boxed_handle, recorder) = build_emitter(
         &app_handle,
         &history,
         TransferDirection::Receive,
         TransferContext {
             blob_hash: incoming_hash.clone(),
-            save_path: Some(output_dir.to_string_lossy().to_string()),
+            save_path: recorded_save_path,
             resumable_store_path: incoming_hash
                 .as_deref()
                 .map(|hash| partial_store_path_for(hash).to_string_lossy().to_string()),
@@ -2087,6 +2095,26 @@ mod tests {
     }
 
     #[test]
+    fn a_name_that_escapes_the_destination_is_not_followed() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        let outside = dir.path().join("outside");
+        let dest = dir.path().join("dest");
+        fs::create_dir_all(&outside).expect("mkdir");
+        fs::create_dir_all(&dest).expect("mkdir");
+        fs::write(outside.join("secret.txt"), b"x").expect("write");
+        fs::write(dest.join("kept.txt"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dest.to_string_lossy(),
+                &["kept.txt".to_string(), "../outside/secret.txt".to_string()],
+            ),
+            Some(dest.join("kept.txt")),
+            "only the name that stays under the destination counts"
+        );
+    }
+
+    #[test]
     fn a_destination_that_is_gone_opens_nothing() {
         let dir = tempfile::TempDir::new().expect("tempdir");
         let missing = dir.path().join("removed");
@@ -2242,6 +2270,16 @@ fn resolve_open_target(save_path: &str, file_names: &[String]) -> Option<PathBuf
 
     let existing: Vec<PathBuf> = file_names
         .iter()
+        // A recorded name is a relative path under the destination. Anything
+        // absolute or climbing out of it did not come from this transfer, and
+        // would drag the common ancestor below `base`.
+        .filter(|name| {
+            let name = Path::new(name.as_str());
+            name.is_relative()
+                && name
+                    .components()
+                    .all(|part| !matches!(part, std::path::Component::ParentDir))
+        })
         .map(|name| base.join(name))
         .filter(|path| path.exists())
         .collect();
