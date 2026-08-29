@@ -554,7 +554,6 @@ export function useReceiver(): UseReceiverReturn {
 					fileName: displayName,
 					fileSize: transferProgressRef.current?.totalBytes || 0,
 					duration,
-					writeMs: completion?.exportMs,
 					startTime: transferStartTimeRef.current || endTime,
 					endTime,
 					downloadPath: savePathRef.current,

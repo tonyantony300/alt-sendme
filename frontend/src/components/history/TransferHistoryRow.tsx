@@ -115,15 +115,25 @@ export function TransferHistoryRow({
 	// read two ways on Android.
 	const savePath = formatReceiveSavePath(record.savePath)
 	const canOpen = canOpenTransfer(record)
-	const writeTime = formatTransferDuration(record.exportMs)
 	// Whether the panel has anything *besides* delete to show.
 	const hasDetails = Boolean(
-		duration ||
-			speed ||
-			writeTime ||
-			savePath ||
-			record.error ||
-			record.conflictCount > 0
+		duration || speed || savePath || record.error || record.conflictCount > 0
+	)
+
+	// Destructive, so it rides at the end of the saved-to line rather than
+	// sitting near the row's own controls. Without a path it has no line to
+	// share and falls back to one of its own.
+	const removeButton = (
+		<Button
+			variant="ghost"
+			size="icon-xs"
+			className="-my-1 shrink-0"
+			disabled={isBusy}
+			aria-label={t('common:history.row.remove')}
+			onClick={() => onRemove(record)}
+		>
+			<Trash2 className="h-3.5 w-3.5" />
+		</Button>
 	)
 
 	return (
@@ -235,20 +245,15 @@ export function TransferHistoryRow({
 									<dd>{speed}</dd>
 								</div>
 							)}
-							{writeTime && (
-								<div>
-									<dt className="text-muted-foreground">
-										{t('common:history.row.writeTime')}
-									</dt>
-									<dd>{writeTime}</dd>
-								</div>
-							)}
 							{savePath && (
 								<div className="min-w-0 sm:col-span-2">
 									<dt className="text-muted-foreground">
 										{t('common:history.row.savedTo')}
 									</dt>
-									<dd className="break-all">{savePath}</dd>
+									<dd className="flex items-start gap-2">
+										<span className="min-w-0 flex-1 break-all">{savePath}</span>
+										{removeButton}
+									</dd>
 								</div>
 							)}
 							{record.conflictCount > 0 && (
@@ -271,18 +276,7 @@ export function TransferHistoryRow({
 						</dl>
 					)}
 
-					{/* Destructive, so it sits away from the row's own controls. */}
-					<div className="flex justify-end">
-						<Button
-							variant="ghost"
-							size="icon-xs"
-							disabled={isBusy}
-							aria-label={t('common:history.row.remove')}
-							onClick={() => onRemove(record)}
-						>
-							<Trash2 className="h-3.5 w-3.5" />
-						</Button>
-					</div>
+					{!savePath && <div className="flex justify-end">{removeButton}</div>}
 				</div>
 			)}
 		</FramePanel>
