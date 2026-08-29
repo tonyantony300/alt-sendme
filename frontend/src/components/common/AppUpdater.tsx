@@ -51,10 +51,12 @@ export function AppUpdater() {
 
 	return (
 		// Deliberately not a dialog: no backdrop, no focus trap, no viewport. The
-		// rest of the window stays clickable while this sits in the corner.
+		// rest of the window stays clickable while this sits in the corner. It
+		// clears the footer rather than covering it — on a phone the footer
+		// carries the safe-area inset, so the nav would be underneath.
 		<section
 			aria-label={t('updater.newUpdateTitle')}
-			className="fixed bottom-3 left-3 z-40 w-[22rem] max-w-[calc(100vw-1.5rem)] rounded-xl border bg-popover p-4 text-popover-foreground shadow-lg"
+			className="fixed bottom-[calc(3.25rem+var(--safe-area-bottom))] left-3 z-40 w-[22rem] max-w-[calc(100vw-1.5rem)] rounded-xl border bg-popover p-4 text-popover-foreground shadow-lg"
 		>
 			{canDismiss && (
 				<Button

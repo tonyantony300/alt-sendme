@@ -46,3 +46,15 @@ export const IS_FLATPAK = IS_TAURI && import.meta.env.VITE_IS_FLATPAK === 'true'
  */
 export const IS_ANDROID_UPDATE_CHECK_ENABLED =
 	IS_ANDROID && import.meta.env.VITE_ANDROID_UPDATE_CHECK === 'true'
+
+/**
+ * Whether this build has an in-app updater at all. Flatpak updates through
+ * `flatpak update` and a Play build through Play, so neither has anything to
+ * check. The periodic check and every surface that displays it share this, so
+ * they cannot drift — a check running with nothing to show it is how the
+ * Android updater ended up unreachable.
+ *
+ * Windows portable is excluded too, but only at runtime (`useIsWindowsPortable`).
+ */
+export const IS_UPDATER_AVAILABLE =
+	(IS_DESKTOP && !IS_FLATPAK) || IS_ANDROID_UPDATE_CHECK_ENABLED

@@ -16,11 +16,10 @@ import { useAutostartFirstRun } from '../../hooks/useAutostartFirstRun'
 import { useTrayLabels } from '../../hooks/useTrayLabels'
 import {
 	IS_ANDROID,
-	IS_FLATPAK,
 	IS_LINUX,
 	IS_MACOS,
 	IS_PAIRING_CAPABLE,
-	IS_TAURI,
+	IS_UPDATER_AVAILABLE,
 	IS_WEB,
 	IS_WINDOWS,
 } from '@/lib/platform'
@@ -32,9 +31,9 @@ export function RootLayout() {
 	useAutostartFirstRun()
 	return (
 		<ReceiverProvider>
-			{IS_TAURI && !IS_ANDROID && !isWindowsPortable && !IS_FLATPAK && (
-				<AppUpdater />
-			)}
+			{/* Mounts the periodic check as well as the banner, so this gate decides
+			    whether the app checks for updates at all — Android included. */}
+			{IS_UPDATER_AVAILABLE && !isWindowsPortable && <AppUpdater />}
 			{IS_WINDOWS && <WindowsContextMenuSync />}
 			{IS_PAIRING_CAPABLE && <DeviceNodeSync />}
 			{IS_PAIRING_CAPABLE && <PairedInviteDialog />}
