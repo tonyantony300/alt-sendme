@@ -101,6 +101,10 @@ pub struct TransferRecord {
     pub peer_count: u32,
     #[serde(default)]
     pub save_path: Option<String>,
+    /// Android only: the SAF tree the files were exported into. `save_path` is
+    /// readable but not addressable, so opening the folder later needs this.
+    #[serde(default)]
+    pub save_uri: Option<String>,
     #[serde(default)]
     pub conflict_count: u32,
     #[serde(default)]
@@ -131,6 +135,7 @@ impl TransferRecord {
             peer: None,
             peer_count: 0,
             save_path: None,
+            save_uri: None,
             conflict_count: 0,
             resumable_store_path: None,
             error: None,

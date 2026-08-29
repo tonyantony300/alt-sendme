@@ -28,6 +28,16 @@ export function getTransferTempData(id: string): Promise<TransferTempData> {
 	return invoke<TransferTempData>('get_transfer_temp_data', { id })
 }
 
+/**
+ * Where a row's files are now, or `null` when nothing it recorded is still
+ * there. Resolved against the filesystem, so a folder emptied after the
+ * transfer answers honestly. Desktop only — Android paths are labels, not
+ * locations, so callers there open through `history-open-target` instead.
+ */
+export function transferOpenTarget(id: string): Promise<string | null> {
+	return invoke<string | null>('transfer_open_target', { id })
+}
+
 /** Frees the partial store while keeping the history row. */
 export function clearTransferTempData(id: string): Promise<void> {
 	return invoke<void>('clear_transfer_temp_data', { id })

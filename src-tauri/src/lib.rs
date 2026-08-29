@@ -142,6 +142,7 @@ pub fn run() {
             cancel_receive,
             list_transfer_history,
             delete_transfer_record,
+            transfer_open_target,
             clear_transfer_history,
             get_transfer_temp_data,
             clear_transfer_temp_data,

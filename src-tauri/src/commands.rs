@@ -450,6 +450,7 @@ pub async fn receive_file(
     ticket: String,
     output_path: String,
     tree_uri: Option<String>,
+    tree_display_path: Option<String>,
     sub_folder: Option<String>,
     relay: Option<RelayConfigArg>,
     discovery: Option<DiscoveryConfigArg>,
@@ -480,6 +481,12 @@ pub async fn receive_file(
         .filter(|name| !name.is_empty())
         .map(|name| engine::sanitize_folder_name(name, &folder_fallback));
 
+    #[cfg(target_os = "android")]
+    let (output_dir, export_root) = {
+        let _ = &output_path;
+        resolve_android_receive_dirs(&app_handle, sanitized_sub_folder.as_deref())?
+    };
+    #[cfg(not(target_os = "android"))]
     let output_dir =
         resolve_receive_output_dir(&app_handle, output_path, sanitized_sub_folder.as_deref())?;
     let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
@@ -591,11 +598,29 @@ pub async fn receive_file(
         Ok(r) => {
             #[cfg(target_os = "android")]
             {
-                finalize_android_receive(&app_handle, &output_dir, tree_uri.as_deref())?;
+                let destination = finalize_android_receive(
+                    &app_handle,
+                    AndroidExport {
+                        root: &export_root,
+                        files_dir: &output_dir,
+                        tree_uri: tree_uri.as_deref(),
+                        tree_display_path: tree_display_path.as_deref(),
+                    },
+                )?;
+                // History opened the row against staging, which the export just
+                // emptied. The subfolder is part of the answer: the exporter
+                // recreates the staging tree under the destination.
+                if let (Some(recorder), Some(destination)) = (recorder.as_ref(), destination) {
+                    let display = match sanitized_sub_folder.as_deref() {
+                        Some(name) => format!("{}/{name}", destination.display),
+                        None => destination.display,
+                    };
+                    recorder.note_destination(display, destination.uri);
+                }
             }
             #[cfg(not(target_os = "android"))]
             {
-                let _ = tree_uri;
+                let _ = (tree_uri, tree_display_path);
             }
             Ok(r.message)
         }
@@ -610,18 +635,41 @@ pub async fn receive_file(
     }
 }
 
+/// Where an export put the files: `display` is what history shows, `uri` is the
+/// SAF tree Open reopens. MediaStore has no tree — its relative path is enough
+/// to raise a folder intent.
+#[cfg(target_os = "android")]
+struct ExportDestination {
+    display: String,
+    uri: Option<String>,
+}
+
+/// What an Android export needs to know. `root` and `files_dir` differ only when
+/// an auto-accepted transfer filed itself under a per-device subfolder: the copy
+/// walks the root so that subfolder is recreated at the destination, while a
+/// failed copy leaves the files sitting in `files_dir`.
+#[cfg(target_os = "android")]
+struct AndroidExport<'a> {
+    root: &'a Path,
+    files_dir: &'a Path,
+    tree_uri: Option<&'a str>,
+    tree_display_path: Option<&'a str>,
+}
+
 /// Move a finished receive out of staging, bracketed by a completion event.
 ///
 /// `receive-completed` fires before this re-copies the bytes out, so the
 /// success screen is up while the destination doesn't exist yet. Emitting on
 /// the way out gives the UI one signal for "the files are where they belong".
+///
+/// Returns the human-readable destination, or `None` when the files stayed in
+/// staging — then the path recorded at open is already the truthful one.
 #[cfg(target_os = "android")]
 fn finalize_android_receive(
     app_handle: &tauri::AppHandle,
-    staging_dir: &Path,
-    tree_uri: Option<&str>,
-) -> Result<(), String> {
-    let result = export_android_receive(app_handle, staging_dir, tree_uri);
+    export: AndroidExport<'_>,
+) -> Result<Option<ExportDestination>, String> {
+    let result = export_android_receive(app_handle, export);
     let _ = app_handle.emit("receive-export-finished", ());
     result
 }
@@ -629,15 +677,15 @@ fn finalize_android_receive(
 #[cfg(target_os = "android")]
 fn export_android_receive(
     app_handle: &tauri::AppHandle,
-    staging_dir: &Path,
-    tree_uri: Option<&str>,
-) -> Result<(), String> {
+    export: AndroidExport<'_>,
+) -> Result<Option<ExportDestination>, String> {
     use tauri_plugin_native_utils::{ExportToTreeArgs, NativeUtilsExt};
 
-    let tree_uri = tree_uri.map(str::trim).filter(|uri| !uri.is_empty());
+    let staging_dir = export.root;
+    let tree_uri = export.tree_uri.map(str::trim).filter(|uri| !uri.is_empty());
 
     let Some(tree_uri) = tree_uri else {
-        return finalize_android_media_store_receive(app_handle, staging_dir);
+        return finalize_android_media_store_receive(app_handle, staging_dir, export.files_dir);
     };
 
     let export_result = app_handle.native_utils().export_to_tree(ExportToTreeArgs {
@@ -659,13 +707,22 @@ fn export_android_receive(
                     e
                 );
             }
-            Ok(())
+            // Only the picker knows the tree URI's readable form; without it
+            // there is nothing truthful to show.
+            Ok(export
+                .tree_display_path
+                .map(str::trim)
+                .filter(|path| !path.is_empty())
+                .map(|display| ExportDestination {
+                    display: display.to_string(),
+                    uri: Some(tree_uri.to_string()),
+                }))
         }
         Err(e) => {
             tracing::warn!("SAF export failed, keeping app-private files: {e}");
-            emit_receive_download_fallback(app_handle, staging_dir, "saf");
+            emit_receive_download_fallback(app_handle, export.files_dir, "saf");
             // Transfer itself succeeded — files remain in staging.
-            Ok(())
+            Ok(None)
         }
     }
 }
@@ -678,7 +735,8 @@ fn export_android_receive(
 fn finalize_android_media_store_receive(
     app_handle: &tauri::AppHandle,
     staging_dir: &Path,
-) -> Result<(), String> {
+    files_dir: &Path,
+) -> Result<Option<ExportDestination>, String> {
     use tauri_plugin_native_utils::{
         ExportToMediaStoreArgs, NativeUtilsExt, MEDIA_STORE_UNSUPPORTED,
     };
@@ -709,7 +767,10 @@ fn finalize_android_media_store_receive(
                 "uris": result.uris,
             });
             let _ = app_handle.emit("receive-download-mediastore", payload);
-            Ok(())
+            Ok(Some(ExportDestination {
+                display: result.display_path,
+                uri: None,
+            }))
         }
         Err(e) => {
             let message = e.to_string();
@@ -719,8 +780,8 @@ fn finalize_android_media_store_receive(
                 tracing::warn!("MediaStore export failed, keeping app-private files: {message}");
             }
             // Transfer itself succeeded — files remain in staging.
-            emit_receive_download_fallback(app_handle, staging_dir, "private");
-            Ok(())
+            emit_receive_download_fallback(app_handle, files_dir, "private");
+            Ok(None)
         }
     }
 }
@@ -734,49 +795,52 @@ fn emit_receive_download_fallback(app_handle: &tauri::AppHandle, staging_dir: &P
     let _ = app_handle.emit("receive-download-fallback", payload);
 }
 
+/// Android writes a receive into app-private staging and copies it out once the
+/// transfer finishes. Both exporters recreate each file's path *relative to the
+/// directory they are handed*, so the staging root is returned alongside the
+/// write dir: exporting from the root is what lets a per-device subfolder
+/// survive the copy instead of collapsing into the destination.
+#[cfg(target_os = "android")]
+fn resolve_android_receive_dirs(
+    app_handle: &tauri::AppHandle,
+    sub_folder: Option<&str>,
+) -> Result<(PathBuf, PathBuf), String> {
+    let root = android_staging_receive_dir(app_handle)?;
+    let output_dir = match sub_folder {
+        Some(name) => root.join(name),
+        None => root.clone(),
+    };
+    Ok((output_dir, root))
+}
+
+#[cfg(not(target_os = "android"))]
 fn resolve_receive_output_dir(
     app_handle: &tauri::AppHandle,
     output_path: String,
     sub_folder: Option<&str>,
 ) -> Result<PathBuf, String> {
-    #[cfg(target_os = "android")]
-    {
-        let _ = output_path;
-        let staging = android_staging_receive_dir(app_handle)?;
-        // Both export paths walk the staging dir and recreate each file's
-        // relative path, so a subdirectory here surfaces under the SAF tree or
-        // `Download/DashBeam` with no Kotlin change.
-        return Ok(match sub_folder {
-            Some(name) => staging.join(name),
-            None => staging,
-        });
-    }
+    let base = PathBuf::from(output_path.trim());
+    let base = if base.as_os_str().is_empty() {
+        fallback_receive_dir(app_handle)?
+    } else {
+        base
+    };
+    // `ensure_dir_writable` calls `create_dir_all`, so the per-device folder
+    // is created here on first use.
+    let output_dir = match sub_folder {
+        Some(name) => base.join(name),
+        None => base,
+    };
 
-    #[cfg(not(target_os = "android"))]
-    {
-        let base = PathBuf::from(output_path.trim());
-        let base = if base.as_os_str().is_empty() {
-            fallback_receive_dir(app_handle)?
-        } else {
-            base
-        };
-        // `ensure_dir_writable` calls `create_dir_all`, so the per-device folder
-        // is created here on first use.
-        let output_dir = match sub_folder {
-            Some(name) => base.join(name),
-            None => base,
-        };
-
-        match ensure_dir_writable(&output_dir) {
-            Ok(()) => Ok(output_dir),
-            Err(error) => {
-                tracing::warn!(
-                    "Receive output dir not writable ({}): {}",
-                    output_dir.display(),
-                    error
-                );
-                Err("Selected download folder is not writable".to_string())
-            }
+    match ensure_dir_writable(&output_dir) {
+        Ok(()) => Ok(output_dir),
+        Err(error) => {
+            tracing::warn!(
+                "Receive output dir not writable ({}): {}",
+                output_dir.display(),
+                error
+            );
+            Err("Selected download folder is not writable".to_string())
         }
     }
 }
@@ -1901,6 +1965,93 @@ mod tests {
         ))
     }
 
+    #[test]
+    fn a_single_received_file_opens_the_file_itself() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::write(dir.path().join("photo.jpg"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(&dir.path().to_string_lossy(), &["photo.jpg".to_string()],),
+            Some(dir.path().join("photo.jpg"))
+        );
+    }
+
+    #[test]
+    fn a_received_folder_opens_the_folder_not_the_download_dir() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::create_dir(dir.path().join("Photos")).expect("mkdir");
+        fs::write(dir.path().join("Photos/a.jpg"), b"x").expect("write");
+        fs::write(dir.path().join("Photos/b.jpg"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dir.path().to_string_lossy(),
+                &["Photos/a.jpg".to_string(), "Photos/b.jpg".to_string()],
+            ),
+            Some(dir.path().join("Photos")),
+            "the transfer's own folder is a better answer than everything around it"
+        );
+    }
+
+    #[test]
+    fn loose_files_open_the_directory_that_holds_them() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::write(dir.path().join("a.txt"), b"x").expect("write");
+        fs::write(dir.path().join("b.txt"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dir.path().to_string_lossy(),
+                &["a.txt".to_string(), "b.txt".to_string()],
+            ),
+            Some(dir.path().to_path_buf())
+        );
+    }
+
+    #[test]
+    fn a_file_deleted_after_the_transfer_has_nothing_to_open() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+
+        assert_eq!(
+            resolve_open_target(&dir.path().to_string_lossy(), &["gone.jpg".to_string()],),
+            None,
+            "the folder surviving is not the same as the files surviving"
+        );
+    }
+
+    #[test]
+    fn a_partly_deleted_transfer_still_opens_what_is_left() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::write(dir.path().join("kept.txt"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dir.path().to_string_lossy(),
+                &["kept.txt".to_string(), "gone.txt".to_string()],
+            ),
+            Some(dir.path().join("kept.txt"))
+        );
+    }
+
+    #[test]
+    fn a_row_without_file_names_falls_back_to_its_folder() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+
+        assert_eq!(
+            resolve_open_target(&dir.path().to_string_lossy(), &[]),
+            Some(dir.path().to_path_buf())
+        );
+    }
+
+    #[test]
+    fn a_destination_that_is_gone_opens_nothing() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        let missing = dir.path().join("removed");
+
+        assert_eq!(resolve_open_target(&missing.to_string_lossy(), &[]), None);
+        assert_eq!(resolve_open_target("", &["a.txt".to_string()]), None);
+    }
+
     /// Locks the seam with the frontend's `useAppSettingStore`, which writes
     /// this `settings.json` layout.
     #[test]
@@ -2031,6 +2182,72 @@ pub async fn delete_transfer_record(
         engine::reclaim_partial(&record, &engine::storage::temp_dir());
     }
     Ok(())
+}
+
+/// Where a row's files are now, or `None` when nothing it recorded is still
+/// there. Resolved against the filesystem rather than trusted from the record:
+/// a destination can be emptied, moved or deleted long after the transfer.
+///
+/// One surviving file is opened directly; several are shown in the deepest
+/// folder that contains them, so a received directory opens itself instead of
+/// everything around it.
+fn resolve_open_target(save_path: &str, file_names: &[String]) -> Option<PathBuf> {
+    let base = PathBuf::from(save_path.trim());
+    if base.as_os_str().is_empty() {
+        return None;
+    }
+
+    let existing: Vec<PathBuf> = file_names
+        .iter()
+        .map(|name| base.join(name))
+        .filter(|path| path.exists())
+        .collect();
+
+    match existing.as_slice() {
+        // Nothing was recorded to check, so the folder is the whole answer.
+        [] if file_names.is_empty() => base.exists().then_some(base),
+        [] => None,
+        [only] => Some(only.clone()),
+        [first, rest @ ..] => {
+            let mut common = first.parent()?.to_path_buf();
+            for path in rest {
+                let Some(parent) = path.parent() else {
+                    return Some(base);
+                };
+                while !parent.starts_with(&common) {
+                    match common.parent() {
+                        Some(up) => common = up.to_path_buf(),
+                        None => return Some(base),
+                    }
+                }
+            }
+            Some(common)
+        }
+    }
+}
+
+/// Resolves what a history row's "Open" should reveal. `None` means the files
+/// are gone — the UI says so rather than opening an empty folder.
+#[tauri::command]
+pub async fn transfer_open_target(
+    id: String,
+    history: State<'_, Arc<TransferHistoryStore>>,
+) -> Result<Option<String>, String> {
+    let record = history
+        .list()
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .find(|record| record.id == id);
+
+    let Some(record) = record else {
+        return Ok(None);
+    };
+    let Some(save_path) = record.save_path.as_deref() else {
+        return Ok(None);
+    };
+
+    Ok(resolve_open_target(save_path, &record.file_names)
+        .map(|path| path.to_string_lossy().to_string()))
 }
 
 #[tauri::command]

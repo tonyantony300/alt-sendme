@@ -276,6 +276,25 @@ impl HistoryRecordingEmitter {
         }
     }
 
+    /// Corrects the destination after the row is closed. Android finishes a
+    /// receive into app-private staging and only then copies the files out to
+    /// the picked folder or `Download/DashBeam`, so the path known at open is
+    /// never where they come to rest.
+    // Only Android exports after the fact; desktop writes to its destination.
+    #[cfg_attr(not(target_os = "android"), allow(dead_code))]
+    pub fn note_destination(&self, path: String, uri: Option<String>) {
+        let Some(id) = self.lock_row().id.clone() else {
+            return;
+        };
+        let result = self.store.update(&id, |record| {
+            record.save_path = Some(path);
+            record.save_uri = uri;
+        });
+        if let Err(e) = result {
+            tracing::warn!("failed to record transfer destination: {e}");
+        }
+    }
+
     fn note_event(&self, event_name: &str, payload: Option<&str>) {
         match event_name {
             "transfer-started" | "receive-started" => self.open_row(),
@@ -684,5 +703,48 @@ mod tests {
         let shape = ReceivedShape::from_file_names(&[]);
         assert_eq!(shape.root_name, "");
         assert_eq!(shape.item_count, 0);
+    }
+
+    #[test]
+    fn an_exported_receive_records_where_the_files_actually_landed() {
+        let dir = TempDir::new().expect("tempdir");
+        let (store, emitter) = recorder(
+            &dir,
+            TransferDirection::Receive,
+            receive_context("/tmp/.dashbeam-recv-hash"),
+        );
+
+        emitter.emit_event("receive-started").expect("emit");
+        emitter
+            .emit_event_with_payload("receive-completed", r#"{"bytes":8192}"#)
+            .expect("emit");
+        // Android exports out of staging after the row is closed.
+        emitter.note_destination(
+            "Download/Work".to_string(),
+            Some("content://tree/work".to_string()),
+        );
+
+        let row = &store.list().expect("list")[0];
+        assert_eq!(row.save_path.as_deref(), Some("Download/Work"));
+        assert_eq!(
+            row.save_uri.as_deref(),
+            Some("content://tree/work"),
+            "Open needs the tree the files went to, not the one settings holds now"
+        );
+    }
+
+    #[test]
+    fn a_destination_is_only_recorded_for_a_row_that_exists() {
+        let dir = TempDir::new().expect("tempdir");
+        let (store, emitter) = recorder(
+            &dir,
+            TransferDirection::Receive,
+            receive_context("/tmp/.dashbeam-recv-hash"),
+        );
+
+        // No `receive-started`, so nothing was ever opened.
+        emitter.note_destination("Download/DashBeam".to_string(), None);
+
+        assert!(store.list().expect("list").is_empty());
     }
 }

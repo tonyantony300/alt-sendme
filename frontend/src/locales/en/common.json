@@ -585,7 +585,15 @@
 			"error": "What went wrong",
 			"toggleDetails": "Show details",
 			"conflicts": "{{count}} files were renamed to avoid overwriting existing ones.",
-			"remove": "Remove from history"
+			"remove": "Remove from history",
+			"removeConfirmTitle": "Remove this transfer?",
+			"removeConfirmBody": "This removes the entry from your history. Files you already received stay on this device.",
+			"removeConfirmBodyResumable": "This removes the entry from your history and frees the {{size}} of leftover partial data, so this transfer can no longer be resumed. Files you already received stay on this device.",
+			"open": "Open",
+			"openFailed": "Could not open that transfer",
+			"missingTitle": "Files are no longer there",
+			"missingBody": "Nothing from this transfer is left in {{path}}. It was moved or deleted after the transfer finished.",
+			"unknownDestination": "its destination"
 		},
 		"temp": {
 			"cleared": "Space freed",
