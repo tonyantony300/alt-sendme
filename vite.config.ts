@@ -33,6 +33,9 @@ export default defineConfig(({ mode }) => {
 			'import.meta.env.VITE_IS_FLATPAK': JSON.stringify(
 				process.env.VITE_IS_FLATPAK ?? ''
 			),
+			'import.meta.env.VITE_ANDROID_UPDATE_CHECK': JSON.stringify(
+				process.env.VITE_ANDROID_UPDATE_CHECK ?? ''
+			),
 		},
 		// 1. prevent vite from obscuring rust errors
 		clearScreen: false,

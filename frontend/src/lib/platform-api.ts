@@ -286,6 +286,8 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return null as T
 		case 'is_windows_portable':
 			return false as T
+		case 'check_android_update':
+			return null as T
 		case 'autostart_is_enabled':
 			return null as T
 		case 'autostart_set':

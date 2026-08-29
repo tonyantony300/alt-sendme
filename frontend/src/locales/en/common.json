@@ -505,7 +505,9 @@
 		"restartFailed": "Restart Failed",
 		"restartFailedDesc": "Failed to restart. Quit and reopen DashBeam to finish updating.",
 		"cancel": "Cancel",
-		"dismiss": "Dismiss"
+		"dismiss": "Dismiss",
+		"download": "Download",
+		"sideloadHint": "Installs by downloading the new APK from the release page."
 	},
 	"android": {
 		"preparingFile": "Preparing file..."

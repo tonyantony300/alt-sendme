@@ -1165,7 +1165,50 @@ pub async fn export_debug_bundle(
         Err(error) => out.push_str(&format!("(failed to read logs: {error})\n")),
     }
 
-    std::fs::write(&dest_path, out).map_err(|e| format!("Failed to write {dest_path}: {e}"))
+    write_bundle(&app, dest_path, out)
+}
+
+/// Android's save dialog runs `ACTION_CREATE_DOCUMENT`, which creates the file
+/// and hands back a `content://` URI — not a path. Writing it with `std::fs`
+/// fails and leaves the 0-byte document the dialog just created.
+#[allow(unused_variables)]
+fn write_bundle(app: &tauri::AppHandle, dest_path: String, contents: String) -> Result<(), String> {
+    #[cfg(target_os = "android")]
+    if dest_path.starts_with("content://") {
+        use tauri_plugin_native_utils::{NativeUtilsExt, WriteTextToUriArgs};
+
+        return app
+            .native_utils()
+            .write_text_to_uri(WriteTextToUriArgs {
+                uri: dest_path,
+                contents,
+            })
+            .map_err(|e| format!("Failed to write diagnostics: {e}"));
+    }
+
+    std::fs::write(&dest_path, contents).map_err(|e| format!("Failed to write {dest_path}: {e}"))
+}
+
+/// Android cannot use the desktop updater plugin (it is `#[cfg(desktop)]`, and
+/// a Play build may not update itself), so this only reports a newer release
+/// and the UI hands the user to the release page.
+///
+/// The fetch goes through the Android plugin rather than `reqwest`: rustls
+/// verifies certificates via `rustls-platform-verifier`, which needs a JVM
+/// handshake this app never performs.
+#[cfg(target_os = "android")]
+#[tauri::command]
+pub async fn check_android_update(
+    app: tauri::AppHandle,
+) -> Result<Option<crate::android_update::AndroidUpdate>, String> {
+    use tauri_plugin_native_utils::NativeUtilsExt;
+
+    let body = app
+        .native_utils()
+        .fetch_update_manifest()
+        .map_err(|e| format!("Could not reach the update server: {e}"))?;
+
+    crate::android_update::parse_manifest(&body, &crate::version::get_app_version())
 }
 
 /// Helper function to calculate total size of a file or directory

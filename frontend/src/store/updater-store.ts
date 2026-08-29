@@ -17,12 +17,14 @@ export type UpdaterPhase =
 export interface UpdaterStoreApi {
 	phase: () => UpdaterPhase
 	version: () => string | null
+	/** Release page for builds that cannot install in place; null on desktop. */
+	downloadUrl: () => string | null
 	downloadedBytes: () => number
 	contentLength: () => number | null
 	dismissedVersion: () => string | null
 	progressRatio: () => number | null
 	bannerVisible: () => boolean
-	updateFound: (version: string) => void
+	updateFound: (version: string, downloadUrl?: string | null) => void
 	noUpdate: () => void
 	dismiss: () => void
 	startDownload: () => boolean
@@ -47,6 +49,7 @@ export function createUpdaterStore(
 ): UpdaterStoreApi {
 	let phase: UpdaterPhase = 'idle'
 	let version: string | null = null
+	let downloadUrl: string | null = null
 	let downloadedBytes = 0
 	let contentLength: number | null = null
 	let dismissedVersion: string | null = options.dismissedVersion ?? null
@@ -56,16 +59,18 @@ export function createUpdaterStore(
 		contentLength = null
 	}
 
-	const updateFound: UpdaterStoreApi['updateFound'] = (found) => {
+	const updateFound: UpdaterStoreApi['updateFound'] = (found, url = null) => {
 		// A periodic re-check must not restart a download that's already running.
 		if (phase !== 'idle' && phase !== 'available') return
 		version = found
+		downloadUrl = url
 		phase = 'available'
 	}
 
 	const noUpdate: UpdaterStoreApi['noUpdate'] = () => {
 		if (phase !== 'idle' && phase !== 'available') return
 		version = null
+		downloadUrl = null
 		phase = 'idle'
 		clearProgress()
 	}
@@ -85,6 +90,7 @@ export function createUpdaterStore(
 	return {
 		phase: () => phase,
 		version: () => version,
+		downloadUrl: () => downloadUrl,
 		downloadedBytes: () => downloadedBytes,
 		contentLength: () => contentLength,
 		dismissedVersion: () => dismissedVersion,
@@ -147,12 +153,13 @@ function writeDismissedVersion(value: string | null): void {
 type UpdaterState = {
 	phase: UpdaterPhase
 	version: string | null
+	downloadUrl: string | null
 	downloadedBytes: number
 	contentLength: number | null
 	dismissedVersion: string | null
 	progressRatio: number | null
 	bannerVisible: boolean
-	updateFound: (version: string) => void
+	updateFound: (version: string, downloadUrl?: string | null) => void
 	noUpdate: () => void
 	dismiss: () => void
 	startDownload: () => boolean
@@ -169,6 +176,7 @@ function snapshot(core: UpdaterStoreApi) {
 	return {
 		phase: core.phase(),
 		version: core.version(),
+		downloadUrl: core.downloadUrl(),
 		downloadedBytes: core.downloadedBytes(),
 		contentLength: core.contentLength(),
 		dismissedVersion: core.dismissedVersion(),
@@ -187,8 +195,8 @@ export const useUpdaterStore = create<UpdaterState>((set) => {
 
 	return {
 		...snapshot(core),
-		updateFound: (version) => {
-			core.updateFound(version)
+		updateFound: (version, downloadUrl) => {
+			core.updateFound(version, downloadUrl)
 			publish()
 		},
 		noUpdate: () => {

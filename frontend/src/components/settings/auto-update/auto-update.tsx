@@ -30,6 +30,7 @@ export function AutoUpdate() {
 	const downloadedBytes = useUpdaterStore((s) => s.downloadedBytes)
 	const contentLength = useUpdaterStore((s) => s.contentLength)
 	const progressRatio = useUpdaterStore((s) => s.progressRatio)
+	const downloadUrl = useUpdaterStore((s) => s.downloadUrl)
 
 	const checkForUpdates = useCheckForUpdatesMutation()
 	const { install, restart } = useInstallUpdate()
@@ -82,6 +83,9 @@ export function AutoUpdate() {
 					<p className="text-sm text-muted-foreground">
 						{phase === 'available' &&
 							t('updater.newVersionAvailableInline', { version })}
+						{phase === 'available' && downloadUrl
+							? ` ${t('updater.sideloadHint')}`
+							: null}
 						{phase === 'downloading' &&
 							t('updater.downloadingTitle', { version })}
 						{phase === 'installing' && t('updater.installingTitle')}
@@ -100,7 +104,7 @@ export function AutoUpdate() {
 					{phase === 'available' && (
 						<div className="flex justify-end">
 							<Button size="sm" onClick={() => void install()}>
-								{t('updater.updateNow')}
+								{downloadUrl ? t('updater.download') : t('updater.updateNow')}
 							</Button>
 						</div>
 					)}

@@ -7,7 +7,17 @@ import { RelayStatusSettings } from '../components/settings/relay-status'
 import { SystemTray } from '../components/settings/system-tray/system-tray'
 import { TransferHistorySettings } from '../components/settings/transfer-history'
 import { useTranslation } from '../i18n'
-import { IS_DESKTOP, IS_FLATPAK, IS_TAURI } from '@/lib/platform'
+import {
+	IS_ANDROID_UPDATE_CHECK_ENABLED,
+	IS_DESKTOP,
+	IS_FLATPAK,
+	IS_TAURI,
+} from '@/lib/platform'
+
+// Flatpak updates through `flatpak update`, and a Play Store build through
+// Play — neither has anything for this card to do.
+const UPDATER_AVAILABLE =
+	(IS_DESKTOP && !IS_FLATPAK) || IS_ANDROID_UPDATE_CHECK_ENABLED
 
 export function SettingGeneralPage() {
 	const { t } = useTranslation()
@@ -21,7 +31,7 @@ export function SettingGeneralPage() {
 			{IS_TAURI && <Notifications />}
 			{IS_DESKTOP && <SystemTray />}
 			{IS_TAURI && <TransferHistorySettings />}
-			{IS_TAURI && !IS_FLATPAK && <AutoUpdate />}
+			{UPDATER_AVAILABLE && <AutoUpdate />}
 			<DebugMode />
 		</>
 	)

@@ -123,3 +123,20 @@ impl<R: Runtime> NativeUtils<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn write_text_to_uri(&self, args: WriteTextToUriArgs) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("write_text_to_uri", args)
+            .map_err(Into::into)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    /// Returns the raw response body; the caller parses it.
+    pub fn fetch_update_manifest(&self) -> crate::Result<String> {
+        self.0
+            .run_mobile_plugin("fetch_update_manifest", ())
+            .map_err(Into::into)
+    }
+}

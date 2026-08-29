@@ -198,3 +198,32 @@ test('restarting moves to restarting', () => {
 	store.restarting()
 	assert.equal(store.phase(), 'restarting')
 })
+
+// Sideloaded Android cannot install in place, so the check carries the release
+// page the user is handed off to instead.
+test('updateFound records a download url when one is supplied', () => {
+	const store = createUpdaterStore()
+	store.updateFound('1.4.2', 'https://example.test/releases/tag/v1.4.2')
+	assert.equal(store.downloadUrl(), 'https://example.test/releases/tag/v1.4.2')
+})
+
+test('an update found without a url has none', () => {
+	const store = createUpdaterStore()
+	store.updateFound('1.4.2')
+	assert.equal(store.downloadUrl(), null)
+})
+
+test('noUpdate clears the download url', () => {
+	const store = createUpdaterStore()
+	store.updateFound('1.4.2', 'https://example.test/releases/tag/v1.4.2')
+	store.noUpdate()
+	assert.equal(store.downloadUrl(), null)
+})
+
+test('a re-check that is ignored keeps the existing download url', () => {
+	const store = createUpdaterStore()
+	store.updateFound('1.4.2', 'https://example.test/releases/tag/v1.4.2')
+	store.startDownload()
+	store.updateFound('1.4.2')
+	assert.equal(store.downloadUrl(), 'https://example.test/releases/tag/v1.4.2')
+})

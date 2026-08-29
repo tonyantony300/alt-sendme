@@ -89,3 +89,15 @@ impl<R: Runtime> NativeUtils<R> {
         Ok(())
     }
 }
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn write_text_to_uri(&self, _: WriteTextToUriArgs) -> crate::Result<()> {
+        Err(crate::Error::UnsupportedPlafrormError)
+    }
+}
+
+impl<R: Runtime> NativeUtils<R> {
+    pub fn fetch_update_manifest(&self) -> crate::Result<String> {
+        Err(crate::Error::UnsupportedPlafrormError)
+    }
+}

@@ -27,8 +27,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -56,6 +61,12 @@ class OpenDownloadFolderArgs {
 @InvokeArg
 class ExportToMediaStoreArgs {
     var sourceDir: String = ""
+}
+
+@InvokeArg
+class WriteTextToUriArgs {
+    var uri: String = ""
+    var contents: String = ""
 }
 
 @InvokeArg
@@ -92,6 +103,20 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         /** Documents provider backing the primary shared-storage volume. */
         private const val EXTERNAL_STORAGE_AUTHORITY =
             "com.android.externalstorage.documents"
+
+        /**
+         * The manifest the desktop updater already reads, kept here rather than
+         * taken as an argument so this cannot become a general-purpose fetch
+         * primitive for the webview. Mirrors
+         * `tauri.conf.json` -> `plugins.updater.endpoints`.
+         */
+        private const val LATEST_MANIFEST_URL =
+            "https://github.com/tonyantony300/dashbeam/releases/latest/download/latest.json"
+
+        private const val MANIFEST_TIMEOUT_MS = 15_000
+
+        /** Plenty for a manifest; stops a wrong URL from streaming into memory. */
+        private const val MANIFEST_MAX_BYTES = 512 * 1024
     }
 
     @Command
@@ -271,6 +296,101 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         } catch (e: Exception) {
             invoke.reject(e.message ?: "Failed to open the downloaded file")
         }
+    }
+
+    /**
+     * Write UTF-8 text to a SAF document URI. `ACTION_CREATE_DOCUMENT` (what
+     * the dialog plugin's `save()` runs) creates the file and returns a
+     * `content://` URI, which is not a path — `std::fs::write` on it fails and
+     * leaves the freshly created 0-byte document behind.
+     */
+    @Command
+    fun write_text_to_uri(invoke: Invoke) {
+        val args = invoke.parseArgs(WriteTextToUriArgs::class.java)
+        val uriString = args.uri.trim()
+        if (uriString.isEmpty()) {
+            return invoke.reject("No destination URI provided")
+        }
+
+        scope.launch {
+            try {
+                val stream = openForOverwrite(Uri.parse(uriString))
+                    ?: return@launch invoke.reject("Could not open $uriString for writing")
+                stream.use { it.write(args.contents.toByteArray(Charsets.UTF_8)) }
+                invoke.resolve()
+            } catch (e: SecurityException) {
+                invoke.reject(e.message ?: "No permission to write to the selected file")
+            } catch (e: Exception) {
+                invoke.reject(e.message ?: "Failed to write to the selected file")
+            }
+        }
+    }
+
+    /**
+     * Fetch the release manifest over Android's own TLS stack. Rust cannot do
+     * this here: reqwest verifies through `rustls-platform-verifier`, which
+     * needs a JVM handshake this app never performs. Rust parses the body.
+     */
+    @Command
+    fun fetch_update_manifest(invoke: Invoke) {
+        scope.launch {
+            var connection: HttpURLConnection? = null
+            try {
+                connection = (URL(LATEST_MANIFEST_URL).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = MANIFEST_TIMEOUT_MS
+                    readTimeout = MANIFEST_TIMEOUT_MS
+                    // github.com 302s release assets to another host; both
+                    // legs are https, so the built-in follower handles it.
+                    instanceFollowRedirects = true
+                    setRequestProperty("Accept", "application/json")
+                }
+
+                val status = connection.responseCode
+                if (status !in 200..299) {
+                    return@launch invoke.reject("Update manifest request failed ($status)")
+                }
+
+                val body = connection.inputStream.use { readBounded(it, MANIFEST_MAX_BYTES) }
+
+                invoke.resolveObject(body)
+            } catch (e: Exception) {
+                invoke.reject(e.message ?: "Could not reach the update server")
+            } finally {
+                connection?.disconnect()
+            }
+        }
+    }
+
+    /**
+     * "wt" truncates, which matters when the user picks an existing file to
+     * overwrite — plain "w" would leave the tail of anything longer behind.
+     * Not every documents provider implements the mode, so "w" is the fallback.
+     */
+    private fun openForOverwrite(uri: Uri): OutputStream? {
+        val resolver = activity.contentResolver
+        return try {
+            resolver.openOutputStream(uri, "wt")
+        } catch (_: IllegalArgumentException) {
+            resolver.openOutputStream(uri, "w")
+        } catch (_: UnsupportedOperationException) {
+            resolver.openOutputStream(uri, "w")
+        }
+    }
+
+    /** Read UTF-8 up to `limit` bytes, failing rather than truncating silently. */
+    private fun readBounded(input: InputStream, limit: Int): String {
+        val buffer = ByteArrayOutputStream()
+        val chunk = ByteArray(8 * 1024)
+        while (true) {
+            val read = input.read(chunk)
+            if (read == -1) break
+            if (buffer.size() + read > limit) {
+                throw IOException("Update manifest larger than $limit bytes")
+            }
+            buffer.write(chunk, 0, read)
+        }
+        return buffer.toString(Charsets.UTF_8.name())
     }
 
     /**

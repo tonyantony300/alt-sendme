@@ -35,3 +35,14 @@ export const IS_DESKTOP =
 export const IS_PAIRING_CAPABLE = IS_DESKTOP || IS_ANDROID
 
 export const IS_FLATPAK = IS_TAURI && import.meta.env.VITE_IS_FLATPAK === 'true'
+
+/**
+ * Android APKs are sideloaded from GitHub releases, so those builds check for
+ * a newer one and hand the user to the release page — they cannot install it
+ * themselves. Opt-in per build, because a Play Store build must not do this:
+ * Play forbids an app updating itself outside Play's own mechanism, and the
+ * Play copy is signed by a different key, so its users could not install the
+ * GitHub APK over it anyway. Only the APK release job sets this.
+ */
+export const IS_ANDROID_UPDATE_CHECK_ENABLED =
+	IS_ANDROID && import.meta.env.VITE_ANDROID_UPDATE_CHECK === 'true'

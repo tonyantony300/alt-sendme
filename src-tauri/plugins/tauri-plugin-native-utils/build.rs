@@ -6,9 +6,13 @@ const COMMANDS: &[&str] = &[
     "cancel_job",
     "export_to_tree",
     "open_download_folder",
+    "export_to_media_store",
+    "open_download_target",
     "get_window_insets",
     "start_presence_service",
     "stop_presence_service",
+    "write_text_to_uri",
+    "fetch_update_manifest",
 ];
 
 fn main() {

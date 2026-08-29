@@ -16,6 +16,7 @@ export function AppUpdater() {
 	const phase = useUpdaterStore((s) => s.phase)
 	const version = useUpdaterStore((s) => s.version)
 	const bannerVisible = useUpdaterStore((s) => s.bannerVisible)
+	const downloadUrl = useUpdaterStore((s) => s.downloadUrl)
 	const downloadedBytes = useUpdaterStore((s) => s.downloadedBytes)
 	const contentLength = useUpdaterStore((s) => s.contentLength)
 	const progressRatio = useUpdaterStore((s) => s.progressRatio)
@@ -112,7 +113,7 @@ export function AppUpdater() {
 						{t('updater.later')}
 					</Button>
 					<Button size="sm" onClick={() => void install()}>
-						{t('updater.updateNow')}
+						{downloadUrl ? t('updater.download') : t('updater.updateNow')}
 					</Button>
 				</div>
 			)}

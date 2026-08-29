@@ -343,6 +343,18 @@
           "markdownDescription": "Denies the export_to_tree command without any pre-configured scope."
         },
         {
+          "description": "Enables the fetch_update_manifest command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-fetch-update-manifest",
+          "markdownDescription": "Enables the fetch_update_manifest command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the fetch_update_manifest command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-fetch-update-manifest",
+          "markdownDescription": "Denies the fetch_update_manifest command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_window_insets command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-window-insets",
@@ -439,10 +451,22 @@
           "markdownDescription": "Denies the stop_presence_service command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`\n- `allow-start-presence-service`\n- `allow-stop-presence-service`",
+          "description": "Enables the write_text_to_uri command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-write-text-to-uri",
+          "markdownDescription": "Enables the write_text_to_uri command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the write_text_to_uri command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-write-text-to-uri",
+          "markdownDescription": "Denies the write_text_to_uri command without any pre-configured scope."
+        },
+        {
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`\n- `allow-start-presence-service`\n- `allow-stop-presence-service`\n- `allow-write-text-to-uri`\n- `allow-fetch-update-manifest`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`\n- `allow-start-presence-service`\n- `allow-stop-presence-service`"
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-select-download-folder`\n- `allow-select-send-document`\n- `allow-select-send-folder`\n- `allow-consume-share-intent`\n- `allow-cancel-job`\n- `allow-export-to-tree`\n- `allow-open-download-folder`\n- `allow-export-to-media-store`\n- `allow-open-download-target`\n- `allow-get-window-insets`\n- `allow-start-presence-service`\n- `allow-stop-presence-service`\n- `allow-write-text-to-uri`\n- `allow-fetch-update-manifest`"
         }
       ]
     }

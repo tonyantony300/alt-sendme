@@ -10,11 +10,39 @@ import { relaunch } from '@tauri-apps/plugin-process'
 import { check } from '@tauri-apps/plugin-updater'
 import { toastManager } from '../components/ui/toast'
 import { useTranslation } from '../i18n/react-i18next-compat'
-import { IS_WEB, IS_FLATPAK } from '../lib/platform'
+import {
+	IS_ANDROID_UPDATE_CHECK_ENABLED,
+	IS_MOBILE,
+	IS_WEB,
+	IS_FLATPAK,
+} from '../lib/platform'
+import { invoke } from '../lib/platform-api'
+import { openExternalUrl } from '../lib/openExternalUrl'
 import { useUpdaterStore } from '../store/updater-store'
 import { isWindowsPortableBuild } from './use-windows-portable'
 
-type UpdateInfo = Awaited<ReturnType<typeof check>>
+type TauriUpdate = NonNullable<Awaited<ReturnType<typeof check>>>
+
+/**
+ * What a sideloaded Android check yields: there is nothing to install, only a
+ * release page to open. Mirrors the `AndroidUpdate` the Rust command returns.
+ */
+type AndroidUpdate = {
+	version: string
+	notes: string
+	url: string
+}
+
+/**
+ * One shape for both paths. `handle` is the plugin's `Update`, present only
+ * where the app can install the release itself; `url` is set instead where it
+ * can only point at one.
+ */
+export type UpdateInfo = {
+	version: string
+	handle: TauriUpdate | null
+	url: string | null
+} | null
 
 /**
  * GitHub is polled on a timer rather than on every window focus. A refocus
@@ -23,7 +51,16 @@ type UpdateInfo = Awaited<ReturnType<typeof check>>
  */
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000
 
-async function checkForDesktopUpdate(): Promise<UpdateInfo> {
+async function checkForUpdate(): Promise<UpdateInfo> {
+	// The updater plugin is registered `#[cfg(desktop)]`, so calling it on
+	// mobile always rejects. Sideloaded Android asks GitHub directly instead.
+	if (IS_MOBILE) {
+		if (!IS_ANDROID_UPDATE_CHECK_ENABLED) return null
+		const update = await invoke<AndroidUpdate | null>('check_android_update')
+		return update
+			? { version: update.version, handle: null, url: update.url }
+			: null
+	}
 	// Flatpak builds omit the updater plugin.
 	if (IS_WEB || IS_FLATPAK) {
 		return null
@@ -33,7 +70,8 @@ async function checkForDesktopUpdate(): Promise<UpdateInfo> {
 	if (await isWindowsPortableBuild()) {
 		return null
 	}
-	return check()
+	const update = await check()
+	return update ? { version: update.version, handle: update, url: null } : null
 }
 
 export const updaterQueryKeys = {
@@ -45,7 +83,7 @@ export const updaterQueryOptions = {
 	checkUpdate: () =>
 		queryOptions({
 			queryKey: updaterQueryKeys.checkUpdate(),
-			queryFn: async () => checkForDesktopUpdate(),
+			queryFn: async () => checkForUpdate(),
 			retry: 1,
 			staleTime: CHECK_INTERVAL_MS,
 			refetchInterval: CHECK_INTERVAL_MS,
@@ -68,22 +106,14 @@ const useCheckUpdateQuery = (
 		'queryKey' | 'queryFn'
 	>
 ) => {
-	const { t } = useTranslation()
-
+	// Deliberately quiet: this is the unattended 6-hourly poll, and a toast for
+	// a transient network failure the user never asked about is pure noise. The
+	// manual "Check for updates" button reports its own failures.
+	// (The `meta.onError` this used to declare was dead code — react-query only
+	// calls that through a `QueryCache` handler, which is not configured.)
 	return useQuery({
 		...updaterQueryOptions.checkUpdate(),
 		...options,
-		meta: {
-			...(options?.meta || {}),
-			onError: (error: Error) => {
-				console.error('Failed to check for updates:', error)
-				toastManager.add({
-					title: t('updater.checkFailed'),
-					description: t('updater.checkFailedDesc'),
-					type: 'error',
-				})
-			},
-		},
 	})
 }
 
@@ -100,12 +130,13 @@ export const useUpdaterSync = (enabled: boolean) => {
 	const query = useCheckUpdateQuery({ enabled })
 	const { isSuccess } = query
 	const version = query.data?.version ?? null
+	const url = query.data?.url ?? null
 
 	useEffect(() => {
 		if (!isSuccess) return
-		if (version) updateFound(version)
+		if (version) updateFound(version, url)
 		else noUpdate()
-	}, [isSuccess, version, updateFound, noUpdate])
+	}, [isSuccess, version, url, updateFound, noUpdate])
 
 	return query
 }
@@ -117,11 +148,11 @@ export const useCheckForUpdatesMutation = () => {
 	const noUpdate = useUpdaterStore((s) => s.noUpdate)
 
 	return useMutation({
-		mutationFn: async () => checkForDesktopUpdate(),
+		mutationFn: async () => checkForUpdate(),
 		onSuccess: (update) => {
 			// Seed the cache so `install` reuses this handle instead of re-checking.
 			queryClient.setQueryData(updaterQueryKeys.checkUpdate(), update)
-			if (update) updateFound(update.version)
+			if (update) updateFound(update.version, update.url)
 			else noUpdate()
 		},
 		onError: (error: Error) => {
@@ -150,20 +181,27 @@ export const useInstallUpdate = () => {
 	const installFinished = useUpdaterStore((s) => s.installFinished)
 	const restarting = useUpdaterStore((s) => s.restarting)
 	const fail = useUpdaterStore((s) => s.fail)
+	const downloadUrl = useUpdaterStore((s) => s.downloadUrl)
 
 	const install = useCallback(async () => {
+		// Sideloaded Android can only point at the release; there is no download
+		// to own, and the update stays "available" until the user installs it.
+		if (downloadUrl) {
+			await openExternalUrl(downloadUrl)
+			return
+		}
 		// Whichever surface clicks first owns the download; the rest no-op.
 		if (!startDownload()) return
 		try {
 			const cached = queryClient.getQueryData<UpdateInfo>(
 				updaterQueryKeys.checkUpdate()
 			)
-			const update = cached ?? (await checkForDesktopUpdate())
-			if (!update) {
+			const update = cached ?? (await checkForUpdate())
+			if (!update?.handle) {
 				fail()
 				return
 			}
-			await update.downloadAndInstall((event) => {
+			await update.handle.downloadAndInstall((event) => {
 				if (event.event === 'Started') {
 					if (event.data.contentLength) {
 						setContentLength(event.data.contentLength)
@@ -187,6 +225,7 @@ export const useInstallUpdate = () => {
 	}, [
 		queryClient,
 		t,
+		downloadUrl,
 		startDownload,
 		setContentLength,
 		addProgress,

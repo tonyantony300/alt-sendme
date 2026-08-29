@@ -11,6 +11,7 @@ export function SettingSidebarUpdateAlert() {
 	const phase = useUpdaterStore((s) => s.phase)
 	const version = useUpdaterStore((s) => s.version)
 	const bannerVisible = useUpdaterStore((s) => s.bannerVisible)
+	const downloadUrl = useUpdaterStore((s) => s.downloadUrl)
 	const { install } = useInstallUpdate()
 
 	// Only speaks up for an update the banner is no longer showing — i.e. one
@@ -29,7 +30,7 @@ export function SettingSidebarUpdateAlert() {
 				</AlertDescription>
 				<div className="col-span-full pt-2 flex-1 flex justify-end">
 					<Button size="xs" variant="outline" onClick={() => void install()}>
-						{t('updater.updateNow')}
+						{downloadUrl ? t('updater.download') : t('updater.updateNow')}
 					</Button>
 				</div>
 			</Alert>

@@ -1,5 +1,9 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
+// Pure version logic, so it compiles (and its tests run) everywhere; the only
+// caller is the Android-gated `check_android_update` command.
+#[cfg_attr(not(target_os = "android"), allow(dead_code))]
+mod android_update;
 #[cfg(desktop)]
 mod autostart;
 // `ashpd` is declared under `[target.'cfg(target_os = "linux")'.dependencies]`,
@@ -174,6 +178,8 @@ pub fn run() {
             set_debug_logging,
             export_debug_bundle,
             clear_debug_logs,
+            #[cfg(target_os = "android")]
+            check_android_update,
             #[cfg(any(desktop, target_os = "android"))]
             get_node_status,
             #[cfg(any(desktop, target_os = "android"))]
