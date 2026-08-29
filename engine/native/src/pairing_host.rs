@@ -160,6 +160,7 @@ impl NodeService {
             last_seen_at: now,
             relay_url: host_relay_url.clone(),
             pairing_status: PairingStatus::Active,
+            trusted: false,
         })?;
         self.access.write().await.allowed.insert(peer_id);
         self.paired_connections.refresh().await;

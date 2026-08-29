@@ -8,6 +8,7 @@ import {
 	setDeviceDisplayName,
 	startPairingHost,
 	stopPairingHost,
+	trustPairedDevice,
 	type DeviceUnpairedPayload,
 } from '@/lib/pairing-api'
 import { useTranslation } from '../i18n/react-i18next-compat'
@@ -213,6 +214,30 @@ export function usePairing() {
 		[hydrate]
 	)
 
+	const trustDevice = useCallback(
+		async (endpointId: string, trust: boolean) => {
+			const apply = (value: boolean) =>
+				setDevices((prev) =>
+					prev.map((entry) =>
+						entry.endpoint_id === endpointId
+							? { ...entry, trusted: value }
+							: entry
+					)
+				)
+
+			// Paint first: a full refetch per toggle leaves the switch showing the
+			// old value for a round trip.
+			apply(trust)
+			try {
+				await trustPairedDevice(endpointId, trust)
+			} catch (error) {
+				apply(!trust)
+				throw error
+			}
+		},
+		[setDevices]
+	)
+
 	const isPairingDataPending =
 		IS_PAIRING_CAPABLE && (isNodeStatusPending || (isNodeReady && !hasHydrated))
 
@@ -238,5 +263,6 @@ export function usePairing() {
 		forget,
 		renameThisDevice,
 		renameDevice,
+		trustDevice,
 	}
 }

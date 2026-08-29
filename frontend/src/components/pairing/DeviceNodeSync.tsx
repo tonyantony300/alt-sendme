@@ -8,6 +8,7 @@ import {
 	reconfigureNodeRelay,
 	setDiscoverability,
 } from '@/lib/pairing-api'
+import { shouldAutoAccept } from '@/lib/auto-accept'
 import { useAppSettingStore } from '@/store/app-setting'
 import type {
 	PairedInvitePayload,
@@ -25,11 +26,14 @@ import { useInviteNotifications } from '@/hooks/useInviteNotifications'
 import { ensureNotificationPermission } from '@/lib/systemNotification'
 import { useTranslation } from '@/i18n'
 import { toastManager } from '../ui/toast'
+import { useAutoAcceptQueueStore } from '@/store/auto-accept-queue-store'
+import { useAutoAcceptQueue } from '@/hooks/useAutoAcceptQueue'
 
 /** Syncs relay settings to the device node and listens for paired invites globally. */
 export function DeviceNodeSync() {
 	const { t } = useTranslation()
 	useInviteNotifications()
+	useAutoAcceptQueue()
 	const { isNodeReady, refreshNodeStatus } = useNodeCapability()
 	const setInvite = usePairedInviteStore((s) => s.setInvite)
 	const didSyncRelay = useRef(false)
@@ -99,6 +103,14 @@ export function DeviceNodeSync() {
 						if (disposed) return
 						const { devices } = usePairingDataStore.getState()
 						if (!isKnownPairedEndpoint(devices, payload.remote_endpoint_id)) {
+							return
+						}
+						// A trusted device skips the dialog. The queue exists because
+						// an invite can land mid-transfer, when nobody is here to
+						// retry it — and because navigating the user away from
+						// whatever they were doing would defeat unattended receiving.
+						if (shouldAutoAccept(devices, payload.remote_endpoint_id)) {
+							useAutoAcceptQueueStore.getState().enqueue(payload)
 							return
 						}
 						setInvite(payload)

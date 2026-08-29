@@ -2,6 +2,7 @@ export type NotificationKind =
 	| 'pair-request'
 	| 'invite-paired'
 	| 'invite-nearby'
+	| 'invite-auto-accepted'
 	| 'invite-declined'
 	| 'device-paired'
 
@@ -80,6 +81,23 @@ export function buildInviteNotification(
 								size: formatSize(size),
 							})
 						: t('common:notifications.inviteBodyNoSize', { count }),
+			}
+		}
+
+		case 'invite-auto-accepted': {
+			const count = Number(payload.file_count) || 0
+			const size = Number(payload.total_size) || 0
+			return {
+				title: t('common:notifications.autoAcceptTitle', {
+					sender: name(payload.sender_name, t),
+				}),
+				body:
+					size > 0
+						? t('common:notifications.autoAcceptBody', {
+								count,
+								size: formatSize(size),
+							})
+						: t('common:notifications.autoAcceptBodyNoSize', { count }),
 			}
 		}
 

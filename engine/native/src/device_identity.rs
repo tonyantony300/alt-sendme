@@ -140,6 +140,25 @@ impl PairedDeviceStore {
         Ok(saved)
     }
 
+    pub fn trust_paired_device(
+        &self,
+        endpoint_id: &str,
+        trust: bool,
+    ) -> anyhow::Result<PairedDevice> {
+        let _guard = self.lock_file();
+        let mut file = self.read_file()?;
+        let id = endpoint_id.to_lowercase();
+        let existing = file
+            .devices
+            .iter_mut()
+            .find(|d| d.endpoint_id.to_lowercase() == id)
+            .context("paired device not found")?;
+        existing.trusted = trust;
+        let saved = existing.clone();
+        self.write_file(&file)?;
+        Ok(saved)
+    }
+
     pub fn forget(&self, endpoint_id: &str) -> anyhow::Result<()> {
         let _guard = self.lock_file();
         let mut file = self.read_file()?;
@@ -310,6 +329,8 @@ pub struct PairedDeviceInfo {
     pub relay_url: Option<String>,
     #[serde(default)]
     pub pairing_status: PairingStatus,
+    #[serde(default)]
+    pub trusted: bool,
     pub online: bool,
 }
 
@@ -324,6 +345,7 @@ impl PairedDeviceInfo {
             last_seen_at: device.last_seen_at,
             relay_url: device.relay_url,
             pairing_status: device.pairing_status,
+            trusted: device.trusted,
             online,
         }
     }
@@ -375,6 +397,7 @@ mod presence_summary_tests {
             last_seen_at: 0,
             relay_url: None,
             pairing_status: status,
+            trusted: false,
             online,
         }
     }
@@ -404,5 +427,101 @@ mod presence_summary_tests {
     #[test]
     fn empty_list_is_zero_of_zero() {
         assert_eq!(presence_summary(&[]), (0, 0));
+    }
+}
+
+#[cfg(test)]
+mod trust_flag_tests {
+    use super::{PairedDeviceInfo, PairedDeviceStore};
+    use protocol::identity::{PairedDevice, PairingStatus};
+
+    fn device(endpoint_id: &str) -> PairedDevice {
+        PairedDevice {
+            endpoint_id: endpoint_id.to_string(),
+            display_name: "Studio Mac".to_string(),
+            device_type: "desktop".to_string(),
+            os: "macos".to_string(),
+            paired_at: 1,
+            last_seen_at: 1,
+            relay_url: None,
+            pairing_status: PairingStatus::Active,
+            trusted: false,
+        }
+    }
+
+    #[test]
+    fn trust_persists_and_round_trips() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = PairedDeviceStore::new(dir.path());
+        store.remember(device("aaaa")).unwrap();
+
+        let saved = store.trust_paired_device("aaaa", true).unwrap();
+        assert!(saved.trusted);
+
+        // A fresh store reads the same file back from disk.
+        let reopened = PairedDeviceStore::new(dir.path());
+        assert!(reopened.get("aaaa").unwrap().unwrap().trusted);
+    }
+
+    #[test]
+    fn trusting_an_unknown_device_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = PairedDeviceStore::new(dir.path());
+        assert!(store.trust_paired_device("missing", true).is_err());
+    }
+
+    #[test]
+    fn remember_preserves_trust_on_an_existing_row() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = PairedDeviceStore::new(dir.path());
+        store.remember(device("aaaa")).unwrap();
+        store.trust_paired_device("aaaa", true).unwrap();
+
+        // Re-pairing or a presence refresh must not silently untrust.
+        let mut refreshed = device("aaaa");
+        refreshed.display_name = "Renamed".to_string();
+        refreshed.last_seen_at = 99;
+        store.remember(refreshed).unwrap();
+
+        let stored = store.get("aaaa").unwrap().unwrap();
+        assert!(stored.trusted);
+        assert_eq!(stored.display_name, "Renamed");
+    }
+
+    #[test]
+    fn forget_drops_trust_with_the_pairing() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = PairedDeviceStore::new(dir.path());
+        store.remember(device("aaaa")).unwrap();
+        store.trust_paired_device("aaaa", true).unwrap();
+
+        store.forget("aaaa").unwrap();
+        assert!(store.get("aaaa").unwrap().is_none());
+
+        // Re-pairing the same peer starts untrusted.
+        store.remember(device("aaaa")).unwrap();
+        assert!(!store.get("aaaa").unwrap().unwrap().trusted);
+    }
+
+    #[test]
+    fn legacy_file_without_the_field_reads_as_untrusted() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("paired-devices.json"),
+            r#"{"devices":[{"endpoint_id":"aaaa","display_name":"Old","device_type":"laptop","os":"linux","paired_at":1,"last_seen_at":2}]}"#,
+        )
+        .unwrap();
+
+        let store = PairedDeviceStore::new(dir.path());
+        let stored = store.get("aaaa").unwrap().unwrap();
+        assert!(!stored.trusted);
+        assert_eq!(stored.display_name, "Old");
+    }
+
+    #[test]
+    fn paired_device_info_carries_trust_to_the_frontend() {
+        let mut d = device("aaaa");
+        d.trusted = true;
+        assert!(PairedDeviceInfo::from_device(d, true).trusted);
     }
 }

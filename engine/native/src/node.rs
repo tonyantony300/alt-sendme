@@ -364,6 +364,7 @@ impl ControlProtocol {
                         last_seen_at: now,
                         relay_url,
                         pairing_status: PairingStatus::Active,
+                        trusted: false,
                     };
                     let _ = self.ctx.paired_store.remember(device);
                     self.allow_peer(remote).await;
@@ -720,6 +721,7 @@ impl ControlProtocol {
             last_seen_at: now,
             relay_url: None,
             pairing_status: PairingStatus::default(),
+            trusted: false,
         }) {
             tracing::debug!(
                 "failed to remember nearby peer {remote} after mutual accept: {err:#}"
@@ -1069,6 +1071,23 @@ impl NodeService {
         let device = self.paired_store.rename(endpoint_id, display_name)?;
 
         Ok(device)
+    }
+
+    pub fn trust_paired(
+        &self,
+        endpoint_id: &str,
+        trust: bool,
+    ) -> anyhow::Result<PairedDeviceInfo> {
+        let device = self.paired_store.trust_paired_device(endpoint_id, trust)?;
+        let online = self
+            .presence
+            .read()
+            .expect("presence lock")
+            .get(&device.endpoint_id.to_lowercase())
+            .copied()
+            .unwrap_or(false);
+
+        Ok(PairedDeviceInfo::from_device(device, online))
     }
 
     pub fn list_paired(&self) -> anyhow::Result<Vec<PairedDeviceInfo>> {
@@ -1485,6 +1504,7 @@ impl NodeService {
             last_seen_at: now,
             relay_url: None,
             pairing_status: PairingStatus::default(),
+            trusted: false,
         })?;
 
         // Now that a paired record exists, it must not also show under Nearby.
@@ -1762,6 +1782,7 @@ impl NodeService {
             last_seen_at: now,
             relay_url: None,
             pairing_status: PairingStatus::default(),
+            trusted: false,
         })?;
         self.access
             .write()

@@ -450,6 +450,7 @@ pub async fn receive_file(
     ticket: String,
     output_path: String,
     tree_uri: Option<String>,
+    sub_folder: Option<String>,
     relay: Option<RelayConfigArg>,
     discovery: Option<DiscoveryConfigArg>,
     state: State<'_, AppStateMutex>,
@@ -459,7 +460,28 @@ pub async fn receive_file(
     use iroh_blobs::ticket::BlobTicket;
     use std::str::FromStr;
 
-    let output_dir = resolve_receive_output_dir(&app_handle, output_path)?;
+    // Derive the content hash so we can manage partial store lifecycle. Parsed
+    // up front because the folder sanitizer also needs a per-peer fallback, and
+    // the sender's endpoint id rides in the same ticket.
+    let incoming_hash = BlobTicket::from_str(&ticket)
+        .ok()
+        .map(|t| t.hash().to_hex().to_string());
+    let folder_fallback = BlobTicket::from_str(&ticket)
+        .ok()
+        .map(|t| t.addr().id.to_string().chars().take(12).collect::<String>())
+        .unwrap_or_else(|| "Device".to_string());
+
+    // Auto-accepted transfers file themselves under the sender's name. The name
+    // is chosen by the peer, so it must be sanitized before it becomes a path
+    // component — see `sanitize_folder_name`.
+    let sanitized_sub_folder = sub_folder
+        .as_deref()
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(|name| engine::sanitize_folder_name(name, &folder_fallback));
+
+    let output_dir =
+        resolve_receive_output_dir(&app_handle, output_path, sanitized_sub_folder.as_deref())?;
     let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
     let discovery_mode = build_discovery_mode(discovery)?;
     let options = ReceiveOptions {
@@ -469,11 +491,6 @@ pub async fn receive_file(
         magic_ipv4_addr: None,
         magic_ipv6_addr: None,
     };
-
-    // Derive the content hash so we can manage partial store lifecycle.
-    let incoming_hash = BlobTicket::from_str(&ticket)
-        .ok()
-        .map(|t| t.hash().to_hex().to_string());
 
     // If a previous cancel left a partial store for a *different* hash, delete it now.
     // Same hash → keep it for resume. Different hash → it would never be reused.
@@ -720,19 +737,35 @@ fn emit_receive_download_fallback(app_handle: &tauri::AppHandle, staging_dir: &P
 fn resolve_receive_output_dir(
     app_handle: &tauri::AppHandle,
     output_path: String,
+    sub_folder: Option<&str>,
 ) -> Result<PathBuf, String> {
     #[cfg(target_os = "android")]
     {
         let _ = output_path;
-        return android_staging_receive_dir(app_handle);
+        let staging = android_staging_receive_dir(app_handle)?;
+        // Both export paths walk the staging dir and recreate each file's
+        // relative path, so a subdirectory here surfaces under the SAF tree or
+        // `Download/DashBeam` with no Kotlin change.
+        return Ok(match sub_folder {
+            Some(name) => staging.join(name),
+            None => staging,
+        });
     }
 
     #[cfg(not(target_os = "android"))]
     {
-        let output_dir = PathBuf::from(output_path.trim());
-        if output_dir.as_os_str().is_empty() {
-            return fallback_receive_dir(app_handle);
-        }
+        let base = PathBuf::from(output_path.trim());
+        let base = if base.as_os_str().is_empty() {
+            fallback_receive_dir(app_handle)?
+        } else {
+            base
+        };
+        // `ensure_dir_writable` calls `create_dir_all`, so the per-device folder
+        // is created here on first use.
+        let output_dir = match sub_folder {
+            Some(name) => base.join(name),
+            None => base,
+        };
 
         match ensure_dir_writable(&output_dir) {
             Ok(()) => Ok(output_dir),
@@ -1405,6 +1438,22 @@ pub async fn rename_paired_device(
     let node = require_node(&guard)?;
     let device = node
         .rename_paired(&endpoint_id, &display_name)
+        .map_err(|e| e.to_string())?;
+
+    Ok(device)
+}
+
+#[cfg(any(desktop, target_os = "android"))]
+#[tauri::command]
+pub async fn trust_paired_device(
+    endpoint_id: String,
+    trust: bool,
+    state: State<'_, AppStateMutex>,
+) -> Result<PairedDeviceInfo, String> {
+    let guard = state.lock().await;
+    let node = require_node(&guard)?;
+    let device = node
+        .trust_paired(&endpoint_id, trust)
         .map_err(|e| e.to_string())?;
 
     Ok(device)

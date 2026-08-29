@@ -573,6 +573,7 @@ mod online_names_tests {
             last_seen_at: 0,
             relay_url: None,
             pairing_status: status,
+            trusted: false,
             online,
         }
     }

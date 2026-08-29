@@ -175,3 +175,45 @@ describe('buildInviteNotification', () => {
 		assert.equal(buildInviteNotification('pair-request', 'nope', deps), null)
 	})
 })
+
+describe('auto-accepted invites', () => {
+	it('announces the transfer as already accepted', () => {
+		assert.deepEqual(
+			buildInviteNotification(
+				'invite-auto-accepted',
+				{
+					blob_ticket: 't',
+					file_count: 3,
+					total_size: 2048,
+					sender_name: 'Studio Mac',
+					remote_endpoint_id: 'abc',
+				},
+				deps
+			),
+			{
+				title: 'common:notifications.autoAcceptTitle(sender=Studio Mac)',
+				body: 'common:notifications.autoAcceptBody(count=3,size=2048B)',
+			}
+		)
+	})
+
+	it('omits the size when total_size is zero', () => {
+		assert.deepEqual(
+			buildInviteNotification(
+				'invite-auto-accepted',
+				{
+					blob_ticket: 't',
+					file_count: 1,
+					total_size: 0,
+					sender_name: 'Studio Mac',
+					remote_endpoint_id: 'abc',
+				},
+				deps
+			),
+			{
+				title: 'common:notifications.autoAcceptTitle(sender=Studio Mac)',
+				body: 'common:notifications.autoAcceptBodyNoSize(count=1)',
+			}
+		)
+	})
+})

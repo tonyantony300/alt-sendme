@@ -24,6 +24,7 @@ export interface PairedDevice {
 	last_seen_at: number
 	pairing_status: PairingStatus
 	online: boolean
+	trusted: boolean
 }
 
 export interface DevicePresencePayload {
@@ -148,6 +149,19 @@ export async function renamePairedDevice(
 		endpointId,
 		displayName,
 	})
+}
+
+/**
+ * IPC seam: `endpointId` / `trust` must match the parameter names of
+ * `trust_paired_device` in `src-tauri/src/commands.rs`. Tauri maps payload keys
+ * to parameter names, so renaming one side alone fails at runtime.
+ */
+export async function trustPairedDevice(
+	endpointId: string,
+	trust: boolean
+): Promise<PairedDevice | null> {
+	if (!pairingCapable()) return null
+	return invoke<PairedDevice>('trust_paired_device', { endpointId, trust })
 }
 
 export async function invitePairedDevice(
@@ -324,6 +338,19 @@ export function isPairedDeviceActive(
 	device: Pick<PairedDevice, 'pairing_status'>
 ): boolean {
 	return (device.pairing_status ?? 'active') === 'active'
+}
+
+/**
+ * Whether this device's shares are accepted without prompting.
+ *
+ * Reads the stored flag only — routing an incoming invite must also check that
+ * the pairing is still active, which `shouldAutoAccept` in `lib/auto-accept.ts`
+ * does.
+ */
+export function isTrustedDevice(
+	device: Pick<PairedDevice, 'trusted'>
+): boolean {
+	return device.trusted === true
 }
 
 /**
