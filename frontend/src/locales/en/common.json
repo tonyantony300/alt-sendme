@@ -488,7 +488,18 @@
 		"installFailed": "Installation Failed",
 		"installFailedDesc": "Failed to install update",
 		"portableTitle": "Portable build",
-		"portableDescription": "You're running the portable ZIP. Auto-update isn't available — download the latest portable build from GitHub Releases when you want to upgrade."
+		"portableDescription": "You're running the portable ZIP. Auto-update isn't available — download the latest portable build from GitHub Releases when you want to upgrade.",
+		"downloadingTitle": "Downloading version {{version}}",
+		"installingTitle": "Installing update…",
+		"readyTitle": "Version {{version}} is ready",
+		"restartNow": "Restart now",
+		"restarting": "Restarting…",
+		"restartAnyway": "Restart anyway",
+		"restartBusyDescription": "A transfer is in progress. Restarting now will cancel it.",
+		"restartFailed": "Restart Failed",
+		"restartFailedDesc": "Failed to restart. Quit and reopen DashBeam to finish updating.",
+		"cancel": "Cancel",
+		"dismiss": "Dismiss"
 	},
 	"android": {
 		"preparingFile": "Preparing file..."
