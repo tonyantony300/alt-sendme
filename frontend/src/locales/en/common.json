@@ -297,6 +297,13 @@
 					"description": "Display a broadcast switch on the sharing screen so multiple receivers can download the same files at once."
 				}
 			},
+			"relayStatus": {
+				"title": "Relay",
+				"showToggle": {
+					"label": "Show relay status in the footer",
+					"description": "Display a relay indicator in the footer showing which relay you're connected to and its address."
+				}
+			},
 			"notifications": {
 				"title": "Notifications",
 				"label": "Show system notifications",
