@@ -64,8 +64,8 @@ fn cleanup_orphaned_directories() {
 /// before any command can open a row, so an `InProgress` row here is from a
 /// previous process.
 ///
-/// Partial-receive stores aren't managed here — `cleanup_orphaned_directories`
-/// already clears them at every launch, and history stats whatever survives.
+/// `cleanup_orphaned_directories` has already cleared the partial-receive
+/// stores by now, so rows still pointing at one are pointing at nothing.
 fn init_transfer_history(app: &tauri::App) {
     let data_dir = match app.path().app_data_dir() {
         Ok(dir) => dir,
@@ -80,6 +80,9 @@ fn init_transfer_history(app: &tauri::App) {
         Ok(0) => {}
         Ok(n) => tracing::info!("marked {n} unfinished transfer(s) as interrupted"),
         Err(e) => tracing::warn!("could not reconcile unfinished transfers: {e}"),
+    }
+    if let Err(e) = history.forget_missing_partial_stores() {
+        tracing::warn!("could not forget swept partial stores: {e}");
     }
     app.manage(history);
 }

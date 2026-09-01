@@ -312,6 +312,29 @@ impl TransferHistoryStore {
         Ok(swept)
     }
 
+    /// Drops pointers to partial stores that are no longer on disk. Called at
+    /// launch, after the temp sweep: a row that keeps pointing at a deleted
+    /// store offers to free space that is already free.
+    pub fn forget_missing_partial_stores(&self) -> anyhow::Result<usize> {
+        let _guard = self.lock_file();
+        let mut file = self.read_file()?;
+        let mut forgotten = 0usize;
+        for record in &mut file.records {
+            let missing = record
+                .resumable_store_path
+                .as_deref()
+                .is_some_and(|path| !Path::new(path).is_dir());
+            if missing {
+                record.resumable_store_path = None;
+                forgotten += 1;
+            }
+        }
+        if forgotten > 0 {
+            self.write_file(&file)?;
+        }
+        Ok(forgotten)
+    }
+
     fn read_file(&self) -> anyhow::Result<TransferHistoryFile> {
         if !self.path.exists() {
             return Ok(TransferHistoryFile::default());
@@ -608,5 +631,36 @@ mod tests {
 
         assert!(!reclaim_partial(&record, temp.path()));
         assert!(outside.exists());
+    }
+
+    #[test]
+    fn a_partial_store_the_launch_sweep_removed_is_forgotten() {
+        let data = TempDir::new().expect("data dir");
+        let temp = TempDir::new().expect("temp dir");
+        let store = TransferHistoryStore::new(data.path());
+        let surviving = partial_dir(temp.path(), HASH_A);
+        let swept = temp.path().join(format!(".dashbeam-recv-{HASH_B}"));
+
+        let kept = store.open(record("kept")).expect("open kept");
+        let stale = store.open(record("stale")).expect("open stale");
+        for (id, path) in [(&kept, &surviving), (&stale, &swept)] {
+            store
+                .update(id, |r| {
+                    r.resumable_store_path = Some(path.to_string_lossy().to_string())
+                })
+                .expect("point at a store");
+        }
+
+        let forgotten = store.forget_missing_partial_stores().expect("forget");
+
+        assert_eq!(forgotten, 1);
+        let records = store.list().expect("list");
+        let kept = records.iter().find(|r| r.id == kept).expect("kept row");
+        let stale = records.iter().find(|r| r.id == stale).expect("stale row");
+        assert!(
+            kept.resumable_store_path.is_some(),
+            "a store still on disk stays resumable"
+        );
+        assert_eq!(stale.resumable_store_path, None);
     }
 }

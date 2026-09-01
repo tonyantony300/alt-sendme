@@ -6,6 +6,7 @@ import { invoke } from './platform-api'
 import type { TransferRecord } from './transfer-history'
 
 export interface TransferTempData {
+	/** True only when a partial store is still on disk with bytes to reclaim. */
 	exists: boolean
 	sizeBytes: number
 }
@@ -23,7 +24,8 @@ export function clearTransferHistory(): Promise<void> {
 	return invoke<void>('clear_transfer_history')
 }
 
-/** Stat'd live — the directory can vanish between renders. */
+/** Stat'd live — the directory can vanish between renders, and the launch
+ * sweep clears every one of them. */
 export function getTransferTempData(id: string): Promise<TransferTempData> {
 	return invoke<TransferTempData>('get_transfer_temp_data', { id })
 }

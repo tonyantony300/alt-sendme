@@ -2094,6 +2094,45 @@ mod tests {
         );
     }
 
+    fn partial_store_path(root: &Path, hash: &str) -> PathBuf {
+        root.join(format!("{}{hash}", engine::storage::RECV_DIR_PREFIX))
+    }
+
+    #[test]
+    fn a_partial_store_the_launch_sweep_removed_has_nothing_to_free() {
+        let temp = tempfile::TempDir::new().expect("tempdir");
+        let gone = partial_store_path(temp.path(), &"a".repeat(64));
+
+        let stats = stat_partial_store(Some(&gone.to_string_lossy()), temp.path());
+
+        assert!(!stats.exists, "a store that is gone cannot be freed");
+        assert_eq!(stats.size_bytes, 0);
+    }
+
+    #[test]
+    fn an_empty_partial_store_has_nothing_to_free() {
+        let temp = tempfile::TempDir::new().expect("tempdir");
+        let empty = partial_store_path(temp.path(), &"b".repeat(64));
+        fs::create_dir_all(&empty).expect("mkdir");
+
+        let stats = stat_partial_store(Some(&empty.to_string_lossy()), temp.path());
+
+        assert!(!stats.exists, "0 bytes is never worth offering to free");
+    }
+
+    #[test]
+    fn a_partial_store_holding_bytes_reports_what_it_would_free() {
+        let temp = tempfile::TempDir::new().expect("tempdir");
+        let store = partial_store_path(temp.path(), &"c".repeat(64));
+        fs::create_dir_all(store.join("data")).expect("mkdir");
+        fs::write(store.join("data").join("blob"), b"1234").expect("write");
+
+        let stats = stat_partial_store(Some(&store.to_string_lossy()), temp.path());
+
+        assert!(stats.exists);
+        assert_eq!(stats.size_bytes, 4);
+    }
+
     #[test]
     fn a_name_that_escapes_the_destination_is_not_followed() {
         let dir = tempfile::TempDir::new().expect("tempdir");
@@ -2343,42 +2382,45 @@ pub async fn clear_transfer_history(
     Ok(())
 }
 
-/// Stats the record's partial store rather than trusting the record: the
-/// directory can be removed by the OS, by a later receive, or by hand.
+/// Walks the record's partial store rather than trusting the record: the
+/// directory can be removed by the OS, by the launch sweep, or by hand. Only a
+/// store still on disk with bytes in it is worth offering to free.
+fn stat_partial_store(raw_path: Option<&str>, temp_dir: &Path) -> TransferTempData {
+    let nothing = TransferTempData {
+        exists: false,
+        size_bytes: 0,
+    };
+    let Some(path) = raw_path.map(PathBuf::from) else {
+        return nothing;
+    };
+    if !path.is_dir() || !engine::is_reclaimable_partial(&path, temp_dir) {
+        return nothing;
+    }
+    let size_bytes = get_total_size(&path).unwrap_or(0);
+
+    TransferTempData {
+        exists: size_bytes > 0,
+        size_bytes,
+    }
+}
+
 #[tauri::command]
 pub async fn get_transfer_temp_data(
     id: String,
     history: State<'_, Arc<TransferHistoryStore>>,
 ) -> Result<TransferTempData, String> {
-    let record = history
+    let raw_path = history
         .list()
         .map_err(|e| e.to_string())?
         .into_iter()
-        .find(|r| r.id == id);
+        .find(|r| r.id == id)
+        .and_then(|r| r.resumable_store_path);
 
-    let Some(path) = record.and_then(|r| r.resumable_store_path) else {
-        return Ok(TransferTempData {
-            exists: false,
-            size_bytes: 0,
-        });
-    };
-
-    let path = PathBuf::from(path);
-    if !engine::is_reclaimable_partial(&path, &engine::storage::temp_dir()) {
-        return Ok(TransferTempData {
-            exists: false,
-            size_bytes: 0,
-        });
-    }
-
-    let size_bytes = tokio::task::spawn_blocking(move || get_total_size(&path).unwrap_or(0))
-        .await
-        .map_err(|e| format!("Task join error: {}", e))?;
-
-    Ok(TransferTempData {
-        exists: true,
-        size_bytes,
+    tokio::task::spawn_blocking(move || {
+        stat_partial_store(raw_path.as_deref(), &engine::storage::temp_dir())
     })
+    .await
+    .map_err(|e| format!("Task join error: {}", e))
 }
 
 /// Frees a record's partial store without removing the row.
