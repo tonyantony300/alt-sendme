@@ -32,7 +32,7 @@ import {
 import { toastManager } from '../components/ui/toast'
 import { listPairedDevices } from '../lib/pairing-api'
 import { IS_ANDROID, IS_PAIRING_CAPABLE } from '../lib/platform'
-import { revealItemInDir } from '../lib/platform-api'
+import { listen, revealItemInDir, type UnlistenFn } from '../lib/platform-api'
 import { resolveAndroidOpenTarget } from '../lib/history-open-target'
 import { openDownloadFolder, openDownloadTarget } from '../plugins/nativeUtils'
 import { AppAlertDialog } from '../components/AppAlertDialog'
@@ -115,6 +115,30 @@ export function HistoryPage() {
 		void load()
 		return () => {
 			cancelled = true
+		}
+	}, [refresh])
+
+	// A trusted device can land a transfer while this list is open. The shell
+	// announces a row only once it is terminal, so this re-reads the store
+	// rather than tracking transfer state of its own.
+	useEffect(() => {
+		let cancelled = false
+		let unlisten: UnlistenFn | undefined
+		void listen('transfer-history-updated', () => {
+			refresh().catch((error) => {
+				console.error('Failed to refresh transfer history:', error)
+			})
+		}).then((fn) => {
+			// Resolved after unmount: nothing left to notify, so drop it.
+			if (cancelled) {
+				fn()
+				return
+			}
+			unlisten = fn
+		})
+		return () => {
+			cancelled = true
+			unlisten?.()
 		}
 	}, [refresh])
 
