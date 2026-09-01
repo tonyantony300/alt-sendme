@@ -12,5 +12,7 @@ permissions = [
     "allow-open-download-target",
     "allow-get-window-insets",
     "allow-start-presence-service",
-    "allow-stop-presence-service"
+    "allow-stop-presence-service",
+    "allow-write-text-to-uri",
+    "allow-fetch-update-manifest"
 ]

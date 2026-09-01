@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-fetch-update-manifest"
+description = "Enables the fetch_update_manifest command without any pre-configured scope."
+commands.allow = ["fetch_update_manifest"]
+
+[[permission]]
+identifier = "deny-fetch-update-manifest"
+description = "Denies the fetch_update_manifest command without any pre-configured scope."
+commands.deny = ["fetch_update_manifest"]

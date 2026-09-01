@@ -1,5 +1,9 @@
 // Library entry point for Tauri. Used by the binary (desktop) and by the native Android/iOS app (mobile).
 
+// Pure version logic, so it compiles (and its tests run) everywhere; the only
+// caller is the Android-gated `check_android_update` command.
+#[cfg_attr(not(target_os = "android"), allow(dead_code))]
+mod android_update;
 #[cfg(desktop)]
 mod autostart;
 // `ashpd` is declared under `[target.'cfg(target_os = "linux")'.dependencies]`,
@@ -60,8 +64,8 @@ fn cleanup_orphaned_directories() {
 /// before any command can open a row, so an `InProgress` row here is from a
 /// previous process.
 ///
-/// Partial-receive stores aren't managed here — `cleanup_orphaned_directories`
-/// already clears them at every launch, and history stats whatever survives.
+/// `cleanup_orphaned_directories` has already cleared the partial-receive
+/// stores by now, so rows still pointing at one are pointing at nothing.
 fn init_transfer_history(app: &tauri::App) {
     let data_dir = match app.path().app_data_dir() {
         Ok(dir) => dir,
@@ -76,6 +80,9 @@ fn init_transfer_history(app: &tauri::App) {
         Ok(0) => {}
         Ok(n) => tracing::info!("marked {n} unfinished transfer(s) as interrupted"),
         Err(e) => tracing::warn!("could not reconcile unfinished transfers: {e}"),
+    }
+    if let Err(e) = history.forget_missing_partial_stores() {
+        tracing::warn!("could not forget swept partial stores: {e}");
     }
     app.manage(history);
 }
@@ -142,6 +149,7 @@ pub fn run() {
             cancel_receive,
             list_transfer_history,
             delete_transfer_record,
+            transfer_open_target,
             clear_transfer_history,
             get_transfer_temp_data,
             clear_transfer_temp_data,
@@ -173,6 +181,8 @@ pub fn run() {
             set_debug_logging,
             export_debug_bundle,
             clear_debug_logs,
+            #[cfg(target_os = "android")]
+            check_android_update,
             #[cfg(any(desktop, target_os = "android"))]
             get_node_status,
             #[cfg(any(desktop, target_os = "android"))]

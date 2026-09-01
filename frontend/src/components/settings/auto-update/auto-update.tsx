@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { useTranslation } from '../../../i18n'
 import { useAppSettingStore } from '../../../store/app-setting'
+import { useUpdaterStore } from '../../../store/updater-store'
 import { Button } from '../../ui/button'
 import {
 	FrameTitle,
@@ -10,45 +11,40 @@ import {
 	FrameFooter,
 } from '../../ui/frame'
 import { Switch } from '../../ui/switch'
-import { AlertDialog, AlertDialogContent } from '../../ui/alert-dialog'
-import { Gift, Loader2 } from 'lucide-react'
 import {
 	useCheckForUpdatesMutation,
-	useInstallUpdateMutation,
+	useInstallUpdate,
 } from '../../../hooks/use-updater'
 import { useIsWindowsPortable } from '../../../hooks/use-windows-portable'
+import { UpdateProgressBar } from '../../common/update-progress'
 import { toastManager } from '../../ui/toast'
 
 export function AutoUpdate() {
 	const { t } = useTranslation()
 	const value = useAppSettingStore((r) => r.autoUpdate)
 	const toggle = useAppSettingStore((r) => r.setAutoUpdate)
-	const [isOpen, setIsOpen] = useState(false)
 	const { data: isPortable = false } = useIsWindowsPortable()
 
+	const phase = useUpdaterStore((s) => s.phase)
+	const version = useUpdaterStore((s) => s.version)
+	const downloadedBytes = useUpdaterStore((s) => s.downloadedBytes)
+	const contentLength = useUpdaterStore((s) => s.contentLength)
+	const progressRatio = useUpdaterStore((s) => s.progressRatio)
+	const downloadUrl = useUpdaterStore((s) => s.downloadUrl)
+
 	const checkForUpdates = useCheckForUpdatesMutation()
-	const handleUpdate = useInstallUpdateMutation()
+	const { install, restart } = useInstallUpdate()
 
 	const handleCheckForUpdates = () => {
 		checkForUpdates.mutate(undefined, {
 			onSuccess: (update) => {
-				if (update) {
-					setIsOpen(true)
-				} else {
+				if (!update) {
 					toastManager.add({
 						title: t('updater.noUpdatesTitle'),
 						description: t('updater.noUpdatesDescription'),
 						type: 'info',
 					})
 				}
-			},
-		})
-	}
-
-	const handleInstallUpdate = () => {
-		handleUpdate.mutate(undefined, {
-			onSuccess: () => {
-				setIsOpen(false)
 			},
 		})
 	}
@@ -79,6 +75,50 @@ export function AutoUpdate() {
 				</div>
 				<Switch checked={value} onCheckedChange={toggle} />
 			</FramePanel>
+
+			{/* Status lands inline; the update state lives in the store, so this and
+			    the banner can never disagree or start two downloads. */}
+			{phase !== 'idle' && (
+				<FramePanel className="flex flex-col gap-3">
+					<p className="text-sm text-muted-foreground">
+						{phase === 'available' &&
+							t('updater.newVersionAvailableInline', { version })}
+						{phase === 'available' && downloadUrl
+							? ` ${t('updater.sideloadHint')}`
+							: null}
+						{phase === 'downloading' &&
+							t('updater.downloadingTitle', { version })}
+						{phase === 'installing' && t('updater.installingTitle')}
+						{phase === 'ready' && t('updater.readyTitle', { version })}
+						{phase === 'restarting' && t('updater.restarting')}
+					</p>
+
+					{(phase === 'downloading' || phase === 'installing') && (
+						<UpdateProgressBar
+							downloadedBytes={downloadedBytes}
+							contentLength={phase === 'downloading' ? contentLength : null}
+							progressRatio={phase === 'downloading' ? progressRatio : null}
+						/>
+					)}
+
+					{phase === 'available' && (
+						<div className="flex justify-end">
+							<Button size="sm" onClick={() => void install()}>
+								{downloadUrl ? t('updater.download') : t('updater.updateNow')}
+							</Button>
+						</div>
+					)}
+
+					{phase === 'ready' && (
+						<div className="flex justify-end">
+							<Button size="sm" onClick={() => void restart()}>
+								{t('updater.restartNow')}
+							</Button>
+						</div>
+					)}
+				</FramePanel>
+			)}
+
 			{value === false && (
 				<FrameFooter className="flex-row justify-end">
 					<Button
@@ -94,41 +134,6 @@ export function AutoUpdate() {
 					</Button>
 				</FrameFooter>
 			)}
-			<AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-				<AlertDialogContent
-					backdropClassName="!bg-transparent !backdrop-blur-none"
-					className="fixed bottom-1 left-2 translate-x-0 translate-y-0 w-md"
-				>
-					<div className="flex px-5 py-4 items-center gap-2">
-						<Gift className="w-4 h-4 text-muted-foreground" />
-						<p className="text-sm flex items-center text-muted-foreground">
-							{t('updater.newVersionAvailableInline', {
-								version: checkForUpdates.data?.version ?? '',
-							})}
-						</p>
-						<div className="flex gap-2 ml-auto">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setIsOpen(false)}
-							>
-								{t('updater.later')}
-							</Button>
-							<Button
-								size="sm"
-								disabled={handleUpdate.isPending}
-								onClick={handleInstallUpdate}
-							>
-								{handleUpdate.isPending ? (
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								) : (
-									t('updater.updateNow')
-								)}
-							</Button>
-						</div>
-					</div>
-				</AlertDialogContent>
-			</AlertDialog>
 		</Frame>
 	)
 }

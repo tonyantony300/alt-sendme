@@ -29,6 +29,11 @@ export type AppSettingsState = {
 	dnsOrigin: string
 	showBroadcastToggle: boolean
 	/**
+	 * Whether the footer shows the relay status button. Off by default — the
+	 * relay endpoint is plumbing most users never need to see.
+	 */
+	showRelayStatus: boolean
+	/**
 	 * Nearby/LAN discoverability, mirroring the engine's `Discoverability`.
 	 * `init_node_service` reads this store's file before the node starts, so an
 	 * `Off` choice never registers mDNS even briefly; `DeviceNodeSync` re-applies
@@ -67,6 +72,7 @@ export type AppSettingsActions = {
 	setPkarrRelayUrl: (value: string) => void
 	setDnsOrigin: (value: string) => void
 	setShowBroadcastToggle: (value: boolean) => void
+	setShowRelayStatus: (value: boolean) => void
 	setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') => void
 	setAutostartInitialized: (value: boolean) => void
 	setEnableTransferHistory: (value: boolean) => void
@@ -139,6 +145,7 @@ export const useAppSettingStore = create<AppSettings>()(
 			setDnsOrigin: (value: string) => set({ dnsOrigin: value }),
 			setShowBroadcastToggle: (value: boolean) =>
 				set({ showBroadcastToggle: value }),
+			setShowRelayStatus: (value: boolean) => set({ showRelayStatus: value }),
 			setDiscoverability: (value: 'everyone' | 'paired-only' | 'off') =>
 				set({ discoverability: value }),
 			setAutostartInitialized: (value: boolean) =>

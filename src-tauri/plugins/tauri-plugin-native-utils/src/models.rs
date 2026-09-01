@@ -38,6 +38,13 @@ pub struct ExportToMediaStoreArgs {
     pub source_dir: String,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WriteTextToUriArgs {
+    pub uri: String,
+    pub contents: String,
+}
+
 /// What to show for a MediaStore export, most specific first: a single file's
 /// `uri`, else the `relative_path` it landed in, else the Downloads list.
 #[derive(Debug, Clone, Deserialize, Serialize)]

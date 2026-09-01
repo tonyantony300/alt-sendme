@@ -43,6 +43,7 @@ Wählen Sie den Weg, der gerade am nächsten liegt: **einen Link oder QR-Code se
 - **Multi-Gigabit-Geschwindigkeit** – Sättigt schnelle Verbindungen
 - **In der Nähe** – Automatische LAN-Erkennung; Pair & Send
 - **Gepairte Geräte** – Einmal per Code (aus der Ferne) oder über Nearby paaren; senden ohne Tickets
+- **Vertrauenswürdige Geräte** – Ein gepairtes Gerät für die automatische Annahme freigeben; seine Dateien kommen ohne Nachfrage an
 - **Fortsetzbar & Multi-Peer** – Unterbrochene Transfers fortsetzen; an viele gleichzeitig teilen
 - **Verbindung per Schlüssel** – Verbindung über die Geräteidentität statt über die IP-Adresse
 - **Roaming** – Mitten im Transfer zwischen WLAN, Mobilfunk oder Netzwerken wechseln, ohne die Verbindung zu verlieren

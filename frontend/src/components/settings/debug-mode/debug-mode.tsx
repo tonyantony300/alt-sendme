@@ -9,6 +9,8 @@ import {
 	useSetDebugLogging,
 } from '../../../hooks/use-debug-logging'
 import { revealItemInDir, saveDialog } from '@/lib/platform-api'
+import { IS_ANDROID } from '@/lib/platform'
+import { openDownloadTarget } from '@/plugins/nativeUtils'
 import { buildRelayConfigArg } from '@/lib/relay-config'
 import { useAppSettingStore } from '../../../store/app-setting'
 import { Button } from '../../ui/button'
@@ -95,7 +97,16 @@ export function DebugMode() {
 				description: t('settings.general.debugMode.savedDescription'),
 				type: 'success',
 			})
-			await revealItemInDir(destPath)
+			// Best-effort: the bundle is already written, so failing to show it
+			// must not report the save as failed.
+			try {
+				// `destPath` is a SAF `content://` URI on Android, which the
+				// opener plugin cannot reveal — it has no Android support at all.
+				if (IS_ANDROID) await openDownloadTarget(destPath)
+				else await revealItemInDir(destPath)
+			} catch (revealError) {
+				console.warn('Could not show the saved diagnostics:', revealError)
+			}
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e))
 		}

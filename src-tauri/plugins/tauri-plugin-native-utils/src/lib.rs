@@ -48,6 +48,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::get_window_insets,
             commands::start_presence_service,
             commands::stop_presence_service,
+            commands::write_text_to_uri,
+            commands::fetch_update_manifest,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]

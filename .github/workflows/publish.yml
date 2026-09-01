@@ -421,12 +421,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Only the sideloaded APKs check GitHub for a newer release. The Play
+      # AAB must not: Play forbids an app updating itself outside Play, and
+      # Play App Signing re-signs it, so its users could not install these
+      # APKs over their copy anyway. `android-aab.yml` deliberately omits it.
       - name: Build release APKs (universal + per-ABI)
         env:
           ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_APK_PROFILES: universal,arm64,armv7
+          VITE_ANDROID_UPDATE_CHECK: 'true'
         run: pnpm run android:build:release
 
       - name: Upload Android APKs to GitHub release

@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom'
 import { handleExternalLinkClick } from '@/lib/openExternalUrl'
 import { IS_PAIRING_CAPABLE, IS_TAURI } from '@/lib/platform'
 import { cn } from '@/lib/utils'
+import { useAppSettingStore } from '@/store/app-setting'
 import { useSenderStore } from '@/store/sender-store'
 import { RelayStatusButton } from './RelayStatusButton'
 
@@ -45,6 +46,7 @@ export function AppFooter() {
 	const isSharing = useSenderStore(
 		(s) => s.viewState === 'SHARING' || s.viewState === 'TRANSPORTING'
 	)
+	const showRelayStatus = useAppSettingStore((s) => s.showRelayStatus)
 
 	return (
 		<div
@@ -140,7 +142,7 @@ export function AppFooter() {
 						</Link>
 					)
 				) : null}
-				<RelayStatusButton />
+				{showRelayStatus ? <RelayStatusButton /> : null}
 				{isSharing ? (
 					<button
 						type="button"

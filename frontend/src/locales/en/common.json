@@ -215,7 +215,6 @@
 		"folderSize": "Folder size",
 		"downloadPath": "Download path",
 		"duration": "Duration",
-		"writeToDisk": "Write to disk",
 		"avgSpeed": "Avg Speed",
 		"multipleFiles": "{{count}} Files",
 		"donatePrompt": "If you love the experience, please consider {{link}}. Thanks!",
@@ -295,6 +294,13 @@
 				"showToggle": {
 					"label": "Show broadcast toggle while sharing",
 					"description": "Display a broadcast switch on the sharing screen so multiple receivers can download the same files at once."
+				}
+			},
+			"relayStatus": {
+				"title": "Relay",
+				"showToggle": {
+					"label": "Show relay status in the footer",
+					"description": "Display a relay indicator in the footer showing which relay you're connected to and its address."
 				}
 			},
 			"notifications": {
@@ -488,7 +494,20 @@
 		"installFailed": "Installation Failed",
 		"installFailedDesc": "Failed to install update",
 		"portableTitle": "Portable build",
-		"portableDescription": "You're running the portable ZIP. Auto-update isn't available — download the latest portable build from GitHub Releases when you want to upgrade."
+		"portableDescription": "You're running the portable ZIP. Auto-update isn't available — download the latest portable build from GitHub Releases when you want to upgrade.",
+		"downloadingTitle": "Downloading version {{version}}",
+		"installingTitle": "Installing update…",
+		"readyTitle": "Version {{version}} is ready",
+		"restartNow": "Restart now",
+		"restarting": "Restarting…",
+		"restartAnyway": "Restart anyway",
+		"restartBusyDescription": "A transfer is in progress. Restarting now will cancel it.",
+		"restartFailed": "Restart Failed",
+		"restartFailedDesc": "Failed to restart. Quit and reopen DashBeam to finish updating.",
+		"cancel": "Cancel",
+		"dismiss": "Dismiss",
+		"download": "Download",
+		"sideloadHint": "Installs by downloading the new APK from the release page."
 	},
 	"android": {
 		"preparingFile": "Preparing file..."
@@ -580,12 +599,19 @@
 			"unknownDevice": "Unknown device",
 			"duration": "Time taken",
 			"speed": "Speed",
-			"writeTime": "Time writing to disk",
 			"savedTo": "Saved to",
 			"error": "What went wrong",
 			"toggleDetails": "Show details",
 			"conflicts": "{{count}} files were renamed to avoid overwriting existing ones.",
-			"remove": "Remove from history"
+			"remove": "Remove from history",
+			"removeConfirmTitle": "Remove this transfer?",
+			"removeConfirmBody": "This removes the entry from your history. Files you already received stay on this device.",
+			"removeConfirmBodyResumable": "This removes the entry from your history and frees the {{size}} of leftover partial data, so this transfer can no longer be resumed. Files you already received stay on this device.",
+			"open": "Open",
+			"openFailed": "Could not open that transfer",
+			"missingTitle": "Files are no longer there",
+			"missingBody": "Nothing from this transfer is left in {{path}}. It was moved or deleted after the transfer finished.",
+			"unknownDestination": "its destination"
 		},
 		"temp": {
 			"cleared": "Space freed",

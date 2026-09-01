@@ -204,6 +204,11 @@ function Sidebar({
 						style={{
 							paddingTop: 'var(--safe-area-top)',
 							paddingBottom: 'var(--safe-area-bottom)',
+							// Only the screen-facing edge needs the horizontal inset.
+							paddingLeft:
+								side === 'left' ? 'var(--safe-area-left)' : undefined,
+							paddingRight:
+								side === 'right' ? 'var(--safe-area-right)' : undefined,
 						}}
 					>
 						{children}
