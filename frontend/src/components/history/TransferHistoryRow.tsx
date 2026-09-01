@@ -39,6 +39,15 @@ const STATUS_VARIANT: Record<
 	inProgress: 'outline',
 }
 
+interface DetailEntry {
+	key: string
+	label?: string
+	value: string
+	/** Spans both columns; paths and errors need the full width. */
+	wide?: boolean
+	valueClass?: string
+}
+
 /** Short, stable stand-in for a device that never told us its name. */
 function shortFingerprint(endpointId: string): string {
 	return endpointId.slice(0, 8)
@@ -115,14 +124,54 @@ export function TransferHistoryRow({
 	// read two ways on Android.
 	const savePath = formatReceiveSavePath(record.savePath)
 	const canOpen = canOpenTransfer(record)
-	// Whether the panel has anything *besides* delete to show.
-	const hasDetails = Boolean(
-		duration || speed || savePath || record.error || record.conflictCount > 0
-	)
 
-	// Destructive, so it rides at the end of the saved-to line rather than
-	// sitting near the row's own controls. Without a path it has no line to
-	// share and falls back to one of its own.
+	// Render order matters: the delete button rides the trailing edge of
+	// whichever entry lands last.
+	const details: DetailEntry[] = []
+	if (duration) {
+		details.push({
+			key: 'duration',
+			label: t('common:history.row.duration'),
+			value: duration,
+		})
+	}
+	if (speed) {
+		details.push({
+			key: 'speed',
+			label: t('common:history.row.speed'),
+			value: speed,
+		})
+	}
+	if (savePath) {
+		details.push({
+			key: 'savedTo',
+			label: t('common:history.row.savedTo'),
+			value: savePath,
+			wide: true,
+			valueClass: 'break-all',
+		})
+	}
+	if (record.conflictCount > 0) {
+		details.push({
+			key: 'conflicts',
+			value: t('common:history.row.conflicts', { count: record.conflictCount }),
+			wide: true,
+			valueClass: 'text-muted-foreground',
+		})
+	}
+	if (record.error) {
+		details.push({
+			key: 'error',
+			label: t('common:history.row.error'),
+			value: record.error,
+			wide: true,
+			valueClass: 'break-words',
+		})
+	}
+
+	// Destructive, so it rides at the end of the last detail line rather than
+	// sitting near the row's own controls. Only a record with no details at all
+	// falls back to a line of its own.
 	const removeButton = (
 		<Button
 			variant="ghost"
@@ -227,56 +276,38 @@ export function TransferHistoryRow({
 
 			{expanded && (
 				<div className="flex flex-col gap-2 border-t pt-2">
-					{hasDetails && (
+					{details.length > 0 ? (
 						<dl className="grid gap-x-4 gap-y-1.5 text-xs sm:grid-cols-2">
-							{duration && (
-								<div>
-									<dt className="text-muted-foreground">
-										{t('common:history.row.duration')}
-									</dt>
-									<dd>{duration}</dd>
-								</div>
-							)}
-							{speed && (
-								<div>
-									<dt className="text-muted-foreground">
-										{t('common:history.row.speed')}
-									</dt>
-									<dd>{speed}</dd>
-								</div>
-							)}
-							{savePath && (
-								<div className="min-w-0 sm:col-span-2">
-									<dt className="text-muted-foreground">
-										{t('common:history.row.savedTo')}
-									</dt>
-									<dd className="flex items-start gap-2">
-										<span className="min-w-0 flex-1 break-all">{savePath}</span>
-										{removeButton}
-									</dd>
-								</div>
-							)}
-							{record.conflictCount > 0 && (
-								<div className="sm:col-span-2">
-									<dd className="text-muted-foreground">
-										{t('common:history.row.conflicts', {
-											count: record.conflictCount,
-										})}
-									</dd>
-								</div>
-							)}
-							{record.error && (
-								<div className="min-w-0 sm:col-span-2">
-									<dt className="text-muted-foreground">
-										{t('common:history.row.error')}
-									</dt>
-									<dd className="break-words">{record.error}</dd>
-								</div>
-							)}
+							{details.map((detail, index) => {
+								const isLast = index === details.length - 1
+								return (
+									<div
+										key={detail.key}
+										className={cn(
+											'min-w-0',
+											// The last entry widens when it would otherwise sit in
+											// the left column, so delete still lands at the card's
+											// edge instead of mid-row.
+											(detail.wide || (isLast && index % 2 === 0)) &&
+												'sm:col-span-2'
+										)}
+									>
+										{detail.label && (
+											<dt className="text-muted-foreground">{detail.label}</dt>
+										)}
+										<dd className="flex items-start gap-2">
+											<span className={cn('min-w-0 flex-1', detail.valueClass)}>
+												{detail.value}
+											</span>
+											{isLast && removeButton}
+										</dd>
+									</div>
+								)
+							})}
 						</dl>
+					) : (
+						<div className="flex justify-end">{removeButton}</div>
 					)}
-
-					{!savePath && <div className="flex justify-end">{removeButton}</div>}
 				</div>
 			)}
 		</FramePanel>
