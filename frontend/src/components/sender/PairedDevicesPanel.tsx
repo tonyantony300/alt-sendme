@@ -39,8 +39,12 @@ interface PairedDevicesPanelProps {
 	isOpen?: boolean
 }
 
-/** ~3 nearby rows (icon + padding); further devices scroll inside this block. */
-const NEARBY_LIST_MAX_CLASS = 'max-h-[11.25rem]'
+/**
+ * Visible nearby rows before this block scrolls: 4 on phones, 3 on wider screens.
+ * A row is 3.75rem (h-9 icon + py-3) plus the 1px divider between rows.
+ */
+const NEARBY_LIST_MAX_CLASS =
+	'max-h-[calc(4*3.75rem+3px)] sm:max-h-[calc(3*3.75rem+2px)]'
 
 function truncatedEndpointId(endpointId: string): string {
 	return `${endpointId.slice(0, 8)}…`

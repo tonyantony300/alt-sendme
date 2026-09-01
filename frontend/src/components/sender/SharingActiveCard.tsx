@@ -61,13 +61,16 @@ export function SharingActiveCard({
 
 			{IS_PAIRING_CAPABLE ? (
 				<Sheet open={devicesOpen} onOpenChange={setDevicesOpen}>
+					{/* Phones get a wider backdrop strip to tap-dismiss; the trimmed
+					    gutters below keep the content width unchanged. */}
 					<SheetContent
 						side="right"
 						inset
-						className="sm:max-w-sm"
+						className="max-sm:w-[calc(100%-(--spacing(16)))] sm:max-w-sm"
 						focusPopupOnOpen={IS_MOBILE}
+						safeArea
 					>
-						<SheetHeader>
+						<SheetHeader className="max-sm:px-4">
 							<SheetTitle>
 								{t('common:sender.sharingActive.devices.title')}
 							</SheetTitle>
@@ -77,7 +80,7 @@ export function SharingActiveCard({
 						</SheetHeader>
 						<SheetPanel
 							scrollFade={false}
-							className="flex h-full min-h-0 flex-col overflow-hidden !pt-0 !pb-4"
+							className="flex h-full min-h-0 flex-col overflow-hidden !pt-0 !pb-4 max-sm:px-4"
 						>
 							<PairedDevicesPanel
 								pairedDevices={pairedDevices}

@@ -65,6 +65,7 @@ function SheetPopup({
 	side = 'right',
 	inset = false,
 	focusPopupOnOpen = false,
+	safeArea = false,
 	initialFocus,
 	...props
 }: SheetPrimitive.Popup.Props & {
@@ -77,6 +78,11 @@ function SheetPopup({
 	 * mobile would otherwise land focus in a text field and pop the keyboard.
 	 */
 	focusPopupOnOpen?: boolean
+	/**
+	 * Keep the content clear of the system bars. Android is edge-to-edge, so a
+	 * sheet pinned to the viewport edges otherwise renders underneath them.
+	 */
+	safeArea?: boolean
 }) {
 	const overlayContainer = getWebAppOverlayContainer()
 	const popupRef = useRef<HTMLDivElement>(null)
@@ -100,6 +106,10 @@ function SheetPopup({
 							'col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md border-s data-ending-style:translate-x-8 data-starting-style:translate-x-8',
 						inset &&
 							'before:hidden sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=sheet-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]',
+						safeArea && side !== 'bottom' && 'pt-(--safe-area-top)',
+						safeArea && side !== 'top' && 'pb-(--safe-area-bottom)',
+						safeArea && side === 'right' && 'pe-(--safe-area-right)',
+						safeArea && side === 'left' && 'ps-(--safe-area-left)',
 						className
 					)}
 					data-slot="sheet-popup"
@@ -109,7 +119,15 @@ function SheetPopup({
 					{showCloseButton && (
 						<SheetPrimitive.Close
 							aria-label="Close"
-							className="absolute end-2 top-2"
+							className={cn(
+								'absolute end-2 top-2',
+								safeArea &&
+									side !== 'bottom' &&
+									'top-[calc(0.5rem+var(--safe-area-top))]',
+								safeArea &&
+									side === 'right' &&
+									'end-[calc(0.5rem+var(--safe-area-right))]'
+							)}
 							render={<Button size="icon" variant="ghost" />}
 						>
 							<XIcon />
