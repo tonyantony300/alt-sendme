@@ -226,7 +226,7 @@ export function HistoryPage() {
 			{/* RootLayout paints a `z-10` drag region over the top 40px on macOS:
 			    `z-20` lets presses reach these controls, `pointer-events-none`
 			    keeps the gap between them draggable. */}
-			<div className="pointer-events-none relative z-20 flex items-center justify-between gap-2 px-4 pt-6">
+			<div className="pointer-events-none relative z-20 flex items-center justify-between gap-2 pt-[calc(1.5rem+var(--safe-area-top))] pl-[calc(1rem+var(--safe-area-left))] pr-[calc(1rem+var(--safe-area-right))]">
 				{/* Arrow and title are one target, matching the settings header. */}
 				<Link
 					to="/"
@@ -250,7 +250,7 @@ export function HistoryPage() {
 				)}
 			</div>
 
-			<div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pt-3">
+			<div className="flex min-h-0 flex-1 flex-col gap-3 pt-3 pl-[calc(1rem+var(--safe-area-left))] pr-[calc(1rem+var(--safe-area-right))]">
 				{/* A dropdown, not five chips: status is usually left on "All".
 				    Direction isn't a filter — one timeline, each row has its arrow. */}
 				<div className="flex items-center gap-2">
