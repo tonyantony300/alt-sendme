@@ -42,6 +42,7 @@ Pick whichever route is closest to hand: **send a link or a QR code** that opens
 - **Multi-gigabit speeds** - Saturates fast connections
 - **Nearby** - LAN auto-discovery; Pair & Send
 - **Paired devices** - Pair once with a code (remote) or Nearby; send without tickets
+- **Trusted devices** - Opt a paired device into auto-accept; its files land without a prompt
 - **Resumable & multi-peer** - Resume interrupted transfers; share to many at once
 - **Dial by key** - Connect by device identity, not IP address
 - **Roaming** - Switch Wi-Fi, cellular, or networks mid-transfer without dropping

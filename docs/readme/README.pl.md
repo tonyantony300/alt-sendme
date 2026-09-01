@@ -43,6 +43,7 @@ Wybierz drogę, która akurat jest pod ręką: **wyślij link lub kod QR**, któ
 - **Prędkości wielogigabitowe** – Wysyca szybkie łącza
 - **W pobliżu** – Automatyczne wykrywanie w sieci LAN; Pair & Send
 - **Sparowane urządzenia** – Sparuj raz kodem (zdalnie) lub przez Nearby; wysyłaj bez ticketów
+- **Zaufane urządzenia** – Włącz automatyczne przyjmowanie dla sparowanego urządzenia; jego pliki trafiają do Ciebie bez pytania
 - **Wznawianie i wielu odbiorców** – Wznawiaj przerwane transfery; udostępniaj wielu osobom naraz
 - **Łączenie po kluczu** – Połączenie po tożsamości urządzenia, nie po adresie IP
 - **Roaming** – Zmieniaj Wi-Fi, sieć komórkową lub sieci w trakcie transferu bez zrywania go

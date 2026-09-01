@@ -43,6 +43,7 @@ Escolha o caminho que estiver mais à mão: **enviar um link ou um QR code** que
 - **Velocidades multigigabit** – Satura conexões rápidas
 - **Por perto** – Descoberta automática na LAN; Pair & Send
 - **Dispositivos pareados** – Pareie uma vez com um código (remotamente) ou via Nearby; envie sem tickets
+- **Dispositivos confiáveis** – Ative a aceitação automática em um dispositivo pareado; os arquivos dele chegam sem perguntar
 - **Retomável e multipar** – Retome transferências interrompidas; compartilhe com vários de uma vez
 - **Conexão por chave** – Conecte pela identidade do dispositivo, não pelo endereço IP
 - **Roaming** – Troque de Wi-Fi, rede móvel ou de rede no meio da transferência sem derrubá-la

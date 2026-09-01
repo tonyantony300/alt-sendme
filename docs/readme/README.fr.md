@@ -43,6 +43,7 @@ Choisissez la voie la plus pratique sur le moment : **envoyer un lien ou un QR c
 - **Débits multi-gigabit** – Sature les connexions rapides
 - **À proximité** – Découverte automatique sur le LAN ; Pair & Send
 - **Appareils appairés** – Appairez une fois par code (à distance) ou via Nearby ; envoyez sans ticket
+- **Appareils de confiance** – Activez l'acceptation automatique pour un appareil appairé ; ses fichiers arrivent sans confirmation
 - **Reprise & multi-pairs** – Reprenez les transferts interrompus ; partagez avec plusieurs personnes à la fois
 - **Connexion par clé** – Connexion par identité d'appareil, pas par adresse IP
 - **Itinérance** – Passez du Wi-Fi à la 4G ou changez de réseau en plein transfert sans le perdre

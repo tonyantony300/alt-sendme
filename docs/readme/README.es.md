@@ -43,6 +43,7 @@ Elige la vía que tengas más a mano: **enviar un enlace o un código QR** que s
 - **Velocidades multigigabit** – Satura conexiones rápidas
 - **Cercanos** – Detección automática en la LAN; Pair & Send
 - **Dispositivos emparejados** – Empareja una vez con un código (en remoto) o por Nearby; envía sin tickets
+- **Dispositivos de confianza** – Activa la aceptación automática en un dispositivo emparejado; sus archivos llegan sin preguntarte
 - **Reanudable y multipar** – Reanuda transferencias interrumpidas; comparte con muchos a la vez
 - **Conexión por clave** – Conecta por identidad del dispositivo, no por dirección IP
 - **Roaming** – Cambia de Wi-Fi, datos móviles o red a mitad de la transferencia sin cortarla
