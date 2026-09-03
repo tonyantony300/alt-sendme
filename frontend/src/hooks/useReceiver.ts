@@ -134,6 +134,7 @@ export function useReceiver(): UseReceiverReturn {
 	const downloadsUri = useAppSettingStore((state) => state.downloadsUri)
 	const setDownloadsUri = useAppSettingStore((state) => state.setDownloadsUri)
 	const downloadsUriRef = useRef(downloadsUri)
+	const downloadsPathRef = useRef(downloadsPath)
 	const [transferMetadata, setTransferMetadata] =
 		useState<TransferMetadata | null>(null)
 	const [transferProgress, setTransferProgress] =
@@ -247,6 +248,10 @@ export function useReceiver(): UseReceiverReturn {
 	useEffect(() => {
 		downloadsUriRef.current = downloadsUri
 	}, [downloadsUri])
+
+	useEffect(() => {
+		downloadsPathRef.current = downloadsPath
+	}, [downloadsPath])
 
 	useEffect(() => {
 		const seq = ++previewRequestSeqRef.current
@@ -549,7 +554,6 @@ export function useReceiver(): UseReceiverReturn {
 					fileName: displayName,
 					fileSize: transferProgressRef.current?.totalBytes || 0,
 					duration,
-					writeMs: completion?.exportMs,
 					startTime: transferStartTimeRef.current || endTime,
 					endTime,
 					downloadPath: savePathRef.current,
@@ -670,6 +674,11 @@ export function useReceiver(): UseReceiverReturn {
 					ticket: ticketValue.trim(),
 					outputPath,
 					treeUri: IS_ANDROID ? downloadsUriRef.current.trim() || null : null,
+					// Only the picker knows what the tree URI reads as, and
+					// history needs it to name where the files ended up.
+					treeDisplayPath: IS_ANDROID
+						? downloadsPathRef.current.trim() || null
+						: null,
 					subFolder: subFolder?.trim() || null,
 					relay: getRelayConfigArg(),
 					discovery: getDiscoveryConfigArg(),

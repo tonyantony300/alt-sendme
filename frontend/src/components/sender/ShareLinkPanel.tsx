@@ -116,7 +116,7 @@ export function ShareLinkPanel({
 					isTransporting={isTransporting && !isBroadcastMode}
 					hasActiveConnections={isBroadcastMode && activeConnectionCount > 0}
 					size={140}
-					className="flex items-center justify-center max-sm:size-[88px]!"
+					className="flex items-center justify-center max-sm:size-[140px]!"
 				/>
 
 				<p className="text-xs text-center text-muted-foreground">

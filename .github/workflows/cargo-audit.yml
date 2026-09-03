@@ -4,15 +4,18 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  # Advisories are published independently of commits, so this job can go red
+  # with no code change. Run it on main and on a schedule, not on PRs — a
+  # third-party advisory shouldn't block an unrelated contribution.
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: cargo-audit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: cargo-audit-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,7 +27,11 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - uses: taiki-e/install-action@cargo-audit
+      - uses: taiki-e/install-action@v2
+        with:
+          # Pinned: a new cargo-audit release changing default policy (e.g.
+          # failing on yanked crates) must not turn CI red on its own.
+          tool: cargo-audit@0.22.2
       - name: Audit Rust workspaces
         run: |
           status=0

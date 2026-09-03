@@ -6,6 +6,7 @@ import { invoke } from './platform-api'
 import type { TransferRecord } from './transfer-history'
 
 export interface TransferTempData {
+	/** True only when a partial store is still on disk with bytes to reclaim. */
 	exists: boolean
 	sizeBytes: number
 }
@@ -23,9 +24,20 @@ export function clearTransferHistory(): Promise<void> {
 	return invoke<void>('clear_transfer_history')
 }
 
-/** Stat'd live — the directory can vanish between renders. */
+/** Stat'd live — the directory can vanish between renders, and the launch
+ * sweep clears every one of them. */
 export function getTransferTempData(id: string): Promise<TransferTempData> {
 	return invoke<TransferTempData>('get_transfer_temp_data', { id })
+}
+
+/**
+ * Where a row's files are now, or `null` when nothing it recorded is still
+ * there. Resolved against the filesystem, so a folder emptied after the
+ * transfer answers honestly. Desktop only — Android paths are labels, not
+ * locations, so callers there open through `history-open-target` instead.
+ */
+export function transferOpenTarget(id: string): Promise<string | null> {
+	return invoke<string | null>('transfer_open_target', { id })
 }
 
 /** Frees the partial store while keeping the history row. */

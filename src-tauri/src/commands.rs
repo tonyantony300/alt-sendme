@@ -450,6 +450,7 @@ pub async fn receive_file(
     ticket: String,
     output_path: String,
     tree_uri: Option<String>,
+    tree_display_path: Option<String>,
     sub_folder: Option<String>,
     relay: Option<RelayConfigArg>,
     discovery: Option<DiscoveryConfigArg>,
@@ -480,6 +481,12 @@ pub async fn receive_file(
         .filter(|name| !name.is_empty())
         .map(|name| engine::sanitize_folder_name(name, &folder_fallback));
 
+    #[cfg(target_os = "android")]
+    let (output_dir, export_root) = {
+        let _ = &output_path;
+        resolve_android_receive_dirs(&app_handle, sanitized_sub_folder.as_deref())?
+    };
+    #[cfg(not(target_os = "android"))]
     let output_dir =
         resolve_receive_output_dir(&app_handle, output_path, sanitized_sub_folder.as_deref())?;
     let (relay_mode, fell_back_to_public) = resolve_relay_mode_with_fallback(relay).await?;
@@ -517,13 +524,21 @@ pub async fn receive_file(
     // the connection exists. `resumable_store_path` is set at open, not finalize
     // — a crash never reaches finalize, stranding the partial store.
     let sender_peer = sender_peer_from_ticket(&ticket, &app_state_node(&state).await);
+    // Android receives into app-private staging and only learns where the files
+    // really land when the export finishes, so the row stays silent until
+    // `note_destination` fills it in. Recording staging here would leave every
+    // failed export pointing at a path no file manager can reach.
+    #[cfg(target_os = "android")]
+    let recorded_save_path: Option<String> = None;
+    #[cfg(not(target_os = "android"))]
+    let recorded_save_path = Some(output_dir.to_string_lossy().to_string());
     let (boxed_handle, recorder) = build_emitter(
         &app_handle,
         &history,
         TransferDirection::Receive,
         TransferContext {
             blob_hash: incoming_hash.clone(),
-            save_path: Some(output_dir.to_string_lossy().to_string()),
+            save_path: recorded_save_path,
             resumable_store_path: incoming_hash
                 .as_deref()
                 .map(|hash| partial_store_path_for(hash).to_string_lossy().to_string()),
@@ -591,11 +606,29 @@ pub async fn receive_file(
         Ok(r) => {
             #[cfg(target_os = "android")]
             {
-                finalize_android_receive(&app_handle, &output_dir, tree_uri.as_deref())?;
+                let destination = finalize_android_receive(
+                    &app_handle,
+                    AndroidExport {
+                        root: &export_root,
+                        files_dir: &output_dir,
+                        tree_uri: tree_uri.as_deref(),
+                        tree_display_path: tree_display_path.as_deref(),
+                    },
+                )?;
+                // History opened the row against staging, which the export just
+                // emptied. The subfolder is part of the answer: the exporter
+                // recreates the staging tree under the destination.
+                if let (Some(recorder), Some(destination)) = (recorder.as_ref(), destination) {
+                    let display = match sanitized_sub_folder.as_deref() {
+                        Some(name) => format!("{}/{name}", destination.display),
+                        None => destination.display,
+                    };
+                    recorder.note_destination(display, destination.uri);
+                }
             }
             #[cfg(not(target_os = "android"))]
             {
-                let _ = tree_uri;
+                let _ = (tree_uri, tree_display_path);
             }
             Ok(r.message)
         }
@@ -610,18 +643,41 @@ pub async fn receive_file(
     }
 }
 
+/// Where an export put the files: `display` is what history shows, `uri` is the
+/// SAF tree Open reopens. MediaStore has no tree — its relative path is enough
+/// to raise a folder intent.
+#[cfg(target_os = "android")]
+struct ExportDestination {
+    display: String,
+    uri: Option<String>,
+}
+
+/// What an Android export needs to know. `root` and `files_dir` differ only when
+/// an auto-accepted transfer filed itself under a per-device subfolder: the copy
+/// walks the root so that subfolder is recreated at the destination, while a
+/// failed copy leaves the files sitting in `files_dir`.
+#[cfg(target_os = "android")]
+struct AndroidExport<'a> {
+    root: &'a Path,
+    files_dir: &'a Path,
+    tree_uri: Option<&'a str>,
+    tree_display_path: Option<&'a str>,
+}
+
 /// Move a finished receive out of staging, bracketed by a completion event.
 ///
 /// `receive-completed` fires before this re-copies the bytes out, so the
 /// success screen is up while the destination doesn't exist yet. Emitting on
 /// the way out gives the UI one signal for "the files are where they belong".
+///
+/// Returns the human-readable destination, or `None` when the files stayed in
+/// staging — then the path recorded at open is already the truthful one.
 #[cfg(target_os = "android")]
 fn finalize_android_receive(
     app_handle: &tauri::AppHandle,
-    staging_dir: &Path,
-    tree_uri: Option<&str>,
-) -> Result<(), String> {
-    let result = export_android_receive(app_handle, staging_dir, tree_uri);
+    export: AndroidExport<'_>,
+) -> Result<Option<ExportDestination>, String> {
+    let result = export_android_receive(app_handle, export);
     let _ = app_handle.emit("receive-export-finished", ());
     result
 }
@@ -629,15 +685,15 @@ fn finalize_android_receive(
 #[cfg(target_os = "android")]
 fn export_android_receive(
     app_handle: &tauri::AppHandle,
-    staging_dir: &Path,
-    tree_uri: Option<&str>,
-) -> Result<(), String> {
+    export: AndroidExport<'_>,
+) -> Result<Option<ExportDestination>, String> {
     use tauri_plugin_native_utils::{ExportToTreeArgs, NativeUtilsExt};
 
-    let tree_uri = tree_uri.map(str::trim).filter(|uri| !uri.is_empty());
+    let staging_dir = export.root;
+    let tree_uri = export.tree_uri.map(str::trim).filter(|uri| !uri.is_empty());
 
     let Some(tree_uri) = tree_uri else {
-        return finalize_android_media_store_receive(app_handle, staging_dir);
+        return finalize_android_media_store_receive(app_handle, staging_dir, export.files_dir);
     };
 
     let export_result = app_handle.native_utils().export_to_tree(ExportToTreeArgs {
@@ -659,13 +715,22 @@ fn export_android_receive(
                     e
                 );
             }
-            Ok(())
+            // Only the picker knows the tree URI's readable form; without it
+            // there is nothing truthful to show.
+            Ok(export
+                .tree_display_path
+                .map(str::trim)
+                .filter(|path| !path.is_empty())
+                .map(|display| ExportDestination {
+                    display: display.to_string(),
+                    uri: Some(tree_uri.to_string()),
+                }))
         }
         Err(e) => {
             tracing::warn!("SAF export failed, keeping app-private files: {e}");
-            emit_receive_download_fallback(app_handle, staging_dir, "saf");
+            emit_receive_download_fallback(app_handle, export.files_dir, "saf");
             // Transfer itself succeeded — files remain in staging.
-            Ok(())
+            Ok(None)
         }
     }
 }
@@ -678,7 +743,8 @@ fn export_android_receive(
 fn finalize_android_media_store_receive(
     app_handle: &tauri::AppHandle,
     staging_dir: &Path,
-) -> Result<(), String> {
+    files_dir: &Path,
+) -> Result<Option<ExportDestination>, String> {
     use tauri_plugin_native_utils::{
         ExportToMediaStoreArgs, NativeUtilsExt, MEDIA_STORE_UNSUPPORTED,
     };
@@ -709,7 +775,10 @@ fn finalize_android_media_store_receive(
                 "uris": result.uris,
             });
             let _ = app_handle.emit("receive-download-mediastore", payload);
-            Ok(())
+            Ok(Some(ExportDestination {
+                display: result.display_path,
+                uri: None,
+            }))
         }
         Err(e) => {
             let message = e.to_string();
@@ -719,8 +788,8 @@ fn finalize_android_media_store_receive(
                 tracing::warn!("MediaStore export failed, keeping app-private files: {message}");
             }
             // Transfer itself succeeded — files remain in staging.
-            emit_receive_download_fallback(app_handle, staging_dir, "private");
-            Ok(())
+            emit_receive_download_fallback(app_handle, files_dir, "private");
+            Ok(None)
         }
     }
 }
@@ -734,49 +803,52 @@ fn emit_receive_download_fallback(app_handle: &tauri::AppHandle, staging_dir: &P
     let _ = app_handle.emit("receive-download-fallback", payload);
 }
 
+/// Android writes a receive into app-private staging and copies it out once the
+/// transfer finishes. Both exporters recreate each file's path *relative to the
+/// directory they are handed*, so the staging root is returned alongside the
+/// write dir: exporting from the root is what lets a per-device subfolder
+/// survive the copy instead of collapsing into the destination.
+#[cfg(target_os = "android")]
+fn resolve_android_receive_dirs(
+    app_handle: &tauri::AppHandle,
+    sub_folder: Option<&str>,
+) -> Result<(PathBuf, PathBuf), String> {
+    let root = android_staging_receive_dir(app_handle)?;
+    let output_dir = match sub_folder {
+        Some(name) => root.join(name),
+        None => root.clone(),
+    };
+    Ok((output_dir, root))
+}
+
+#[cfg(not(target_os = "android"))]
 fn resolve_receive_output_dir(
     app_handle: &tauri::AppHandle,
     output_path: String,
     sub_folder: Option<&str>,
 ) -> Result<PathBuf, String> {
-    #[cfg(target_os = "android")]
-    {
-        let _ = output_path;
-        let staging = android_staging_receive_dir(app_handle)?;
-        // Both export paths walk the staging dir and recreate each file's
-        // relative path, so a subdirectory here surfaces under the SAF tree or
-        // `Download/DashBeam` with no Kotlin change.
-        return Ok(match sub_folder {
-            Some(name) => staging.join(name),
-            None => staging,
-        });
-    }
+    let base = PathBuf::from(output_path.trim());
+    let base = if base.as_os_str().is_empty() {
+        fallback_receive_dir(app_handle)?
+    } else {
+        base
+    };
+    // `ensure_dir_writable` calls `create_dir_all`, so the per-device folder
+    // is created here on first use.
+    let output_dir = match sub_folder {
+        Some(name) => base.join(name),
+        None => base,
+    };
 
-    #[cfg(not(target_os = "android"))]
-    {
-        let base = PathBuf::from(output_path.trim());
-        let base = if base.as_os_str().is_empty() {
-            fallback_receive_dir(app_handle)?
-        } else {
-            base
-        };
-        // `ensure_dir_writable` calls `create_dir_all`, so the per-device folder
-        // is created here on first use.
-        let output_dir = match sub_folder {
-            Some(name) => base.join(name),
-            None => base,
-        };
-
-        match ensure_dir_writable(&output_dir) {
-            Ok(()) => Ok(output_dir),
-            Err(error) => {
-                tracing::warn!(
-                    "Receive output dir not writable ({}): {}",
-                    output_dir.display(),
-                    error
-                );
-                Err("Selected download folder is not writable".to_string())
-            }
+    match ensure_dir_writable(&output_dir) {
+        Ok(()) => Ok(output_dir),
+        Err(error) => {
+            tracing::warn!(
+                "Receive output dir not writable ({}): {}",
+                output_dir.display(),
+                error
+            );
+            Err("Selected download folder is not writable".to_string())
         }
     }
 }
@@ -1101,7 +1173,50 @@ pub async fn export_debug_bundle(
         Err(error) => out.push_str(&format!("(failed to read logs: {error})\n")),
     }
 
-    std::fs::write(&dest_path, out).map_err(|e| format!("Failed to write {dest_path}: {e}"))
+    write_bundle(&app, dest_path, out)
+}
+
+/// Android's save dialog runs `ACTION_CREATE_DOCUMENT`, which creates the file
+/// and hands back a `content://` URI — not a path. Writing it with `std::fs`
+/// fails and leaves the 0-byte document the dialog just created.
+#[allow(unused_variables)]
+fn write_bundle(app: &tauri::AppHandle, dest_path: String, contents: String) -> Result<(), String> {
+    #[cfg(target_os = "android")]
+    if dest_path.starts_with("content://") {
+        use tauri_plugin_native_utils::{NativeUtilsExt, WriteTextToUriArgs};
+
+        return app
+            .native_utils()
+            .write_text_to_uri(WriteTextToUriArgs {
+                uri: dest_path,
+                contents,
+            })
+            .map_err(|e| format!("Failed to write diagnostics: {e}"));
+    }
+
+    std::fs::write(&dest_path, contents).map_err(|e| format!("Failed to write {dest_path}: {e}"))
+}
+
+/// Android cannot use the desktop updater plugin (it is `#[cfg(desktop)]`, and
+/// a Play build may not update itself), so this only reports a newer release
+/// and the UI hands the user to the release page.
+///
+/// The fetch goes through the Android plugin rather than `reqwest`: rustls
+/// verifies certificates via `rustls-platform-verifier`, which needs a JVM
+/// handshake this app never performs.
+#[cfg(target_os = "android")]
+#[tauri::command]
+pub async fn check_android_update(
+    app: tauri::AppHandle,
+) -> Result<Option<crate::android_update::AndroidUpdate>, String> {
+    use tauri_plugin_native_utils::NativeUtilsExt;
+
+    let body = app
+        .native_utils()
+        .fetch_update_manifest()
+        .map_err(|e| format!("Could not reach the update server: {e}"))?;
+
+    crate::android_update::parse_manifest(&body, &crate::version::get_app_version())
 }
 
 /// Helper function to calculate total size of a file or directory
@@ -1901,6 +2016,152 @@ mod tests {
         ))
     }
 
+    #[test]
+    fn a_single_received_file_opens_the_file_itself() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::write(dir.path().join("photo.jpg"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(&dir.path().to_string_lossy(), &["photo.jpg".to_string()],),
+            Some(dir.path().join("photo.jpg"))
+        );
+    }
+
+    #[test]
+    fn a_received_folder_opens_the_folder_not_the_download_dir() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::create_dir(dir.path().join("Photos")).expect("mkdir");
+        fs::write(dir.path().join("Photos/a.jpg"), b"x").expect("write");
+        fs::write(dir.path().join("Photos/b.jpg"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dir.path().to_string_lossy(),
+                &["Photos/a.jpg".to_string(), "Photos/b.jpg".to_string()],
+            ),
+            Some(dir.path().join("Photos")),
+            "the transfer's own folder is a better answer than everything around it"
+        );
+    }
+
+    #[test]
+    fn loose_files_open_the_directory_that_holds_them() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::write(dir.path().join("a.txt"), b"x").expect("write");
+        fs::write(dir.path().join("b.txt"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dir.path().to_string_lossy(),
+                &["a.txt".to_string(), "b.txt".to_string()],
+            ),
+            Some(dir.path().to_path_buf())
+        );
+    }
+
+    #[test]
+    fn a_file_deleted_after_the_transfer_has_nothing_to_open() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+
+        assert_eq!(
+            resolve_open_target(&dir.path().to_string_lossy(), &["gone.jpg".to_string()],),
+            None,
+            "the folder surviving is not the same as the files surviving"
+        );
+    }
+
+    #[test]
+    fn a_partly_deleted_transfer_still_opens_what_is_left() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        fs::write(dir.path().join("kept.txt"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dir.path().to_string_lossy(),
+                &["kept.txt".to_string(), "gone.txt".to_string()],
+            ),
+            Some(dir.path().join("kept.txt"))
+        );
+    }
+
+    #[test]
+    fn a_row_without_file_names_falls_back_to_its_folder() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+
+        assert_eq!(
+            resolve_open_target(&dir.path().to_string_lossy(), &[]),
+            Some(dir.path().to_path_buf())
+        );
+    }
+
+    fn partial_store_path(root: &Path, hash: &str) -> PathBuf {
+        root.join(format!("{}{hash}", engine::storage::RECV_DIR_PREFIX))
+    }
+
+    #[test]
+    fn a_partial_store_the_launch_sweep_removed_has_nothing_to_free() {
+        let temp = tempfile::TempDir::new().expect("tempdir");
+        let gone = partial_store_path(temp.path(), &"a".repeat(64));
+
+        let stats = stat_partial_store(Some(&gone.to_string_lossy()), temp.path());
+
+        assert!(!stats.exists, "a store that is gone cannot be freed");
+        assert_eq!(stats.size_bytes, 0);
+    }
+
+    #[test]
+    fn an_empty_partial_store_has_nothing_to_free() {
+        let temp = tempfile::TempDir::new().expect("tempdir");
+        let empty = partial_store_path(temp.path(), &"b".repeat(64));
+        fs::create_dir_all(&empty).expect("mkdir");
+
+        let stats = stat_partial_store(Some(&empty.to_string_lossy()), temp.path());
+
+        assert!(!stats.exists, "0 bytes is never worth offering to free");
+    }
+
+    #[test]
+    fn a_partial_store_holding_bytes_reports_what_it_would_free() {
+        let temp = tempfile::TempDir::new().expect("tempdir");
+        let store = partial_store_path(temp.path(), &"c".repeat(64));
+        fs::create_dir_all(store.join("data")).expect("mkdir");
+        fs::write(store.join("data").join("blob"), b"1234").expect("write");
+
+        let stats = stat_partial_store(Some(&store.to_string_lossy()), temp.path());
+
+        assert!(stats.exists);
+        assert_eq!(stats.size_bytes, 4);
+    }
+
+    #[test]
+    fn a_name_that_escapes_the_destination_is_not_followed() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        let outside = dir.path().join("outside");
+        let dest = dir.path().join("dest");
+        fs::create_dir_all(&outside).expect("mkdir");
+        fs::create_dir_all(&dest).expect("mkdir");
+        fs::write(outside.join("secret.txt"), b"x").expect("write");
+        fs::write(dest.join("kept.txt"), b"x").expect("write");
+
+        assert_eq!(
+            resolve_open_target(
+                &dest.to_string_lossy(),
+                &["kept.txt".to_string(), "../outside/secret.txt".to_string()],
+            ),
+            Some(dest.join("kept.txt")),
+            "only the name that stays under the destination counts"
+        );
+    }
+
+    #[test]
+    fn a_destination_that_is_gone_opens_nothing() {
+        let dir = tempfile::TempDir::new().expect("tempdir");
+        let missing = dir.path().join("removed");
+
+        assert_eq!(resolve_open_target(&missing.to_string_lossy(), &[]), None);
+        assert_eq!(resolve_open_target("", &["a.txt".to_string()]), None);
+    }
+
     /// Locks the seam with the frontend's `useAppSettingStore`, which writes
     /// this `settings.json` layout.
     #[test]
@@ -2033,6 +2294,82 @@ pub async fn delete_transfer_record(
     Ok(())
 }
 
+/// Where a row's files are now, or `None` when nothing it recorded is still
+/// there. Resolved against the filesystem rather than trusted from the record:
+/// a destination can be emptied, moved or deleted long after the transfer.
+///
+/// One surviving file is opened directly; several are shown in the deepest
+/// folder that contains them, so a received directory opens itself instead of
+/// everything around it.
+fn resolve_open_target(save_path: &str, file_names: &[String]) -> Option<PathBuf> {
+    let base = PathBuf::from(save_path.trim());
+    if base.as_os_str().is_empty() {
+        return None;
+    }
+
+    let existing: Vec<PathBuf> = file_names
+        .iter()
+        // A recorded name is a relative path under the destination. Anything
+        // absolute or climbing out of it did not come from this transfer, and
+        // would drag the common ancestor below `base`.
+        .filter(|name| {
+            let name = Path::new(name.as_str());
+            name.is_relative()
+                && name
+                    .components()
+                    .all(|part| !matches!(part, std::path::Component::ParentDir))
+        })
+        .map(|name| base.join(name))
+        .filter(|path| path.exists())
+        .collect();
+
+    match existing.as_slice() {
+        // Nothing was recorded to check, so the folder is the whole answer.
+        [] if file_names.is_empty() => base.exists().then_some(base),
+        [] => None,
+        [only] => Some(only.clone()),
+        [first, rest @ ..] => {
+            let mut common = first.parent()?.to_path_buf();
+            for path in rest {
+                let Some(parent) = path.parent() else {
+                    return Some(base);
+                };
+                while !parent.starts_with(&common) {
+                    match common.parent() {
+                        Some(up) => common = up.to_path_buf(),
+                        None => return Some(base),
+                    }
+                }
+            }
+            Some(common)
+        }
+    }
+}
+
+/// Resolves what a history row's "Open" should reveal. `None` means the files
+/// are gone — the UI says so rather than opening an empty folder.
+#[tauri::command]
+pub async fn transfer_open_target(
+    id: String,
+    history: State<'_, Arc<TransferHistoryStore>>,
+) -> Result<Option<String>, String> {
+    let record = history
+        .list()
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .find(|record| record.id == id);
+
+    let Some(record) = record else {
+        return Ok(None);
+    };
+    let Some(save_path) = record.save_path.as_deref() else {
+        return Ok(None);
+    };
+
+    Ok(resolve_open_target(save_path, &record.file_names)
+        .map(|path| path.to_string_lossy().to_string()))
+}
+
 #[tauri::command]
 pub async fn clear_transfer_history(
     history: State<'_, Arc<TransferHistoryStore>>,
@@ -2045,42 +2382,45 @@ pub async fn clear_transfer_history(
     Ok(())
 }
 
-/// Stats the record's partial store rather than trusting the record: the
-/// directory can be removed by the OS, by a later receive, or by hand.
+/// Walks the record's partial store rather than trusting the record: the
+/// directory can be removed by the OS, by the launch sweep, or by hand. Only a
+/// store still on disk with bytes in it is worth offering to free.
+fn stat_partial_store(raw_path: Option<&str>, temp_dir: &Path) -> TransferTempData {
+    let nothing = TransferTempData {
+        exists: false,
+        size_bytes: 0,
+    };
+    let Some(path) = raw_path.map(PathBuf::from) else {
+        return nothing;
+    };
+    if !path.is_dir() || !engine::is_reclaimable_partial(&path, temp_dir) {
+        return nothing;
+    }
+    let size_bytes = get_total_size(&path).unwrap_or(0);
+
+    TransferTempData {
+        exists: size_bytes > 0,
+        size_bytes,
+    }
+}
+
 #[tauri::command]
 pub async fn get_transfer_temp_data(
     id: String,
     history: State<'_, Arc<TransferHistoryStore>>,
 ) -> Result<TransferTempData, String> {
-    let record = history
+    let raw_path = history
         .list()
         .map_err(|e| e.to_string())?
         .into_iter()
-        .find(|r| r.id == id);
+        .find(|r| r.id == id)
+        .and_then(|r| r.resumable_store_path);
 
-    let Some(path) = record.and_then(|r| r.resumable_store_path) else {
-        return Ok(TransferTempData {
-            exists: false,
-            size_bytes: 0,
-        });
-    };
-
-    let path = PathBuf::from(path);
-    if !engine::is_reclaimable_partial(&path, &engine::storage::temp_dir()) {
-        return Ok(TransferTempData {
-            exists: false,
-            size_bytes: 0,
-        });
-    }
-
-    let size_bytes = tokio::task::spawn_blocking(move || get_total_size(&path).unwrap_or(0))
-        .await
-        .map_err(|e| format!("Task join error: {}", e))?;
-
-    Ok(TransferTempData {
-        exists: true,
-        size_bytes,
+    tokio::task::spawn_blocking(move || {
+        stat_partial_store(raw_path.as_deref(), &engine::storage::temp_dir())
     })
+    .await
+    .map_err(|e| format!("Task join error: {}", e))
 }
 
 /// Frees a record's partial store without removing the row.

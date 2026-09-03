@@ -3,8 +3,6 @@ export interface TransferMetadata {
 	fileSize: number
 	/** Time on the wire, as measured by the engine. */
 	duration: number
-	/** Receiver only: time spent writing the files out to disk after transfer. */
-	writeMs?: number
 	startTime: number
 	endTime: number
 	downloadPath?: string

@@ -246,6 +246,9 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return [] as T
 		case 'get_transfer_temp_data':
 			return { exists: false, sizeBytes: 0 } as T
+		// Web keeps no history, so no row can have a target to open.
+		case 'transfer_open_target':
+			return null as T
 		case 'delete_transfer_record':
 		case 'clear_transfer_history':
 		case 'clear_transfer_temp_data':
@@ -283,6 +286,8 @@ function invokeWebStub<T>(cmd: string, args?: Record<string, unknown>): T {
 			return null as T
 		case 'is_windows_portable':
 			return false as T
+		case 'check_android_update':
+			return null as T
 		case 'autostart_is_enabled':
 			return null as T
 		case 'autostart_set':

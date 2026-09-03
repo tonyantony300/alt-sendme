@@ -39,6 +39,11 @@ pub fn history_enabled(data_dir: &Path) -> bool {
     history_enabled_from_raw(raw.as_deref())
 }
 
+/// Announced whenever a row reaches a terminal state or has its destination
+/// corrected, so a history list already on screen can re-read. Matched by name
+/// in `frontend/src/routes/history.tsx`.
+pub const HISTORY_UPDATED_EVENT: &str = "transfer-history-updated";
+
 /// What a `transfer-completed` / `receive-completed` payload tells us.
 #[derive(Debug, Default, PartialEq)]
 pub struct CompletionFacts {
@@ -191,6 +196,13 @@ impl HistoryRecordingEmitter {
         self.lock_context().peer = Some(peer);
     }
 
+    /// Tells the UI a row changed on disk. Emitted through `inner` rather than
+    /// `self`: routing it back through `note_event` would be re-entrant, and
+    /// the recorder has nothing to record about its own announcement.
+    fn notify_changed(&self) {
+        let _ = self.inner.emit_event(HISTORY_UPDATED_EVENT);
+    }
+
     fn open_row(&self) {
         let mut row = self.lock_row();
         if row.id.is_some() {
@@ -271,8 +283,33 @@ impl HistoryRecordingEmitter {
             record.error = error;
         });
 
-        if let Err(e) = result {
-            tracing::warn!("failed to finalize transfer history row: {e}");
+        match result {
+            Ok(Some(_)) => self.notify_changed(),
+            // `None` means the row is gone — cleared from the history page
+            // mid-transfer — so there is nothing for the list to re-read.
+            Ok(None) => {}
+            Err(e) => tracing::warn!("failed to finalize transfer history row: {e}"),
+        }
+    }
+
+    /// Corrects the destination after the row is closed. Android finishes a
+    /// receive into app-private staging and only then copies the files out to
+    /// the picked folder or `Download/DashBeam`, so the path known at open is
+    /// never where they come to rest.
+    // Only Android exports after the fact; desktop writes to its destination.
+    #[cfg_attr(not(target_os = "android"), allow(dead_code))]
+    pub fn note_destination(&self, path: String, uri: Option<String>) {
+        let Some(id) = self.lock_row().id.clone() else {
+            return;
+        };
+        let result = self.store.update(&id, |record| {
+            record.save_path = Some(path);
+            record.save_uri = uri;
+        });
+        match result {
+            Ok(Some(_)) => self.notify_changed(),
+            Ok(None) => {}
+            Err(e) => tracing::warn!("failed to record transfer destination: {e}"),
         }
     }
 
@@ -347,6 +384,54 @@ mod tests {
         fn emit_event_with_payload(&self, _n: &str, _p: &str) -> Result<(), String> {
             Ok(())
         }
+    }
+
+    /// Records what the recorder forwards, so tests can assert on the change
+    /// notification rather than only on the rows it writes.
+    #[derive(Default)]
+    struct CapturingEmitter {
+        events: Mutex<Vec<String>>,
+    }
+
+    impl CapturingEmitter {
+        fn times_seen(&self, event_name: &str) -> usize {
+            self.events
+                .lock()
+                .unwrap_or_else(|p| p.into_inner())
+                .iter()
+                .filter(|seen| *seen == event_name)
+                .count()
+        }
+
+        fn note(&self, event_name: &str) {
+            self.events
+                .lock()
+                .unwrap_or_else(|p| p.into_inner())
+                .push(event_name.to_string());
+        }
+    }
+
+    impl EventEmitter for CapturingEmitter {
+        fn emit_event(&self, event_name: &str) -> Result<(), String> {
+            self.note(event_name);
+            Ok(())
+        }
+        fn emit_event_with_payload(&self, event_name: &str, _p: &str) -> Result<(), String> {
+            self.note(event_name);
+            Ok(())
+        }
+    }
+
+    /// A recorder whose forwarded events are inspectable.
+    fn watched_recorder(
+        dir: &TempDir,
+        direction: TransferDirection,
+        context: TransferContext,
+    ) -> (Arc<CapturingEmitter>, HistoryRecordingEmitter) {
+        let store = Arc::new(TransferHistoryStore::new(dir.path()));
+        let events = Arc::new(CapturingEmitter::default());
+        let emitter = HistoryRecordingEmitter::new(events.clone(), store, direction, context);
+        (events, emitter)
     }
 
     fn recorder(
@@ -684,5 +769,161 @@ mod tests {
         let shape = ReceivedShape::from_file_names(&[]);
         assert_eq!(shape.root_name, "");
         assert_eq!(shape.item_count, 0);
+    }
+
+    #[test]
+    fn an_exported_receive_records_where_the_files_actually_landed() {
+        let dir = TempDir::new().expect("tempdir");
+        let (store, emitter) = recorder(
+            &dir,
+            TransferDirection::Receive,
+            receive_context("/tmp/.dashbeam-recv-hash"),
+        );
+
+        emitter.emit_event("receive-started").expect("emit");
+        emitter
+            .emit_event_with_payload("receive-completed", r#"{"bytes":8192}"#)
+            .expect("emit");
+        // Android exports out of staging after the row is closed.
+        emitter.note_destination(
+            "Download/Work".to_string(),
+            Some("content://tree/work".to_string()),
+        );
+
+        let row = &store.list().expect("list")[0];
+        assert_eq!(row.save_path.as_deref(), Some("Download/Work"));
+        assert_eq!(
+            row.save_uri.as_deref(),
+            Some("content://tree/work"),
+            "Open needs the tree the files went to, not the one settings holds now"
+        );
+    }
+
+    #[test]
+    fn a_destination_is_only_recorded_for_a_row_that_exists() {
+        let dir = TempDir::new().expect("tempdir");
+        let (store, emitter) = recorder(
+            &dir,
+            TransferDirection::Receive,
+            receive_context("/tmp/.dashbeam-recv-hash"),
+        );
+
+        // No `receive-started`, so nothing was ever opened.
+        emitter.note_destination("Download/DashBeam".to_string(), None);
+
+        assert!(store.list().expect("list").is_empty());
+    }
+    #[test]
+    fn a_finished_transfer_tells_an_open_history_list_to_re_read() {
+        let dir = TempDir::new().expect("tempdir");
+        let (events, emitter) = watched_recorder(&dir, TransferDirection::Send, send_context());
+
+        emitter.emit_event("transfer-started").expect("emit");
+        emitter
+            .emit_event_with_payload("transfer-completed", r#"{"durationMs":10,"bytes":2048}"#)
+            .expect("emit");
+
+        assert_eq!(events.times_seen(HISTORY_UPDATED_EVENT), 1);
+    }
+
+    #[test]
+    fn a_failed_transfer_tells_an_open_history_list_to_re_read() {
+        let dir = TempDir::new().expect("tempdir");
+        let (events, emitter) = watched_recorder(&dir, TransferDirection::Send, send_context());
+
+        emitter.emit_event("transfer-started").expect("emit");
+        emitter.emit_event("transfer-failed").expect("emit");
+
+        assert_eq!(
+            events.times_seen(HISTORY_UPDATED_EVENT),
+            1,
+            "a failure fires no other event the list could listen for"
+        );
+    }
+
+    #[test]
+    fn a_cancelled_receive_tells_an_open_history_list_to_re_read() {
+        let dir = TempDir::new().expect("tempdir");
+        let (events, emitter) = watched_recorder(
+            &dir,
+            TransferDirection::Receive,
+            receive_context("/tmp/.dashbeam-recv-hash"),
+        );
+
+        emitter.emit_event("receive-started").expect("emit");
+        // The receive command finalizes cancels itself; no engine event fires.
+        emitter.finalize(TransferStatus::Cancelled, CompletionFacts::default(), None);
+
+        assert_eq!(events.times_seen(HISTORY_UPDATED_EVENT), 1);
+    }
+
+    #[test]
+    fn a_transfer_still_running_leaves_the_history_list_alone() {
+        let dir = TempDir::new().expect("tempdir");
+        let (events, emitter) = watched_recorder(&dir, TransferDirection::Send, send_context());
+
+        emitter.emit_event("transfer-started").expect("emit");
+        for bytes in ["512:2048:1000", "1024:2048:1000", "1536:2048:1000"] {
+            emitter
+                .emit_event_with_payload("transfer-progress", bytes)
+                .expect("emit");
+        }
+
+        assert_eq!(
+            events.times_seen(HISTORY_UPDATED_EVENT),
+            0,
+            "rows only reach the list once they are terminal"
+        );
+    }
+
+    #[test]
+    fn a_second_finalize_does_not_tell_the_list_twice() {
+        let dir = TempDir::new().expect("tempdir");
+        let (events, emitter) = watched_recorder(&dir, TransferDirection::Send, send_context());
+
+        emitter.emit_event("transfer-started").expect("emit");
+        emitter
+            .emit_event_with_payload("transfer-completed", r#"{"durationMs":10,"bytes":2048}"#)
+            .expect("emit");
+        // `stop_sharing` always fires after a share ends.
+        emitter.finalize(TransferStatus::Cancelled, CompletionFacts::default(), None);
+
+        assert_eq!(events.times_seen(HISTORY_UPDATED_EVENT), 1);
+    }
+
+    #[test]
+    fn correcting_the_destination_tells_an_open_history_list_to_re_read() {
+        let dir = TempDir::new().expect("tempdir");
+        let (events, emitter) = watched_recorder(
+            &dir,
+            TransferDirection::Receive,
+            receive_context("/tmp/.dashbeam-recv-hash"),
+        );
+
+        emitter.emit_event("receive-started").expect("emit");
+        emitter
+            .emit_event_with_payload("receive-completed", r#"{"durationMs":10,"bytes":2048}"#)
+            .expect("emit");
+        emitter.note_destination("Download/Work".to_string(), None);
+
+        assert_eq!(
+            events.times_seen(HISTORY_UPDATED_EVENT),
+            2,
+            "Android moves the files after the row closes, changing it again"
+        );
+    }
+
+    #[test]
+    fn a_destination_for_a_row_that_never_opened_tells_the_list_nothing() {
+        let dir = TempDir::new().expect("tempdir");
+        let (events, emitter) = watched_recorder(
+            &dir,
+            TransferDirection::Receive,
+            receive_context("/tmp/.dashbeam-recv-hash"),
+        );
+
+        emitter.note_destination("Download/DashBeam".to_string(), None);
+
+        assert_eq!(events.times_seen(HISTORY_UPDATED_EVENT), 0);
     }
 }

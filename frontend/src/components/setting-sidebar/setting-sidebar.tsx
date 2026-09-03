@@ -99,7 +99,8 @@ function SettingSidebarCore() {
 				transition={SETTINGS_NAV_TRANSITION}
 				className="pointer-events-none absolute inset-0 z-0 rounded-lg bg-sidebar-accent"
 			>
-				<SidebarMenu>
+				{/* Mobile taps need roomier rows than the dense desktop list. */}
+				<SidebarMenu className={cn(isMobile && 'gap-2')}>
 					{items.map((item) => (
 						<SidebarMenuItem key={item.label}>
 							<HighlightItem
@@ -127,7 +128,10 @@ function SettingSidebarCore() {
 										<SidebarMenuButton
 											isActive={isActive}
 											disabled={item.disable}
-											className="data-[active=true]:bg-transparent"
+											className={cn(
+												'data-[active=true]:bg-transparent',
+												isMobile && 'h-11 gap-3 px-3'
+											)}
 										>
 											{item.icon && (
 												<LazyIcon

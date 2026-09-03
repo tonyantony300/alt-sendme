@@ -90,3 +90,16 @@ pub(crate) async fn start_presence_service<R: Runtime>(app: AppHandle<R>) -> Res
 pub(crate) async fn stop_presence_service<R: Runtime>(app: AppHandle<R>) -> Result<()> {
     app.native_utils().stop_presence_service()
 }
+
+#[command]
+pub(crate) async fn write_text_to_uri<R: Runtime>(
+    app: AppHandle<R>,
+    args: WriteTextToUriArgs,
+) -> Result<()> {
+    app.native_utils().write_text_to_uri(args)
+}
+
+#[command]
+pub(crate) async fn fetch_update_manifest<R: Runtime>(app: AppHandle<R>) -> Result<String> {
+    app.native_utils().fetch_update_manifest()
+}

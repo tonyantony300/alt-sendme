@@ -31,7 +31,13 @@ import {
 } from '../components/ui/select'
 import { toastManager } from '../components/ui/toast'
 import { listPairedDevices } from '../lib/pairing-api'
-import { IS_PAIRING_CAPABLE } from '../lib/platform'
+import { IS_ANDROID, IS_PAIRING_CAPABLE } from '../lib/platform'
+import { listen, revealItemInDir, type UnlistenFn } from '../lib/platform-api'
+import { resolveAndroidOpenTarget } from '../lib/history-open-target'
+import { openDownloadFolder, openDownloadTarget } from '../plugins/nativeUtils'
+import { AppAlertDialog } from '../components/AppAlertDialog'
+import { formatFileSize } from '../lib/utils'
+import { formatReceiveSavePath } from '../lib/receive-save-path'
 import {
 	filterTransferHistory,
 	TRANSFER_STATUS_FILTERS,
@@ -44,6 +50,7 @@ import {
 	deleteTransferRecord,
 	getTransferTempData,
 	listTransferHistory,
+	transferOpenTarget,
 	type TransferTempData,
 } from '../lib/transfer-history-api'
 
@@ -61,6 +68,12 @@ export function HistoryPage() {
 	const [isLoading, setIsLoading] = useState(true)
 	const [isBusy, setIsBusy] = useState(false)
 	const [confirmClearAll, setConfirmClearAll] = useState(false)
+	const [pendingRemove, setPendingRemove] = useState<TransferRecord | null>(
+		null
+	)
+	const [missingTarget, setMissingTarget] = useState<TransferRecord | null>(
+		null
+	)
 
 	const refresh = useCallback(async () => {
 		const rows = await listTransferHistory()
@@ -105,6 +118,30 @@ export function HistoryPage() {
 		}
 	}, [refresh])
 
+	// A trusted device can land a transfer while this list is open. The shell
+	// announces a row only once it is terminal, so this re-reads the store
+	// rather than tracking transfer state of its own.
+	useEffect(() => {
+		let cancelled = false
+		let unlisten: UnlistenFn | undefined
+		void listen('transfer-history-updated', () => {
+			refresh().catch((error) => {
+				console.error('Failed to refresh transfer history:', error)
+			})
+		}).then((fn) => {
+			// Resolved after unmount: nothing left to notify, so drop it.
+			if (cancelled) {
+				fn()
+				return
+			}
+			unlisten = fn
+		})
+		return () => {
+			cancelled = true
+			unlisten?.()
+		}
+	}, [refresh])
+
 	const visible = useMemo(
 		() => filterTransferHistory(records, status),
 		[records, status]
@@ -115,6 +152,7 @@ export function HistoryPage() {
 		try {
 			await deleteTransferRecord(id)
 			await refresh()
+			setPendingRemove(null)
 		} catch (error) {
 			console.error(error)
 			toastManager.add({
@@ -123,6 +161,43 @@ export function HistoryPage() {
 			})
 		} finally {
 			setIsBusy(false)
+		}
+	}
+
+	/**
+	 * Android paths are labels rather than locations, so there the row's own
+	 * recorded target is followed and the system reports what it cannot open.
+	 * Everywhere else the destination is checked first: a folder that outlived
+	 * the files it held would otherwise open to nothing.
+	 */
+	const handleOpen = async (record: TransferRecord) => {
+		try {
+			if (IS_ANDROID) {
+				const target = resolveAndroidOpenTarget(record)
+				if (!target) {
+					setMissingTarget(record)
+					return
+				}
+				if (target.kind === 'folder') {
+					await openDownloadFolder(target.treeUri)
+				} else {
+					await openDownloadTarget('', target.relativePath)
+				}
+				return
+			}
+
+			const path = await transferOpenTarget(record.id)
+			if (!path) {
+				setMissingTarget(record)
+				return
+			}
+			await revealItemInDir(path)
+		} catch (error) {
+			console.error(error)
+			toastManager.add({
+				title: t('common:history.row.openFailed'),
+				type: 'error',
+			})
 		}
 	}
 
@@ -175,7 +250,7 @@ export function HistoryPage() {
 			{/* RootLayout paints a `z-10` drag region over the top 40px on macOS:
 			    `z-20` lets presses reach these controls, `pointer-events-none`
 			    keeps the gap between them draggable. */}
-			<div className="pointer-events-none relative z-20 flex items-center justify-between gap-2 px-4 pt-6">
+			<div className="pointer-events-none relative z-20 flex items-center justify-between gap-2 pt-[calc(1.5rem+var(--safe-area-top))] pl-[calc(1rem+var(--safe-area-left))] pr-[calc(1rem+var(--safe-area-right))]">
 				{/* Arrow and title are one target, matching the settings header. */}
 				<Link
 					to="/"
@@ -199,7 +274,7 @@ export function HistoryPage() {
 				)}
 			</div>
 
-			<div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pt-3">
+			<div className="flex min-h-0 flex-1 flex-col gap-3 pt-3 pl-[calc(1rem+var(--safe-area-left))] pr-[calc(1rem+var(--safe-area-right))]">
 				{/* A dropdown, not five chips: status is usually left on "All".
 				    Direction isn't a filter — one timeline, each row has its arrow. */}
 				<div className="flex items-center gap-2">
@@ -261,7 +336,8 @@ export function HistoryPage() {
 										record={record}
 										pairedDevices={pairedDevices}
 										tempData={tempData[record.id]}
-										onRemove={handleRemove}
+										onOpen={handleOpen}
+										onRemove={setPendingRemove}
 										onClearTempData={handleClearTempData}
 										isBusy={isBusy}
 									/>
@@ -300,6 +376,60 @@ export function HistoryPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<AlertDialog
+				open={pendingRemove !== null}
+				onOpenChange={(open) => {
+					if (!open) setPendingRemove(null)
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t('common:history.row.removeConfirmTitle')}
+						</AlertDialogTitle>
+						{/* Deleting a row also reclaims its partial store, so a row
+						    holding one gets the stronger warning. */}
+						<AlertDialogDescription>
+							{pendingRemove && tempData[pendingRemove.id]?.exists
+								? t('common:history.row.removeConfirmBodyResumable', {
+										size: formatFileSize(tempData[pendingRemove.id].sizeBytes),
+									})
+								: t('common:history.row.removeConfirmBody')}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setPendingRemove(null)}
+							disabled={isBusy}
+						>
+							{t('common:cancel')}
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => {
+								if (pendingRemove) void handleRemove(pendingRemove.id)
+							}}
+							disabled={isBusy}
+						>
+							{t('common:history.row.remove')}
+						</Button>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			<AppAlertDialog
+				isOpen={missingTarget !== null}
+				title={t('common:history.row.missingTitle')}
+				description={t('common:history.row.missingBody', {
+					path:
+						formatReceiveSavePath(missingTarget?.savePath) ||
+						t('common:history.row.unknownDestination'),
+				})}
+				type="error"
+				onClose={() => setMissingTarget(null)}
+			/>
 		</div>
 	)
 }

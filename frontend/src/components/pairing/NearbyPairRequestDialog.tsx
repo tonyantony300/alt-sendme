@@ -139,15 +139,20 @@ export function NearbyPairRequestDialog() {
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<div className="px-6 pb-4">
-					<VerificationCode
-						code={fingerprint}
-						hint={t('common:receiver.nearbyInvite.fingerprintHint', {
-							sender: request?.sender_name ?? '',
-						})}
-						unavailable={t(
-							'common:receiver.nearbyInvite.fingerprintUnavailable'
-						)}
-					/>
+					{/* Guarded on `request`: the popup stays mounted through its close
+					    animation, so an unguarded render flashes the "no code" error
+					    for that frame once Accept has cleared the request. */}
+					{request ? (
+						<VerificationCode
+							code={fingerprint}
+							hint={t('common:receiver.nearbyInvite.fingerprintHint', {
+								sender: request.sender_name,
+							})}
+							unavailable={t(
+								'common:receiver.nearbyInvite.fingerprintUnavailable'
+							)}
+						/>
+					) : null}
 				</div>
 				<AlertDialogFooter>
 					<AlertDialogClose

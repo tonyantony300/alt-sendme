@@ -55,6 +55,8 @@ export interface TransferRecord {
 	peer?: TransferHistoryPeer
 	peerCount: number
 	savePath?: string
+	/** Android only: the SAF tree to reopen; `savePath` only reads well. */
+	saveUri?: string
 	conflictCount: number
 	resumableStorePath?: string
 	error?: string
