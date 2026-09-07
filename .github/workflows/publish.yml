@@ -304,8 +304,17 @@ jobs:
               ;;
           esac
           REPOSITORY="${GITHUB_REPOSITORY#*/}"
-          LDAI_UPDATE_INFORMATION="gh-releases-zsync|${GITHUB_REPOSITORY_OWNER}|${REPOSITORY}|latest|DashBeam_${VERSION}_${APPIMAGE_RELEASE_ARCH}.AppImage.zsync"
-          echo "LDAI_UPDATE_INFORMATION=${LDAI_UPDATE_INFORMATION}" >> "$GITHUB_ENV"
+          # The embedded filename is matched against the assets of whichever
+          # release is "latest" when an installed AppImage checks for updates, so
+          # it must not name this build's version: a 0.7.1 AppImage asking for
+          # DashBeam_0.7.1_amd64.AppImage.zsync would never find the 0.7.2
+          # sidecar that replaced it. "*" is a wildcard in this field.
+          APPIMAGE_SIDECAR_PATTERN="DashBeam_*_${APPIMAGE_RELEASE_ARCH}.AppImage.zsync"
+          LDAI_UPDATE_INFORMATION="gh-releases-zsync|${GITHUB_REPOSITORY_OWNER}|${REPOSITORY}|latest|${APPIMAGE_SIDECAR_PATTERN}"
+          {
+            echo "LDAI_UPDATE_INFORMATION=${LDAI_UPDATE_INFORMATION}"
+            echo "APPIMAGE_EXPECTED_SIDECAR=DashBeam_${VERSION}_${APPIMAGE_RELEASE_ARCH}.AppImage.zsync"
+          } >> "$GITHUB_ENV"
 
       # Retries only help transient latest.json upload races. Keep low — each attempt
       # re-runs the full tauri build (wasm + frontend + rust + bundles), which turned a
@@ -352,11 +361,22 @@ jobs:
 
           SIDECAR="${SIDECARS[0]}"
           APPIMAGE="${SIDECAR%.zsync}"
-          EXPECTED_SIDECAR="${LDAI_UPDATE_INFORMATION##*|}"
-          if [ ! -f "$APPIMAGE" ] || [ "$(basename "$SIDECAR")" != "$EXPECTED_SIDECAR" ]; then
-            echo "ERROR: zsync sidecar does not match the expected AppImage update information"
+          SIDECAR_NAME="$(basename "$SIDECAR")"
+          if [ ! -f "$APPIMAGE" ] || [ "$SIDECAR_NAME" != "$APPIMAGE_EXPECTED_SIDECAR" ]; then
+            echo "ERROR: expected $APPIMAGE_EXPECTED_SIDECAR beside its AppImage, found $SIDECAR_NAME"
             exit 1
           fi
+
+          # The asset has to stay reachable by the pattern the AppImage carries,
+          # or the update check resolves "latest" and then matches nothing.
+          SIDECAR_PATTERN="${LDAI_UPDATE_INFORMATION##*|}"
+          case "$SIDECAR_NAME" in
+            $SIDECAR_PATTERN) ;;
+            *)
+              echo "ERROR: $SIDECAR_NAME is not matched by $SIDECAR_PATTERN"
+              exit 1
+              ;;
+          esac
 
           UPD_INFO_DUMP="$(readelf --string-dump=.upd_info "$APPIMAGE")"
           mapfile -t EMBEDDED_UPD_INFO < <(sed -n 's/^[[:space:]]*\[[^]]*\][[:space:]]*//p' <<< "$UPD_INFO_DUMP")
