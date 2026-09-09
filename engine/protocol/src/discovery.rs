@@ -165,8 +165,7 @@ pub async fn verify_discovery(
     arg: DiscoveryConfigArg,
 ) -> Result<VerifyDiscoveryResponse, String> {
     use iroh::address_lookup::pkarr::PkarrPublisher;
-    use iroh::endpoint::{presets, RelayMode};
-    use iroh::Endpoint;
+    use iroh::endpoint::RelayMode;
 
     let mode = build_discovery_mode(Some(arg))?;
     let DiscoveryModeOption::Custom {
@@ -181,11 +180,10 @@ pub async fn verify_discovery(
     // Custom discovery always needs OS trust for private-CA pkarr HTTPS.
     // DotTolerant wrapping also covers the default n0 relay probe path on Windows.
     let endpoint = crate::tls_config::with_system_ca_if_custom(
-        Endpoint::builder(presets::Minimal),
+        crate::endpoint_builder(secret_key, &RelayMode::Default, false)
+            .map_err(|e| e.to_string())?,
         true,
     )
-    .secret_key(secret_key)
-    .relay_mode(RelayMode::Default)
     .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
     .bind()
     .await

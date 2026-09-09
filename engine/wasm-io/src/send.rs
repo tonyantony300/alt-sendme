@@ -2,8 +2,7 @@ use protocol::{
     get_or_create_secret, run_share_session, uses_custom_infra, with_system_ca_if_custom,
     AddrInfoOptions, AppHandle, FileMetadata, SendOptions, METADATA_ALPN,
 };
-use iroh::endpoint::presets;
-use iroh::{endpoint::RelayMode, Endpoint};
+use iroh::endpoint::RelayMode;
 use iroh_blobs::{
     provider::events::{ConnectMode, EventMask, EventSender, RequestMode},
     BlobsProtocol,
@@ -27,10 +26,8 @@ pub async fn start_share_bytes(
 
     let custom_infra = uses_custom_infra(&options.discovery_mode, &options.relay_mode);
     let builder = with_system_ca_if_custom(
-        Endpoint::builder(presets::N0)
-            .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
-            .secret_key(secret_key)
-            .relay_mode(relay_mode.clone()),
+        protocol::endpoint_builder(secret_key, &relay_mode, true)?
+            .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()]),
         custom_infra,
     );
 
@@ -92,10 +89,8 @@ pub async fn start_share_items_bytes(
 
     let custom_infra = uses_custom_infra(&options.discovery_mode, &options.relay_mode);
     let builder = with_system_ca_if_custom(
-        Endpoint::builder(presets::N0)
-            .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
-            .secret_key(secret_key)
-            .relay_mode(relay_mode.clone()),
+        protocol::endpoint_builder(secret_key, &relay_mode, true)?
+            .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()]),
         custom_infra,
     );
 

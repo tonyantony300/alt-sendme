@@ -1,10 +1,8 @@
 use protocol::{
     download_to_store, get_or_create_secret, AppHandle, DiscoveryModeOption, ReceiveOptions,
 };
-use iroh::endpoint::presets;
 use iroh::{
     address_lookup::{dns::DnsAddressLookup, pkarr::PkarrResolver},
-    Endpoint,
 };
 use iroh_blobs::ticket::BlobTicket;
 use std::str::FromStr;
@@ -33,11 +31,13 @@ pub async fn download(
 
     let custom_infra =
         protocol::uses_custom_infra(&options.discovery_mode, &options.relay_mode);
+    let relay_mode: iroh::endpoint::RelayMode = options.relay_mode.clone().into();
     let mut builder =
-        protocol::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
-            .alpns(vec![])
-            .secret_key(secret_key)
-            .relay_mode(options.relay_mode.clone().into());
+        protocol::with_system_ca_if_custom(
+            protocol::endpoint_builder(secret_key, &relay_mode, false)?,
+            custom_infra,
+        )
+            .alpns(vec![]);
 
     if ticket.addr().relay_urls().count() == 0 && ticket.addr().ip_addrs().count() == 0 {
         builder = match &options.discovery_mode {

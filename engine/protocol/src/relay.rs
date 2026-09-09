@@ -1,6 +1,6 @@
 use crate::time_compat::{sleep, timeout, Duration, Instant};
 use crate::types::{get_or_create_secret, RelayModeOption};
-use iroh::{endpoint::presets, Endpoint, Watcher};
+use iroh::{Endpoint, Watcher};
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use std::str::FromStr;
@@ -137,7 +137,9 @@ pub struct VerifyRelaysResponse {
 }
 
 pub fn is_public_relay_url(url: &str) -> bool {
-    url.contains("relay.n0.iroh.link") || url.contains(".iroh.link")
+    url.contains("relay.n0.iroh.link")
+        || url.contains(".iroh.link")
+        || url.contains(".relay.iroh-svc.com")
 }
 
 fn connected_home_relay_url(endpoint: &Endpoint) -> Option<String> {
@@ -176,10 +178,11 @@ async fn probe_relay_mode(relay_mode: RelayModeOption) -> Result<Option<String>,
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
     let custom_infra = matches!(relay_mode, RelayModeOption::Custom { .. });
-    let endpoint =
-        crate::tls_config::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
-            .secret_key(secret_key)
-            .relay_mode(relay_mode.into())
+    let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
+    let endpoint = crate::tls_config::with_system_ca_if_custom(
+        crate::endpoint_builder(secret_key, &relay_mode, false).map_err(|e| e.to_string())?,
+        custom_infra,
+    )
             .bind()
             .await
             .map_err(|e| format!("Failed to bind endpoint: {e}"))?;
@@ -341,11 +344,12 @@ pub async fn verify_relays(relay: RelayConfigArg) -> Result<VerifyRelaysResponse
 
     let secret_key = get_or_create_secret().map_err(|e| e.to_string())?;
     let custom_infra = matches!(relay_mode, RelayModeOption::Custom { .. });
+    let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
 
-    let endpoint =
-        crate::tls_config::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
-            .secret_key(secret_key)
-            .relay_mode(relay_mode.into())
+    let endpoint = crate::tls_config::with_system_ca_if_custom(
+        crate::endpoint_builder(secret_key, &relay_mode, false).map_err(|e| e.to_string())?,
+        custom_infra,
+    )
             .bind()
             .await
             .map_err(|e| format!("Failed to bind endpoint: {e}"))?;

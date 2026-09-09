@@ -3,8 +3,7 @@ use std::path::PathBuf;
 use protocol::{
     run_share_session, AppHandle, DiscoveryModeOption, FileMetadata, SendOptions, METADATA_ALPN,
 };
-use iroh::endpoint::presets;
-use iroh::{address_lookup::pkarr::PkarrPublisher, endpoint::RelayMode, Endpoint};
+use iroh::{address_lookup::pkarr::PkarrPublisher, endpoint::RelayMode};
 use iroh_blobs::{
     provider::events::{ConnectMode, EventMask, EventSender, RequestMode},
     BlobsProtocol,
@@ -41,16 +40,12 @@ pub async fn start_share_items(
     // the control endpoint is online, or the relay rejects duplicate endpoint ids.
     let secret_key = get_or_create_secret()?;
     let relay_mode: RelayMode = options.relay_mode.clone().into();
-    let builder = match &options.discovery_mode {
-        DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
-        DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
-    };
+    let default_discovery = matches!(options.discovery_mode, DiscoveryModeOption::Default);
+    let builder = protocol::endpoint_builder(secret_key, &relay_mode, default_discovery)?;
     let custom_infra =
         protocol::uses_custom_infra(&options.discovery_mode, &options.relay_mode);
     let mut builder = protocol::with_system_ca_if_custom(builder, custom_infra)
-        .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()])
-        .secret_key(secret_key)
-        .relay_mode(relay_mode.clone());
+        .alpns(vec![iroh_blobs::ALPN.to_vec(), METADATA_ALPN.to_vec()]);
 
     match &options.discovery_mode {
         // Self-hosted discovery: publish our home relay to the custom pkarr relay so
