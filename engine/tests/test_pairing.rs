@@ -158,9 +158,7 @@ fn pairing_ticket_encodes_bare_endpoint_id_for_iroh_services_relay() {
         v: 1,
         kind: PairingTicket::KIND.to_string(),
         endpoint_id: endpoint_id.clone(),
-        relay_url: Some(
-            "https://e3qdnz19n5p4tnh6b.use1.relay.iroh-svc.com/".to_string(),
-        ),
+        relay_url: Some("https://e3qdnz19n5p4tnh6b.use1.relay.iroh-svc.com/".to_string()),
     };
     let encoded = ticket.encode().expect("encode");
     assert_eq!(encoded, endpoint_id);
