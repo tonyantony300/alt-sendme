@@ -5,7 +5,6 @@ use crate::progress::{
 };
 use crate::time_compat::{sleep, timeout, Duration, Instant};
 use crate::types::{get_or_create_secret, AppHandle, DiscoveryModeOption, FileMetadata, ReceiveOptions};
-use iroh::endpoint::presets;
 #[cfg(not(target_arch = "wasm32"))]
 use iroh::{
     address_lookup::{dns::DnsAddressLookup, pkarr::PkarrResolver},
@@ -269,17 +268,14 @@ pub async fn fetch_metadata(
     let secret_key = get_or_create_secret()?;
 
     let discovery_mode = options.discovery_mode.clone();
-    let builder = match &discovery_mode {
-        DiscoveryModeOption::Custom { .. } => Endpoint::builder(presets::Minimal),
-        DiscoveryModeOption::Default => Endpoint::builder(presets::N0),
-    };
+    let relay_mode: iroh::endpoint::RelayMode = options.relay_mode.clone().into();
+    let default_discovery = matches!(discovery_mode, DiscoveryModeOption::Default);
+    let builder = crate::endpoint_builder(secret_key, &relay_mode, default_discovery)?;
     let custom_infra =
         crate::tls_config::uses_custom_infra(&discovery_mode, &options.relay_mode);
     let mut builder = crate::tls_config::with_system_ca_if_custom(builder, custom_infra)
         // METADATA_ALPN only to indicate a metadata fetch
-        .alpns(vec![METADATA_ALPN.to_vec()])
-        .secret_key(secret_key)
-        .relay_mode(options.relay_mode.into());
+        .alpns(vec![METADATA_ALPN.to_vec()]);
 
     #[cfg(not(target_arch = "wasm32"))]
     {

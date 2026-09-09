@@ -44,8 +44,7 @@ type HighlightContextType<T extends string> = {
 
 const HighlightContext = React.createContext<
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	HighlightContextType<any> | undefined
->(undefined)
+	HighlightContextType<any> | undefined>(undefined)
 
 function useHighlight<T extends string>(): HighlightContextType<T> {
 	const context = React.useContext(HighlightContext)

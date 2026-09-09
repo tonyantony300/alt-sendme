@@ -374,10 +374,13 @@ pub async fn get_relay_status(relay_json: Option<String>) -> Result<String, JsVa
 /// Bind a relay-only iroh endpoint and return its node id (smoke test).
 #[wasm_bindgen]
 pub async fn smoke_test_endpoint() -> Result<String, JsValue> {
-    use iroh::endpoint::presets;
-    use iroh::Endpoint;
+    use iroh::endpoint::RelayMode;
 
-    let endpoint = with_system_ca_if_custom(Endpoint::builder(presets::N0), false)
+    let endpoint = with_system_ca_if_custom(
+        protocol::endpoint_builder(iroh::SecretKey::generate(), &RelayMode::Default, true)
+            .map_err(js_err)?,
+        false,
+    )
         .bind()
         .await
         .map_err(|e| JsValue::from_str(&format!("endpoint bind failed: {e}")))?;

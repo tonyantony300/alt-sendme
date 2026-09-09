@@ -2,8 +2,6 @@ use protocol::{
     download_to_store, get_or_create_secret, uses_custom_infra, with_system_ca_if_custom,
     AppHandle, ReceiveOptions,
 };
-use iroh::endpoint::presets;
-use iroh::Endpoint;
 use iroh_blobs::ticket::BlobTicket;
 use std::str::FromStr;
 
@@ -21,11 +19,9 @@ pub async fn download_files(
     let secret_key = get_or_create_secret()?;
 
     let custom_infra = uses_custom_infra(&options.discovery_mode, &options.relay_mode);
+    let relay_mode: iroh::endpoint::RelayMode = options.relay_mode.clone().into();
     let builder = with_system_ca_if_custom(
-        Endpoint::builder(presets::Minimal)
-            .alpns(vec![])
-            .secret_key(secret_key)
-            .relay_mode(options.relay_mode.clone().into()),
+        protocol::endpoint_builder(secret_key, &relay_mode, false)?.alpns(vec![]),
         custom_infra,
     );
 

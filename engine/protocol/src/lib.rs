@@ -1,5 +1,6 @@
 pub mod control;
 pub mod discovery;
+pub mod endpoint;
 pub mod identity;
 pub mod nearby;
 pub mod pairing;
@@ -38,6 +39,7 @@ pub use discovery::{
     build_discovery_mode, parse_dns_origin, parse_pkarr_relay_url, DiscoveryConfigArg,
     VerifyDiscoveryResponse,
 };
+pub use endpoint::endpoint_builder;
 #[cfg(not(target_arch = "wasm32"))]
 pub use discovery::verify_discovery;
 pub use tls_config::{uses_custom_infra, with_system_ca_if_custom};
