@@ -28,11 +28,19 @@
 
 </div>
 
-Бесплатный инструмент с открытым исходным кодом для передачи файлов, использующий [передовую одноранговую сеть](https://www.iroh.computer), позволяющий передавать файлы напрямую без хранения на облачных серверах.
+Бесплатный инструмент с открытым исходным кодом для передачи файлов, использующий передовую одноранговую сеть, позволяющий передавать файлы напрямую без хранения на облачных серверах.
 
 Зачем полагаться на WeTransfer, Dropbox или Google Drive, когда можно надёжно и просто передавать файлы напрямую, с сквозным шифрованием и без раскрытия личной информации?
 
-Выбирайте тот способ, который сейчас удобнее: **отправить ссылку или QR-код**, который откроется на любом устройстве, **отправить на однажды сопряжённое устройство** или **отправить на устройство, которое уже есть в вашей сети**. Все три переносят одни и те же байты одинаково – напрямую и со сквозным шифрованием.
+<div align="center">
+
+<br />
+
+<a href="https://www.testmuai.com" rel="nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg"><source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg"><img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI"></picture></a>
+&emsp;&emsp;
+<a href="https://vercel.com/open-source-program"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/vercel-oss-light.svg"><source media="(prefers-color-scheme: light)" srcset="../../assets/vercel-oss-dark.svg"><img src="../../assets/vercel-oss-dark.svg" width="254" height="80" alt="Vercel OSS Program"></picture></a>
+
+</div>
 
 
 
@@ -124,21 +132,6 @@
 
 Возникли проблемы? Смотрите [Устранение неполадок](../troubleshooting.md) — там частые проблемы и то, как собрать логи.
 
-
-
-## Партнёры
-
-<a href="https://www.testmuai.com" rel="nofollow">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
-  </picture>
-</a>
-
-Мы ищем партнёров для нашей миссии! Станьте партнёром и поддержите нас, пока мы расширяем границы одноранговой передачи файлов.
-
-[**ДАВАЙТЕ ПОГОВОРИМ**](https://www.dashbeam.net/en/contact)
 
 
 ## Поддерживаемые языки
@@ -309,13 +302,6 @@ AGPL-3.0
 
 
 
-## Создано на базе
-
-<div align="left">
-  <a href="https://iroh.computer">
-    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
-  </a>
-</div>
 
 
 

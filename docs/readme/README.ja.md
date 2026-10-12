@@ -28,11 +28,19 @@
 
 </div>
 
-[最先端のピアツーピアネットワーキング](https://www.iroh.computer)の力を活用した、無料のオープンソースファイル転送ツールです。クラウドサーバーに保存することなく、ファイルを直接転送できます。
+最先端のピアツーピアネットワーキングの力を活用した、無料のオープンソースファイル転送ツールです。クラウドサーバーに保存することなく、ファイルを直接転送できます。
 
 WeTransfer、Dropbox、Google Drive に頼る必要はありますか？DashBeam なら、個人情報を明かすことなく、エンドツーエンド暗号化で、信頼性が高く簡単にファイルを直接転送できます。
 
-そのときいちばん手近な方法を選べます。どの端末でも開ける**リンクや QR コードを送る**、**一度ペアリングした端末に送る**、**すでに同じネットワークにいる端末に送る** — この 3 つはいずれも同じバイトを同じ方法で運びます。直接、エンドツーエンドで暗号化して。
+<div align="center">
+
+<br />
+
+<a href="https://www.testmuai.com" rel="nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg"><source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg"><img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI"></picture></a>
+&emsp;&emsp;
+<a href="https://vercel.com/open-source-program"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/vercel-oss-light.svg"><source media="(prefers-color-scheme: light)" srcset="../../assets/vercel-oss-dark.svg"><img src="../../assets/vercel-oss-dark.svg" width="254" height="80" alt="Vercel OSS Program"></picture></a>
+
+</div>
 
 
 
@@ -124,21 +132,6 @@ WeTransfer、Dropbox、Google Drive に頼る必要はありますか？DashBeam
 
 うまくいかないときは、よくある問題とログの取り方をまとめた[トラブルシューティング](../troubleshooting.md)をご覧ください。
 
-
-
-## パートナー
-
-<a href="https://www.testmuai.com" rel="nofollow">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
-  </picture>
-</a>
-
-私たちのミッションに参加するパートナーを募集しています！パートナーとしてご支援いただき、ピアツーピアファイル転送の可能性を押し広げましょう。
-
-[**お話ししましょう**](https://www.dashbeam.net/en/contact)
 
 
 ## 対応言語
@@ -309,13 +302,6 @@ DashBeam がデータとプライバシーをどのように扱うかについ�
 
 
 
-## 基盤技術
-
-<div align="left">
-  <a href="https://iroh.computer">
-    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
-  </a>
-</div>
 
 
 
