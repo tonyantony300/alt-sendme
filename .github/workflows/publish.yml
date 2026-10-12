@@ -365,8 +365,6 @@ jobs:
 
       - name: Verify and upload Linux AppImage update sidecar
         if: contains(matrix.platform, 'ubuntu')
-        # Runs last and non-fatal so a sidecar problem can't block the other Linux assets.
-        continue-on-error: true
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
