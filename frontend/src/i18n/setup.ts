@@ -1,3 +1,5 @@
+import { matchLocale } from '../lib/locale-match'
+
 export interface TranslationResources {
 	[language: string]: {
 		[namespace: string]: {
@@ -43,19 +45,18 @@ Object.entries(localeFiles).forEach(([path, module]) => {
 	}
 })
 
-const getStoredLanguage = (): string => {
+// Saved user choice first, then the OS/browser language, then English.
+export const resolveLanguage = (): string => {
 	let stored: string | null = null
 	try {
 		stored = localStorage.getItem('altsendme-language')
 	} catch {
 		// Continue with browser-locale detection when storage is unavailable.
 	}
+	if (stored && resources[stored]) return stored
 
 	try {
-		const tag = (navigator.language || 'en').toLowerCase()
-		const keys = Object.keys(resources)
-		const pick = (t: string) => keys.find((k) => k.toLowerCase().startsWith(t))
-		return stored || pick(tag) || pick(tag.slice(0, 2)) || 'en'
+		return matchLocale(navigator.language, Object.keys(resources)) || 'en'
 	} catch {
 		return 'en'
 	}
@@ -120,7 +121,7 @@ const changeLanguage = (lng: string): void => {
 }
 
 const initI18n = (): I18nInstance => {
-	const currentLanguage = getStoredLanguage()
+	const currentLanguage = resolveLanguage()
 
 	i18nInstance = {
 		language: currentLanguage,
