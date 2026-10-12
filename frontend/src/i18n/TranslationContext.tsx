@@ -1,7 +1,7 @@
 import type React from 'react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { TranslationContext } from './context'
-import i18next, { loadTranslations } from './setup'
+import i18next, { loadTranslations, resolveLanguage } from './setup'
 
 export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
 	children,
@@ -16,10 +16,11 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({
 
 	useEffect(() => {
 		const handleLanguageChange = () => {
-			const newLang = localStorage.getItem('altsendme-language') || 'en'
+			const newLang = resolveLanguage()
 			if (newLang !== language) {
 				setLanguage(newLang)
-				i18next.changeLanguage(newLang)
+				// Don't persist: a detected language should keep following the OS.
+				i18next.language = newLang
 			}
 		}
 
