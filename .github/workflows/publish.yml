@@ -160,7 +160,7 @@ jobs:
         if: contains(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils clang
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils clang zsync
 
       # Exclude libwayland-client from AppImage so Wayland hosts load their own
       # copy (fixes EGL_BAD_PARAMETER on Arch/Tumbleweed). Requires a linuxdeploy
@@ -373,6 +373,15 @@ jobs:
           RELEASE_TAG="$GITHUB_REF_NAME"
           export GH_REPO="$GITHUB_REPOSITORY"
           shopt -s nullglob
+          # appimagetool runs zsyncmake from linuxdeploy's cwd, so its sidecar never
+          # lands in the bundle dir. Generate it beside the final AppImage instead.
+          APPIMAGES=(src-tauri/target/release/bundle/appimage/*.AppImage)
+          if [ "${#APPIMAGES[@]}" -ne 1 ]; then
+            echo "ERROR: expected exactly one Linux AppImage, found ${#APPIMAGES[@]}"
+            exit 1
+          fi
+          rm -f src-tauri/target/release/bundle/appimage/*.AppImage.zsync
+          zsyncmake -u "$(basename "${APPIMAGES[0]}")" -o "${APPIMAGES[0]}.zsync" "${APPIMAGES[0]}"
           SIDECARS=(src-tauri/target/release/bundle/appimage/*.AppImage.zsync)
           if [ "${#SIDECARS[@]}" -ne 1 ]; then
             echo "ERROR: expected exactly one Linux AppImage zsync sidecar, found ${#SIDECARS[@]}"
