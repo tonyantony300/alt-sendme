@@ -28,11 +28,19 @@
 
 </div>
 
-Ein kostenloses Open-Source-Tool für Dateitransfers, das die Möglichkeiten von [modernem Peer-to-Peer-Netzwerk](https://www.iroh.computer) nutzt und Ihnen erlaubt, Dateien direkt zu übertragen – ohne sie auf Cloud-Servern zu speichern.
+Ein kostenloses Open-Source-Tool für Dateitransfers, das die Möglichkeiten von modernem Peer-to-Peer-Netzwerk nutzt und Ihnen erlaubt, Dateien direkt zu übertragen – ohne sie auf Cloud-Servern zu speichern.
 
 Warum auf WeTransfer, Dropbox oder Google Drive setzen, wenn Sie Dateien zuverlässig und einfach direkt übertragen können – Ende-zu-Ende verschlüsselt und ohne persönliche Daten preiszugeben?
 
-Wählen Sie den Weg, der gerade am nächsten liegt: **einen Link oder QR-Code senden**, der sich auf jedem Gerät öffnet, **an ein einmal gepairtes Gerät senden** oder **an ein Gerät senden, das bereits in Ihrem Netzwerk ist**. Alle drei bewegen dieselben Bytes auf dieselbe Weise – direkt und Ende-zu-Ende verschlüsselt.
+<div align="center">
+
+<br />
+
+<a href="https://www.testmuai.com" rel="nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg"><source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg"><img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI"></picture></a>
+&emsp;&emsp;
+<a href="https://vercel.com/open-source-program"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/vercel-oss-light.svg"><source media="(prefers-color-scheme: light)" srcset="../../assets/vercel-oss-dark.svg"><img src="../../assets/vercel-oss-dark.svg" width="254" height="80" alt="Vercel OSS Program"></picture></a>
+
+</div>
 
 
 
@@ -124,21 +132,6 @@ Weitere Optionen unter [GitHub Releases](https://github.com/tonyantony300/dashbe
 
 Probleme? Siehe [Fehlerbehebung](../troubleshooting.md) für häufige Probleme und wie Sie Logs sammeln.
 
-
-
-## Partner
-
-<a href="https://www.testmuai.com" rel="nofollow">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
-  </picture>
-</a>
-
-Wir suchen Partner, die unsere Mission unterstützen! Werden Sie Partner und unterstützen Sie uns, während wir die Grenzen des Peer-to-Peer-Dateitransfers verschieben.
-
-[**SPRECHEN WIR**](https://www.dashbeam.net/en/contact)
 
 
 ## Unterstützte Sprachen
@@ -309,13 +302,6 @@ Vielen Dank, dass Sie sich dieses Projekt angesehen haben! Wenn es Ihnen nützli
 
 
 
-## Basiert auf
-
-<div align="left">
-  <a href="https://iroh.computer">
-    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
-  </a>
-</div>
 
 
 

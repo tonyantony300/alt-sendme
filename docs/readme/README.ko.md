@@ -28,11 +28,19 @@
 
 </div>
 
-[최첨단 피어투피어 네트워킹](https://www.iroh.computer)의 힘을 활용한 무료 오픈소스 파일 전송 도구로, 클라우드 서버에 저장하지 않고 파일을 직접 전송할 수 있습니다.
+최첨단 피어투피어 네트워킹의 힘을 활용한 무료 오픈소스 파일 전송 도구로, 클라우드 서버에 저장하지 않고 파일을 직접 전송할 수 있습니다.
 
 WeTransfer, Dropbox, Google Drive에 의존할 필요가 있을까요? DashBeam은 개인 정보를 노출하지 않고, 엔드투엔드 암호화로 안정적이고 쉽게 파일을 직접 전송할 수 있습니다.
 
-그때그때 가장 손쉬운 방법을 고르세요. 어떤 기기에서든 열리는 **링크나 QR 코드 보내기**, **한 번 페어링해 둔 기기로 보내기**, **이미 같은 네트워크에 있는 기기로 보내기** — 세 가지 모두 같은 바이트를 같은 방식으로, 즉 직접 그리고 종단 간 암호화된 상태로 옮깁니다.
+<div align="center">
+
+<br />
+
+<a href="https://www.testmuai.com" rel="nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg"><source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg"><img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI"></picture></a>
+&emsp;&emsp;
+<a href="https://vercel.com/open-source-program"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/vercel-oss-light.svg"><source media="(prefers-color-scheme: light)" srcset="../../assets/vercel-oss-dark.svg"><img src="../../assets/vercel-oss-dark.svg" width="254" height="80" alt="Vercel OSS Program"></picture></a>
+
+</div>
 
 
 
@@ -124,21 +132,6 @@ WeTransfer, Dropbox, Google Drive에 의존할 필요가 있을까요? DashBeam�
 
 문제가 있나요? 자주 겪는 문제와 로그 수집 방법은 [문제 해결](../troubleshooting.md)을 참고하세요.
 
-
-
-## 파트너
-
-<a href="https://www.testmuai.com" rel="nofollow">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
-  </picture>
-</a>
-
-우리의 미션에 함께할 파트너를 찾고 있습니다! 파트너로서 지원해 주시면, 피어투피어 파일 전송의 한계를 넓혀 나가겠습니다.
-
-[**이야기 나눠요**](https://www.dashbeam.net/en/contact)
 
 
 ## 지원 언어
@@ -309,13 +302,6 @@ DashBeam이 데이터와 개인정보를 어떻게 처리하는지는 [PRIVACY.m
 
 
 
-## 기반 기술
-
-<div align="left">
-  <a href="https://iroh.computer">
-    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
-  </a>
-</div>
 
 
 
