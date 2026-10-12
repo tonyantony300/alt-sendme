@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use anyhow::Context;
 use iroh::endpoint::{
-    presets, AfterHandshakeOutcome, Connection, Endpoint, EndpointHooks, RelayMode, Side,
+    AfterHandshakeOutcome, Connection, Endpoint, EndpointHooks, RelayMode, Side,
 };
 use iroh::protocol::{AcceptError, ProtocolHandler, Router};
 use iroh::address_lookup::pkarr::{PkarrPublisher, PkarrResolver};
@@ -2229,8 +2229,10 @@ async fn build_runtime(
             pkarr_relay_url,
             dns_origin,
         } => {
-            let mut builder =
-                protocol::with_system_ca_if_custom(Endpoint::builder(presets::Minimal), custom_infra)
+            let mut builder = protocol::with_system_ca_if_custom(
+                    protocol::endpoint_builder(identity.secret_key.clone(), &relay_mode, false)?,
+                    custom_infra,
+                )
                     .address_lookup(PkarrPublisher::builder(pkarr_relay_url.clone()))
                     .address_lookup(PkarrResolver::builder(pkarr_relay_url.clone()));
             if let Some(origin) = dns_origin {
@@ -2239,14 +2241,15 @@ async fn build_runtime(
             builder
         }
         DiscoveryModeOption::Default => {
-            protocol::with_system_ca_if_custom(Endpoint::builder(presets::N0), custom_infra)
+            protocol::with_system_ca_if_custom(
+                protocol::endpoint_builder(identity.secret_key.clone(), &relay_mode, true)?,
+                custom_infra,
+            )
                 .address_lookup(PkarrPublisher::n0_dns())
         }
     };
 
     let endpoint = builder
-        .secret_key(identity.secret_key.clone())
-        .relay_mode(relay_mode.clone())
         .hooks(hook)
         .alpns(vec![CONTROL_ALPN.to_vec()])
         .bind()
