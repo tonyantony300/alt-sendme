@@ -64,6 +64,7 @@ Why rely on WeTransfer, Dropbox, or Google Drive when you can reliably and easil
 - **Lightweight & free** - Small installs; open source, no limits
 
 
+
 ## Real-world stats
 
 
@@ -108,10 +109,13 @@ The easiest way to get started is by downloading one of the following versions f
     <td>~13 MB</td>
   </tr>
   <tr>
-    <td>📱 <b>Android (arm64)</b></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.1/DashBeam-v0.7.1-arm64.apk'>DashBeam.apk</a></td>
-    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.1/DashBeam-v0.7.1-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.1/DashBeam-v0.7.1-universal.apk'>universal</a></td>
-    <td>~50 MB</td>
+    <td>📱 <b>Android</b></td>
+    <td><div align="center">
+<a href="https://play.google.com/store/apps/details?id=com.dashbeam.android"><img src="assets/gplay.png" height="30" alt="Get it on Google Play"></a>
+</div>
+</td>
+    <td><a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.1/DashBeam-v0.7.1-arm64.apk'>arm64 APK</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.1/DashBeam-v0.7.1-armv7.apk'>armv7</a>, <a href='https://github.com/tonyantony300/dashbeam/releases/download/v0.7.1/DashBeam-v0.7.1-universal.apk'>universal</a></td>
+    <td>~15 MB</td>
   </tr>
   <tr>
     <td>⌨️ <b>CLI</b></td>
@@ -123,7 +127,7 @@ The easiest way to get started is by downloading one of the following versions f
     <td>🌐 <b>Web (Limited throughput)</b></td>
     <td><a href='https://app.dashbeam.net'>app.dashbeam.net</a></td>
     <td>-</td>
-    <td>~2 MB</td>
+    <td>_</td>
   </tr>
 </table>
 
@@ -304,7 +308,11 @@ Reach me [here](https://www.dashbeam.net/en/contact) for suggestions, feedback o
 
 Thank you for checking out this project! If you find it useful, consider giving it a star and helping spread the word.
 
+<br>
 
+<div align="center">
+<a href="https://play.google.com/store/apps/details?id=com.dashbeam.android"><img src="assets/gplay.png" height="60" alt="Get it on Google Play"></a>
+</div>
 
 
 
