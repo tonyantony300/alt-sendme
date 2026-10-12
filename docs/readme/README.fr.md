@@ -28,11 +28,19 @@
 
 </div>
 
-Un outil de transfert de fichiers gratuit et open source qui exploite la puissance du [réseau peer-to-peer de pointe](https://www.iroh.computer), vous permettant de transférer des fichiers directement sans les stocker sur des serveurs cloud.
+Un outil de transfert de fichiers gratuit et open source qui exploite la puissance du réseau peer-to-peer de pointe, vous permettant de transférer des fichiers directement sans les stocker sur des serveurs cloud.
 
 Pourquoi compter sur WeTransfer, Dropbox ou Google Drive lorsque vous pouvez transférer des fichiers de manière fiable et simple, directement, avec chiffrement de bout en bout et sans divulguer d'informations personnelles ?
 
-Choisissez la voie la plus pratique sur le moment : **envoyer un lien ou un QR code** qui s'ouvre sur n'importe quel appareil, **envoyer à un appareil appairé une fois pour toutes**, ou **envoyer à un appareil déjà présent sur votre réseau**. Les trois déplacent les mêmes octets de la même façon – directement et chiffrés de bout en bout.
+<div align="center">
+
+<br />
+
+<a href="https://www.testmuai.com" rel="nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg"><source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg"><img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI"></picture></a>
+&emsp;&emsp;
+<a href="https://vercel.com/open-source-program"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/vercel-oss-light.svg"><source media="(prefers-color-scheme: light)" srcset="../../assets/vercel-oss-dark.svg"><img src="../../assets/vercel-oss-dark.svg" width="254" height="80" alt="Vercel OSS Program"></picture></a>
+
+</div>
 
 
 
@@ -124,21 +132,6 @@ Plus d'options sur [GitHub Releases](https://github.com/tonyantony300/dashbeam/r
 
 Un problème ? Consultez [Dépannage](../troubleshooting.md) pour les soucis courants et la marche à suivre pour collecter les journaux.
 
-
-
-## Partenaires
-
-<a href="https://www.testmuai.com" rel="nofollow">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
-  </picture>
-</a>
-
-Nous recherchons des partenaires pour rejoindre notre mission ! Associez-vous à nous et soutenez-nous tandis que nous repoussons les limites du transfert de fichiers peer-to-peer.
-
-[**DISCUTONS**](https://www.dashbeam.net/en/contact)
 
 
 ## Langues prises en charge
@@ -309,13 +302,6 @@ Merci d'avoir consulté ce projet ! Si vous le trouvez utile, pensez à lui donn
 
 
 
-## Construit avec
-
-<div align="left">
-  <a href="https://iroh.computer">
-    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
-  </a>
-</div>
 
 
 

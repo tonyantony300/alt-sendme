@@ -30,11 +30,19 @@
 
 </div>
 
-أداة مجانية ومفتوحة المصدر لنقل الملفات تستفيد من قوة [شبكات الند للند المتطورة](https://www.iroh.computer)، لتنقل الملفات مباشرة دون تخزينها على خوادم سحابية.
+أداة مجانية ومفتوحة المصدر لنقل الملفات تستفيد من قوة شبكات الند للند المتطورة، لتنقل الملفات مباشرة دون تخزينها على خوادم سحابية.
 
 لماذا الاعتماد على WeTransfer أو Dropbox أو Google Drive بينما يمكنك نقل الملفات بشكل موثوق وسهل، مع تشفير من طرف إلى طرف دون الكشف عن أي معلومات شخصية؟
 
-اختر الطريقة الأقرب إليك: **أرسل رابطًا أو رمز QR** يُفتح على أي جهاز، أو **أرسل إلى جهاز اقترنت به مرة واحدة**، أو **أرسل إلى جهاز موجود بالفعل على شبكتك**. الطرق الثلاث تنقل البايتات نفسها بالطريقة نفسها — مباشرةً ومشفّرة من طرف إلى طرف.
+<div align="center">
+
+<br />
+
+<a href="https://www.testmuai.com" rel="nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg"><source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg"><img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI"></picture></a>
+&emsp;&emsp;
+<a href="https://vercel.com/open-source-program"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/vercel-oss-light.svg"><source media="(prefers-color-scheme: light)" srcset="../../assets/vercel-oss-dark.svg"><img src="../../assets/vercel-oss-dark.svg" width="254" height="80" alt="Vercel OSS Program"></picture></a>
+
+</div>
 
 
 
@@ -126,21 +134,6 @@
 
 تواجه مشكلات؟ راجع [استكشاف الأخطاء](../troubleshooting.md) للمشكلات الشائعة وكيفية جمع السجلات.
 
-
-
-## الشركاء
-
-<a href="https://www.testmuai.com" rel="nofollow">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
-  </picture>
-</a>
-
-نبحث عن شركاء ينضمون إلى مهمتنا! شاركنا الدعم بينما ندفع حدود نقل الملفات من نظير إلى نظير.
-
-[**لنتحدث**](https://www.dashbeam.net/en/contact)
 
 
 ## اللغات المدعومة
@@ -315,13 +308,6 @@ AGPL-3.0
 
 
 
-## مبني على
-
-<div align="left">
-  <a href="https://iroh.computer">
-    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
-  </a>
-</div>
 
 
 
