@@ -28,11 +28,19 @@
 
 </div>
 
-一款免费开源的文件传输工具，借助[前沿点对点网络](https://www.iroh.computer)的力量，让你直接传输文件，无需将数据存储在云端服务器上。
+一款免费开源的文件传输工具，借助前沿点对点网络的力量，让你直接传输文件，无需将数据存储在云端服务器上。
 
 既然可以可靠、轻松地直接传输文件，端到端加密且不泄露任何个人信息，又何必依赖 WeTransfer、Dropbox 或 Google Drive 呢？
 
-选择当下最顺手的方式：**发送链接或二维码**，在任意设备上打开；**发送给配对过一次的设备**；或**发送给已经在你网络中的设备**。三种方式传输的字节和路径完全一样 - 直连、端到端加密。
+<div align="center">
+
+<br />
+
+<a href="https://www.testmuai.com" rel="nofollow"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg"><source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg"><img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI"></picture></a>
+&emsp;&emsp;
+<a href="https://vercel.com/open-source-program"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/vercel-oss-light.svg"><source media="(prefers-color-scheme: light)" srcset="../../assets/vercel-oss-dark.svg"><img src="../../assets/vercel-oss-dark.svg" width="254" height="80" alt="Vercel OSS Program"></picture></a>
+
+</div>
 
 
 
@@ -124,21 +132,6 @@
 
 遇到问题？请查看[故障排查](../troubleshooting.md)，其中列出了常见问题以及如何收集日志。
 
-
-
-## 合作伙伴
-
-<a href="https://www.testmuai.com" rel="nofollow">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-light.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg">
-    <img src="https://www.dashbeam.net/assets/sponsors/testmu-dark.svg" height="80" alt="TestMuAI">
-  </picture>
-</a>
-
-我们正在寻找合作伙伴，与我们一起推进使命！与我们携手合作、提供支持，共同突破点对点文件传输的边界。
-
-[**我们聊聊**](https://www.dashbeam.net/en/contact)
 
 
 ## 支持的语言
@@ -307,13 +300,6 @@ AGPL-3.0
 感谢您关注本项目！若您觉得有用，欢迎点个 Star 并帮忙传播。
 
 
-## 构建于
-
-<div align="left">
-  <a href="https://iroh.computer">
-    <img alt="iroh" src="https://raw.githubusercontent.com/n0-computer/iroh/main/.img/iroh_wordmark.svg" width="200">
-  </a>
-</div>
 
 
 
