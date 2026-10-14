@@ -13,12 +13,9 @@ fun mimeTypeForFileName(fileName: String): String {
     val dot = trimmed.lastIndexOf('.')
     if (dot < 0 || dot == trimmed.length - 1) return GENERIC_MIME_TYPE
 
-    var ext = trimmed.substring(dot + 1).lowercase()
-    // Keep only the leading alphanumeric run ("photo.jpg " -> "jpg").
-    if (ext.any { !it.isLetterOrDigit() }) {
-        ext = ext.split(Regex("[^a-z0-9]+")).firstOrNull().orEmpty()
-        if (ext.isEmpty()) return GENERIC_MIME_TYPE
-    }
+    val ext = trimmed.substring(dot + 1).lowercase()
+    // Providers may append an extension matching the MIME type, so require an exact one.
+    if (ext.any { !it.isLetterOrDigit() }) return GENERIC_MIME_TYPE
 
     return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
         ?: GENERIC_MIME_TYPE

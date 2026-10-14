@@ -281,9 +281,11 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
                 val mime = resolveViewMimeType(uri)
                 if (isApkTarget(mime, uri) && !canInstallUnknownApps()) {
                     // Without the unknown-sources grant the Package Installer fails silently.
-                    openUnknownSourcesSettings()
-                    invoke.reject("Enable \"Install unknown apps\" for DashBeam, then tap Open again")
-                    return
+                    if (openUnknownSourcesSettings()) {
+                        invoke.reject("Enable \"Install unknown apps\" for DashBeam, then tap Open again")
+                        return
+                    }
+                    // Settings screen unavailable: fall through to VIEW + folder fallbacks.
                 }
                 candidates += Intent(Intent.ACTION_VIEW).apply {
                     setDataAndType(uri, mime)
@@ -443,14 +445,16 @@ class NativeUtils(private val activity: Activity) : Plugin(activity) {
         }
     }
 
-    private fun openUnknownSourcesSettings() {
-        try {
+    private fun openUnknownSourcesSettings(): Boolean {
+        return try {
             val settingsIntent = Intent(
                 android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                 Uri.parse("package:${activity.packageName}"),
             ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
             activity.startActivity(settingsIntent)
+            true
         } catch (_: Exception) {
+            false
         }
     }
 
