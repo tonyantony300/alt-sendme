@@ -133,6 +133,8 @@
                   pkgs.pnpm
                   pkgs.pkg-config
                   pkgs.wasm-bindgen-cli
+                  pkgs.cocoapods
+                  pkgs.xcodegen
                 ]
                 ++ lib.optionals stdenv.isLinux (
                   with pkgs;
