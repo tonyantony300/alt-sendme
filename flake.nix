@@ -68,8 +68,13 @@
                   "clippy"
                   "rustfmt"
                 ];
-                # web target: pnpm build:wasm / pnpm dev:web
-                targets = [ "wasm32-unknown-unknown" ];
+                targets = [ 
+                  "wasm32-unknown-unknown" # web target: pnpm build:wasm / pnpm dev:web
+                  "aarch64-apple-darwin"     # Host architecture (Mac M-series)
+                  "aarch64-apple-ios"        # Physical iOS devices
+                  "aarch64-apple-ios-sim"    # iOS Simulator (M-series Macs)
+                  "x86_64-apple-ios"         # iOS Simulator (Intel Macs)
+                ];
               };
 
           # WebKitGTK + GTK stack that `tauri dev` links and dlopens on Linux.
