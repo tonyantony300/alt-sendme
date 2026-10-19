@@ -9,7 +9,7 @@ import {
 import { useCallback, useEffect, useRef, useState, type DragEvent } from 'react'
 import { useTranslation } from '../i18n/react-i18next-compat'
 import type { AlertDialogState, AlertType } from '../types/ui'
-import { IS_ANDROID, IS_TAURI, IS_WEB } from '@/lib/platform'
+import { IS_ANDROID, IS_IOS, IS_TAURI, IS_WEB } from '@/lib/platform'
 import { useTransferTabStore } from '@/store/transfer-tab-store'
 
 export interface UseDragDropReturn {
@@ -235,7 +235,7 @@ export function useDragDrop(
 
 	const browseFile = useCallback(async () => {
 		try {
-			if (IS_ANDROID) {
+			if (IS_ANDROID || IS_IOS) {
 				await beginAndroidCacheCopy(selectSendDocument, 'file')
 				return
 			} else {

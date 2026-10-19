@@ -4,5 +4,5 @@
 	"description": "enables receive links on iOS",
 	"platforms": ["iOS"],
 	"windows": ["main"],
-	"permissions": ["core:default", "deep-link:default"]
+	"permissions": ["core:default", "native-utils:default", "deep-link:default"]
 }

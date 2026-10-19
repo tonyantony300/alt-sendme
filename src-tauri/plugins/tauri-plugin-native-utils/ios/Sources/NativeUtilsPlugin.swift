@@ -9,6 +9,10 @@ import WebKit
 class NativeUtilsPlugin: Plugin {
   // Unimplemented commands are not declared: Tauri rejects a call to a missing
   // method with an error, which is what we want until each one is ported.
+
+  @objc func select_send_document(_ invoke: Invoke) {
+      NSLog("test test?")
+  }
 }
 
 @_cdecl("init_plugin_native_utils")
