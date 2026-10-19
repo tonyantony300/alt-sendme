@@ -122,7 +122,11 @@
           };
         in
         {
-          default = pkgs.mkShell (
+          # On macOS, mkShell's stdenv injects nix's clang wrapper and a
+          # macOS-only apple-sdk (DEVELOPER_DIR, SDKROOT, CC, an xcrun shim),
+          # which breaks `tauri ios` builds: cc-rs can't find the iphoneos /
+          # iphonesimulator SDKs. Use the system Xcode toolchain instead.
+          default = (if stdenv.isDarwin then pkgs.mkShellNoCC else pkgs.mkShell) (
             {
               name = "dashbeam";
 
@@ -150,6 +154,26 @@
               buildInputs = lib.optionals stdenv.isLinux guiLibs;
 
               shellHook = ''
+                ${lib.optionalString stdenv.isDarwin ''
+                  # rust-overlay's toolchain propagates nix's cc (clang + cctools
+                  # and their wrappers), which forces macOS flags onto every
+                  # compile/link and breaks iOS targets. Fall through to Xcode's
+                  # toolchain instead.
+                  PATH="$(printf '%s' "$PATH" | tr ':' '\n' | grep -vE -- '^/nix/store/[a-z0-9]+-(clang|cctools|bintools)-' | paste -sd: -)"
+                  unset LD DEVELOPER_DIR SDKROOT
+                  # Pin by absolute path: a `cc` elsewhere on PATH (e.g. a
+                  # user-profile gcc) would otherwise win and can't link against
+                  # Apple SDKs.
+                  export CC=/usr/bin/clang CXX=/usr/bin/clang++ AR=/usr/bin/ar
+                  for t in AARCH64_APPLE_DARWIN X86_64_APPLE_DARWIN AARCH64_APPLE_IOS AARCH64_APPLE_IOS_SIM X86_64_APPLE_IOS; do
+                    export "CARGO_TARGET_''${t}_LINKER=/usr/bin/clang"
+                  done
+                  # nix gives each shell a private TMPDIR, but `tauri ios dev` and
+                  # the Xcode build phase (`tauri ios xcode-script`, run in its own
+                  # `nix develop`) find each other through a file in TMPDIR. Use
+                  # the stable per-user temp dir so both shells agree.
+                  export TMPDIR="$(/usr/bin/getconf DARWIN_USER_TEMP_DIR)"
+                ''}
                 ${lib.optionalString stdenv.isLinux ''
                   export XDG_DATA_DIRS="${lib.concatStringsSep ":" dataDirs}''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
                 ''}
