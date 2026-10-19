@@ -67,6 +67,7 @@ Notes:
 - **`programs.nix-ld.enable = true;`** is required on NixOS. pnpm downloads prebuilt binaries (Biome, Rollup, esbuild) that expect a standard dynamic loader; without nix-ld they fail with "no such file or directory" on an executable that plainly exists.
 - **`wasm-bindgen-cli` must match `wasm-bindgen` in `wasm-bridge/Cargo.lock` exactly.** The shell installs the matching versioned nixpkgs package (e.g. `wasm-bindgen-cli_0_2_126`); if nixpkgs doesn't have that version, it warns on entry and prints the `cargo install` line that fixes it.
 - **Android is not covered** by the shell — the SDK/NDK are still on you.
+- **iOS (macOS only) uses a separate shell**, `nix develop .#ios` (with direnv: `echo 'use flake .#ios' > .envrc.local`). It adds the iOS Rust targets, XcodeGen and CocoaPods, and builds with Xcode's toolchain rather than nix's, so Xcode must be installed. Run `pnpm tauri ios init` once to generate `src-tauri/gen/apple` from `src-tauri/ios/project.yml`, then `pnpm tauri ios dev --open` and Run from Xcode — Xcode's Rust build phase enters the same shell itself. Physical devices also need `APPLE_DEVELOPMENT_TEAM` set to your team ID.
 - **Bundling** (`pnpm tauri build` with installers) is not supported on NixOS; use `--no-bundle`.
 - The shell sets `WEBKIT_DISABLE_DMABUF_RENDERER=1`, which avoids a blank webview on NVIDIA and older Mesa. Drop it from `flake.nix` if your setup doesn't need it.
 

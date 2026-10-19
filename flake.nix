@@ -23,7 +23,7 @@
         f:
         nixpkgs.lib.genAttrs systems (
           system:
-          f (
+          f system (
             import nixpkgs {
               inherit system;
               overlays = [ (import rust-overlay) ];
@@ -50,7 +50,7 @@
     in
     {
       devShells = forAllSystems (
-        pkgs:
+        system: pkgs:
         let
           inherit (pkgs) lib stdenv;
 
@@ -63,7 +63,8 @@
               pkgs."wasm-bindgen-cli_${lib.replaceStrings [ "." ] [ "_" ] wasmBindgenPin}"
                 or pkgs.wasm-bindgen-cli;
 
-          rustToolchain =
+          mkRustToolchain =
+            extraTargets:
             (
               if builtins.elem rustVersion [ "stable" "beta" "nightly" ] then
                 pkgs.rust-bin.${rustVersion}.latest.default
@@ -77,14 +78,36 @@
                   "clippy"
                   "rustfmt"
                 ];
-                targets = [ 
-                  "wasm32-unknown-unknown" # web target: pnpm build:wasm / pnpm dev:web
-                  "aarch64-apple-darwin"     # Host architecture (Mac M-series)
-                  "aarch64-apple-ios"        # Physical iOS devices
-                  "aarch64-apple-ios-sim"    # iOS Simulator (M-series Macs)
-                  "x86_64-apple-ios"         # iOS Simulator (Intel Macs)
-                ];
+                # web target: pnpm build:wasm / pnpm dev:web
+                targets = [ "wasm32-unknown-unknown" ] ++ extraTargets;
               };
+
+          iosTargets = [
+            "aarch64-apple-ios" # devices
+            "aarch64-apple-ios-sim" # simulator, Apple silicon
+            "x86_64-apple-ios" # simulator, Intel
+          ];
+
+          # iOS builds must use Xcode's toolchain, but rust-overlay's toolchain
+          # propagates nix's cc (clang + cctools, their wrappers and a
+          # macOS-only apple-sdk), which forces macOS flags onto every
+          # compile/link and hides the iphoneos/iphonesimulator SDKs.
+          iosShellHook = ''
+            PATH="$(printf '%s' "$PATH" | tr ':' '\n' | grep -vE -- '^/nix/store/[a-z0-9]+-(clang|cctools|bintools)-' | paste -sd: -)"
+            unset LD DEVELOPER_DIR SDKROOT
+            # Pin by absolute path: a `cc` elsewhere on PATH (e.g. a
+            # user-profile gcc) would otherwise win and can't link against
+            # Apple SDKs.
+            export CC=/usr/bin/clang CXX=/usr/bin/clang++ AR=/usr/bin/ar
+            for t in AARCH64_APPLE_DARWIN X86_64_APPLE_DARWIN AARCH64_APPLE_IOS AARCH64_APPLE_IOS_SIM X86_64_APPLE_IOS; do
+              export "CARGO_TARGET_''${t}_LINKER=/usr/bin/clang"
+            done
+            # nix gives each shell a private TMPDIR, but `tauri ios dev` and
+            # the Xcode build phase (src-tauri/ios/build-rust-code.sh, which
+            # enters this shell itself) find each other through a file in
+            # TMPDIR. Use the stable per-user temp dir so both shells agree.
+            export TMPDIR="$(/usr/bin/getconf DARWIN_USER_TEMP_DIR)"
+          '';
 
           # WebKitGTK + GTK stack that `tauri dev` links and dlopens on Linux.
           # Mirrors the apt list in .github/workflows/publish.yml.
@@ -112,6 +135,15 @@
             "${hicolor-icon-theme}/share"
           ];
 
+          # ring compiles C for wasm32 (pnpm build:wasm). Nix's clang wrapper
+          # injects host target flags and Apple's clang (iOS shell) has no
+          # wasm32 backend, so point the wasm32 target at the unwrapped tools;
+          # cc-rs prefers these over CC.
+          wasmEnv = {
+            CC_wasm32_unknown_unknown = "${pkgs.llvmPackages.clang-unwrapped}/bin/clang";
+            AR_wasm32_unknown_unknown = "${pkgs.llvmPackages.bintools-unwrapped}/bin/llvm-ar";
+          };
+
           linuxEnv = {
             # cargo-built binaries are not patchelf'd, so the GTK/WebKit stack
             # has to be resolvable at run time too, not just at link time.
@@ -120,34 +152,29 @@
             # TLS in the webview (updater, relay status) needs glib-networking.
             GIO_MODULE_DIR = "${pkgs.glib-networking}/lib/gio/modules";
 
-            # Nix's clang wrapper injects host target flags, which breaks ring's
-            # wasm32 build; point the wasm32 target at the unwrapped tools.
-            CC_wasm32_unknown_unknown = "${pkgs.llvmPackages.clang-unwrapped}/bin/clang";
-            AR_wasm32_unknown_unknown = "${pkgs.llvmPackages.bintools-unwrapped}/bin/llvm-ar";
-
             # Blank/black window on NVIDIA and older Mesa. Harmless elsewhere;
             # drop it if your GPU renders the webview fine with DMA-BUF.
             WEBKIT_DISABLE_DMABUF_RENDERER = "1";
           };
-        in
-        {
-          # On macOS, mkShell's stdenv injects nix's clang wrapper and a
-          # macOS-only apple-sdk (DEVELOPER_DIR, SDKROOT, CC, an xcrun shim),
-          # which breaks `tauri ios` builds: cc-rs can't find the iphoneos /
-          # iphonesimulator SDKs. Use the system Xcode toolchain instead.
-          default = (if stdenv.isDarwin then pkgs.mkShellNoCC else pkgs.mkShell) (
+          mkDevShell =
             {
-              name = "dashbeam";
+              ios ? false,
+            }:
+            # mkShellNoCC for iOS: no nix cc from the stdenv (see iosShellHook).
+            (if ios then pkgs.mkShellNoCC else pkgs.mkShell) (
+              {
+                name = if ios then "dashbeam-ios" else "dashbeam";
 
-              nativeBuildInputs =
-                [
-                  rustToolchain
+                nativeBuildInputs = [
+                  (mkRustToolchain (lib.optionals ios iosTargets))
                   pkgs.nodejs_24
                   pkgs.pnpm
                   pkgs.pkg-config
                   wasmBindgenCli
+                ]
+                ++ lib.optionals ios [
                   pkgs.cocoapods
-                  pkgs.xcodegen
+                  pkgs.xcodegen # tauri ios init
                 ]
                 ++ lib.optionals stdenv.isLinux (
                   with pkgs;
@@ -160,53 +187,50 @@
                   ]
                 );
 
-              buildInputs = lib.optionals stdenv.isLinux guiLibs;
+                buildInputs = lib.optionals stdenv.isLinux guiLibs;
 
-              shellHook = ''
-                ${lib.optionalString stdenv.isDarwin ''
-                  # rust-overlay's toolchain propagates nix's cc (clang + cctools
-                  # and their wrappers), which forces macOS flags onto every
-                  # compile/link and breaks iOS targets. Fall through to Xcode's
-                  # toolchain instead.
-                  PATH="$(printf '%s' "$PATH" | tr ':' '\n' | grep -vE -- '^/nix/store/[a-z0-9]+-(clang|cctools|bintools)-' | paste -sd: -)"
-                  unset LD DEVELOPER_DIR SDKROOT
-                  # Pin by absolute path: a `cc` elsewhere on PATH (e.g. a
-                  # user-profile gcc) would otherwise win and can't link against
-                  # Apple SDKs.
-                  export CC=/usr/bin/clang CXX=/usr/bin/clang++ AR=/usr/bin/ar
-                  for t in AARCH64_APPLE_DARWIN X86_64_APPLE_DARWIN AARCH64_APPLE_IOS AARCH64_APPLE_IOS_SIM X86_64_APPLE_IOS; do
-                    export "CARGO_TARGET_''${t}_LINKER=/usr/bin/clang"
-                  done
-                  # nix gives each shell a private TMPDIR, but `tauri ios dev` and
-                  # the Xcode build phase (`tauri ios xcode-script`, run in its own
-                  # `nix develop`) find each other through a file in TMPDIR. Use
-                  # the stable per-user temp dir so both shells agree.
-                  export TMPDIR="$(/usr/bin/getconf DARWIN_USER_TEMP_DIR)"
-                ''}
-                ${lib.optionalString stdenv.isLinux ''
-                  export XDG_DATA_DIRS="${lib.concatStringsSep ":" dataDirs}''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
-                ''}
-                echo "DashBeam dev shell"
-                echo "  rustc   $(rustc --version | cut -d' ' -f2) (pinned ${rustVersion} in rust-toolchain.toml)"
-                echo "  node    $(node --version)"
-                echo "  pnpm    $(pnpm --version)"
-                ${lib.optionalString (wasmBindgenPin != null) ''
-                  have_wb="$(wasm-bindgen --version 2>/dev/null | cut -d' ' -f2)"
-                  if [ "$have_wb" != "${wasmBindgenPin}" ]; then
-                    echo
-                    echo "  warning: wasm-bindgen-cli is $have_wb, wasm-bridge/Cargo.lock pins ${wasmBindgenPin}."
-                    echo "           The web target needs an exact match:"
-                    echo "             cargo install wasm-bindgen-cli --version ${wasmBindgenPin} --locked"
-                    echo "           (then make sure ~/.cargo/bin precedes the nix one on PATH)"
-                  fi
-                ''}
-                echo
-                echo "  pnpm install && pnpm tauri dev    desktop"
-                echo "  pnpm build:wasm && pnpm dev:web   browser"
-              '';
-            }
-            // lib.optionalAttrs stdenv.isLinux linuxEnv
-          );
+                shellHook = ''
+                  ${lib.optionalString ios iosShellHook}
+                  ${lib.optionalString stdenv.isLinux ''
+                    export XDG_DATA_DIRS="${lib.concatStringsSep ":" dataDirs}''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+                  ''}
+                  echo "DashBeam dev shell${lib.optionalString ios " (iOS)"}"
+                  echo "  rustc   $(rustc --version | cut -d' ' -f2) (pinned ${rustVersion} in rust-toolchain.toml)"
+                  echo "  node    $(node --version)"
+                  echo "  pnpm    $(pnpm --version)"
+                  ${lib.optionalString (wasmBindgenPin != null) ''
+                    have_wb="$(wasm-bindgen --version 2>/dev/null | cut -d' ' -f2)"
+                    if [ "$have_wb" != "${wasmBindgenPin}" ]; then
+                      echo
+                      echo "  warning: wasm-bindgen-cli is $have_wb, wasm-bridge/Cargo.lock pins ${wasmBindgenPin}."
+                      echo "           The web target needs an exact match:"
+                      echo "             cargo install wasm-bindgen-cli --version ${wasmBindgenPin} --locked"
+                      echo "           (then make sure ~/.cargo/bin precedes the nix one on PATH)"
+                    fi
+                  ''}
+                  echo
+                  echo "  pnpm install && pnpm tauri dev    desktop"
+                  echo "  pnpm build:wasm && pnpm dev:web   browser"
+                  ${
+                    if ios then
+                      ''echo "  pnpm tauri ios dev --open          iOS, then Run in Xcode"''
+                    else
+                      lib.optionalString stdenv.isDarwin ''echo "  nix develop .#ios                  iOS shell"''
+                  }
+                '';
+              }
+              // wasmEnv
+              // lib.optionalAttrs stdenv.isLinux linuxEnv
+            );
+        in
+        {
+          default = mkDevShell { };
+        }
+        # Keyed on the system name with nixpkgs.lib, not pkgs: listing the
+        # shells must not import nixpkgs for the system, which throws on
+        # platforms nixpkgs has dropped (x86_64-darwin).
+        // nixpkgs.lib.optionalAttrs (nixpkgs.lib.hasSuffix "-darwin" system) {
+          ios = mkDevShell { ios = true; };
         }
       );
     };
