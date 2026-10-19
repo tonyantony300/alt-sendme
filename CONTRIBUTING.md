@@ -65,7 +65,7 @@ The shell reads `rust-toolchain.toml`, so bumping the pin there is enough — th
 Notes:
 
 - **`programs.nix-ld.enable = true;`** is required on NixOS. pnpm downloads prebuilt binaries (Biome, Rollup, esbuild) that expect a standard dynamic loader; without nix-ld they fail with "no such file or directory" on an executable that plainly exists.
-- **`wasm-bindgen-cli` must match `wasm-bindgen` in `wasm-bridge/Cargo.lock` exactly.** The shell warns on entry if nixpkgs has drifted and prints the `cargo install` line that fixes it.
+- **`wasm-bindgen-cli` must match `wasm-bindgen` in `wasm-bridge/Cargo.lock` exactly.** The shell installs the matching versioned nixpkgs package (e.g. `wasm-bindgen-cli_0_2_126`); if nixpkgs doesn't have that version, it warns on entry and prints the `cargo install` line that fixes it.
 - **Android is not covered** by the shell — the SDK/NDK are still on you.
 - **Bundling** (`pnpm tauri build` with installers) is not supported on NixOS; use `--no-bundle`.
 - The shell sets `WEBKIT_DISABLE_DMABUF_RENDERER=1`, which avoids a blank webview on NVIDIA and older Mesa. Drop it from `flake.nix` if your setup doesn't need it.

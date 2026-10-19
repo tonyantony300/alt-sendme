@@ -39,7 +39,7 @@
 
       # wasm-bindgen-cli must match the wasm-bindgen crate exactly or the
       # generated bindings fail at load time. Read the pin out of the lockfile
-      # so the shell can warn when nixpkgs has drifted.
+      # to pick the matching nixpkgs package, and warn when there isn't one.
       wasmBindgenPin =
         let
           matches = builtins.filter (p: p.name == "wasm-bindgen") (
@@ -53,6 +53,15 @@
         pkgs:
         let
           inherit (pkgs) lib stdenv;
+
+          # nixpkgs keeps versioned copies (wasm-bindgen-cli_0_2_126, ...);
+          # use the one matching the lockfile, else the default.
+          wasmBindgenCli =
+            if wasmBindgenPin == null then
+              pkgs.wasm-bindgen-cli
+            else
+              pkgs."wasm-bindgen-cli_${lib.replaceStrings [ "." ] [ "_" ] wasmBindgenPin}"
+                or pkgs.wasm-bindgen-cli;
 
           rustToolchain =
             (
@@ -136,7 +145,7 @@
                   pkgs.nodejs_24
                   pkgs.pnpm
                   pkgs.pkg-config
-                  pkgs.wasm-bindgen-cli
+                  wasmBindgenCli
                   pkgs.cocoapods
                   pkgs.xcodegen
                 ]
