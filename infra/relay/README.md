@@ -86,10 +86,11 @@ fly status   # confirm the machine is running
 Then in DashBeam → **Settings → Infra → Custom self-hosted**, add
 `https://<your-unique-name>.fly.dev` and click **Test connection**.
 
-> **Caveat:** this mode provides **relaying only** - QUIC address discovery / holepunch
-> assist is disabled in `--dev` (it needs direct UDP + TLS). It's ideal for trying the
-> feature, not for a production relay. For production, use the Let's Encrypt setup above
-> (`fly.toml` + your own domain).
+> **Caveat:** this setup provides **relaying only** - QUIC address discovery / holepunch
+> assist needs direct UDP plus a certificate the relay can read, and Fly's edge-managed
+> cert isn't available to the container. It's ideal for trying the feature, not for a
+> production relay. For production, use the Let's Encrypt setup above (`fly.toml` + your
+> own domain).
 
 ## Option 2: Docker Compose (VPS)
 
@@ -226,8 +227,11 @@ which collides with an existing Traefik / Caddy / nginx on the same host. Option
   for a production relay; full QUIC hole-punch assist works.
 - **Terminate TLS at your proxy** and run the relay in `--dev` mode (plain HTTP on `:3340`),
   exactly like the Fly "no domain" path above. Proxy `https://relay.example.com` →
-  `http://127.0.0.1:3340`. **Caveat:** `--dev` disables QUIC address discovery, so you get
-  relaying only (no hole-punch assist).
+  `http://127.0.0.1:3340`. `--dev` only disables the relay's own HTTPS listener: keep
+  hole-punch assist by pointing `[tls]` at your proxy's cert for the relay hostname
+  (`cert_mode = "Reloading"` with `manual_cert_path` / `manual_key_path`; `LetsEncrypt` is
+  incompatible with `--dev`) and forwarding `7842/udp` straight to the relay. Without that,
+  you get relaying only. See the [iroh-relay config reference](https://github.com/n0-computer/iroh/blob/main/iroh-relay/src/main.rs).
 
 ## Non-root and privileged ports
 

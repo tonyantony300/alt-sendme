@@ -2,7 +2,7 @@
 #
 # Runs iroh-relay in --dev mode (plain HTTP on :3340). Fly's edge terminates TLS and
 # proxies to it, so the relay is reachable at https://<app>.fly.dev with a valid cert.
-# This gives relaying only (QUIC address discovery is off in --dev). For a full
+# This gives relaying only (QUIC address discovery needs a cert the relay can read). For a full
 # production relay with your own domain + Let's Encrypt, use fly.toml instead.
 #
 # Deploy:
