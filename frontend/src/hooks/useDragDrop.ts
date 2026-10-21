@@ -261,7 +261,7 @@ export function useDragDrop(
 
 	const browseFolder = useCallback(async () => {
 		try {
-			if (IS_ANDROID) {
+			if (IS_ANDROID || IS_IOS) {
 				await beginAndroidCacheCopy(selectSendFolder, 'directory')
 				return
 			} else {
