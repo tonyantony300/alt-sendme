@@ -442,9 +442,9 @@ export function useDragDrop(
 		await browseFolder()
 	}, [browseFolder])
 
-	// Android Share sheet → cache copy → Send tab selection
+	// Android / iOS Share sheet → cache copy → Send tab selection
 	useEffect(() => {
-		if (!IS_ANDROID) {
+		if (!IS_ANDROID && !IS_IOS) {
 			return
 		}
 

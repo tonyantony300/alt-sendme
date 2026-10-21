@@ -4,8 +4,10 @@
 # `pnpm tauri` runs).
 #
 # Copied from tauri-cli 2.12.3 (templates/mobile/ios/project.yml). The only
-# change: "Build Rust Code" runs through build-rust-code.sh so Xcode builds
-# get the nix dev shell. Re-sync with upstream when bumping @tauri-apps/cli.
+# changes: "Build Rust Code" runs through build-rust-code.sh so Xcode builds
+# get the nix dev shell, the Files app keys, and the ShareExtension target
+# (sources in ../../ios/ShareExtension) with the app group it shares with the
+# app. Re-sync with upstream when bumping @tauri-apps/cli.
 name: {{app.name}}
 options:
   bundleIdPrefix: {{app.identifier}}
@@ -35,6 +37,37 @@ targetTemplates:
     settings:
       groups: [app]
 targets:
+  ShareExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ../../ios/ShareExtension
+    info:
+      path: ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: {{app.stylized-name}}
+        CFBundleShortVersionString: {{apple.bundle-version-short}}
+        CFBundleVersion: "{{apple.bundle-version}}"
+        DashBeamAppGroup: group.{{app.identifier}}
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsFileWithMaxCount: 100
+              NSExtensionActivationSupportsImageWithMaxCount: 100
+              NSExtensionActivationSupportsMovieWithMaxCount: 100
+    entitlements:
+      path: ShareExtension/ShareExtension.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.{{app.identifier}}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: {{app.identifier}}.ShareExtension
+        {{#if apple.development-team}}
+        DEVELOPMENT_TEAM: {{apple.development-team}}
+        {{/if}}
   {{app.name}}_iOS:
     type: application
     platform: iOS
@@ -65,6 +98,8 @@ targets:
         # the Files app, which open_download_target/open_download_folder open.
         UIFileSharingEnabled: true
         LSSupportsOpeningDocumentsInPlace: true
+        # Read by the native-utils plugin to find what the share extension saved.
+        DashBeamAppGroup: group.{{app.identifier}}
         UIRequiredDeviceCapabilities: [arm64, metal]
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -81,6 +116,14 @@ targets:
         {{this.key}}: {{this.value}}{{/each}}
     entitlements:
       path: {{app.name}}_iOS/{{app.name}}_iOS.entitlements
+      # Given here, XcodeGen writes the whole file, so associated-domains is
+      # repeated from tauri.conf.json's deep-link config; the deep-link
+      # plugin's build script keeps it in sync on later builds.
+      properties:
+        com.apple.developer.associated-domains:
+          - applinks:app.dashbeam.net
+        com.apple.security.application-groups:
+          - group.{{app.identifier}}
     scheme:
       environmentVariables:
         RUST_BACKTRACE: full
@@ -101,6 +144,7 @@ targets:
         EXCLUDED_ARCHS[sdk=iphoneos*]: x86_64
       groups: [app]
     dependencies:
+      - target: ShareExtension
       - framework: {{ lib-output-file-name }}
         embed: false
       {{~#each ios-libraries}}
