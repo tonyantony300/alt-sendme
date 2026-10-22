@@ -35,7 +35,9 @@ class NativeUtilsPlugin: Plugin {
   }
 }
 
+// Public: in optimized builds Swift 6.4 gives an internal `@_cdecl` function
+// hidden visibility, and the Rust side then can't link against it.
 @_cdecl("init_plugin_native_utils")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return NativeUtilsPlugin()
 }
