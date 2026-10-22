@@ -1329,6 +1329,19 @@ fn parse_persisted_discoverability(raw: &str) -> Option<Discoverability> {
     serde_json::from_value(envelope.get("state")?.get("discoverability")?.clone()).ok()
 }
 
+/// iOS drops the raw multicast socket mDNS uses unless the app holds the
+/// Apple-approved com.apple.developer.networking.multicast entitlement, so
+/// Nearby stays off there whatever was persisted or requested. The frontend
+/// hides it to match (`IS_NEARBY_CAPABLE`).
+#[cfg(any(desktop, target_os = "android", target_os = "ios"))]
+fn effective_discoverability(setting: Discoverability) -> Discoverability {
+    if cfg!(target_os = "ios") {
+        Discoverability::Off
+    } else {
+        setting
+    }
+}
+
 /// Reads the persisted discoverability choice before `NodeService::start`, so
 /// an `Off` install never registers mDNS even briefly (`DeviceNodeSync`
 /// re-applies it once the webview loads).
@@ -1380,7 +1393,7 @@ pub async fn init_node_service(app_handle: tauri::AppHandle) -> Result<(), Strin
     let (relay_mode, _) = resolve_relay_mode_with_fallback(None).await?;
     let relay_mode: iroh::endpoint::RelayMode = relay_mode.into();
     let discovery_mode = build_discovery_mode(None)?;
-    let discoverability = load_persisted_discoverability(&app_handle);
+    let discoverability = effective_discoverability(load_persisted_discoverability(&app_handle));
 
     let emitter = Arc::new(TauriEventEmitter {
         app_handle: app_handle.clone(),
@@ -1772,6 +1785,7 @@ pub async fn set_discoverability(
         let guard = state.lock().await;
         require_node_arc(&guard)?
     };
+    let setting = effective_discoverability(setting);
     node.set_discoverability(setting).await.map_err(|error| {
         tracing::error!(
             target: "dashbeam::_events::nearby::set_discoverability_failed",
