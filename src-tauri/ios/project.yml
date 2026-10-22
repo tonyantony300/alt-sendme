@@ -100,6 +100,13 @@ targets:
         LSSupportsOpeningDocumentsInPlace: true
         # Read by the native-utils plugin to find what the share extension saved.
         DashBeamAppGroup: group.{{app.identifier}}
+        # Direct QUIC connections to devices on the same network, and Nearby's
+        # mDNS (iroh-mdns-address-lookup advertises `_irohv1._udp`), both need
+        # the local network permission. Nearby's raw multicast socket also
+        # needs the com.apple.developer.networking.multicast entitlement.
+        NSLocalNetworkUsageDescription: "{{app.stylized-name}} connects directly to your devices on the same network to transfer files faster and find nearby devices."
+        NSBonjourServices:
+          - _irohv1._udp
         UIRequiredDeviceCapabilities: [arm64, metal]
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
