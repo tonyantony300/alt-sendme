@@ -8,7 +8,12 @@ import {
 	useExportDebugBundle,
 	useSetDebugLogging,
 } from '../../../hooks/use-debug-logging'
-import { revealItemInDir, saveDialog } from '@/lib/platform-api'
+import {
+	downloadDir,
+	joinPath,
+	revealItemInDir,
+	saveDialog,
+} from '@/lib/platform-api'
 import { IS_ANDROID, IS_IOS } from '@/lib/platform'
 import { openDownloadTarget } from '@/plugins/nativeUtils'
 import { buildRelayConfigArg } from '@/lib/relay-config'
@@ -77,10 +82,16 @@ export function DebugMode() {
 	const handleSave = async () => {
 		setError(null)
 		try {
-			const destPath = await saveDialog({
-				defaultPath: defaultBundleName(),
-				filters: [{ name: 'Text', extensions: ['txt'] }],
-			})
+			// iOS has no save-as picker: the dialog plugin exports a placeholder and
+			// returns a `file://` URL that may not be writable. Save into Documents
+			// (visible in the Files app) instead; the Quick Look preview opened
+			// below can share it onward.
+			const destPath = IS_IOS
+				? await joinPath(await downloadDir(), defaultBundleName())
+				: await saveDialog({
+						defaultPath: defaultBundleName(),
+						filters: [{ name: 'Text', extensions: ['txt'] }],
+					})
 			if (!destPath) return
 
 			await exportBundle.mutateAsync({
