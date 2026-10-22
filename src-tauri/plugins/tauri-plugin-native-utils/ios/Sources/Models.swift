@@ -27,6 +27,14 @@ struct DownloadFolderSelectionResponse: Encodable {
   let path: String
 }
 
+/// System bar and sensor housing insets, in CSS pixels.
+struct WindowInsetsResponse: Encodable {
+  let top: Double
+  let right: Double
+  let bottom: Double
+  let left: Double
+}
+
 struct CopyProgress: Encodable {
   let copiedBytes: String
   let totalBytes: String

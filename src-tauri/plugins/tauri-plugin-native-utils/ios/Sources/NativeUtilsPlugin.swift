@@ -11,9 +11,9 @@ import WebKit
 
 class NativeUtilsPlugin: Plugin {
   // Commands with no method (export_to_tree, export_to_media_store,
-  // write_text_to_uri, fetch_update_manifest, the presence service and
-  // get_window_insets) are Android-only: their callers are behind
-  // `cfg(target_os = "android")` or `IS_ANDROID`.
+  // write_text_to_uri, fetch_update_manifest and the presence service) are
+  // Android-only: their callers are behind `cfg(target_os = "android")` or
+  // `IS_ANDROID`.
 
   var pickingSession: FilePickingSession?
   var previewSession: PreviewSession?
@@ -26,8 +26,11 @@ class NativeUtilsPlugin: Plugin {
   /// Rust can write received files into it with plain `std::fs` calls.
   var accessedDownloadFolder: URL?
 
+  weak var webview: WKWebView?
+
   override func load(webview: WKWebView) {
     super.load(webview: webview)
+    self.webview = webview
     restoreDownloadFolderAccess()
   }
 }
