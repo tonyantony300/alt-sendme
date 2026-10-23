@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PairedInvitePayload } from '@/lib/pairing-api'
-import { IS_ANDROID, IS_WEB } from '@/lib/platform'
+import { IS_ANDROID, IS_IOS, IS_WEB } from '@/lib/platform'
 import {
 	downloadDir,
 	invoke,
@@ -605,6 +605,12 @@ export function useReceiver(): UseReceiverReturn {
 				selected = response.path
 				setDownloadsPath(selected)
 				setDownloadsUri(response.uri)
+			} else if (IS_IOS) {
+				// The plugin holds the folder's security-scoped access, so Rust
+				// writes to the plain path like on desktop.
+				const response = await selectDownloadFolder()
+				if (!response) return
+				selected = response.path
 			} else if (IS_WEB) {
 				if (!supportsWebSaveLocationPicker()) {
 					return
@@ -869,7 +875,9 @@ export function useReceiver(): UseReceiverReturn {
 				fileNamesRef.current
 			)
 			if (targetPath) {
-				await revealItemInDir(targetPath)
+				// The opener plugin can't reveal files on iOS.
+				if (IS_IOS) await openDownloadTarget(targetPath)
+				else await revealItemInDir(targetPath)
 			}
 		} catch (error) {
 			folderOpenTriggeredRef.current = false
